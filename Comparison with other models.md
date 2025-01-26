@@ -49,17 +49,13 @@ The package focuses on delivering critical metrics, such as the Minimum Detectab
 
 
 
-| Features                              | Geolift  | GeoX        | Murray        |  
+| Features                              | Geolift  | GeoX        | Murray        | 
 |:--------------------------------------|:--------:|:-----------:|:-------------:|
-| Easy result interpretability          |    ✗     |     ✔       |       ✔       |
+| Easy result interpretability          |    ✗     |     ✔       |       ✔   |   |
 | Low knowledge requirement             |    ✗     |     ✔       |       ✔       |
-| Low computational cost                |    ✗     |     ✔       |       ✔       |
-| Functional flexibility                |    ✔     |     ✗       |       ✔       |
-| Reliable with large samples           |    ✔     |     ✗       |       ✗       |
-| Open source                           |    ✔     |     ✗       |       ✔       |
-
-
-
+| Low computational cost                |    ✗     |     ✔       |       ✔ |     |
+| Functional flexibility                |    ✔     |     ✗       |       ✔|      |
+| Open source                           |    ✔     |     ✗       |       ✔ |     |
 
 ## Conclusions
 
