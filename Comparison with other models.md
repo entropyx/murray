@@ -24,20 +24,21 @@ This essentially ensures that the weights sum up to 1 and are positive for all t
 Additionally, the synthetic control model in Murray includes the minimization of prediction error (quadratic error) combined with Elastic Net regularization (Ridge + Lasso). This allows for addressing multicollinearity issues and selecting only a subset of relevant locations. Mathematically, this function can be expressed as follows:
 
 
-$$
-w =
-\arg\min_{w} (\left|y-Xw\right|^2 +   \lambda_1\|\boldsymbol{w}\|_1  
-+
-\lambda_2\|\boldsymbol{w}\|_2^2)
-$$
+
+```math 
+w = \arg\min_{w} (\left|y-Xw\right|^2 + \lambda_1\|\boldsymbol{w}\|_1 + \lambda_2\|\boldsymbol{w}\|_2^2)
+```
+
 The synthetic control approach in Murray was based on the augmented synthetic control method, as convex optimization tools with constraints are employed.
 
 ## Statistical Test
 On the other hand, a non-parametric test is used for statistical evaluation. This test is widely applicable, not only in marketing but also in other fields, such as healthcare. The permutation test does not assume any specific distribution of the data, thereby avoiding errors in the results when determining the sensitivity of the experiment.
 
-$$
-\text{P-value}=\frac{1}{|\Pi|}\sum_{\pi\in\Pi}\mathbb{}1\{S(\hat{u}_{\pi_0}) \leq S(\hat{u}_{\pi})\}
-$$
+
+```math
+\text{P-value} = \frac{1}{|\Pi|} \sum_{\pi \in \Pi} \mathbb{1}\{S(\hat{u}_{\pi_0}) \leq S(\hat{u}_{\pi})\}
+```
+
 
 With a solid foundation in constructing a representative counterfactual for the treatment group and using non-parametric tests for statistical evaluations, biases in the results are effectively avoided.
 
