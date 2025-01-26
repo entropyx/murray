@@ -28,7 +28,7 @@ data = cleaned_data(data,col_target='sessions',col_locations='location',col_date
 ```
 
 The fuctions will clean and plot tha data.
-![Data plot](utils\data_plot.png)
+![Data plot](utils/data_plot.png)
 
 
 
@@ -62,7 +62,7 @@ geo_test = run_geo_analysis(
 ```
 
 
-![Data plot](utils\mde_heatmap.png)
+![Data plot](utils/mde_heatmap.png)
 
 The results of the test provide us a visualization about the sensitivity in all periods admitted and differents holdouts. The holdouts depend of the data and locations, by default the number of treatment locations is 20% until 50% of total of locations. For example, if you have 32 locations, the range of size of treatment groups is 6-16 locations. 
 
@@ -81,7 +81,7 @@ For example:
 plot_impact(geo_test,periodo_especifico=10,top_n=1)
 ```
 
-![Data plot](utils\impact_graph.png)
+![Data plot](utils/impact_graph.png)
 
 
 #### Treatment and control groups
