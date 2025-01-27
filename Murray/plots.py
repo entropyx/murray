@@ -107,88 +107,34 @@ def plot_counterfactuals(geo_test):
         plt.show()
 
 
-def plot_mde_results(results_by_size,sensitivity_results, periods, title="MDE Heatmap"):
+def plot_mde_results(simulation_results, sensitivity_results, periods):
     """
-    Generates a heatmap for the MDE (Minimum Detectable Effect) values considering only specific intervals.
-
+    Plots Minimum Detectable Effect (MDE) results.
+    
     Args:
-        sensitivity_results (dict): Dictionary with sensitivity results.
-        results_by_size (dict): Dictionary with data containing holdout percentages by size.
-        periods (list): List of evaluated periods.
-        title (str): Title of the plot.
-
-    Returns:
-        None: Displays the heatmap.
+        simulation_results (dict): Results from group optimization
+        sensitivity_results (dict): Results from sensitivity analysis
+        periods (list): List of periods evaluated
     """
-
-    #results_by_size = geo_test['simulation_results']
-    #sensitivity_results = geo_test['sensivility_results']
-
-    filtered_periods = periods
-
-    # Extract holdout percentages and sort sizes by holdout (descending)
-    holdout_by_location = {
-        size: data['Holdout Percentage']
-        for size, data in results_by_size.items()
-    }
-    sorted_sizes = sorted(holdout_by_location.keys(), key=lambda x: holdout_by_location[x], reverse=True)
-
-    # Create the heatmap structure
-    heatmap_data = pd.DataFrame()
-    mask = pd.DataFrame()  
-
-    for size in sorted_sizes:
-        row = []
-        row_mask = []
-        period_results = sensitivity_results.get(size, {})
-        for period in filtered_periods:
+    plt.figure(figsize=(12, 6))
+    
+    for size, period_results in sensitivity_results.items():
+        mde_values = []
+        for period in periods:
             if period in period_results:
-                mde = period_results[period].get('MDE', None)
-                if mde is not None:
-                    row.append(mde)
-                    row_mask.append(False)  
-                else:
-                    row.append(None)
-                    row_mask.append(True)  
+                mde = period_results[period]['MDE']
+                mde_values.append(mde if mde is not None else np.nan)
             else:
-                row.append(None)
-                row_mask.append(True)  
-        heatmap_data[size] = row
-        mask[size] = row_mask
-
+                mde_values.append(np.nan)
+        
+        plt.plot(periods, mde_values, marker='o', label=f'Size {size}')
     
-    heatmap_data = heatmap_data.T
-    heatmap_data.columns = [f"Day-{i}" for i in filtered_periods]
-    heatmap_data.index = [f"{holdout_by_location.get(size, 0):.2f}%" for size in sorted_sizes]
-    heatmap_data.index.name = "Holdout (%)"
-
-    mask = mask.T
-    mask.columns = [f"Day-{i}" for i in filtered_periods]
-    mask.index = [f"{holdout_by_location.get(size, 0):.2f}%" for size in sorted_sizes]
-
-    
-    cmap = sns.color_palette("RdYlGn_r", as_cmap=True)
-    cmap.set_bad("lightgrey")
-
-    
-    plt.figure(figsize=(12, 8))
-    sns.heatmap(
-        heatmap_data,
-        annot=True,
-        fmt=".2f",
-        cmap=cmap,
-        mask=mask,
-        cbar_kws={'label': 'MDE (%)'},
-        linewidths=0.5,
-        linecolor='black'
-    )
-    plt.title(title, fontsize=16)
-    plt.xlabel("Treatment Periods")
-    plt.ylabel("Holdout (%)")
-    plt.xticks(rotation=45)
-    plt.tight_layout()
+    plt.xlabel('Treatment Period Length')
+    plt.ylabel('Minimum Detectable Effect (MDE)')
+    plt.title('MDE by Treatment Group Size and Period Length')
+    plt.legend()
+    plt.grid(True)
     plt.show()
-
 
 
 def print_locations(geo_test, holdout_percentage=None, num_locations=None):
