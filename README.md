@@ -1,3 +1,32 @@
-# murray
----
-Murray is a package that enables incrementality testing, allowing you to generate a heatmap of Minimum Detectable Effects (MDE) across different configurations of holdouts and periods. This provides a comprehensive view and simplifies the selection of optimal treatment states. Additionally, Murray allows you to generate impact graphs and metrics for the constructed counterfactual.
+# Murray
+
+Murray is a Python package for geographic incrementality testing that helps determine the true lift of marketing campaigns through advanced synthetic control methods. It generates heatmaps of Minimum Detectable Effects (MDE) across different configurations to optimize treatment selection, and provides impact analysis through counterfactual modeling.
+
+## Installation
+
+You can install Murray using pip:
+
+```bash
+pip install murray
+```
+
+# Prepare your data
+```python
+data = pd.DataFrame({
+'time': [...], # timestamps
+'location': [...], # location identifiers
+'Y': [...] # target metric values
+})
+```
+
+# Run analysis
+```python
+results = run_geo_analysis(
+data=data,
+excluyed_states=[],
+minimum_holdout_percentage=70,
+nivel_significancia=0.05,
+deltas_range=(0.01, 0.20, 0.01),
+periodos_range=(4, 13, 1)
+)
+```
