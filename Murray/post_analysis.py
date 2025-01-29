@@ -81,7 +81,7 @@ def post_analysis(data_input, start_treatment,end_treatment,treatment_group,lift
 
         print(f'Percentage Lift: {round(percenge_lift,2)} %')
         print(f'P Value: {p_value}')
-        #print(f'Power: {power}')
+        
 
         return y_lift,predictions
 
