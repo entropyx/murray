@@ -27,6 +27,11 @@ def select_treatments(similarity_matrix, treatment_size, excluded_states=set()):
     Returns:
         list: A list of unique combinations, each combination being a list of states.
     """
+    missing_states = [state for state in excluded_states if state not in similarity_matrix.index or state not in similarity_matrix.columns]
+    
+    if missing_states:
+        raise KeyError(f"The following states are not present in the similarity matrix: {missing_states}")
+    
     # Remove excluded states from both rows and columns
     similarity_matrix_filtered = similarity_matrix.loc[
         ~similarity_matrix.index.isin(excluded_states),
@@ -36,7 +41,7 @@ def select_treatments(similarity_matrix, treatment_size, excluded_states=set()):
     # Verify that the treatment size is valid
     if treatment_size > similarity_matrix_filtered.shape[1]:
         raise ValueError(
-            f"El tamaño del tratamiento ({treatment_size}) excede el número de columnas disponibles "
+            f"The treatment size ({treatment_size}) exceeds the available number of columns "
             f"({similarity_matrix_filtered.shape[1]})."
         )
 
@@ -52,14 +57,13 @@ def select_treatments(similarity_matrix, treatment_size, excluded_states=set()):
     combinaciones = set()
 
     while len(combinaciones) < n_combinaciones:
-        # Random selection of columns
         sample_columns = np.random.choice(
             similarity_matrix_filtered.columns,
             size=treatment_size,
             replace=False
         )
 
-        # Sort and convert to tuple for uniqueness
+        
         sample_group = tuple(sorted(sample_columns))
         combinaciones.add(sample_group)
 
@@ -166,14 +170,14 @@ class SyntheticControl(BaseEstimator, RegressorMixin):
         return X @ self.w_, self.w_
 
 
-def BetterGroups(similarity_matrix, holdout, excluded_states, data, correlation_matrix,min_holdout_real=70):
+def BetterGroups(similarity_matrix, excluded_states, data, correlation_matrix,min_holdout=70):
     """
     Simulates possible treatment groups and evaluates their performance.
 
     Parameters:
         similarity_matrix (pd.DataFrame): Similarity matrix between locations.
         n_combinaciones (int): Number of unique combinations of treatment groups to generate.
-        holdout (float): Percentage of data to reserve as holdout (untreated).
+        min_holdout (float): minimum percentage of data to reserve as holdout (untreated).
         excluded_states (list): List of states to exclude from treatment combinations.
         data (pd.DataFrame): Dataset with columns 'time', 'location', and 'Y'.
         correlation_matrix (pd.DataFrame): Correlation matrix between locations.
@@ -183,8 +187,7 @@ def BetterGroups(similarity_matrix, holdout, excluded_states, data, correlation_
               Each entry contains the best treatment group, control group, MAE,
               actual target metrics, predictions, weights, and holdout percentage.
     """
-    results_by_size = {}
-    max_percentage = 1 - holdout  
+    results_by_size = {}  
     no_locations = int(len(data['location'].unique())) 
     max_group_size = round(no_locations * 0.5)  
     min_elements_in_treatment = round(no_locations * 0.2)
@@ -192,28 +195,28 @@ def BetterGroups(similarity_matrix, holdout, excluded_states, data, correlation_
     def smape(A, F):
       return 100/len(A) * np.sum(2 * np.abs(F - A) / (np.abs(A) + np.abs(F)))
 
-    # Generate possible treatment group combinations
+    
     total_Y = data['Y'].sum()
     possible_groups = []
     for size in range(min_elements_in_treatment, max_group_size + 1):
         groups = select_treatments(similarity_matrix, size, excluded_states)
         possible_groups.extend(groups)
 
-    # If no possible combinations exist, return None
+    
     if not possible_groups:
         return None
 
-    # Function to evaluate each treatment group
+    
     def evaluate_group(treatment_group):
         treatment_Y = data[data['location'].isin(treatment_group)]['Y'].sum()
         holdout_percentage = (1 - (treatment_Y / total_Y)) * 100
 
 
         # Filter based on the minimum holdout percentage
-        if holdout_percentage < min_holdout_real:
+        if holdout_percentage < min_holdout:
             return None  
 
-        # Select a control group 
+        
         control_group = select_controls(
             correlation_matrix=correlation_matrix,
             treatment_group=treatment_group,
@@ -249,14 +252,14 @@ def BetterGroups(similarity_matrix, holdout, excluded_states, data, correlation_
         X_train, X_test = X_scaled[:split_index], X_scaled[split_index:]
         y_train, y_test = y_scaled[:split_index], y_scaled[split_index:]
 
-        # Fit model
+        
         model = SyntheticControl()
         model.fit(X_train, y_train)
 
-        # Predictions
+        
         predictions_val, weights = model.predict(X_test)
 
-        # Generate counterfactual
+        
         contrafactual_train = (weights @ X_train.T).reshape(-1, 1)
         contrafactual_test = (weights @ X_test.T).reshape(-1, 1)
         contrafactual_full = np.vstack((contrafactual_train, contrafactual_test))
@@ -266,10 +269,10 @@ def BetterGroups(similarity_matrix, holdout, excluded_states, data, correlation_
         predictions = contrafactual_full_original.flatten()
 
 
-        # Completed real serie
+        
         y_original = scaler_y.inverse_transform(y_scaled).flatten()
 
-        #Metrics
+        
         MAPE = np.mean(np.abs((y_original - predictions) / (y_original + 1e-10))) * 100
         SMAPE = smape(y_original, predictions)
 
@@ -290,7 +293,7 @@ def BetterGroups(similarity_matrix, holdout, excluded_states, data, correlation_
         best_results = [result for result in results if result is not None and len(result[0]) == size]
 
         if best_results:
-            # Select better counterfacuales
+            
             best_result = min(best_results, key=lambda x: (x[2], -x[3])) 
             best_treatment_group, best_control_group, best_MAPE, best_SMAPE, y, predictions, weights = best_result
 
@@ -315,41 +318,41 @@ def BetterGroups(similarity_matrix, holdout, excluded_states, data, correlation_
 
 
 
-def aplicar_lift_periodo(y, delta, inicio_tratamiento, fin_tratamiento):
+def apply_lift(y, delta, start_treatment, end_treatment):
     """
     Applies a lift (delta) to a specific period of the time series.
 
     Args:
         y (numpy array or pandas series): Time series data.
         delta (float): Percentage lift to apply.
-        inicio_tratamiento (int): Start index of the treatment period.
-        fin_tratamiento (int): End index of the treatment period.
+        start_treatment (int): Start index of the treatment period.
+        end_treatment (int): End index of the treatment period.
 
     Returns:
         numpy array or pandas series: Adjusted series with the applied lift.
     """
     y_with_lift = y.astype(float).copy()
-    y_with_lift[inicio_tratamiento:fin_tratamiento] *= (1 + delta)
+    y_with_lift[start_treatment:end_treatment] *= (1 + delta)
     return y_with_lift
 
-def calcular_conformidad(y_real, y_control, inicio_tratamiento, fin_tratamiento):
+def calculate_conformity(y_real, y_control, start_treatment, end_treatment):
     """
     Calculates the conformity between real and control data for conformal inference.
 
     Args:
         y_real (numpy array): Actual target metrics.
         y_control (numpy array): Control metrics.
-        inicio_tratamiento (int): Start index of the treatment period.
-        fin_tratamiento (int): End index of the treatment period.
+        start_treatment (int): Start index of the treatment period.
+        end_treatment (int): End index of the treatment period.
 
     Returns:
         float: Calculated conformity.
     """
-    conformidad = np.mean(y_real[inicio_tratamiento:fin_tratamiento]) - \
-                  np.mean(y_control[inicio_tratamiento:fin_tratamiento])
+    conformidad = np.mean(y_real[start_treatment:end_treatment]) - \
+                  np.mean(y_control[start_treatment:end_treatment])
     return conformidad
 
-def simular_poder(y_real, y_control, delta, periodo, n_permutaciones=1000, nivel_significancia=0.05, tipo_inferencia="iid", tamano_bloque=None):
+def simulate_power(y_real, y_control, delta, period, n_permutaciones=1000, significance_level=0.05, inference_type="iid", size_block=None):
     """
     Simulates statistical power using conformal inference and returns the adjusted series.
 
@@ -357,27 +360,27 @@ def simular_poder(y_real, y_control, delta, periodo, n_permutaciones=1000, nivel
         y_real (numpy array): Actual target metrics.
         y_control (numpy array): Control metrics.
         delta (float): Effect size applied.
-        periodo (int): Duration of the treatment period.
+        period (int): Duration of the treatment period.
         n_permutaciones (int): Number of permutations.
-        nivel_significancia (float): Significance level.
-        tipo_inferencia (str): Type of conformal inference ("iid" or "block").
-        tamano_bloque (int): Size of blocks for block shuffling (if applicable).
+        significance_level (float): Significance level.
+        inference_type (str): Type of conformal inference ("iid" or "block").
+        size_block (int): Size of blocks for block shuffling (if applicable).
 
     Returns:
         tuple: Delta, statistical power, and the adjusted series with the applied effect.
     """
 
-    inicio_tratamiento = len(y_real) - periodo
-    fin_tratamiento = inicio_tratamiento + periodo
-    y_real_ajustado = aplicar_lift_periodo(y_real, delta, inicio_tratamiento, fin_tratamiento)
-    conformidad_observada = calcular_conformidad(y_real_ajustado, y_control, inicio_tratamiento, fin_tratamiento)
+    start_treatment = len(y_real) - period
+    end_treatment = start_treatment + period
+    y_with_lift = apply_lift(y_real, delta, start_treatment, end_treatment)
+    conformidad_observada = calculate_conformity(y_with_lift, y_control,start_treatment, end_treatment)
     combined = np.concatenate([y_real, y_control])
     conformidades_nulas = []
 
     for _ in range(n_permutaciones):
-        if tipo_inferencia == "iid":
+        if inference_type == "iid":
             np.random.shuffle(combined)
-        elif tipo_inferencia == "block":
+        elif inference_type == "block":
             if tamano_bloque is None:
                 tamano_bloque = max(1, len(combined) // 10)
             for i in range(0, len(combined), tamano_bloque):
@@ -386,16 +389,16 @@ def simular_poder(y_real, y_control, delta, periodo, n_permutaciones=1000, nivel
         perm_treatment = combined[:len(y_real)]
         perm_control = combined[len(y_real):]
 
-        conformidad_perm = calcular_conformidad(
-            perm_treatment, perm_control, inicio_tratamiento, fin_tratamiento)
+        conformidad_perm = calculate_conformity(
+            perm_treatment, perm_control, start_treatment, end_treatment)
         conformidades_nulas.append(conformidad_perm)
 
     p_value = np.mean(np.abs(conformidades_nulas) >= np.abs(conformidad_observada))
-    poder = np.mean(p_value < nivel_significancia)
+    power = np.mean(p_value < significance_level)
 
-    return delta, poder, y_real_ajustado
+    return delta, power, y_with_lift
 
-def run_simulation(delta, y_real, y_control, period, n_permutaciones, nivel_significancia, tipo_inferencia="iid", tamano_bloque=None):
+def run_simulation(delta, y_real, y_control, period, n_permutaciones, significance_level, inference_type="iid", size_block=None):
     """
     Wrapper function to run a single simulation of statistical power.
 
@@ -405,33 +408,33 @@ def run_simulation(delta, y_real, y_control, period, n_permutaciones, nivel_sign
         y_control (numpy array): Control metrics.
         period (int): Treatment period duration.
         n_permutaciones (int): Number of permutations.
-        nivel_significancia (float): Significance level.
-        tipo_inferencia (str): Type of conformal inference ("iid" or "block").
-        tamano_bloque (int): Size of blocks for block shuffling (if applicable).
+        significance_level (float): Significance level.
+        inference_type (str): Type of conformal inference ("iid" or "block").
+        size_block (int): Size of blocks for block shuffling (if applicable).
 
     Returns:
         tuple: Simulation results including delta, power, and adjusted series.
     """
-    return simular_poder(
+    return simulate_power(
         y_real, y_control, delta, period,
         n_permutaciones=n_permutaciones,
-        nivel_significancia=nivel_significancia,
-        tipo_inferencia=tipo_inferencia,
-        tamano_bloque=tamano_bloque
+        significance_level=significance_level,
+        inference_type=inference_type,
+        size_block=size_block
     )
 
-def evaluar_sensibilidad_periodos(results_by_size, deltas, periodos, n_permutaciones, nivel_significancia=0.05, tipo_inferencia="iid", tamano_bloque=None):
+def evaluate_sensitivity(results_by_size, deltas, periods, n_permutaciones, significance_level=0.05, inference_type="iid", size_block=None):
     """
     Evaluates sensitivity of results to different treatment periods and deltas using permutations.
 
     Args:
         results_by_size (dict): Results organized by sample size.
         deltas (list): List of delta values to evaluate.
-        periodos (list): List of treatment periods to evaluate.
+        periods (list): List of treatment periods to evaluate.
         n_permutaciones (int): Number of permutations.
-        nivel_significancia (float): Significance level.
-        tipo_inferencia (str): Type of conformal inference ("iid" or "block").
-        tamano_bloque (int): Size of blocks for block shuffling (if applicable).
+        significance_level (float): Significance level.
+        inference_type (str): Type of conformal inference ("iid" or "block").
+        size_block (int): Size of blocks for block shuffling (if applicable).
 
     Returns:
         dict: Sensitivity results by size and period.
@@ -440,7 +443,7 @@ def evaluar_sensibilidad_periodos(results_by_size, deltas, periodos, n_permutaci
     sensitivity_results = {}
     lift_series = {}
 
-    total_periods = sum(len(periodos) for _ in results_by_size)
+    total_periods = sum(len(periods) for _ in results_by_size)
     with tqdm(total=total_periods, desc="Evaluating groups", leave=True) as pbar:
         for size, result in results_by_size.items():
             if ('Actual Target Metric (y)' not in result or 'Predictions' not in result or
@@ -453,16 +456,16 @@ def evaluar_sensibilidad_periodos(results_by_size, deltas, periodos, n_permutaci
 
             results_by_period = {}
 
-            for period in periodos:
+            for period in periods:
                 with ProcessPoolExecutor() as executor:
                     results = list(executor.map(run_simulation, deltas,
                                                 [y_real] * len(deltas),
                                                 [y_control] * len(deltas),
                                                 [period] * len(deltas),
                                                 [n_permutaciones] * len(deltas),
-                                                [nivel_significancia] * len(deltas),
-                                                [tipo_inferencia] * len(deltas),
-                                                [tamano_bloque] * len(deltas)))
+                                                [significance_level] * len(deltas),
+                                                [inference_type] * len(deltas),
+                                                [size_block] * len(deltas)))
 
                 statistical_power = [(res[0], res[1]) for res in results]
                 mde = next((delta for delta, power in statistical_power if power >= 0.85), None)
@@ -481,7 +484,7 @@ def evaluar_sensibilidad_periodos(results_by_size, deltas, periodos, n_permutaci
     return sensitivity_results, lift_series
 
 
-def run_geo_analysis(data, excluyed_states, minimum_holdout_percentage, nivel_significancia, deltas_range, periodos_range, n_permutaciones=5000):
+def run_geo_analysis(data, excluyed_states, minimum_holdout_percentage, significance_level, deltas_range, periods_range, n_permutaciones=5000):
     """
     Runs a complete geo analysis pipeline including market correlation, group optimization,
     sensitivity evaluation, and visualization of MDE results.
@@ -490,9 +493,9 @@ def run_geo_analysis(data, excluyed_states, minimum_holdout_percentage, nivel_si
         data (pd.DataFrame): Input data containing metrics for analysis.
         excluyed_states (list): List of states to exclude from the analysis.
         minimum_holdout_percentage (float): Minimum holdout percentage to ensure sufficient control.
-        nivel_significancia (float): Significance level for statistical testing.
+        significance_level (float): Significance level for statistical testing.
         deltas_range (tuple): Range of delta values to evaluate as (start, stop, step).
-        periodos_range (tuple): Range of treatment periods to evaluate as (start, stop, step).
+        periods_range (tuple): Range of treatment periods to evaluate as (start, stop, step).
         n_permutaciones (int, optional): Number of permutations for sensitivity evaluation. Default is 1000.
 
     Returns:
@@ -501,8 +504,8 @@ def run_geo_analysis(data, excluyed_states, minimum_holdout_percentage, nivel_si
             - "sensivility_results": Sensitivity results for evaluated deltas and periods.
             - "series_lifts": Adjusted series for each delta and period.
     """
-    # Generate list of periods and deltas for evaluation
-    periodos = list(np.arange(*periodos_range))
+    
+    periods = list(np.arange(*periods_range))
     deltas = np.arange(*deltas_range)
 
 
@@ -521,13 +524,13 @@ def run_geo_analysis(data, excluyed_states, minimum_holdout_percentage, nivel_si
 
 
     # Step 3: Evaluate sensitivity for different deltas and periods
-    sensivility_results, series_lifts = evaluar_sensibilidad_periodos(
-        simulation_results, deltas, periodos, n_permutaciones, nivel_significancia
+    sensivility_results, series_lifts = evaluate_sensitivity(
+        simulation_results, deltas, periods, n_permutaciones, significance_level
     )
 
 
     # Step 4: Generate MDE visualizations
-    plot_mde_results(simulation_results, sensivility_results, periodos)
+    plot_mde_results(simulation_results, sensivility_results, periods)
 
     # Convert series_lifts to numpy arrays
     for key, value in series_lifts.items():
