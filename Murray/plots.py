@@ -1,38 +1,41 @@
 import pandas as pd
 import numpy as np
-from matplotlib import style
 from matplotlib import pyplot as plt
 import seaborn as sns
 import matplotlib.dates as mdates
-from sklearn.metrics import mean_squared_error,mean_absolute_error,mean_absolute_percentage_error
+from sklearn.metrics import mean_absolute_percentage_error
 
 def plot_geodata(merged_data):
     """
     Plots a time-series line chart of conversions (Y) over time, grouped by location.
 
     Args:
-        merged_data : pandas.DataFrame
+        merged_data: pandas.DataFrame
             A DataFrame containing the following columns:
-            - 'time': Timestamps or dates .
-            - 'Y': Conversion value.
-            - 'location': Categorical column to group and differentiate lines by color.
+            - 'time': Timestamps or dates
+            - 'Y': Conversion value
+            - 'location': Categorical column to group and differentiate lines by color
     """
-
+    # Create figure with specified size
     plt.figure(figsize=(24, 10))
+    
+    # Plot time series lines
     sns.lineplot(x='time', y='Y', hue='location', data=merged_data, linewidth=1)
 
-    
-    ultimo_punto = merged_data.groupby('location').last().reset_index()
-    for _, row in ultimo_punto.iterrows():
-        plt.text(row['time'], row['Y'], row['location'], color='black', fontsize=12, ha='left', va='center')
+    # Add location labels at the end of each line
+    last_points = merged_data.groupby('location').last().reset_index()
+    for _, row in last_points.iterrows():
+        plt.text(row['time'], row['Y'], row['location'], 
+                color='black', fontsize=12, ha='left', va='center')
 
-    
+    # Format axes and labels
     plt.xlabel('Date', fontsize=12)
     plt.ylabel('Conversions', fontsize=12)
     plt.gca().xaxis.set_major_locator(mdates.MonthLocator())
     plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%b %Y'))
     plt.xticks(rotation=45)
     plt.legend([], frameon=False)
+    
     plt.show()
 
 def plot_metrics(geo_test):
@@ -45,8 +48,6 @@ def plot_metrics(geo_test):
     Returns:
         None: Displays plots for MAPE and SMAPE metrics by group size.
     """
-    def smape(A, F):
-        return 100 / len(A) * np.sum(2 * np.abs(F - A) / (np.abs(A) + np.abs(F)))
 
     metrics = {'Size': [], 'MAPE': [], 'SMAPE': []}
     results_by_size = geo_test['simulation_results']
@@ -56,25 +57,25 @@ def plot_metrics(geo_test):
         y = result['Actual Target Metric (y)']
         predictions = result['Predictions']
 
-        MAPE = mean_absolute_percentage_error(y, predictions)
-        SMAPE = smape(y, predictions)
+        mape = mean_absolute_percentage_error(y, predictions)
+        smape = 100/len(y) * np.sum(2 * np.abs(predictions - y) / (np.abs(y) + np.abs(predictions)))
 
         metrics['Size'].append(size)
-        metrics['MAPE'].append(MAPE)
-        metrics['SMAPE'].append(SMAPE)
+        metrics['MAPE'].append(mape)
+        metrics['SMAPE'].append(smape)
 
     # Plot MAPE and SMAPE metrics
-    fig, ax = plt.subplots(1, 2, figsize=(25, 6))
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(25, 6))
 
-    ax[0].plot(metrics['Size'], metrics['MAPE'], marker='o', color='b')
-    ax[0].set_title('MAPE by Group Size')
-    ax[0].set_xlabel('Group Size')
-    ax[0].set_ylabel('MAPE')
+    ax1.plot(metrics['Size'], metrics['MAPE'], marker='o', color='b')
+    ax1.set_title('MAPE by Group Size')
+    ax1.set_xlabel('Group Size')
+    ax1.set_ylabel('MAPE')
 
-    ax[1].plot(metrics['Size'], metrics['SMAPE'], marker='o', color='r')
-    ax[1].set_title('SMAPE by Group Size')
-    ax[1].set_xlabel('Group Size')
-    ax[1].set_ylabel('SMAPE')
+    ax2.plot(metrics['Size'], metrics['SMAPE'], marker='o', color='r')
+    ax2.set_title('SMAPE by Group Size')
+    ax2.set_xlabel('Group Size')
+    ax2.set_ylabel('SMAPE')
 
     plt.tight_layout()
     plt.show()
@@ -89,7 +90,6 @@ def plot_counterfactuals(geo_test):
     Returns:
         None: Displays plots for each group size showing counterfactuals.
     """
-
     results_by_size = geo_test['simulation_results']
 
     for size, result in results_by_size.items():
@@ -97,22 +97,22 @@ def plot_counterfactuals(geo_test):
         predictions = result['Predictions']
 
         plt.figure(figsize=(25, 6))
-        plt.plot(real_y, label="Actual (Treatment)", color='blue', linewidth=2)
-        plt.plot(predictions, label="Predicted (Counterfactual)", color='red', linestyle='--', linewidth=2)
-        plt.xlabel("Time")
-        plt.ylabel("Metric Value")
-        plt.title(f"Counterfactual for Group Size {size}")
+        plt.plot(real_y, label='Actual (Treatment)', color='blue', linewidth=2)
+        plt.plot(predictions, label='Predicted (Counterfactual)', color='red', 
+                linestyle='--', linewidth=2)
+        plt.xlabel('Time')
+        plt.ylabel('Metric Value')
+        plt.title(f'Counterfactual for Group Size {size}')
         plt.legend()
         plt.grid(True)
         plt.show()
 
 
-def plot_mde_results(simulation_results, sensitivity_results, periods):
+def plot_mde_results(sensitivity_results, periods):
     """
     Plots Minimum Detectable Effect (MDE) results.
     
     Args:
-        simulation_results (dict): Results from group optimization
         sensitivity_results (dict): Results from sensitivity analysis
         periods (list): List of periods evaluated
     """
@@ -122,7 +122,7 @@ def plot_mde_results(simulation_results, sensitivity_results, periods):
         mde_values = []
         for period in periods:
             if period in period_results:
-                mde = period_results[period]['MDE']
+                mde = period_results[period]['MDE'] 
                 mde_values.append(mde if mde is not None else np.nan)
             else:
                 mde_values.append(np.nan)
@@ -184,7 +184,6 @@ def print_weights(geo_test, holdout_percentage=None, num_locations=None):
     control_weights = []
     control_locations = []
 
-
     for size, result in results_by_size.items():
         current_holdout = result['Holdout Percentage'].round(2)
         if holdout_percentage is not None and current_holdout == holdout_percentage:
@@ -195,8 +194,8 @@ def print_weights(geo_test, holdout_percentage=None, num_locations=None):
             control_locations.extend(result['Control Group'])
 
     weights = pd.DataFrame({
-        "Control Location": control_locations,
-        "Weights": control_weights
+        'Control Location': control_locations,
+        'Weights': control_weights
     })
 
     weights = weights.sort_values(by="Weights", ascending=False).reset_index(drop=True)
