@@ -5,3 +5,4 @@ cvxpy
 tqdm
 matplotlib
 streamlit
+seaborn
