@@ -16,27 +16,28 @@ def plot_geodata(merged_data):
             - 'Y': Conversion value
             - 'location': Categorical column to group and differentiate lines by color
     """
-    # Create figure with specified size
-    plt.figure(figsize=(24, 10))
+    # ✅ Create figure and axis explicitly
+    fig, ax = plt.subplots(figsize=(24, 10))  
     
     # Plot time series lines
-    sns.lineplot(x='time', y='Y', hue='location', data=merged_data, linewidth=1)
+    sns.lineplot(x='time', y='Y', hue='location', data=merged_data, linewidth=1, ax=ax)
 
     # Add location labels at the end of each line
     last_points = merged_data.groupby('location').last().reset_index()
     for _, row in last_points.iterrows():
-        plt.text(row['time'], row['Y'], row['location'], 
+        ax.text(row['time'], row['Y'], row['location'], 
                 color='black', fontsize=12, ha='left', va='center')
 
     # Format axes and labels
-    plt.xlabel('Date', fontsize=12)
-    plt.ylabel('Conversions', fontsize=12)
-    plt.gca().xaxis.set_major_locator(mdates.MonthLocator())
-    plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%b %Y'))
+    ax.set_xlabel('Date', fontsize=12)
+    ax.set_ylabel('Conversions', fontsize=12)
+    ax.xaxis.set_major_locator(mdates.MonthLocator())
+    ax.xaxis.set_major_formatter(mdates.DateFormatter('%b %Y'))
     plt.xticks(rotation=45)
-    plt.legend([], frameon=False)
-    
-    plt.show()
+    ax.legend([], frameon=False)
+
+    # ✅ Return the figure instead of plt.show()
+    return fig
 
 def plot_metrics(geo_test):
     """
@@ -108,33 +109,85 @@ def plot_counterfactuals(geo_test):
         plt.show()
 
 
-def plot_mde_results(sensitivity_results, periods):
+def plot_mde_results(results_by_size, sensitivity_results, periods, title="MDE Heatmap"):
     """
-    Plots Minimum Detectable Effect (MDE) results.
-    
+    Generates a heatmap for the MDE (Minimum Detectable Effect) values, compatible with Streamlit.
+
     Args:
-        sensitivity_results (dict): Results from sensitivity analysis
-        periods (list): List of periods evaluated
+        results_by_size (dict): Dictionary with data containing holdout percentages by size.
+        sensitivity_results (dict): Dictionary with sensitivity results.
+        periods (list): List of evaluated periods.
+        title (str): Title of the plot.
+
+    Returns:
+        fig: Matplotlib figure to be displayed in Streamlit.
     """
-    plt.figure(figsize=(12, 6))
-    
-    for size, period_results in sensitivity_results.items():
-        mde_values = []
+    # Extract holdout percentages and sort sizes by holdout (descending)
+    holdout_by_location = {
+        size: data['Holdout Percentage']
+        for size, data in results_by_size.items()
+    }
+    sorted_sizes = sorted(holdout_by_location.keys(), key=lambda x: holdout_by_location[x], reverse=True)
+
+    # Create the heatmap structure
+    heatmap_data = pd.DataFrame()
+    mask = pd.DataFrame()  # Mask for cells without data
+
+    for size in sorted_sizes:
+        row = []
+        row_mask = []
+        period_results = sensitivity_results.get(size, {})
         for period in periods:
             if period in period_results:
-                mde = period_results[period]['MDE'] 
-                mde_values.append(mde if mde is not None else np.nan)
+                mde = period_results[period].get('MDE', None)
+                if mde is not None:
+                    row.append(mde)
+                    row_mask.append(False)  # Do not mask
+                else:
+                    row.append(None)
+                    row_mask.append(True)  # Mask
             else:
-                mde_values.append(np.nan)
-        
-        plt.plot(periods, mde_values, marker='o', label=f'Size {size}')
-    
-    plt.xlabel('Treatment Period Length')
-    plt.ylabel('Minimum Detectable Effect (MDE)')
-    plt.title('MDE by Treatment Group Size and Period Length')
-    plt.legend()
-    plt.grid(True)
-    plt.show()
+                row.append(None)
+                row_mask.append(True)  # Mask
+        heatmap_data[size] = row
+        mask[size] = row_mask
+
+    # Adjust indices and columns
+    heatmap_data = heatmap_data.T
+    heatmap_data.columns = [f"Day-{i}" for i in periods]
+    heatmap_data.index = [f"{holdout_by_location.get(size, 0):.2f}%" for size in sorted_sizes]
+    heatmap_data.index.name = "Holdout (%)"
+
+    mask = mask.T
+    mask.columns = [f"Day-{i}" for i in periods]
+    mask.index = [f"{holdout_by_location.get(size, 0):.2f}%" for size in sorted_sizes]
+
+    # Create a custom colormap for masked cells
+    cmap = sns.color_palette("RdYlGn_r", as_cmap=True)
+    cmap.set_bad("lightgrey")
+
+    # ✅ Create figure and axis explicitly
+    fig, ax = plt.subplots(figsize=(12, 8))
+    sns.heatmap(
+        heatmap_data,
+        annot=True,
+        fmt=".2f",
+        cmap=cmap,
+        mask=mask,
+        cbar_kws={'label': 'MDE (%)'},
+        linewidths=0.5,
+        linecolor='black',
+        ax=ax  # ✅ Pass the axis to seaborn
+    )
+
+    ax.set_title(title, fontsize=16)
+    ax.set_xlabel("Treatment Periods")
+    ax.set_ylabel("Holdout (%)")
+    plt.xticks(rotation=45)
+    plt.yticks(rotation=0)
+    plt.tight_layout()
+
+    return fig 
 
 
 def print_locations(geo_test, holdout_percentage=None, num_locations=None):
@@ -269,7 +322,6 @@ def plot_impact(geo_test, periodo_especifico, top_n):
                 print(f"DEBUG: No y_real found for combination {comb}.")
                 continue
 
-            
             serie_tratamiento = series_lifts.get(comb, [None])[0]
 
             

@@ -1,7 +1,6 @@
 import concurrent.futures
 from concurrent.futures import ProcessPoolExecutor
 from math import comb
-
 import numpy as np
 import cvxpy as cp
 from tqdm import tqdm
@@ -9,9 +8,9 @@ from sklearn.preprocessing import MinMaxScaler
 from sklearn.model_selection import train_test_split
 from sklearn.base import BaseEstimator, RegressorMixin
 from sklearn.utils.validation import check_is_fitted
-
-from plots import plot_mde_results
-from auxiliary import market_correlations
+from .plots import plot_mde_results
+from .auxiliary import market_correlations
+import streamlit as st
 
 def select_treatments(similarity_matrix, treatment_size, excluded_states=set()):
     """
@@ -192,7 +191,7 @@ class SyntheticControl(BaseEstimator, RegressorMixin):
         return X @ self.w_, self.w_
 
 
-def BetterGroups(similarity_matrix, excluded_states, data, correlation_matrix, min_holdout=70):
+def BetterGroups(similarity_matrix, excluded_states, data, correlation_matrix, min_holdout=70,progress_updater=None, status_updater=None):
     """
     Simulates possible treatment groups and evaluates their performance.
 
@@ -282,11 +281,21 @@ def BetterGroups(similarity_matrix, excluded_states, data, correlation_matrix, m
         return (treatment_group, control_group, MAPE, SMAPE, y_original, predictions, weights)
 
         #----------------------------------------------------------------------------------
+    total_groups = len(possible_groups)
 
     with concurrent.futures.ThreadPoolExecutor() as executor:
-        results = list(
-            tqdm(executor.map(evaluate_group, possible_groups), total=len(possible_groups), desc="Finding the best groups")
-        )
+        results = []
+        for idx, result in enumerate(executor.map(evaluate_group, possible_groups)):
+            results.append(result)
+            
+            
+            if progress_updater:
+                progress_updater.progress((idx + 1) / total_groups)
+            
+            
+            if status_updater:
+                status_updater.text(f"Finding the best groups: {int((idx + 1) / total_groups * 100)}% complete ⏳")
+
 
     total_Y = data['Y'].sum()
 
@@ -424,7 +433,7 @@ def run_simulation(delta, y_real, y_control, period, n_permutaciones, significan
         size_block=size_block
     )
 
-def evaluate_sensitivity(results_by_size, deltas, periods, n_permutaciones, significance_level=0.05, inference_type="iid", size_block=None):
+def evaluate_sensitivity(results_by_size, deltas, periods, n_permutaciones, significance_level=0.05, inference_type="iid",  size_block=None, progress_bar=None, status_text=None):
     """
     Evaluates sensitivity of results to different treatment periods and deltas using permutations.
 
@@ -443,52 +452,57 @@ def evaluate_sensitivity(results_by_size, deltas, periods, n_permutaciones, sign
     """
     sensitivity_results = {}
     lift_series = {}
+    
 
-    total_periods = sum(len(periods) for _ in results_by_size)
-    with tqdm(total=total_periods, desc="Evaluating groups", leave=True) as pbar:
-        for size, result in results_by_size.items():
-            if ('Actual Target Metric (y)' not in result or 
-                'Predictions' not in result or
-                result['Actual Target Metric (y)'] is None or 
-                result['Predictions'] is None):
-                print(f"Skipping size {size} due to missing or null values")
-                continue
+    total_steps = sum(len(periods) * len(deltas)  for _ in results_by_size)
+    step =  0
 
-            y_real = np.array(result['Actual Target Metric (y)']).flatten()
-            y_control = np.array(result['Predictions']).flatten()
+    for size, result in results_by_size.items():
+        if ('Actual Target Metric (y)' not in result or 
+            'Predictions' not in result or
+            result['Actual Target Metric (y)'] is None or 
+            result['Predictions'] is None):
+            print(f"Skipping size {size} due to missing or null values")
+            continue
 
-            results_by_period = {}
+        y_real = np.array(result['Actual Target Metric (y)']).flatten()
+        y_control = np.array(result['Predictions']).flatten()
 
-            for period in periods:
-                with ProcessPoolExecutor() as executor:
-                    results = list(executor.map(run_simulation, 
-                                            deltas,
-                                             [y_real] * len(deltas),
-                                             [y_control] * len(deltas),
-                                             [period] * len(deltas),
-                                             [n_permutaciones] * len(deltas),
-                                             [significance_level] * len(deltas),
-                                             [inference_type] * len(deltas),
-                                             [size_block] * len(deltas)))
+        results_by_period = {}
 
-                statistical_power = [(res[0], res[1]) for res in results]
-                mde = next((delta for delta, power in statistical_power if power >= 0.85), None)
+        for period in periods:
+            results = []  
 
-                for delta, _, adjusted_series in results:
-                    lift_series[(size, delta, period)] = adjusted_series
+            
+            for delta in deltas:
+                res = run_simulation(delta, y_real, y_control, period, n_permutaciones, significance_level, inference_type, size_block)
+                results.append(res)
 
-                results_by_period[period] = {
-                    'Statistical Power': statistical_power,
-                    'MDE': mde
-                }
-                pbar.update(1)
+                
+                step += 1
+                if progress_bar:
+                    progress_bar.progress(min(step / total_steps,1.0))
+                if status_text:
+                    status_text.text(f"Evaluating griups: {int((step / total_steps) * 100)}% complete ⏳")
 
-            sensitivity_results[size] = results_by_period
+            
+            statistical_power = [(res[0], res[1]) for res in results]
+            mde = next((delta for delta, power in statistical_power if power >= 0.85), None)
+
+            for delta, _, adjusted_series in results:
+                lift_series[(size, delta, period)] = adjusted_series
+
+            results_by_period[period] = {
+                'Statistical Power': statistical_power,
+                'MDE': mde
+            }
+
+        sensitivity_results[size] = results_by_period
 
     return sensitivity_results, lift_series
 
 
-def run_geo_analysis(data, excluded_states, minimum_holdout_percentage, significance_level, deltas_range, periods_range, n_permutaciones=5000):
+def run_geo_analysis(data, excluded_states, minimum_holdout_percentage, significance_level, deltas_range, periods_range,progress_bar_1,status_text_1,progress_bar_2,status_text_2, n_permutaciones=5000):
     """
     Runs a complete geo analysis pipeline including market correlation, group optimization,
     sensitivity evaluation, and visualization of MDE results.
@@ -508,6 +522,7 @@ def run_geo_analysis(data, excluded_states, minimum_holdout_percentage, signific
             - "sensitivity_results": Sensitivity results for evaluated deltas and periods.
             - "series_lifts": Adjusted series for each delta and period.
     """
+
     # Generate ranges for analysis
     periods = list(np.arange(*periods_range))
     deltas = np.arange(*deltas_range)
@@ -518,19 +533,24 @@ def run_geo_analysis(data, excluded_states, minimum_holdout_percentage, signific
     # Step 2: Find the best groups for control and treatment
     simulation_results = BetterGroups(
         similarity_matrix=correlation_matrix,
-        holdout=minimum_holdout_percentage,
+        min_holdout=minimum_holdout_percentage,
         excluded_states=excluded_states,
         data=data,
-        correlation_matrix=correlation_matrix
+        correlation_matrix=correlation_matrix,
+        progress_updater=progress_bar_1,
+        status_updater=status_text_1
     )
 
     # Step 3: Evaluate sensitivity for different deltas and periods
     sensitivity_results, series_lifts = evaluate_sensitivity(
-        simulation_results, deltas, periods, n_permutaciones, significance_level
+        simulation_results, deltas, periods, n_permutaciones, significance_level,progress_bar=progress_bar_2, status_text=status_text_2
     )
 
     # Step 4: Generate MDE visualizations
-    plot_mde_results(simulation_results, sensitivity_results, periods)
+    st.text("Result: ")
+
+    fig = plot_mde_results(simulation_results,sensitivity_results, periods)
+    st.pyplot(fig)
 
     # Convert series_lifts to numpy arrays
     for key, value in series_lifts.items():
