@@ -1,10 +1,6 @@
 import streamlit as st
 
 
-
-
-
-
 Pages = {
     "Murray": [
         st.Page("experimental_design.py", title="Experimental design"),
