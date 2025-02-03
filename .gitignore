@@ -1,5 +1,9 @@
 /murray-env/
 venv/
-__pycache__/
+**/__pycache__/
 *.pyc
 *.pyo
+*.pyd
+*.pyw
+*.pyz
+*.pdf
