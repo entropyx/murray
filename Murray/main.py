@@ -1,15 +1,12 @@
 import concurrent.futures
 from concurrent.futures import ProcessPoolExecutor
 from math import comb
-
 import numpy as np
 import cvxpy as cp
 from tqdm import tqdm
 from sklearn.preprocessing import MinMaxScaler
-from sklearn.model_selection import train_test_split
 from sklearn.base import BaseEstimator, RegressorMixin
 from sklearn.utils.validation import check_is_fitted
-
 from plots import plot_mde_results
 from auxiliary import market_correlations
 
@@ -31,20 +28,20 @@ def select_treatments(similarity_matrix, treatment_size, excluded_states=set()):
     if missing_states:
         raise KeyError(f"The following states are not present in the similarity matrix: {missing_states}")
     
-    # Remove excluded states from both rows and columns
+    
     similarity_matrix_filtered = similarity_matrix.loc[
         ~similarity_matrix.index.isin(excluded_states),
         ~similarity_matrix.columns.isin(excluded_states)
     ]
 
-    # Verify that the treatment size is valid
+    
     if treatment_size > similarity_matrix_filtered.shape[1]:
         raise ValueError(
             f"The treatment size ({treatment_size}) exceeds the available number of columns "
             f"({similarity_matrix_filtered.shape[1]})."
         )
 
-    # Maximum number of combinations
+    
     n = similarity_matrix_filtered.shape[1]
     r = treatment_size
     max_combinations = comb(n, r)
@@ -229,7 +226,7 @@ def BetterGroups(similarity_matrix, excluded_states, data, correlation_matrix, m
         treatment_Y = data[data['location'].isin(treatment_group)]['Y'].sum()
         holdout_percentage = (1 - (treatment_Y / total_Y)) * 100
 
-        # Filter based on the minimum holdout percentage
+        
         if holdout_percentage < min_holdout:
             return None
 
@@ -249,8 +246,6 @@ def BetterGroups(similarity_matrix, excluded_states, data, correlation_matrix, m
         model = SyntheticControl()
 
         #----------------------------------------------------------------------------------
-
-        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
         scaler_x = MinMaxScaler()
         scaler_y = MinMaxScaler()
@@ -508,7 +503,7 @@ def run_geo_analysis(data, excluded_states, minimum_holdout_percentage, signific
             - "sensitivity_results": Sensitivity results for evaluated deltas and periods.
             - "series_lifts": Adjusted series for each delta and period.
     """
-    # Generate ranges for analysis
+    
     periods = list(np.arange(*periods_range))
     deltas = np.arange(*deltas_range)
 
@@ -532,11 +527,11 @@ def run_geo_analysis(data, excluded_states, minimum_holdout_percentage, signific
     # Step 4: Generate MDE visualizations
     plot_mde_results(simulation_results, sensitivity_results, periods)
 
-    # Convert series_lifts to numpy arrays
+    
     for key, value in series_lifts.items():
         series_lifts[key] = [np.array(value)]
 
-    # Return the complete analysis results
+    
     return {
         "simulation_results": simulation_results,
         "sensitivity_results": sensitivity_results,
