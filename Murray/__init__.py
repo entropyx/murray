@@ -4,7 +4,6 @@ from .plots import (
     plot_metrics,
     plot_counterfactuals,
     plot_mde_results,
-    print_locations,
     print_weights,
     plot_impact
 )
