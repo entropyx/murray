@@ -108,32 +108,87 @@ def plot_counterfactuals(geo_test):
         plt.show()
 
 
-def plot_mde_results(sensitivity_results, periods):
+def plot_mde_results(results_by_size,sensitivity_results, periods, title="MDE Heatmap"):
     """
-    Plots Minimum Detectable Effect (MDE) results.
-    
+    Generates a heatmap for the MDE (Minimum Detectable Effect) values considering only specific intervals.
+
     Args:
-        sensitivity_results (dict): Results from sensitivity analysis
-        periods (list): List of periods evaluated
+        sensitivity_results (dict): Dictionary with sensitivity results.
+        results_by_size (dict): Dictionary with data containing holdout percentages by size.
+        periods (list): List of evaluated periods.
+        title (str): Title of the plot.
+
+    Returns:
+        None: Displays the heatmap.
     """
-    plt.figure(figsize=(12, 6))
+
+
+    filtered_periods = periods
+
+
+    holdout_by_location = {
+        size: data['Holdout Percentage']
+        for size, data in results_by_size.items()
+    }
+
+    sorted_sizes = sorted(holdout_by_location.keys(), key=lambda x: holdout_by_location[x], reverse=True)
+
     
-    for size, period_results in sensitivity_results.items():
-        mde_values = []
-        for period in periods:
+    heatmap_data = pd.DataFrame()
+    mask = pd.DataFrame()  
+
+
+    for size in sorted_sizes:
+        row = []
+        row_mask = []
+        period_results = sensitivity_results.get(size, {})
+        for period in filtered_periods:
             if period in period_results:
-                mde = period_results[period]['MDE'] 
-                mde_values.append(mde if mde is not None else np.nan)
+                mde = period_results[period].get('MDE', None)
+                if mde is not None:
+                    row.append(mde)
+                    row_mask.append(False)  
+                else:
+                    row.append(None)
+                    row_mask.append(True)  
             else:
-                mde_values.append(np.nan)
-        
-        plt.plot(periods, mde_values, marker='o', label=f'Size {size}')
+                row.append(None)
+                row_mask.append(True) 
+        heatmap_data[size] = row
+        mask[size] = row_mask
+
     
-    plt.xlabel('Treatment Period Length')
-    plt.ylabel('Minimum Detectable Effect (MDE)')
-    plt.title('MDE by Treatment Group Size and Period Length')
-    plt.legend()
-    plt.grid(True)
+    heatmap_data = heatmap_data.T
+    heatmap_data.columns = [f"Day-{i}" for i in filtered_periods]
+    heatmap_data.index = [f"{holdout_by_location.get(size, 0):.2f}%" for size in sorted_sizes]
+    heatmap_data.index.name = "Holdout (%)"
+
+    mask = mask.T
+    mask.columns = [f"Day-{i}" for i in filtered_periods]
+    mask.index = [f"{holdout_by_location.get(size, 0):.2f}%" for size in sorted_sizes]
+
+    
+    cmap = sns.color_palette("RdYlGn_r", as_cmap=True)
+    cmap.set_bad("lightgrey")
+
+    
+    plt.figure(figsize=(12, 8))
+    sns.heatmap(
+        heatmap_data,
+        annot=True,
+        fmt=".2f",
+        cmap=cmap,
+        mask=mask,
+        cbar_kws={'label': 'MDE (%)'},
+        linewidths=0.5,
+        linecolor='black'
+    )
+    plt.title(title, fontsize=16)
+    plt.xlabel("Treatment Periods")
+    plt.ylabel("Holdout (%)")
+    plt.xticks(rotation=45)
+    plt.tight_layout()
+    plt.yticks(rotation=0)
     plt.show()
 
 
@@ -203,12 +258,12 @@ def print_weights(geo_test, holdout_percentage=None, num_locations=None):
     return weights
 
 
-def plot_impact(geo_test, periodo_especifico, top_n):
+def plot_impact(geo_test, specific_period, top_n):
         """
         Generates graphs for the top-N cases with the lowest MDE values in a specific period.
 
         Args:
-            results (dict): Dictionary with results including sensitivity, simulations, and treated series.
+            geo_test (dict): Dictionary with results including sensitivity, simulations, and treated series.
             specific_period (int): Period in which the MDE is to be analyzed.
             top_n (int): Number of cases with the lowest MDE to plot.
 
@@ -224,16 +279,18 @@ def plot_impact(geo_test, periodo_especifico, top_n):
         periodos = next(iter(sensibilidad_resultados.values())).keys()
 
         
-        if periodo_especifico not in periodos:
-            raise ValueError(f"The period {periodo_especifico} is not in the evaluated periods list.")
+        if specific_period not in periodos:
+            raise ValueError(f"The period {specific_period} is not in the evaluated periods list.")
 
         
+
         mde_holdout_pairs = []
         for size_key, resultados_por_periodo in sensibilidad_resultados.items():
-            if periodo_especifico in resultados_por_periodo:
-                mde = resultados_por_periodo[periodo_especifico].get('MDE', None)
+            if specific_period in resultados_por_periodo:
+                mde = resultados_por_periodo[specific_period].get('MDE', None)
 
                 
+
                 resultados_size = results_by_size.get(size_key, None)
                 holdout_percentage = resultados_size.get('Holdout Percentage', None) if resultados_size else None
 
@@ -249,17 +306,20 @@ def plot_impact(geo_test, periodo_especifico, top_n):
         
 
         for i, (mde, holdout_percentage, size_key) in enumerate(mde_holdout_pairs):
-            available_deltas = [delta for s, delta, period in series_lifts.keys() if s == size_key and period == periodo_especifico]
+            available_deltas = [delta for s, delta, period in series_lifts.keys() if s == size_key and period == specific_period]
+
 
             if not available_deltas:
-                print(f"DEBUG: No available deltas for size {size_key} and period {periodo_especifico}.")
+                print(f"DEBUG: No available deltas for size {size_key} and period {specific_period}.")
                 continue
+
 
             
             delta_specific = mde  
             closest_delta = min(available_deltas, key=lambda x: abs(x - delta_specific))
-            comb = (size_key, closest_delta, periodo_especifico)
+            comb = (size_key, closest_delta, specific_period)
             
+
 
             
             resultados_size = results_by_size.get(size_key, None)
@@ -278,7 +338,8 @@ def plot_impact(geo_test, periodo_especifico, top_n):
 
             
             diferencia_puntual = serie_tratamiento - y_real
-            efecto_acumulativo = ([0] * (len(serie_tratamiento) - periodo_especifico)) + (np.cumsum(diferencia_puntual[len(serie_tratamiento)-periodo_especifico:])).tolist()
+            efecto_acumulativo = ([0] * (len(serie_tratamiento) - specific_period)) + (np.cumsum(diferencia_puntual[len(serie_tratamiento)-specific_period:])).tolist()
+
 
 
             
@@ -287,26 +348,28 @@ def plot_impact(geo_test, periodo_especifico, top_n):
             # Panel 1: Observed data vs counterfactual prediction
             axes[0].plot(y_real, label='Control Group', linestyle='--', color='blue')
             axes[0].plot(serie_tratamiento, label='Treatment Group', linestyle='-', color='orange')
-            axes[0].axvspan(len(y_real) - periodo_especifico, len(y_real), color='gray', alpha=0.1, label='Treatment Period')
+            axes[0].axvspan(len(y_real) - specific_period, len(y_real), color='gray', alpha=0.1, label='Treatment Period')
             axes[0].set_title(f'Holdout: {holdout_percentage:.2f}% - MDE: {mde:.2f}')
             axes[0].set_ylabel('Original')
+            axes[0].yaxis.set_label_position('right')
             axes[0].legend()
             axes[0].grid()
 
             # Panel 2: Point difference
             axes[1].plot(diferencia_puntual, label='Point Difference (Causal Effect)', color='green')
             axes[1].axhline(0, color='black', linestyle='--', linewidth=1)  
-            axes[1].axvspan(len(y_real) - periodo_especifico, len(y_real), color='gray', alpha=0.1)
-            #axes[1].set_title('Point Difference (Treatment - Counterfactual)')
+            axes[1].axvspan(len(y_real) - specific_period, len(y_real), color='gray', alpha=0.1)
             axes[1].set_ylabel('Point Difference')
+            axes[1].yaxis.set_label_position('right')
             axes[1].grid()
+
 
             # Panel 3: Cumulative effect
             axes[2].plot(efecto_acumulativo, label='Cumulative Effect', color='red')
-            axes[2].axvspan(len(y_real) - periodo_especifico, len(y_real), color='gray', alpha=0.1)
-            #axes[2].set_title('Cumulative Effect of Treatment')
+            axes[2].axvspan(len(y_real) -   specific_period, len(y_real), color='gray', alpha=0.1)
             axes[2].set_xlabel('Days')
             axes[2].set_ylabel('Cumulative Effect')
+            axes[2].yaxis.set_label_position('right')
             axes[2].grid()
 
             
