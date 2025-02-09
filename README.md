@@ -1,8 +1,12 @@
 # Murray
 
-Here is located the documentation of Murray 
 
-### Command to run
+Here is located the documentation of Murray
+
+⚠️ **¡Important!** You need have intalled **node.js**.
+
+Command to run:
+
 ```
 npx docusaurus start
 ```
