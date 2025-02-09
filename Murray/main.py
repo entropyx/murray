@@ -156,7 +156,7 @@ class SyntheticControl(BaseEstimator, RegressorMixin):
         regularization_l2 = self.regularization_strength_l2 * cp.norm2(w)
 
         errors = X @ w - y
-        objective = cp.Minimize(self.squared_loss(errors) + regularization_l1 + regularization_l2)
+        objective = cp.Minimize(self.squared_loss(errors) + regularization_l2)
 
         # Constraints
         constraints = [cp.sum(w) == 1, w >= 0]
@@ -213,7 +213,9 @@ def BetterGroups(similarity_matrix, excluded_states, data, correlation_matrix, m
     min_elements_in_treatment = round(no_locations * 0.2)
 
     def smape(A, F):
-        return 100/len(A) * np.sum(2 * np.abs(F - A) / (np.abs(A) + np.abs(F)))
+        denominator = np.abs(A) + np.abs(F)
+        denominator = np.where(denominator == 0, 1e-8, denominator)  # Evita división por cero
+        return 100 / len(A) * np.sum(2 * np.abs(F - A) / denominator)
 
     total_Y = data['Y'].sum()
     possible_groups = []
@@ -285,8 +287,6 @@ def BetterGroups(similarity_matrix, excluded_states, data, correlation_matrix, m
         results = []
         for idx, result in enumerate(executor.map(evaluate_group, possible_groups)):
             results.append(result)
-            
-            
             if progress_updater:
                 progress_updater.progress((idx + 1) / total_groups)
             
@@ -324,20 +324,32 @@ def BetterGroups(similarity_matrix, excluded_states, data, correlation_matrix, m
 
 def apply_lift(y, delta, start_treatment, end_treatment):
     """
-    Applies a lift (delta) to a specific period of the time series.
-
+    Apply a lift (delta) to a time series y between start_treatment and end_treatment
+    
     Args:
-        y (numpy array or pandas series): Time series data.
-        delta (float): Percentage lift to apply.
-        start_treatment (int): Start index of the treatment period.
-        end_treatment (int): End index of the treatment period.
-
+        y (np.array): Original time series
+        delta (float): Lift to apply (as a decimal)
+        start_treatment (int/str): Start index of treatment period
+        end_treatment (int/str): End index of treatment period
+    
     Returns:
-        numpy array or pandas series: Adjusted series with the applied lift.
+        np.array: Time series with lift applied
     """
-    y_with_lift = y.astype(float).copy()
-    y_with_lift[start_treatment:end_treatment] *= (1 + delta)
+    
+    y_with_lift = np.array(y).copy()
+    
+    
+    
+    start_idx = max(0, int(start_treatment))
+    end_idx = min(len(y_with_lift), int(end_treatment))
+
+    if start_idx < end_idx:
+        y_with_lift[start_idx:end_idx] = y_with_lift[start_idx:end_idx] * (1 + delta)
+    else:
+        raise ValueError("Start index is greater than end index")
+    
     return y_with_lift
+
 
 def calculate_conformity(y_real, y_control, start_treatment, end_treatment):
     """
@@ -481,7 +493,7 @@ def evaluate_sensitivity(results_by_size, deltas, periods, n_permutaciones, sign
                 if progress_bar:
                     progress_bar.progress(min(step / total_steps,1.0))
                 if status_text:
-                    status_text.text(f"Evaluating griups: {int((step / total_steps) * 100)}% complete ⏳")
+                    status_text.text(f"Evaluating groups: {int((step / total_steps) * 100)}% complete ⏳")
 
             
             statistical_power = [(res[0], res[1]) for res in results]
@@ -517,7 +529,7 @@ def transform_results_data(results_by_size):
         }
     return transformed_data
 
-def run_geo_analysis(data, excluded_states, minimum_holdout_percentage, significance_level, deltas_range, periods_range, progress_bar_1, status_text_1, progress_bar_2, status_text_2, n_permutaciones=5000):
+def run_geo_analysis(data, minimum_holdout_percentage, significance_level, deltas_range, periods_range, excluded_states={}, progress_bar_1=None, status_text_1=None, progress_bar_2=None, status_text_2=None ,n_permutaciones=500):
     """
     Runs a complete geo analysis pipeline including market correlation, group optimization,
     sensitivity evaluation, and visualization of MDE results.
@@ -540,13 +552,14 @@ def run_geo_analysis(data, excluded_states, minimum_holdout_percentage, signific
             - "sensitivity_results": Sensitivity results for evaluated deltas and periods.
             - "series_lifts": Adjusted series for each delta and period.
     """
-
+    if progress_bar_1 or progress_bar_2 or status_text_1 or status_text_2 is None:
+      print("Simulation in progress........")
     
     periods = list(np.arange(*periods_range))
     deltas = np.arange(*deltas_range)
 
     # Step 1: Generate market correlations
-    correlation_matrix = market_correlations(data, excluded_states)
+    correlation_matrix = market_correlations(data)
 
     # Step 2: Find the best groups for control and treatment
     simulation_results = BetterGroups(
@@ -563,9 +576,13 @@ def run_geo_analysis(data, excluded_states, minimum_holdout_percentage, signific
     sensitivity_results, series_lifts = evaluate_sensitivity(
         simulation_results, deltas, periods, n_permutaciones, significance_level,progress_bar=progress_bar_2, status_text=status_text_2
     )
-
+    if sensitivity_results is not None:
+      print("Complete.")
+      
     # Step 4: Generate MDE visualizations
     fig = plot_mde_results(simulation_results, sensitivity_results, periods)
+
+    
 
 
     return periods,fig, {

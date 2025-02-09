@@ -1,15 +1,16 @@
 import numpy as np
-import pandas as pd
-from matplotlib import pyplot as plt
 from sklearn.preprocessing import MinMaxScaler
-from main import market_correlations,select_controls,apply_lift,SyntheticControl
+from .main import select_controls,apply_lift,SyntheticControl
+from .auxiliary import market_correlations
 
-def post_analysis(data_input, start_treatment,end_treatment,treatment_group,lift,n_permutaciones=5000,inference_type='iid',significance_level=0.1):
+
+def post_analysis(data_input, start_treatment,end_treatment,treatment_group,lift=0.1,n_permutaciones=5000,inference_type='iid',significance_level=0.1):
 
         def smape(A, F):
           return 100/len(A) * np.sum(2 * np.abs(F - A) / (np.abs(A) + np.abs(F+1e-10)))
 
-        correlation_matrix = market_correlations(data_input,excluded_states=None)
+        correlation_matrix = market_correlations(data_input
+                                                 )
 
         control_group = select_controls(
             correlation_matrix=correlation_matrix,
@@ -79,50 +80,8 @@ def post_analysis(data_input, start_treatment,end_treatment,treatment_group,lift
         p_value = np.mean(np.abs(conformidades_nulas) >= np.abs(conformidad_observada))
         power = np.mean(p_value < significance_level)
 
-        print(f'Percentage Lift: {round(percenge_lift,2)} %')
-        print(f'P Value: {p_value}')
+        
         
 
-        return y_lift,predictions
+        return y_lift,predictions,p_value,power,percenge_lift,control_group,conformidad_observada,conformidades_nulas
 
-def plot_impact_evaluation(counterfactual,treatment,period):
-            
-            diferencia_puntual = treatment - counterfactual
-            efecto_acumulativo = ([0] * (len(treatment) - period)) + (np.cumsum(diferencia_puntual[len(treatment)-period:])).tolist()
-
-            
-            fig, axes = plt.subplots(3, 1, figsize=(15, 9.5), sharex=True)
-
-            # Panel 1: Observed data vs counterfactual prediction
-            axes[0].plot(counterfactual, label='Control Group', linestyle='--', color='blue')
-            axes[0].plot(treatment, label='Treatment Group', linestyle='-', color='orange')
-            axes[0].axvspan(len(counterfactual) - period, len(counterfactual), color='gray', alpha=0.1, label='Treatment Period')
-            axes[0].yaxis.set_label_position('right')  
-            axes[0].set_ylabel('Original')
-
-            axes[0].legend()
-            axes[0].grid()
-
-
-            # Panel 2: Point difference
-            axes[1].plot(diferencia_puntual, label='Point Difference (Causal Effect)', color='green')
-            axes[1].plot(
-                      [0, len(counterfactual)],
-                      [0, 0],
-                      color='gray', linestyle='-', linewidth=2)
-            axes[1].axvspan(len(counterfactual) - period, len(counterfactual), color='gray', alpha=0.1)
-            axes[1].set_ylabel('Point Difference')
-            axes[1].yaxis.set_label_position('right')
-            axes[1].grid()
-
-            # Panel 3: Cumulative effect
-            axes[2].plot(efecto_acumulativo, label='Cumulative Effect', color='red')
-            axes[2].axvspan(len(counterfactual) - counterfactual, len(counterfactual), color='gray', alpha=0.1)
-            axes[2].set_xlabel('Days')
-            axes[2].set_ylabel('Cumulative Effect')
-            axes[2].yaxis.set_label_position('right')
-            axes[2].grid()
-
-            
-            plt.tight_layout()
-            plt.show()
