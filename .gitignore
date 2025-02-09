@@ -1,6 +1,8 @@
 /murray-env/
 venv/
 **/__pycache__/
+node_modules/
+.docusaurus/
 *.pyc
 *.pyo
 *.pyd
