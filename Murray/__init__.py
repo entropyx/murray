@@ -1,2 +1,11 @@
-from .plots import plot_geodata,plot_counterfactuals,plot_metrics,plot_mde_results,plot_impact,print_locations,print_weights
-from .main import cleaned_data,market_correlations,select_treatments,select_controls,SyntheticControl,aplicar_lift_periodo,calcular_conformidad,simular_poder,run_simulation, evaluar_sensibilidad_periodos,BetterGroups,run_geo_analysis
+from .main import run_geo_analysis
+from .plots import (
+    plot_geodata,
+    plot_metrics,
+    plot_counterfactuals,
+    plot_mde_results,
+    print_weights,
+    plot_impact
+)
+
+__version__ = "0.1.0"
