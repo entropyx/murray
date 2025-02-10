@@ -1,1127 +1,592 @@
-import plotly.graph_objects as go
-import plotly.io as pio
-import pandas as pd
+import concurrent.futures
+from math import comb
 import numpy as np
-from sklearn.metrics import mean_absolute_percentage_error
-from plotly.subplots import make_subplots
-import scipy.stats as stats
-import matplotlib.dates as mdates
-import seaborn as sns
-import matplotlib.pyplot as plt
-import matplotlib.colors as mcolors
-
-
-
-#Color palette
-blue = "#3e7cb1"          #main color
-green = "#87D8AD"          #main color    
-red = "#dd2d4a"
-purple_dark = "#1B0043"
-black_secondary = "#4D4C50"
-heatmap_green = "#84DA35"
-heatmap_red = "#DA3835"
-
-custom_colors = ["#3E7CB1", "#6596C1", 
-                     "#C5D8EB", "#5F4D7B", "#211F24", '#4D4C50',
-                     '#1B0043', '#DD2D4A',"#C3EBD6",'#87D8AD']
+import cvxpy as cp
+from sklearn.preprocessing import MinMaxScaler
+from sklearn.base import BaseEstimator, RegressorMixin
+from sklearn.utils.validation import check_is_fitted
+from .plots import plot_mde_results
+from .auxiliary import market_correlations
 
 
 
 
-def generate_gradient_palette(start_color, end_color, num_colors):
-    """Genera una lista de colores en gradiente desde start_color hasta end_color."""
-    cmap = mcolors.LinearSegmentedColormap.from_list("custom_gradient", [start_color, end_color], N=num_colors)
-    return [mcolors.to_hex(cmap(i/num_colors)) for i in range(num_colors)]
-
-def plot_geodata(merged_data,custom_colors=custom_colors):
-
+def select_treatments(similarity_matrix, treatment_size, excluded_states=set()):
     """
-    Plots a time-series line chart of conversions (Y) over time, grouped by location.
+    Selects n combinations of treatments based on a similarity DataFrame, excluding certain states
+    from the treatment selection but allowing their inclusion in the control.
 
     Args:
-        merged_data: pandas.DataFrame
-            A DataFrame containing the following columns:
-            - 'time': Timestamps or dates
-            - 'Y': Conversion value
-            - 'location': Categorical column to group and differentiate lines by color
-    """
-
-
-    # Crear figura
-    fig = go.Figure()
-
-    # Agregar líneas para cada 'location' con colores personalizados
-    for i, (location, data) in enumerate(merged_data.groupby('location')):
-        fig.add_trace(go.Scatter(
-            x=data['time'],
-            y=data['Y'],
-            mode='lines',
-            name=location,
-            line=dict(width=1, color=custom_colors[i % len(custom_colors)])  # Usa colores en ciclo
-        ))
-
-
-    # Obtener los últimos puntos por ubicación
-    last_points = merged_data.groupby('location').last().reset_index()
-
-    # Agregar etiquetas con los nombres de cada ubicación en la última observación
-    for _, row in last_points.iterrows():
-        fig.add_trace(go.Scatter(
-            x=[row['time']],
-            y=[row['Y']],
-            mode='text',
-            text=row['location'],
-            textposition='middle right',
-            showlegend=False,
-            textfont=dict(
-                size=12,
-                color='black' 
-            )
-        ))
-
-
-    # Configuración de ejes y diseño
-    fig.update_layout(
-
-        xaxis_title="Date",
-        xaxis_title_font=dict(size=16, color='black'),
-        xaxis=dict(tickformat="%b %Y", tickangle=45),
-        xaxis_tickfont=dict(size=12, color='black'),
-        xaxis_linecolor='#0d0808',
-        xaxis_color='#0d0808',
-        xaxis_showgrid=True,
-        #xaxis_minor_gridcolor='#8c8b8b',
-
-
-
-        yaxis_title="Conversions",
-        yaxis_title_font=dict(size=16, color='black'),
-        yaxis_tickfont=dict(size=12, color='black'),
-        yaxis_linecolor='#0d0808',
-        yaxis_color='#0d0808',
-        yaxis_showgrid=True,
-        #yaxis_minor_gridcolor='#8c8b8b',
-
-        margin=dict(l=50, r=50, t=50, b=50),
-        showlegend=False,
-        #plot_bgcolor='white',
-        #paper_bgcolor='white',
-        
-
-    )
-
-    # Mostrar figura
-    return fig
-
-
-def plot_metrics(geo_test):
-
-    """
-    Plots MAPE and SMAPE metrics for each group size.
-
-    Args:
-        geo_test (dict): A dictionary containing the simulation results, including predictions and actual metrics.
+        similarity_matrix (pd.DataFrame): DataFrame containing correlations between locations in a standard matrix format
+        treatment_size (int): Number of treatments to select for each combination.
+        excluded_states (set): Set of states to exclude from the treatment selection.
 
     Returns:
-        None: Displays plots for MAPE and SMAPE metrics by group size.
+        list: A list of unique combinations, each combination being a list of states.
     """
+    missing_states = [state for state in excluded_states if state not in similarity_matrix.index or state not in similarity_matrix.columns]
+    
+    if missing_states:
+        raise KeyError(f"The following states are not present in the similarity matrix: {missing_states}")
+    
+    
+    similarity_matrix_filtered = similarity_matrix.loc[
+        ~similarity_matrix.index.isin(excluded_states),
+        ~similarity_matrix.columns.isin(excluded_states)
+    ]
 
-
-    from plotly.subplots import make_subplots
-
-    # Diccionario para almacenar los resultados
-    metrics = {
-        'Size': [],
-        'MAPE': [],
-        'SMAPE': []
-    }
-
-    results_by_size = geo_test['simulation_results']
-
-    # Cálculo de métricas
-    for size, result in results_by_size.items():
-        y = result['Actual Target Metric (y)']
-        predictions = result['Predictions']
-
-        mape = mean_absolute_percentage_error(y, predictions)
-        smape = 100 / len(y) * np.sum(2 * np.abs(predictions - y) / (np.abs(y) + np.abs(predictions)))
-
-        metrics['Size'].append(size)
-        metrics['MAPE'].append(mape)
-        metrics['SMAPE'].append(smape)
-
-    # Crear subplots: 1 fila, 2 columnas
-    fig = make_subplots(rows=1, cols=2, subplot_titles=["MAPE by Group Size", "SMAPE by Group Size"])
-
-    # Agregar MAPE (Gráfico 1)
-    fig.add_trace(go.Scatter(
-        x=metrics['Size'],
-        y=metrics['MAPE'],
-        mode='lines+markers',
-        name='MAPE',
-        marker=dict(color=blue)
-    ), row=1, col=1)
-
-    # Agregar SMAPE (Gráfico 2)
-    fig.add_trace(go.Scatter(
-        x=metrics['Size'],
-        y=metrics['SMAPE'],
-        mode='lines+markers',
-        name='SMAPE',
-        marker=dict(color=green)
-    ), row=1, col=2)
-
-    # Configuración de layout
-    fig.update_layout(
-        #title_text="MAPE & SMAPE by Group Size",
-        template="plotly_white",
-        margin=dict(l=50, r=50, t=50, b=50)
-    )
-
-    # Etiquetas de ejes
-    fig.update_xaxes(title_text="Group Size", row=1, col=1)
-    fig.update_xaxes(title_text="Group Size", row=1, col=2)
-
-    fig.update_yaxes(title_text="MAPE", row=1, col=1)
-    fig.update_yaxes(title_text="SMAPE", row=1, col=2)
-
-    # Mostrar la figura
-    return fig
-
-
-
-
-def plot_counterfactuals(geo_test):
-    """
-    Plots the counterfactuals (actual vs. predicted values) for each group size.
-
-    Args:
-        geo_test (dict): A dictionary containing simulation results with actual and predicted metrics.
-
-    Returns:
-        None: Displays plots for each group size showing counterfactuals.
-    """
-
-
-    results_by_size = geo_test['simulation_results']
-
-    # Iterar sobre cada tamaño de grupo
-    for size, result in results_by_size.items():
-        real_y = result['Actual Target Metric (y)']
-        predictions = result['Predictions']
-
-        # Crear la figura para este grupo
-        fig = go.Figure()
-
-        # Línea de valores reales (Actual)
-        fig.add_trace(go.Scatter(
-            y=real_y,
-            mode='lines',
-            name='Actual (Treatment)',
-            line=dict(color=blue, width=2)
-        ))
-
-        # Línea de predicciones (Counterfactual)
-        fig.add_trace(go.Scatter(
-            y=predictions,
-            mode='lines',
-            name='Predicted (Counterfactual)',
-            line=dict(color=green, width=2, dash='dash')  # Línea discontinua
-        ))
-
-        # Configuración de layout
-        fig.update_layout(
-            title=f'Counterfactual for Group Size {size}',
-            xaxis_title="Time",
-            yaxis_title="Metric Value",
-            template="plotly_white",
-            legend_title="Legend",
-            margin=dict(l=50, r=50, t=50, b=50)
+    
+    if treatment_size > similarity_matrix_filtered.shape[1]:
+        raise ValueError(
+            f"The treatment size ({treatment_size}) exceeds the available number of columns "
+            f"({similarity_matrix_filtered.shape[1]})."
         )
 
-        # Mostrar la figura
-        return fig
+    
+    n = similarity_matrix_filtered.shape[1]
+    r = treatment_size
+    max_combinations = comb(n, r)
+
+    n_combinations = max_combinations
+    if n_combinations > 500:
+        n_combinations = 500
+
+
+    combinations = set()
+
+    while len(combinations) < n_combinations:
+        sample_columns = np.random.choice(
+            similarity_matrix_filtered.columns,
+            size=treatment_size,
+            replace=False
+        )
+        sample_group = tuple(sorted(sample_columns))
+        combinations.add(sample_group)
+
+    return [list(comb) for comb in combinations]
 
 
 
-def plot_mde_results(results_by_size, sensitivity_results, periods):
+def select_controls(correlation_matrix, treatment_group, min_correlation=0.8):
     """
-    Generates an interactive heatmap for the MDE (Minimum Detectable Effect) values using Plotly.
-    Compatible with Streamlit.
+    Dynamically selects control group states based on correlation values.
+
+    Args:
+        correlation_matrix (pd.DataFrame): Correlation matrix between states.
+        treatment_group (list): List of states in the treatment group.
+        min_correlation (float): Minimum correlation threshold to consider a state as part of the control group.
+
+    Returns:
+        list: List of states selected as the control group.
     """
+    control_group = set()
 
-    # Organizing data for heatmap
-    holdout_by_location = {
-        size: data['Holdout Percentage']
-        for size, data in results_by_size.items()
-    }
-    sorted_sizes = sorted(holdout_by_location.keys(), key=lambda x: holdout_by_location[x])
+    for treatment_location in treatment_group:
+        if treatment_location not in correlation_matrix.index:
+            continue
+        treatment_row = correlation_matrix.loc[treatment_location]
 
-    heatmap_data = pd.DataFrame()
-    for size in sorted_sizes:
-        row = []
-        period_results = sensitivity_results.get(size, {})
+        similar_states = treatment_row[
+            (treatment_row >= min_correlation) &
+            (~treatment_row.index.isin(treatment_group))
+        ].sort_values(ascending=False).index.tolist()
+
+        control_group.update(similar_states)
+
+    return list(control_group)
+
+class SyntheticControl(BaseEstimator, RegressorMixin):
+    def __init__(self, regularization_strength_l1=0.1, regularization_strength_l2=0.1, seasonality=None, delta=1.0):
+        """
+        Args:
+            regularization_strength_l1: Strength of the L1 regularization (Lasso).
+            regularization_strength_l2: Strength of the L2 regularization (Ridge).
+            seasonality: DataFrame with the calculated seasonality, indexed by time.
+            delta: Parameter for the Huber loss.
+        """
+        self.regularization_strength_l1 = regularization_strength_l1
+        self.regularization_strength_l2 = regularization_strength_l2
+        self.seasonality = seasonality
+        self.delta = delta
+
+    def _prepare_data(self, X, time_index=None):
+        """
+        Combines the original features with seasonality if available.
+        
+        Args:
+            X: Input features
+            time_index: Index of timestamps if seasonality is used
+            
+        Returns:
+            numpy.ndarray: Processed feature matrix
+        """
+        X = np.array(X)
+        if self.seasonality is not None and time_index is not None:
+            if len(time_index) != X.shape[0]:
+                raise ValueError("The size of the time index does not match X.")
+            seasonal_values = self.seasonality.loc[time_index].to_numpy().reshape(-1, 1)
+            X = np.hstack([X, seasonal_values])
+        return X
+
+    def squared_loss(self, x):
+        """Compute squared loss."""
+        return cp.sum_squares(x)
+
+    def fit(self, X, y):
+        """
+        Fit the synthetic control model.
+        
+        Args:
+            X: Training features
+            y: Target values
+            
+        Returns:
+            self: The fitted model
+        """
+        X = self._prepare_data(X)
+        y = np.ravel(y)
+
+        if X.shape[0] != y.shape[0]:
+            raise ValueError("The number of rows in X must match the size of y.")
+
+        w = cp.Variable(X.shape[1])
+
+        # Elastic Net Regularization (L1 + L2)
+        regularization_l1 = self.regularization_strength_l1 * cp.norm1(w)
+        regularization_l2 = self.regularization_strength_l2 * cp.norm2(w)
+
+        errors = X @ w - y
+        objective = cp.Minimize(self.squared_loss(errors) + regularization_l2)
+
+        # Constraints
+        constraints = [cp.sum(w) == 1, w >= 0]
+
+        problem = cp.Problem(objective, constraints)
+        problem.solve(solver=cp.SCS, verbose=False)
+
+        if problem.status != cp.OPTIMAL:
+            problem.solve(solver=cp.ECOS, verbose=False)
+
+        if problem.status != cp.OPTIMAL:
+            raise ValueError("Optimization did not converge. Status: " + problem.status)
+
+        self.X_ = X
+        self.y_ = y
+        self.w_ = w.value
+        self.is_fitted_ = True
+        return self
+
+    def predict(self, X):
+        """
+        Make predictions using the fitted model.
+        
+        Args:
+            X: Features to predict on
+            
+        Returns:
+            tuple: (predictions, weights)
+        """
+        check_is_fitted(self)
+        X = self._prepare_data(X)
+        return X @ self.w_, self.w_
+
+
+def BetterGroups(similarity_matrix, excluded_states, data, correlation_matrix, min_holdout=70,progress_updater=None, status_updater=None):
+    """
+    Simulates possible treatment groups and evaluates their performance.
+
+    Parameters:
+        similarity_matrix (pd.DataFrame): Similarity matrix between locations.
+        excluded_states (list): List of states to exclude from treatment combinations.
+        data (pd.DataFrame): Dataset with columns 'time', 'location', and 'Y'.
+        correlation_matrix (pd.DataFrame): Correlation matrix between locations.
+        min_holdout (float): Minimum percentage of data to reserve as holdout (untreated).
+
+    Returns:
+        dict: Simulation results, organized by treatment group size.
+              Each entry contains the best treatment group, control group, MAE,
+              actual target metrics, predictions, weights, and holdout percentage.
+    """
+    results_by_size = {}
+    no_locations = int(len(data['location'].unique()))
+    max_group_size = round(no_locations * 0.5)
+    min_elements_in_treatment = round(no_locations * 0.2)
+
+    def smape(A, F):
+        denominator = np.abs(A) + np.abs(F)
+        denominator = np.where(denominator == 0, 1e-8, denominator)  # Evita división por cero
+        return 100 / len(A) * np.sum(2 * np.abs(F - A) / denominator)
+
+    total_Y = data['Y'].sum()
+    possible_groups = []
+    for size in range(min_elements_in_treatment, max_group_size + 1):
+        groups = select_treatments(similarity_matrix, size, excluded_states)
+        possible_groups.extend(groups)
+
+    if not possible_groups:
+        return None
+
+    def evaluate_group(treatment_group):
+        treatment_Y = data[data['location'].isin(treatment_group)]['Y'].sum()
+        holdout_percentage = (1 - (treatment_Y / total_Y)) * 100
+
+        
+        if holdout_percentage < min_holdout:
+            return None
+
+        control_group = select_controls(
+            correlation_matrix=correlation_matrix,
+            treatment_group=treatment_group,
+            min_correlation=0.8
+        )
+
+        if not control_group:
+            return (treatment_group, [], float('inf'), float('inf'), None, None, None)
+
+        df_pivot = data.pivot(index='time', columns='location', values='Y')
+        X = df_pivot[control_group].values
+        y = df_pivot[list(treatment_group)].sum(axis=1).values
+
+        model = SyntheticControl()
+
+        #----------------------------------------------------------------------------------
+
+        scaler_x = MinMaxScaler()
+        scaler_y = MinMaxScaler()
+
+        X_scaled = scaler_x.fit_transform(X)
+        y_scaled = scaler_y.fit_transform(y.reshape(-1, 1))
+
+        split_index = int(len(X_scaled) * 0.8)
+        X_train, X_test = X_scaled[:split_index], X_scaled[split_index:]
+        y_train, y_test = y_scaled[:split_index], y_scaled[split_index:]
+
+        model = SyntheticControl()
+        model.fit(X_train, y_train)
+
+        predictions_val, weights = model.predict(X_test)
+
+        contrafactual_train = (weights @ X_train.T).reshape(-1, 1)
+        contrafactual_test = (weights @ X_test.T).reshape(-1, 1)
+        contrafactual_full = np.vstack((contrafactual_train, contrafactual_test))
+
+        contrafactual_full_original = scaler_y.inverse_transform(contrafactual_full)
+        predictions = contrafactual_full_original.flatten()
+
+        y_original = scaler_y.inverse_transform(y_scaled).flatten()
+
+        MAPE = np.mean(np.abs((y_original - predictions) / (y_original + 1e-10))) * 100
+        SMAPE = smape(y_original, predictions)
+
+        return (treatment_group, control_group, MAPE, SMAPE, y_original, predictions, weights)
+
+        #----------------------------------------------------------------------------------
+    total_groups = len(possible_groups)
+
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        results = []
+        for idx, result in enumerate(executor.map(evaluate_group, possible_groups)):
+            results.append(result)
+            if progress_updater:
+                progress_updater.progress((idx + 1) / total_groups)
+            
+            
+            if status_updater:
+                status_updater.text(f"Finding the best groups: {int((idx + 1) / total_groups * 100)}% complete ⏳")
+
+
+    total_Y = data['Y'].sum()
+
+    for size in range(min_elements_in_treatment, max_group_size + 1):
+        best_results = [result for result in results if result is not None and len(result[0]) == size]
+
+        if best_results:
+            best_result = min(best_results, key=lambda x: (x[2], -x[3]))
+            best_treatment_group, best_control_group, best_MAPE, best_SMAPE, y, predictions, weights = best_result
+
+            treatment_Y = data[data['location'].isin(best_treatment_group)]['Y'].sum()
+            holdout_percentage = ((total_Y - treatment_Y) / total_Y) * 100
+
+            results_by_size[size] = {
+                'Best Treatment Group': best_treatment_group,
+                'Control Group': best_control_group,
+                'MAPE': best_MAPE,
+                'SMAPE': best_SMAPE,
+                'Actual Target Metric (y)': y,
+                'Predictions': predictions,
+                'Weights': weights,
+                'Holdout Percentage': holdout_percentage
+            }
+
+    return results_by_size
+
+
+
+def apply_lift(y, delta, start_treatment, end_treatment):
+    """
+    Apply a lift (delta) to a time series y between start_treatment and end_treatment
+    
+    Args:
+        y (np.array): Original time series
+        delta (float): Lift to apply (as a decimal)
+        start_treatment (int/str): Start index of treatment period
+        end_treatment (int/str): End index of treatment period
+    
+    Returns:
+        np.array: Time series with lift applied
+    """
+    
+    y_with_lift = np.array(y).copy()
+    
+    
+    
+    start_idx = max(0, int(start_treatment))
+    end_idx = min(len(y_with_lift), int(end_treatment))
+
+    if start_idx < end_idx:
+        y_with_lift[start_idx:end_idx] = y_with_lift[start_idx:end_idx] * (1 + delta)
+    else:
+        raise ValueError("Start index is greater than end index")
+    
+    return y_with_lift
+
+
+def calculate_conformity(y_real, y_control, start_treatment, end_treatment):
+    """
+    Calculates the conformity between real and control data for conformal inference.
+
+    Args:
+        y_real (numpy array): Actual target metrics.
+        y_control (numpy array): Control metrics.
+        start_treatment (int): Start index of the treatment period.
+        end_treatment (int): End index of the treatment period.
+
+    Returns:
+        float: Calculated conformity.
+    """
+    conformity = np.mean(y_real[start_treatment:end_treatment]) - \
+                np.mean(y_control[start_treatment:end_treatment])
+    return conformity
+
+def simulate_power(y_real, y_control, delta, period, n_permutaciones=1000, significance_level=0.05, inference_type="iid", size_block=None):
+    """
+    Simulates statistical power using conformal inference and returns the adjusted series.
+
+    Args:
+        y_real (numpy array): Actual target metrics.
+        y_control (numpy array): Control metrics.
+        delta (float): Effect size applied.
+        period (int): Duration of the treatment period.
+        n_permutaciones (int): Number of permutations.
+        significance_level (float): Significance level.
+        inference_type (str): Type of conformal inference ("iid" or "block").
+        size_block (int): Size of blocks for block shuffling (if applicable).
+
+    Returns:
+        tuple: Delta, statistical power, and the adjusted series with the applied effect.
+    """
+    start_treatment = len(y_real) - period
+    end_treatment = start_treatment + period
+    
+    y_with_lift = apply_lift(y_real, delta, start_treatment, end_treatment)
+    conformidad_observada = calculate_conformity(y_with_lift, y_control, start_treatment, end_treatment)
+    
+    combined = np.concatenate([y_real, y_control])
+    conformidades_nulas = []
+
+    for _ in range(n_permutaciones):
+        if inference_type == "iid":
+            np.random.shuffle(combined)
+        elif inference_type == "block":
+            if size_block is None:
+                size_block = max(1, len(combined) // 10)
+            for i in range(0, len(combined), size_block):
+                np.random.shuffle(combined[i:i+size_block])
+
+        perm_treatment = combined[:len(y_real)]
+        perm_control = combined[len(y_real):]
+
+        conformidad_perm = calculate_conformity(
+            perm_treatment, perm_control, start_treatment, end_treatment)
+        conformidades_nulas.append(conformidad_perm)
+
+    p_value = np.mean(np.abs(conformidades_nulas) >= np.abs(conformidad_observada))
+    power = np.mean(p_value < significance_level)
+
+    return delta, power, y_with_lift
+
+def run_simulation(delta, y_real, y_control, period, n_permutaciones, significance_level, inference_type="iid", size_block=None):
+    """
+    Wrapper function to run a single simulation of statistical power.
+
+    Args:
+        delta (float): Effect size.
+        y_real (numpy.ndarray): Actual target metrics.
+        y_control (numpy.ndarray): Control metrics.
+        period (int): Treatment period duration.
+        n_permutaciones (int): Number of permutations.
+        significance_level (float): Significance level.
+        inference_type (str): Type of conformal inference ("iid" or "block").
+        size_block (int, optional): Size of blocks for block shuffling. Defaults to None.
+
+    Returns:
+        tuple: Simulation results including delta, power, and adjusted series.
+    """
+    return simulate_power(
+        y_real=y_real,
+        y_control=y_control,
+        delta=delta,
+        period=period,
+        n_permutaciones=n_permutaciones,
+        significance_level=significance_level,
+        inference_type=inference_type,
+        size_block=size_block
+    )
+
+def evaluate_sensitivity(results_by_size, deltas, periods, n_permutaciones, significance_level=0.05, inference_type="iid",  size_block=None, progress_bar=None, status_text=None):
+    """
+    Evaluates sensitivity of results to different treatment periods and deltas using permutations.
+
+    Args:
+        results_by_size (dict): Results organized by sample size.
+        deltas (list): List of delta values to evaluate.
+        periods (list): List of treatment periods to evaluate.
+        n_permutaciones (int): Number of permutations.
+        significance_level (float): Significance level.
+        inference_type (str): Type of conformal inference ("iid" or "block").
+        size_block (int): Size of blocks for block shuffling (if applicable).
+
+    Returns:
+        dict: Sensitivity results by size and period.
+        dict: Adjusted series for each delta and period.
+    """
+    sensitivity_results = {}
+    lift_series = {}
+    
+
+    total_steps = sum(len(periods) * len(deltas)  for _ in results_by_size)
+    step =  0
+
+    for size, result in results_by_size.items():
+        if ('Actual Target Metric (y)' not in result or 
+            'Predictions' not in result or
+            result['Actual Target Metric (y)'] is None or 
+            result['Predictions'] is None):
+            print(f"Skipping size {size} due to missing or null values")
+            continue
+
+        y_real = np.array(result['Actual Target Metric (y)']).flatten()
+        y_control = np.array(result['Predictions']).flatten()
+
+        results_by_period = {}
+
         for period in periods:
-            mde = period_results.get(period, {}).get('MDE', None)
-            row.append(mde if mde is not None else np.nan)  # Use NaN for consistency
-        heatmap_data[size] = row
+            results = []  
 
-    heatmap_data = heatmap_data.T
-    heatmap_data.columns = [f"Day-{i}" for i in periods]
-    heatmap_data.index = [f"{holdout_by_location.get(size, 0):.2f}%" for size in sorted_sizes]
-    heatmap_data.index.name = "Holdout (%)"
+            
+            for delta in deltas:
+                res = run_simulation(delta, y_real, y_control, period, n_permutaciones, significance_level, inference_type, size_block)
+                results.append(res)
 
-    y_labels = heatmap_data.index.tolist()
-    x_labels = heatmap_data.columns.tolist()
-    z_values = heatmap_data.values.tolist()
-    annotations = [[f"{val:.2%}" if not np.isnan(val) else "" for val in row] for row in z_values]
+                
+                step += 1
+                if progress_bar:
+                    progress_bar.progress(min(step / total_steps,1.0))
+                if status_text:
+                    status_text.text(f"Evaluating groups: {int((step / total_steps) * 100)}% complete ⏳")
 
-    fig = go.Figure()
-    custom_colorscale = [[0,heatmap_green], [1,heatmap_red]]
+            
+            statistical_power = [(res[0], res[1]) for res in results]
+            mde = next((delta for delta, power in statistical_power if power >= 0.85), None)
 
+            for delta, _, adjusted_series in results:
+                lift_series[(size, delta, period)] = adjusted_series
 
+            results_by_period[period] = {
+                'Statistical Power': statistical_power,
+                'MDE': mde
+            }
 
+        sensitivity_results[size] = results_by_period
 
-    # **Main Heatmap Layer**
-    fig.add_trace(go.Heatmap(
-        z=z_values,
-        x=x_labels,
-        y=y_labels,
-        colorscale=custom_colorscale,
-        colorbar=dict(title="MDE (%)"),
-        colorbar_tickfont=dict(size=12, color='black'),
-        hoverongaps=False,
-        text=annotations, 
-        texttemplate="%{text}",  
-        textfont={"size": 12, "color": "black"},
-        hoverinfo="text",
-        showscale=True,
-        xgap=1,
-        ygap=1
-    ))
+    return sensitivity_results, lift_series
 
-    # **Scatter Overlay for Selection**
-    scatter_x, scatter_y = np.meshgrid(range(len(x_labels)), range(len(y_labels)))  # Grid coordinates
-    scatter_x = scatter_x.flatten()
-    scatter_y = scatter_y.flatten()
+def transform_results_data(results_by_size):
+    """
+    Transforma los datos para asegurar compatibilidad con el heatmap.
+    """
+    transformed_data = {}
+    for size, data in results_by_size.items():
+        transformed_data[size] = {
+            'Best Treatment Group': ', '.join(data['Best Treatment Group']),
+            'Control Group': ', '.join(data['Control Group']),
+            'MAPE': float(data['MAPE']),
+            'SMAPE': float(data['SMAPE']),
+            'Actual Target Metric (y)': data['Actual Target Metric (y)'].tolist(),
+            'Predictions': data['Predictions'].tolist(),
+            'Weights': data['Weights'].tolist(),
+            'Holdout Percentage': float(data['Holdout Percentage'])
+        }
+    return transformed_data
 
-    fig.add_trace(go.Scatter(
-        x=[x_labels[i] for i in scatter_x],  # Map indices to labels
-        y=[y_labels[i] for i in scatter_y],
-        mode="markers",
-        marker=dict(size=10, opacity=0),  # Invisible markers
-        hoverinfo="none"
-    ))
+def run_geo_analysis(data, minimum_holdout_percentage, significance_level, deltas_range, periods_range, excluded_states={}, progress_bar_1=None, status_text_1=None, progress_bar_2=None, status_text_2=None ,n_permutaciones=500):
+    """
+    Runs a complete geo analysis pipeline including market correlation, group optimization,
+    sensitivity evaluation, and visualization of MDE results.
 
-    # **Layout adjustments**
-    fig.update_layout(
-        margin=dict(l=90, r=10, t=20, b=75),
-        dragmode=False,
-        xaxis=dict(title="Treatment Periods",
-                   title_font=dict(size=16, color='black'),
-                   tickmode="array",
-                   tickvals=list(range(len(x_labels))),
-                   ticktext=x_labels,
-                   showgrid=True,
-                   tickfont=dict(size=12, color='black')),
+    Args:
+        data (pd.DataFrame): Input data containing metrics for analysis.
+        excluded_states (list): List of states to exclude from the analysis.
+        minimum_holdout_percentage (float): Minimum holdout percentage to ensure sufficient control.
+        significance_level (float): Significance level for statistical testing.
+        deltas_range (tuple): Range of delta values to evaluate as (start, stop, step).
+        periods_range (tuple): Range of treatment periods to evaluate as (start, stop, step).
+        n_permutaciones (int, optional): Number of permutations for sensitivity evaluation. Default is 5000.
 
-        yaxis=dict(title="Holdout (%)",
-                   title_font=dict(size=16, color='black'),
-                   tickmode="array",
-                   tickvals=list(range(len(y_labels))),
-                   ticktext=y_labels,
-                   type='category',
-                   showgrid=True,
-                   tickfont=dict(size=12, color='black'))
+    Returns:
+        dict: Dictionary containing simulation results, sensitivity results, and adjusted series lifts.
+            - "fig": MDE visualization figure.
+            - "config": Configuration for the MDE visualization.
+            - "results_by_size": Results from group optimization.
+            - "simulation_results": Results from group optimization.
+            - "sensitivity_results": Sensitivity results for evaluated deltas and periods.
+            - "series_lifts": Adjusted series for each delta and period.
+    """
+    if progress_bar_1 or progress_bar_2 or status_text_1 or status_text_2 is None:
+      print("Simulation in progress........")
+    
+    periods = list(np.arange(*periods_range))
+    deltas = np.arange(*deltas_range)
+
+    # Step 1: Generate market correlations
+    correlation_matrix = market_correlations(data)
+
+    # Step 2: Find the best groups for control and treatment
+    simulation_results = BetterGroups(
+        similarity_matrix=correlation_matrix,
+        min_holdout=minimum_holdout_percentage,
+        excluded_states=excluded_states,
+        data=data,
+        correlation_matrix=correlation_matrix,
+        progress_updater=progress_bar_1,
+        status_updater=status_text_1
     )
 
-
-    return fig
-
-
-
-
-
-def print_weights(geo_test, holdout_percentage=None, num_locations=None):
-    """
-    Extracts control group weights based on holdout percentage or number of locations.
-
-    Args:
-        geo_test (dict): Dictionary containing simulation results.
-        holdout_percentage (float, optional): The holdout percentage to filter by.
-        num_locations (int, optional): The number of locations to filter by.
-
-    Returns:
-        pd.DataFrame: A DataFrame with control locations and their corresponding weights, sorted in descending order.
-    """
-    results_by_size = geo_test['simulation_results']
-    control_weights = []
-    control_locations = []
-
-    
-    for size, result in results_by_size.items():
-        current_holdout = result['Holdout Percentage'].round(2)
-
-        
-        if holdout_percentage is not None and current_holdout == holdout_percentage:
-            control_weights.extend(result['Weights'])
-            control_locations.extend(result['Control Group'])
-
-        
-        if num_locations is not None and len(result['Best Treatment Group']) == num_locations:
-            control_weights.extend(result['Weights'])
-            control_locations.extend(result['Control Group'])
-
-    
-
-    weights = pd.DataFrame({
-        "Control Location": control_locations,
-        "Weights": control_weights
-    })
-
-    
-    weights = weights.sort_values(by="Weights", ascending=False).reset_index(drop=True)
-    return weights
-
-
-
-def plot_impact(geo_test, periodo_especifico, holdout_target):
-        """
-        Generates graphs for a specific holdout percentage in a specific period.
-
-        Args:
-            geo_test (dict): Dictionary with results including sensitivity, simulations, and treated series.
-            periodo_especifico (int): Period in which the MDE is to be analyzed.
-            holdout_target (float): Target holdout percentage to plot.
-
-        Returns:
-            fig: matplotlib figure object with the plots
-        """
-
-
-        # Extraer resultados
-        sensibilidad_resultados = geo_test['sensitivity_results']
-        results_by_size = geo_test['simulation_results']
-        series_lifts = geo_test['series_lifts']
-        periodos = next(iter(sensibilidad_resultados.values())).keys()
-
-        # Validar si el periodo especificado existe
-        if periodo_especifico not in periodos:
-            raise ValueError(f"The period {periodo_especifico} is not in the evaluated periods list.")
-
-        # Encontrar el tamaño de grupo correcto
-        target_size_key = None
-        target_mde = None
-        for size_key, result in results_by_size.items():
-            current_holdout = result['Holdout Percentage']
-            if abs(current_holdout - holdout_target) < 0.01:
-                target_size_key = size_key
-                target_mde = sensibilidad_resultados[size_key][periodo_especifico].get('MDE', None)
-                break
-
-        if target_size_key is None:
-            print(f"DEBUG: No data found for holdout percentage {holdout_target}%")
-            raise ValueError("No matching data found.")
-
-        # Obtener deltas disponibles
-        available_deltas = [
-            delta for s, delta, period in series_lifts.keys() 
-            if s == target_size_key and period == periodo_especifico
-        ]
-
-        if not available_deltas:
-            print(f"DEBUG: No available deltas for holdout {holdout_target}% and period {periodo_especifico}.")
-            raise ValueError("No available deltas found.")
-
-        # Seleccionar el delta más cercano al MDE
-        delta_specific = target_mde
-        closest_delta = min(available_deltas, key=lambda x: abs(x - delta_specific))
-        comb = (target_size_key, closest_delta, periodo_especifico)
-
-        # Extraer datos relevantes
-        resultados_size = results_by_size[target_size_key]
-        y_real = resultados_size['Predictions'].flatten()
-        serie_tratamiento = series_lifts[comb]
-
-        # Calcular métricas
-        diferencia_puntual = serie_tratamiento - y_real
-        efecto_acumulativo = ([0] * (len(serie_tratamiento) - periodo_especifico) + 
-                              np.cumsum(diferencia_puntual[len(serie_tratamiento)-periodo_especifico:]).tolist())
-        star_treatment = len(y_real) - periodo_especifico
-        y_treatment = y_real[star_treatment:]
-        mean_y_real = np.mean(y_treatment)
-        std_dev_y_real = np.std(y_treatment)
-        std_error_y_real = std_dev_y_real / np.sqrt(len(y_treatment))
-        x_confiance_band = list(range((len(y_real) - periodo_especifico), len(y_real)))
-        
-
-        upper_bound = y_treatment + 1.96 * std_error_y_real
-        lower_bound = y_treatment - 1.96 * std_error_y_real
-
-        att = np.mean(serie_tratamiento[star_treatment:] - y_real[star_treatment:])
-        incremental = np.sum(serie_tratamiento[star_treatment:] - y_real[star_treatment:])
-
-
-        # Crear subplots
-
-
-        # Crear subplots
-        fig = make_subplots(rows=3, cols=1, shared_xaxes=True, 
-                            subplot_titles=[
-                                f'Holdout: {holdout_target:.2f}% - MDE: {target_mde:.2f}',
-                                "Point Difference (Causal Effect)",
-                                "Cumulative Effect"
-                            ])
-
-        # ** Panel 1: Observed data vs counterfactual prediction **
-        fig.add_trace(go.Scatter(
-            y=y_real,
-            mode='lines',
-            name='Control Group',
-            line=dict(color=black_secondary, dash='dash',width=1),
-            showlegend=True  # Se muestra en el primer gráfico
-        ), row=1, col=1)
-
-        fig.add_trace(go.Scatter(
-            y=serie_tratamiento,
-            mode='lines',
-            name='Treatment Group',
-            line=dict(color=purple_dark,width=1),
-            showlegend=True  # Se muestra en el primer gráfico
-        ), row=1, col=1)
-
-        # Banda de confianza (95% CI) sin bordes visibles
-        fig.add_trace(go.Scatter(
-            x=x_confiance_band,
-            y=upper_bound,
-            mode='lines',
-            name='95% CI',
-            line=dict(color='rgba(0,0,0,0)'),  # Invisible
-            showlegend=False
-        ), row=1, col=1)
-
-        fig.add_trace(go.Scatter(
-            x=x_confiance_band,
-            y=lower_bound,
-            mode='lines',
-            name='95% CI',
-            line=dict(color='rgba(0,0,0,0)'),
-            fill='tonexty',
-            fillcolor='rgba(128,128,128,0.3)',
-            showlegend=True  # Se muestra solo en el primer gráfico
-        ), row=1, col=1)
-
-
-        # ** Panel 2: Point Difference (Causal Effect) **
-        fig.add_trace(go.Scatter(
-            y=diferencia_puntual,
-            mode='lines',
-            name='Point Difference (Causal Effect)',
-            line=dict(color=purple_dark,width=1),
-            showlegend=False  # Se muestra solo en el segundo gráfico
-        ), row=2, col=1)
-
-        fig.add_trace(go.Scatter(
-            x=[0, len(y_real)],
-            y=[0, 0],
-            mode='lines',
-            name="Zero Reference",
-            line=dict(color='gray', dash='dash'),
-            showlegend=False  # Se muestra solo en el segundo gráfico
-        ), row=2, col=1)
-
-
-        # ** Panel 3: Cumulative Effect **
-        fig.add_trace(go.Scatter(
-            y=efecto_acumulativo,
-            mode='lines',
-            name='Cumulative Effect',
-            line=dict(color=purple_dark,width=1),
-            showlegend=False  # Se muestra solo en el tercer gráfico
-        ), row=3, col=1)
-
-
-        # ** Línea de inicio del tratamiento en cada panel **
-        for i in range(1, 4):
-            fig.add_vline(x=star_treatment, line=dict(color="black", dash="dash"), row=i, col=1)
-
-
-        # ** Configuración del layout para mover las leyendas a sus subgráficos **
-        fig.update_layout(
-            height=900,
-            width=1000,
-            template="plotly_white",
-            xaxis_title="Days",
-            margin=dict(l=50, r=50, t=50, b=50),
-
-            # Ubicar cada leyenda dentro de su respectivo subplot
-            legend=dict(
-                x=0.02,
-                y=0.98,
-                traceorder="normal",
-                bgcolor="rgba(255,255,255,0.6)",
-            ),
-            legend_tracegroupgap=10  # Espacio entre leyendas de cada subplot
-        )
-
-        # ** Etiquetas de ejes **
-        fig.update_yaxes(title_text="Original", row=1, col=1)
-        fig.update_yaxes(title_text="Point Difference", row=2, col=1)
-        fig.update_yaxes(title_text="Cumulative Effect", row=3, col=1)
-
-
-
-        # Devolver métricas
-        return fig, att, incremental
-
-
-
-
-
-def print_locations(geo_test, holdout_percentage=None, num_locations=None):
-    """
-    Extracts treatment and control locations based on holdout percentage or number of locations.
-
-    Args:
-        geo_test (dict): Dictionary containing simulation results.
-        holdout_percentage (float, optional): Holdout percentage to match.
-        num_locations (int, optional): Number of locations to match.
-
-    Returns:
-        None: Prints the treatment and control locations.
-    """
-    results_by_size = geo_test['simulation_results']
-    treatment_locations = []
-    control_locations = []
-
-    for size, result in results_by_size.items():
-        current_holdout = result['Holdout Percentage'].round(2)
-
-        if holdout_percentage is not None and current_holdout == holdout_percentage:
-            treatment_locations.extend(result['Best Treatment Group'])
-            control_locations.extend(result['Control Group'])
-
-        if num_locations is not None and len(result['Best Treatment Group']) == num_locations:
-            treatment_locations.extend(result['Best Treatment Group'])
-            control_locations.extend(result['Control Group'])
-
-    print(f"Treatment Locations: {treatment_locations}")
-    print(f"Control Locations: {control_locations}")
-
-
-
-
-def plot_impact_evaluation(counterfactual, treatment, period):
-    """
-    Plot the impact evaluation results using Plotly
-    
-    Args:
-        counterfactual (array): Control group values
-        treatment (array): Treatment group values
-        period (int): Treatment period length
-    """
-    diferencia_puntual = treatment - counterfactual
-    efecto_acumulativo = ([0] * (len(treatment) - period)) + (np.cumsum(diferencia_puntual[len(treatment)-period:])).tolist()
-    star_treatment = len(counterfactual) - period
-    y_treatment = counterfactual[star_treatment:]
-    mean_y_real = np.mean(y_treatment)
-    std_dev_y_real = np.std(y_treatment)
-    att = np.mean(treatment[star_treatment:] - counterfactual[star_treatment:])
-    incremental = np.sum(treatment[star_treatment:] - counterfactual[star_treatment:])
-
-    std_error_y_real = std_dev_y_real / np.sqrt(len(y_treatment))
-    upper_bound = y_treatment + 1.96 * std_error_y_real
-    lower_bound = y_treatment - 1.96 * std_error_y_real
-
-    # Crear subplots
-    fig = make_subplots(rows=3, cols=1, shared_xaxes=True, 
-                        subplot_titles=[
-                            "Observed Data vs Counterfactual",
-                            "Point Difference (Causal Effect)",
-                            "Cumulative Effect"
-                        ])
-
-    # ** Panel 1: Observed data vs counterfactual prediction **
-    fig.add_trace(go.Scatter(
-        y=counterfactual,
-        mode='lines',
-        name='Control Group',
-        line=dict(color=black_secondary, dash='dash',width=1),
-        showlegend=True
-    ), row=1, col=1)
-
-    fig.add_trace(go.Scatter(
-        y=treatment,
-        mode='lines',
-        name='Treatment Group',
-        line=dict(color=purple_dark,width=1),
-        showlegend=True
-    ), row=1, col=1)
-
-
-
-    # Banda de confianza (95% CI)
-    fig.add_trace(go.Scatter(
-        x=list(range(star_treatment, len(counterfactual))),
-        y=upper_bound,
-        mode='lines',
-        name='95% CI)',
-        line=dict(color='rgba(0,0,0,0)'),
-        showlegend=False
-    ), row=1, col=1)
-
-    fig.add_trace(go.Scatter(
-        x=list(range(star_treatment, len(counterfactual))),
-        y=lower_bound,
-        mode='lines',
-        name='95% CI',
-        line=dict(color='rgba(0,0,0,0)'),
-        fill='tonexty',
-        fillcolor='rgba(128,128,128,0.3)',
-        showlegend=True
-    ), row=1, col=1)
-
-    # ** Panel 2: Point Difference **
-    fig.add_trace(go.Scatter(
-        y=diferencia_puntual,
-        mode='lines',
-        name='Point Difference (Causal Effect)',
-        line=dict(color=purple_dark,width=1),
-        showlegend=False
-
-    ), row=2, col=1)
-
-    fig.add_trace(go.Scatter(
-        x=[0, len(counterfactual)],
-        y=[0, 0],
-        mode='lines',
-        name="Zero Reference",
-        line=dict(color='gray', dash='dash'),
-        showlegend=False
-    ), row=2, col=1)
-
-    # ** Panel 3: Cumulative Effect **
-    fig.add_trace(go.Scatter(
-        y=efecto_acumulativo,
-        mode='lines',
-        name='Cumulative Effect',
-        line=dict(color=purple_dark,width=1),
-        showlegend=False,
-
-    ), row=3, col=1)
-
-    # ** Línea de inicio del tratamiento en cada panel **
-    for i in range(1, 4):
-        fig.add_vline(x=star_treatment, line=dict(color="black", dash="dash"), row=i, col=1)
-
-    # ** Configuración del layout con leyendas en cada subplot **
-    fig.update_layout(
-        height=900,
-        width=1000,
-        showlegend=True,
-        template="plotly_white",
-        margin=dict(l=20, r=20, t=20, b=20),
-        legend=dict(
-            x=0.02,
-            y=0.98,
-            bgcolor="rgba(255,255,255,0.6)",
-        )
+    # Step 3: Evaluate sensitivity for different deltas and periods
+    sensitivity_results, series_lifts = evaluate_sensitivity(
+        simulation_results, deltas, periods, n_permutaciones, significance_level,progress_bar=progress_bar_2, status_text=status_text_2
     )
-
-    #fig.update_xaxes(tickfont=dict(size=12, color='black'),row=1, col=1)
-    #fig.update_xaxes(tickfont=dict(size=12, color='black'),row=2, col=1)
-    #fig.update_xaxes(tickfont=dict(size=12, color='black'),row=3, col=1)
-    fig.update_xaxes(color= '#0d0808',linecolor= '#0d0808',showgrid=True,row=1, col=1)
-    fig.update_xaxes(color= '#0d0808',linecolor= '#0d0808',showgrid=True,row=2, col=1)
-    fig.update_xaxes(title_text="Days",title_font=dict(size=16, color='black'),tickfont=dict(size=12, color='black'),linecolor= '#0d0808',color= '#0d0808',showgrid=True,row=3, col=1)
-    
-
-
-    # ** Etiquetas de ejes **
-    fig.update_yaxes(title_text="Original",title_font=dict(size=16, color='black'),tickfont=dict(size=12, color='black'),color= '#0d0808',linecolor= '#0d0808',showgrid=True, row=1, col=1)
-    fig.update_yaxes(title_text="Point Difference",title_font=dict(size=16, color='black'),tickfont=dict(size=12, color='black'),color= '#0d0808',linecolor= '#0d0808',showgrid=True, row=2, col=1)
-    fig.update_yaxes(title_text="Cumulative Effect",title_font=dict(size=16, color='black'),tickfont=dict(size=12, color='black'),color= '#0d0808',linecolor= '#0d0808',showgrid=True, row=3, col=1)
-
-
-
-
-       #xaxis_tickfont=dict(size=12, color='black'),
-       # xaxis_linecolor='#0d0808',
-       # xaxis_color='#0d0808',
-       # xaxis_showgrid=True
-
-    # Devolver métricas
-    return fig, round(att,2), round(incremental,2)
-
-
-def plot_permutation_test(conformidades_nulas, conformidad_observada, nivel_significancia=0.1):
-    """
-    Plot the permutation test results using Plotly with KDE density curve.
-    
-    Args:
-        conformidades_nulas (array): Distribution of null conformities.
-        conformidad_observada (float): Observed conformity score.
-        nivel_significancia (float): Significance level (default: 0.1).
-    
-    Returns:
-        fig: Plotly figure.
-    """
-    # Calculate the percentile for the significance zone
-    upper_bound = np.percentile(conformidades_nulas, 100 * (1 - (nivel_significancia / 2)))
-    
-    # Compute histogram and KDE density
-    kde = stats.gaussian_kde(conformidades_nulas)  # KDE estimation
-    x_kde = np.linspace(min(conformidades_nulas), max(conformidades_nulas), 300)
-    y_kde = kde(x_kde)  # KDE values
-
-    # Determine the max height for proper scaling
-    max_hist_y = max(kde(conformidades_nulas))  
-
-    # Create figure
-    fig = go.Figure()
-
-    # Histogram of null conformities (bars close together)
-    fig.add_trace(go.Histogram(
-        x=conformidades_nulas,
-        nbinsx=30,
-        histnorm='probability density',
-        name="Null Conformities",
-        marker=dict(color=blue,line=dict(color="black",width=1)),
-        opacity=0.6
-    ))
-
-
-    # KDE density curve
-    fig.add_trace(go.Scatter(
-        x=x_kde,
-        y=y_kde,
-        mode="lines",
-        name="KDE Density",
-        line=dict(color="darkblue", width=2)
-    ))
-
-    # Observed conformity line (adjusted to the max histogram height)
-    fig.add_trace(go.Scatter(
-        x=[conformidad_observada, conformidad_observada],
-        y=[0, max_hist_y],  
-        mode="lines",
-        name="Observed Conformity",
-        line=dict(color="black", dash="dash", width=1.5)
-    ))
-
-    def hex_to_rgba(hex_color, alpha=0.4):
-      """Convierte un color HEX a RGBA con transparencia controlada."""
-      hex_color = hex_color.lstrip("#")  # Remueve el "#"
-      r, g, b = tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))  # Convierte a RGB
-      return f"rgba({r},{g},{b},{alpha})"
-
-
-    # Significance zone (adjusted to histogram height)
-    fig.add_trace(go.Scatter(
-        x=[upper_bound, max(conformidades_nulas), max(conformidades_nulas), upper_bound],
-        y=[0, 0, max_hist_y, max_hist_y],  
-        fill="toself",
-        fillcolor=hex_to_rgba(green, 0.3),  
-        line=dict(color="rgba(255,0,0,0)"),
-        name="Significance Zone"
-    ))
-
-    # Configure layout with no bar gap
-    fig.update_layout(
-        title="Permutation Test",
-        xaxis_title="Conformity Score",
-        yaxis_title="Density",
-        template="plotly_white",
-        bargap=0  # This correctly applies to layout, not Histogram
-    )
-
-    return fig
-
-
-#####################################################################################################
-####################################PLOTS FOR REPORTS################################################
-#####################################################################################################
-
-def plot_geodata_report(merged_data,custom_colors=custom_colors):
-
-    """
-    Plots a time-series line chart of conversions (Y) over time, grouped by location.
-
-    Args:
-        merged_data: pandas.DataFrame
-            A DataFrame containing the following columns:
-            - 'time': Timestamps or dates
-            - 'Y': Conversion value
-            - 'location': Categorical column to group and differentiate lines by color
-    """
-    
-
-  
-
-  
-
-    fig, ax = plt.subplots(figsize=(24, 10)) 
-    sns.lineplot(x='time', y='Y', hue='location', data=merged_data, linewidth=1, ax=ax,palette=custom_colors)
-    last_points = merged_data.groupby('location').last().reset_index()
-    for _, row in last_points.iterrows():
-        ax.text(row['time'], row['Y'], row['location'], 
-                color='black', fontsize=12, ha='left', va='center')
-
-    ax.set_xlabel('Date', fontsize=12)
-    ax.set_ylabel('Conversions', fontsize=12)
-    ax.xaxis.set_major_locator(mdates.MonthLocator())
-    ax.xaxis.set_major_formatter(mdates.DateFormatter('%b %Y'))
-    plt.xticks(rotation=45)
-    ax.legend([], frameon=False)
-
-
-    return fig
-
-
-def plot_metrics_report(geo_test):
-
-    """
-    Plots MAPE and SMAPE metrics for each group size.
-
-    Args:
-        geo_test (dict): A dictionary containing the simulation results, including predictions and actual metrics.
-
-    Returns:
-        None: Displays plots for MAPE and SMAPE metrics by group size.
-    """
-
-
-    metrics = {'Size': [], 'MAPE': [], 'SMAPE': []}
-    results_by_size = geo_test['simulation_results']
+    if sensitivity_results is not None:
+      print("Complete.")
+      
+    # Step 4: Generate MDE visualizations
+    fig = plot_mde_results(simulation_results, sensitivity_results, periods)
 
     
-    for size, result in results_by_size.items():
-        y = result['Actual Target Metric (y)']
-        predictions = result['Predictions']
 
-        mape = mean_absolute_percentage_error(y, predictions)
-        smape = 100/len(y) * np.sum(2 * np.abs(predictions - y) / (np.abs(y) + np.abs(predictions)))
 
-        metrics['Size'].append(size)
-        metrics['MAPE'].append(mape)
-        metrics['SMAPE'].append(smape)
-
-    
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(25, 6))
-
-    ax1.plot(metrics['Size'], metrics['MAPE'], marker='o', color=blue)
-    ax1.set_title('MAPE by Group Size')
-    ax1.set_xlabel('Group Size')
-    ax1.set_ylabel('MAPE')
-
-    ax2.plot(metrics['Size'], metrics['SMAPE'], marker='o', color=green)
-    ax2.set_title('SMAPE by Group Size')
-    ax2.set_xlabel('Group Size')
-    ax2.set_ylabel('SMAPE')
-
-    plt.tight_layout()
-
-    return fig
-
-
-
-
-
-
-
-def plot_impact_report(geo_test, periodo_especifico, holdout_target):
-
-        """
-        Generates graphs for a specific holdout percentage in a specific period.
-
-        Args:
-            geo_test (dict): Dictionary with results including sensitivity, simulations, and treated series.
-            periodo_especifico (int): Period in which the MDE is to be analyzed.
-            holdout_target (float): Target holdout percentage to plot.
-
-        Returns:
-            fig: matplotlib figure object with the plots
-        """
-
-
-        sensibilidad_resultados = geo_test['sensitivity_results']
-        results_by_size = geo_test['simulation_results']
-        series_lifts = geo_test['series_lifts']
-        periodos = next(iter(sensibilidad_resultados.values())).keys()
-
-        if periodo_especifico not in periodos:
-            raise ValueError(f"The period {periodo_especifico} is not in the evaluated periods list.")
-
-        
-        target_size_key = None
-        target_mde = None
-        for size_key, result in results_by_size.items():
-            current_holdout = result['Holdout Percentage']
-            if abs(current_holdout - holdout_target) < 0.01: 
-                target_size_key = size_key
-                target_mde = sensibilidad_resultados[size_key][periodo_especifico].get('MDE', None)
-                break
-
-
-        if target_size_key is None:
-            print(f"DEBUG: No data found for holdout percentage {holdout_target}%")
-            return None
-
-        
-        available_deltas = [delta for s, delta, period in series_lifts.keys() 
-                          if s == target_size_key and period == periodo_especifico]
-
-
-        if not available_deltas:
-            print(f"DEBUG: No available deltas for holdout {holdout_target}% and period {periodo_especifico}.")
-            return None
-
-        
-        delta_specific = target_mde
-        closest_delta = min(available_deltas, key=lambda x: abs(x - delta_specific))
-        comb = (target_size_key, closest_delta, periodo_especifico)
-
-
-        resultados_size = results_by_size[target_size_key]
-        y_real = resultados_size['Predictions'].flatten()
-        serie_tratamiento = series_lifts[comb]
-
-
-        diferencia_puntual = serie_tratamiento - y_real
-        efecto_acumulativo = ([0] * (len(serie_tratamiento) - periodo_especifico) + 
-                             np.cumsum(diferencia_puntual[len(serie_tratamiento)-periodo_especifico:]).tolist())
-        star_treatment = len(y_real) - periodo_especifico
-        y_treatment = y_real[star_treatment:]
-        mean_y_real = np.mean(y_treatment)
-        std_dev_y_real = np.std(y_treatment)
-
-        std_error_y_real = std_dev_y_real / np.sqrt(len(y_treatment))
-        upper_bound = y_treatment + 1.96 * std_error_y_real
-        lower_bound = y_treatment - 1.96 * std_error_y_real
-        att = np.mean(serie_tratamiento[star_treatment:] - y_real[star_treatment:])
-        incremental = np.sum(serie_tratamiento[star_treatment:] - y_real[star_treatment:])
-
-        # Create the graph
-        fig, axes = plt.subplots(3, 1, figsize=(15, 9.5), sharex=True)
-
-        # Panel 1: Observed data vs counterfactual prediction
-        axes[0].plot(y_real, label='Control Group', linestyle='--', color=black_secondary,linewidth=1)
-        axes[0].plot(serie_tratamiento, label='Treatment Group', linestyle='-', color=green,linewidth=1)
-        axes[0].axvline(x=star_treatment, color='black', linestyle='--', linewidth=1.5)
-        axes[0].fill_between(range((len(y_real) - periodo_especifico), len(y_real)),  lower_bound, upper_bound, color='gray', alpha=0.2, label='95% CI')
-        axes[0].set_title(f'Holdout: {holdout_target:.2f}% - MDE: {target_mde:.2f}')
-        axes[0].yaxis.set_label_position('right')
-        axes[0].set_ylabel('Original')
-        axes[0].legend()
-        axes[0].grid(True)
-
-        # Panel 2: Point difference
-        axes[1].plot(diferencia_puntual, label='Point Difference (Causal Effect)', color=green,linewidth=1)
-        axes[1].plot([0, len(y_real)], [0, 0], color='gray', linestyle='--', linewidth=2)
-        axes[1].axvline(x=star_treatment, color='black', linestyle='--', linewidth=1.5)
-
-
-        axes[1].set_ylabel('Point Difference')
-        axes[1].yaxis.set_label_position('right')
-        axes[1].grid(True)
-
-
-        # Panel 3: Cumulative effect
-        axes[2].plot(efecto_acumulativo, label='Cumulative Effect', color=green,linewidth=1)
-        axes[2].axvline(x=star_treatment, color='black', linestyle='--', linewidth=1.5)
-        axes[2].set_xlabel('Days')
-        axes[2].yaxis.set_label_position('right')
-
-
-        axes[2].set_ylabel('Cumulative Effect')
-
-
-
-        axes[2].grid(True)
-
-
-        plt.tight_layout()
-
-        return fig, round(att,2), round(incremental,2)
-
-
-
-
-def plot_impact_evaluation_report(counterfactual, treatment, period):
-        """
-        Plot the impact evaluation results
-        
-        Args:
-            counterfactual (array): Control group values
-            treatment (array): Treatment group values
-            period (int): Treatment period length
-        """
-        diferencia_puntual = treatment - counterfactual
-        efecto_acumulativo = ([0] * (len(treatment) - period)) + (np.cumsum(diferencia_puntual[len(treatment)-period:])).tolist()
-        star_treatment = len(counterfactual) - period
-        y_treatment = counterfactual[star_treatment:]
-        mean_y_real = np.mean(y_treatment)
-        std_dev_y_real = np.std(y_treatment)
-        att = np.mean(treatment[star_treatment:] - counterfactual[star_treatment:])
-        incremental = np.sum(treatment[star_treatment:] - counterfactual[star_treatment:])
-
-        std_error_y_real = std_dev_y_real / np.sqrt(len(y_treatment))
-        upper_bound = y_treatment + 1.96 * std_error_y_real
-        lower_bound = y_treatment - 1.96 * std_error_y_real
-
-        fig, axes = plt.subplots(3, 1, figsize=(15, 9.5), sharex=True)
-
-        # Panel 1: Observed data vs counterfactual prediction
-        axes[0].plot(counterfactual, label='Control Group', linestyle='--', color=black_secondary,linewidth=1)
-        axes[0].plot(treatment, label='Treatment Group', linestyle='-', color=purple_dark,linewidth=1)
-        axes[0].axvline(x=star_treatment, color='black', linestyle='--', linewidth=1.5)
-
-
-
-        axes[0].fill_between(range((star_treatment), len(counterfactual)),  lower_bound, upper_bound, color='gray', alpha=0.2, label='95% CI')
-        axes[0].yaxis.set_label_position('right')
-        axes[0].set_ylabel('Original')
-        axes[0].legend()
-        axes[0].grid(True)
-
-        # Panel 2: Point difference
-        axes[1].plot(diferencia_puntual, label='Point Difference (Causal Effect)', color=purple_dark,linewidth=1)
-        axes[1].plot([0, len(counterfactual)], [0, 0], color='gray', linestyle='--', linewidth=2)
-        axes[1].axvline(x=star_treatment, color='black', linestyle='--', linewidth=1.5)
-
-
-
-        axes[1].yaxis.set_label_position('right')
-        axes[1].set_ylabel('Point Difference')
-        axes[1].grid(True)
-
-        # Panel 3: Cumulative effect
-        axes[2].plot(efecto_acumulativo, label='Cumulative Effect', color=purple_dark,linewidth=1)
-        axes[2].axvline(x=star_treatment, color='black', linestyle='--', linewidth=1.5)
-        axes[2].set_xlabel('Days')
-        axes[2].set_ylabel('Cumulative Effect')
-
-        axes[2].yaxis.set_label_position('right')
-
-        axes[2].grid(True)
-
-        plt.tight_layout()
-        return fig,round(att,2), round(incremental,2)
-
-def plot_permutation_test_report(conformidades_nulas, conformidad_observada, nivel_significancia=0.1):
-    
-    sns.set_theme(style="whitegrid")
-    fig, ax = plt.subplots(figsize=(10, 6))
-    sns.histplot(conformidades_nulas, bins=30, kde=True, color=blue, alpha=0.6, label='Null Conformities', ax=ax)
-
-    ax.axvline(conformidad_observada, color='black', linestyle='--', linewidth=1.5, label='Observed Conformity')
-
-
-    upper_bound = np.percentile(conformidades_nulas, 100 * (1 - (nivel_significancia / 2)))
-    ax.axvspan(upper_bound, max(conformidades_nulas), color=green, alpha=0.2)
-    ax.set_xlabel("Conformity Score", fontsize=12)
-    ax.set_ylabel("Frequency", fontsize=12)
-    ax.set_title("Permutation Test", fontsize=14)
-    ax.legend()
-
-    return fig 
+    return periods,fig, {
+        "simulation_results": simulation_results,
+        "sensitivity_results": sensitivity_results,
+        "series_lifts": series_lifts
+    }
