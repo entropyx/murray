@@ -278,7 +278,6 @@ if file is not None:
             col_locations = st.text_input("Locations", matching_column2 if matching_column2 else "", 
                                         on_change=reset_states, key="locations")
         with col3:
-            # Create a filtered list of columns excluding date and location-like columns
             target_columns = [col for col in data.columns 
                             if not any(d in col.lower() for d in contains_date) 
                             and not any(l in col.lower() for l in contains_locations)]
@@ -315,7 +314,7 @@ if file is not None:
 
             st.subheader("3. Experimental design")
             st.text("Parameter configuration")
-            excluded_states = st.multiselect("Select excluded states", data1['location'].unique())
+            excluded_locations = st.multiselect("Select excluded locations", data1['location'].unique())
             minimum_holdout_percentage = st.slider("Select minimum_holdout_percentage", 50, 95, 70)
             significance_level = st.number_input("Select significance level", min_value=0.01, max_value=0.10, value=0.05, step=0.01)
             st.text("Select range of lifts")
@@ -373,7 +372,7 @@ if file is not None:
 
             
             current_params = {
-                "excluded_states": excluded_states,
+                "excluded_locations": excluded_locations,
                 "minimum_holdout_percentage": minimum_holdout_percentage,
                 "significance_level": significance_level,
                 "deltas_range": (delta_min, delta_max, delta_step),
@@ -403,13 +402,14 @@ if file is not None:
                 
                 periods, fig1, results = run_geo_analysis(
                     data=data1,
-                    excluded_states=excluded_states,
+                    excluded_locations=excluded_locations,
                     minimum_holdout_percentage=minimum_holdout_percentage,
                     significance_level=significance_level,
                     deltas_range=deltas_range,
                     periods_range=periods_range,
                     progress_bar_1=progress_bar_1,
                     status_text_1=status_text_1,
+
                     progress_bar_2=progress_bar_2,
                     status_text_2=status_text_2
                 )
@@ -493,18 +493,7 @@ if file is not None:
                             last_day = last_day.strftime('%Y-%m-%d')
                             firt_day = firt_day.strftime('%Y-%m-%d')
                             treatment_day = treatment_day.strftime('%Y-%m-%d')
-                            #st.write(f"Period: {period_idx}")
-                            #st.write(f"Treatment day: {treatment_day}")
-                            #st.write(f"First day: {firt_day}")
-                            #st.write(f"Last day: {last_day}")
-                            #st.write(treatment_day)
-                            #st.write(firt_day)
-                            #st.write(last_day)
-
-
-
-
-
+    
                             mde = 'N/A'
                             if period_idx is not None and y_value is not None:
                                 y_value_float = float(y_value.strip('%')) if isinstance(y_value, str) else float(y_value)

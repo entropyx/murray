@@ -344,7 +344,7 @@ if file is not None:
 
             spend = st.number_input("Select spend")
 
-            mmm_option = st.selectbox("Select the option to calculate the iROAS  iCAC", ["iROAS", "iCAP"])
+            mmm_option = st.selectbox("Select the option to calculate the iROAS or iCAC", ["iROAS", "iCAP"])
             st.session_state.mmm_option = mmm_option
 
             start_treatment = pd.to_datetime(start_treatment)
@@ -355,7 +355,7 @@ if file is not None:
             end_idx = (filtered_data['time'].dt.date == end_treatment.date()).idxmax()
 
 
-            # Obtener las posiciones relativas
+            
             start_position_treatment = filtered_data.index.get_loc(start_idx)
             end_position_treatment = filtered_data.index.get_loc(end_idx)
 
@@ -393,15 +393,26 @@ if file is not None:
                     with st.spinner('Running analysis... Please wait.'):
                         
                         results = post_analysis(data1, start_position_treatment, end_position_treatment, treatment_group, lift)
-                        st.session_state.treatment = results[0]
-                        st.session_state.counterfactual = results[1]
-                        st.session_state.p_value = results[2]
-                        st.session_state.power = results[3]
-                        st.session_state.percenge_lift = round(results[4], 2)
-                        st.session_state.control_group = results[5]
-                        st.session_state.conformidad_observada = results[6]
-                        st.session_state.conformidades_nulas = results[7]
+                        print(f"type(results): {type(results)}")
+                        treatment = results['treatment']
+                        st.session_state.treatment = treatment
+                        counterfactual = results['predictions']
+                        st.session_state.counterfactual = counterfactual
+                        p_value = results['p_value']
+                        st.session_state.p_value = p_value
+                        power = results['power']
+                        st.session_state.power = power
+                        percenge_lift = round(results['percenge_lift'], 2)
+                        st.session_state.percenge_lift = percenge_lift
+                        control_group = results['control_group']
+                        st.session_state.control_group = control_group
+                        conformidad_observada = results['conformidad_observada']
+                        st.session_state.conformidad_observada = conformidad_observada
+                        conformidades_nulas = results['conformidades_nulas']
+                        st.session_state.conformidades_nulas = conformidades_nulas
+                        #print(st.session_state.conformidades_nulas)
                         
+
 
                         
                         total_Y = data1['Y'].sum()
@@ -410,7 +421,7 @@ if file is not None:
                         st.session_state.treatment_group = ", ".join(treatment_group)
                         st.session_state.control_group = ", ".join(st.session_state.control_group)
                         period = end_position_treatment - start_position_treatment
-                        st.session_state.permutation_test_report = plot_permutation_test_report(st.session_state.conformidades_nulas,st.session_state.conformidad_observada)
+                        st.session_state.permutation_test_report = plot_permutation_test_report(results)
                         st.session_state.period = period
                         
 
@@ -421,21 +432,12 @@ if file is not None:
 
 
 
-                        impact_graph,att,incremental = plot_impact_evaluation(
-                            st.session_state.counterfactual, 
-                            st.session_state.treatment, 
-                            st.session_state.period
-                        )
-                        
+                        impact_graph,att,incremental = plot_impact_evaluation(results)
                         st.session_state.incremental = incremental
                         
                         st.session_state.impact_graph = impact_graph
 
-                        impact_graph_report,att_report,incremental_report = plot_impact_evaluation_report(
-                            st.session_state.counterfactual, 
-                            st.session_state.treatment, 
-                            st.session_state.period
-                        )
+                        impact_graph_report,att_report,incremental_report = plot_impact_evaluation_report(results)
                         st.session_state.impact_graph_report = impact_graph_report
                         
                         
@@ -444,7 +446,7 @@ if file is not None:
                 if mmm_option == "iROAS":
                     st.session_state.metric_mmm = st.session_state.incremental / spend
                 else:
-                    st.session_state.metric_mmm = st.session_state.incremental / lift
+                    st.session_state.metric_mmm = st.session_state.incremental / spend
 
 
                 
