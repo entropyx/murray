@@ -4,9 +4,8 @@ from .plots import (
     plot_metrics,
     plot_counterfactuals,
     plot_mde_results,
-    print_locations,
     print_weights,
-    plot_impact
+    plot_impact_streamlit_app
 )
 
 __version__ = "0.1.0"
