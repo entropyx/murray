@@ -18,7 +18,7 @@ def post_analysis(data_input, start_treatment,end_treatment,treatment_group,lift
             min_correlation=0.8
         )
 
-
+        period = end_treatment - start_treatment
         df_pivot = data_input.pivot(index='time', columns='location', values='Y')
         X = df_pivot[control_group].values  
         y = df_pivot[list(treatment_group)].sum(axis=1).values  
@@ -40,27 +40,25 @@ def post_analysis(data_input, start_treatment,end_treatment,treatment_group,lift
         
         predictions_val, weights = model.predict(X_test)
 
-        
-        y_train_pred = model.predict(X_train)[0].reshape(-1, 1)
-        predictions_val_original = scaler_y.inverse_transform(predictions_val.reshape(-1, 1))
-        y_train_original = scaler_y.inverse_transform(y_train_pred)
+        contrafactual_train = (weights @ X_train.T).reshape(-1, 1)
+        contrafactual_test = (weights @ X_test.T).reshape(-1, 1)
+        contrafactual_full = np.vstack((contrafactual_train, contrafactual_test))
 
-        
-        predictions = np.vstack((y_train_original, predictions_val_original)).flatten()
+        contrafactual_full_original = scaler_y.inverse_transform(contrafactual_full)
+        predictions = contrafactual_full_original.flatten()
 
-        
         y_original = scaler_y.inverse_transform(y_scaled).flatten()
-
         
         MAPE = np.mean(np.abs((y_original - predictions) / (y_original + 1e-10))) * 100
         SMAPE = smape(y_original, predictions)
 
-        percenge_lift = ((np.sum(y_lift[start_treatment:]) - np.sum(predictions_val_original)) / np.abs(np.sum(predictions_val_original))) * 100
+        percenge_lift = ((np.sum(y_lift[start_treatment:]) - np.sum(predictions[start_treatment:])) / np.abs(np.sum(predictions[start_treatment:]))) * 100
 
 
-        conformidad_observada = np.mean(y_lift[start_treatment:]) - np.mean(predictions_val_original)
+        conformidad_observada = np.mean(y_lift[start_treatment:]) - np.mean(predictions[start_treatment:])
         combined = np.concatenate([y_lift, predictions])
         
+
         conformidades_nulas = []
         for _ in range(n_permutaciones):
             if inference_type == "iid":
@@ -81,6 +79,22 @@ def post_analysis(data_input, start_treatment,end_treatment,treatment_group,lift
         power = np.mean(p_value < significance_level)
 
         
-        
+        results_evaluation = {
+            'MAPE': MAPE,
+            'SMAPE': SMAPE,
+            'y_lift': y_lift,
+            'predictions': predictions,
+            'treatment': y_lift,
+            'p_value': p_value,
+            'power': power,
+            'percenge_lift': percenge_lift,
+            'control_group': control_group,
+            'conformidad_observada': conformidad_observada,
+            'conformidades_nulas': conformidades_nulas,
+            'weights': weights,
+            'period': period
+        }
 
-        return y_lift,predictions,p_value,power,percenge_lift,control_group,conformidad_observada,conformidades_nulas
+
+        return results_evaluation
+

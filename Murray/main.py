@@ -10,29 +10,33 @@ from .auxiliary import market_correlations
 
 
 
-
-def select_treatments(similarity_matrix, treatment_size, excluded_states=set()):
+def select_treatments(similarity_matrix, treatment_size, excluded_locations):
     """
     Selects n combinations of treatments based on a similarity DataFrame, excluding certain states
     from the treatment selection but allowing their inclusion in the control.
 
+
     Args:
         similarity_matrix (pd.DataFrame): DataFrame containing correlations between locations in a standard matrix format
         treatment_size (int): Number of treatments to select for each combination.
-        excluded_states (set): Set of states to exclude from the treatment selection.
+        excluded_locations (list): List of locations to exclude from the treatment selection.
+
+
 
     Returns:
         list: A list of unique combinations, each combination being a list of states.
     """
-    missing_states = [state for state in excluded_states if state not in similarity_matrix.index or state not in similarity_matrix.columns]
+    missing_locations = [location for location in excluded_locations if location not in similarity_matrix.index or location not in similarity_matrix.columns]
     
-    if missing_states:
-        raise KeyError(f"The following states are not present in the similarity matrix: {missing_states}")
+
+    if missing_locations:
+        raise KeyError(f"The following locations are not present in the similarity matrix: {missing_locations}")
     
     
+
     similarity_matrix_filtered = similarity_matrix.loc[
-        ~similarity_matrix.index.isin(excluded_states),
-        ~similarity_matrix.columns.isin(excluded_states)
+        ~similarity_matrix.index.isin(excluded_locations),
+        ~similarity_matrix.columns.isin(excluded_locations)
     ]
 
     
@@ -191,16 +195,18 @@ class SyntheticControl(BaseEstimator, RegressorMixin):
         return X @ self.w_, self.w_
 
 
-def BetterGroups(similarity_matrix, excluded_states, data, correlation_matrix, min_holdout=70,progress_updater=None, status_updater=None):
+def BetterGroups(similarity_matrix, excluded_locations, data, correlation_matrix, min_holdout=70,progress_updater=None, status_updater=None):
     """
     Simulates possible treatment groups and evaluates their performance.
 
+
     Parameters:
         similarity_matrix (pd.DataFrame): Similarity matrix between locations.
-        excluded_states (list): List of states to exclude from treatment combinations.
+        excluded_locations (list): List of locations to exclude from treatment combinations.
         data (pd.DataFrame): Dataset with columns 'time', 'location', and 'Y'.
         correlation_matrix (pd.DataFrame): Correlation matrix between locations.
         min_holdout (float): Minimum percentage of data to reserve as holdout (untreated).
+
 
     Returns:
         dict: Simulation results, organized by treatment group size.
@@ -214,13 +220,13 @@ def BetterGroups(similarity_matrix, excluded_states, data, correlation_matrix, m
 
     def smape(A, F):
         denominator = np.abs(A) + np.abs(F)
-        denominator = np.where(denominator == 0, 1e-8, denominator)  # Evita división por cero
+        denominator = np.where(denominator == 0, 1e-8, denominator)  
         return 100 / len(A) * np.sum(2 * np.abs(F - A) / denominator)
 
     total_Y = data['Y'].sum()
     possible_groups = []
     for size in range(min_elements_in_treatment, max_group_size + 1):
-        groups = select_treatments(similarity_matrix, size, excluded_states)
+        groups = select_treatments(similarity_matrix, size, excluded_locations)
         possible_groups.extend(groups)
 
     if not possible_groups:
@@ -389,7 +395,7 @@ def simulate_power(y_real, y_control, delta, period, n_permutaciones=1000, signi
     end_treatment = start_treatment + period
     
     y_with_lift = apply_lift(y_real, delta, start_treatment, end_treatment)
-    conformidad_observada = calculate_conformity(y_with_lift, y_control, start_treatment, end_treatment)
+    observed_conformity = calculate_conformity(y_with_lift, y_control, start_treatment, end_treatment)
     
     combined = np.concatenate([y_real, y_control])
     conformidades_nulas = []
@@ -410,7 +416,7 @@ def simulate_power(y_real, y_control, delta, period, n_permutaciones=1000, signi
             perm_treatment, perm_control, start_treatment, end_treatment)
         conformidades_nulas.append(conformidad_perm)
 
-    p_value = np.mean(np.abs(conformidades_nulas) >= np.abs(conformidad_observada))
+    p_value = np.mean(np.abs(conformidades_nulas) >= np.abs(observed_conformity))
     power = np.mean(p_value < significance_level)
 
     return delta, power, y_with_lift
@@ -513,7 +519,7 @@ def evaluate_sensitivity(results_by_size, deltas, periods, n_permutaciones, sign
 
 def transform_results_data(results_by_size):
     """
-    Transforma los datos para asegurar compatibilidad con el heatmap.
+    Transforms the data to ensure compatibility with the heatmap.
     """
     transformed_data = {}
     for size, data in results_by_size.items():
@@ -529,14 +535,14 @@ def transform_results_data(results_by_size):
         }
     return transformed_data
 
-def run_geo_analysis(data, minimum_holdout_percentage, significance_level, deltas_range, periods_range, excluded_states={}, progress_bar_1=None, status_text_1=None, progress_bar_2=None, status_text_2=None ,n_permutaciones=500):
+def run_geo_analysis(data, minimum_holdout_percentage, significance_level, deltas_range, periods_range, excluded_locations, progress_bar_1=None, status_text_1=None, progress_bar_2=None, status_text_2=None ,n_permutaciones=500):
     """
     Runs a complete geo analysis pipeline including market correlation, group optimization,
     sensitivity evaluation, and visualization of MDE results.
 
     Args:
         data (pd.DataFrame): Input data containing metrics for analysis.
-        excluded_states (list): List of states to exclude from the analysis.
+        excluded_locations (list): List of states to exclude from the analysis.
         minimum_holdout_percentage (float): Minimum holdout percentage to ensure sufficient control.
         significance_level (float): Significance level for statistical testing.
         deltas_range (tuple): Range of delta values to evaluate as (start, stop, step).
@@ -565,7 +571,7 @@ def run_geo_analysis(data, minimum_holdout_percentage, significance_level, delta
     simulation_results = BetterGroups(
         similarity_matrix=correlation_matrix,
         min_holdout=minimum_holdout_percentage,
-        excluded_states=excluded_states,
+        excluded_locations=excluded_locations,
         data=data,
         correlation_matrix=correlation_matrix,
         progress_updater=progress_bar_1,
@@ -590,3 +596,5 @@ def run_geo_analysis(data, minimum_holdout_percentage, significance_level, delta
         "sensitivity_results": sensitivity_results,
         "series_lifts": series_lifts
     }
+
+

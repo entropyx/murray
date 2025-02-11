@@ -1,0 +1,16 @@
+[theme]
+
+# Primary accent for interactive elements
+primaryColor="#d1ccd9" 
+
+# Background color for the page
+backgroundColor="#ffffff"
+
+# Secondary background color for the page
+secondaryBackgroundColor="#1b0043"
+
+# Text color for the page
+textColor="#ffffff"
+font="sans serif"
+
+

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 matplotlib
 numpy
 pandas
@@ -7,3 +8,17 @@ scipy
 seaborn
 setuptools
 cvxpy
+=======
+pandas
+numpy
+scikit-learn
+cvxpy
+matplotlib
+streamlit
+fpdf
+streamlit-js-eval
+streamlit-plotly-events
+seaborn
+plotly
+
+>>>>>>> streamlit-app
