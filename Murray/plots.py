@@ -489,7 +489,7 @@ def plot_impact_streamlit_app(geo_test, periodo_especifico, holdout_target):
             y=serie_tratamiento,
             mode='lines',
             name='Treatment Group',
-            line=dict(color=purple_dark,width=1),
+            line=dict(color=green,width=1),
             showlegend=True
         ), row=1, col=1)
 
@@ -520,7 +520,7 @@ def plot_impact_streamlit_app(geo_test, periodo_especifico, holdout_target):
             y=point_difference,
             mode='lines',
             name='Point Difference (Causal Effect)',
-            line=dict(color=purple_dark,width=1),
+            line=dict(color=green,width=1),
             showlegend=False
         ), row=2, col=1)
 
@@ -560,7 +560,7 @@ def plot_impact_streamlit_app(geo_test, periodo_especifico, holdout_target):
             y=cumulative_effect,
             mode='lines',
             name='Cumulative Effect',
-            line=dict(color=purple_dark,width=1),
+            line=dict(color=green,width=1),
             showlegend=False  
         ), row=3, col=1)
 
@@ -740,7 +740,7 @@ def plot_impact_evaluation(results_evaluation):
         y=treatment,
         mode='lines',
         name='Treatment Group',
-        line=dict(color=purple_dark,width=1),
+        line=dict(color=green,width=1),
         showlegend=True
     ), row=1, col=1)
 
@@ -772,7 +772,7 @@ def plot_impact_evaluation(results_evaluation):
         y=point_difference,
         mode='lines',
         name='Point Difference (Causal Effect)',
-        line=dict(color=purple_dark,width=1),
+        line=dict(color=green,width=1),
         showlegend=False
     ), row=2, col=1)
 
@@ -813,7 +813,7 @@ def plot_impact_evaluation(results_evaluation):
         y=cumulative_effect,
         mode='lines',
         name='Cumulative Effect',
-        line=dict(color=purple_dark,width=1),
+        line=dict(color=green,width=1),
         showlegend=False,
     ), row=3, col=1)
 
@@ -1149,7 +1149,7 @@ def plot_impact_report(geo_test, periodo_especifico, holdout_target):
 
     # Panel 1: Data vs Counterfactual Prediction
     axes[0].plot(y_real, label='Control Group', linestyle='--', color=black_secondary, linewidth=1)
-    axes[0].plot(serie_tratamiento, label='Treatment Group', linestyle='-', color=purple_dark, linewidth=1)
+    axes[0].plot(serie_tratamiento, label='Treatment Group', linestyle='-', color=green, linewidth=1)
     axes[0].axvline(x=star_treatment, color='black', linestyle='--', linewidth=1.5)
     axes[0].fill_between(range(len(y_real)-periodo_especifico, len(y_real)), lower_bound, upper_bound, color='gray', alpha=0.2)
     axes[0].set_title(f'Holdout: {holdout_target:.2f}% - MDE: {target_mde:.2f}')
@@ -1159,7 +1159,7 @@ def plot_impact_report(geo_test, periodo_especifico, holdout_target):
     axes[0].grid(True)
 
     # Panel 2: Point Difference 
-    axes[1].plot(diferencia_puntual, label='Point Difference (Causal Effect)', color=purple_dark, linewidth=1)
+    axes[1].plot(diferencia_puntual, label='Point Difference (Causal Effect)', color=green, linewidth=1)
     axes[1].fill_between(range(len(y_real)-periodo_especifico, len(y_real)), lower_bound_effect, upper_bound_effect, color='gray', alpha=0.2)
 
     axes[1].plot([0, len(y_real)], [0, 0], color='gray', linestyle='--', linewidth=2)
@@ -1170,7 +1170,7 @@ def plot_impact_report(geo_test, periodo_especifico, holdout_target):
     axes[1].grid(True)
 
     # Panel 3: Cumulative Effect
-    axes[2].plot(efecto_acumulativo, label='Cumulative Effect', color=purple_dark, linewidth=1)
+    axes[2].plot(efecto_acumulativo, label='Cumulative Effect', color=green, linewidth=1)
     axes[2].fill_between(range(len(y_real)-periodo_especifico, len(y_real)), lower_bound_cumulative, upper_bound_cumulative, color='gray', alpha=0.2)
     axes[2].axvline(x=star_treatment, color='black', linestyle='--', linewidth=1.5)
     axes[2].set_xlabel('Days')
@@ -1238,7 +1238,7 @@ def plot_impact_evaluation_report(results_evaluation):
 
         # Panel 1: Observed data vs counterfactual prediction
         axes[0].plot(counterfactual, label='Control Group', linestyle='--', color=black_secondary,linewidth=1)
-        axes[0].plot(treatment, label='Treatment Group', linestyle='-', color=purple_dark,linewidth=1)
+        axes[0].plot(treatment, label='Treatment Group', linestyle='-', color=green,linewidth=1)
         axes[0].axvline(x=star_treatment, color='black', linestyle='--', linewidth=1.5)
         axes[0].fill_between(range((star_treatment), len(counterfactual)),  lower_bound, upper_bound, color='gray', alpha=0.2)
         axes[0].yaxis.set_label_position('right')
@@ -1247,7 +1247,7 @@ def plot_impact_evaluation_report(results_evaluation):
         axes[0].grid(True)
 
         # Panel 2: Point difference
-        axes[1].plot(point_difference, label='Point Difference (Causal Effect)', color=purple_dark, linewidth=1)
+        axes[1].plot(point_difference, label='Point Difference (Causal Effect)', color=green, linewidth=1)
         axes[1].fill_between(range((star_treatment), len(counterfactual)), lower_bound_pd, upper_bound_pd, color='gray', alpha=0.2)
         axes[1].plot([0, len(counterfactual)], [0, 0], color='gray', linestyle='--', linewidth=2)
         axes[1].axvline(x=star_treatment, color='black', linestyle='--', linewidth=1.5)
@@ -1259,7 +1259,7 @@ def plot_impact_evaluation_report(results_evaluation):
 
 
         # Panel 3: Cumulative effect
-        axes[2].plot(cumulative_effect, label='Cumulative Effect', color=purple_dark, linewidth=1)
+        axes[2].plot(cumulative_effect, label='Cumulative Effect', color=green, linewidth=1)
         axes[2].fill_between(range((star_treatment), len(counterfactual)), lower_bound_ce, upper_bound_ce, color='gray', alpha=0.2)
         axes[2].axvline(x=star_treatment, color='black', linestyle='--', linewidth=1.5)
         axes[2].set_xlabel('Days')

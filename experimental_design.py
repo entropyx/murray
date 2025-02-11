@@ -143,17 +143,17 @@ def generate_pdf(treatment_group, control_group, holdout_percentage, impact_grap
 
         col_width = 95  
         row_height = 8  
+        header_bg = (103, 85, 130)  # Morado oscuro para los títulos
+        alt_row_bg = (209, 204, 217)  # Morado pastel
+        white_row_bg = (246, 246, 246)  # Gris claro
+        text_color = (33, 31, 36)
 
         
         if pdf.get_y() > 250: 
             pdf.add_page()
-
-
-        weights_bg_color = (187, 178, 199)
-        location_bg_color = (255, 255, 255)
             
-        pdf.set_fill_color(240, 240, 240)  
-        pdf.set_text_color(27, 0, 67)
+        pdf.set_fill_color(*header_bg)  
+        pdf.set_text_color(255, 255, 255)
         pdf.set_font("Poppins", style='B', size=10)
         pdf.cell(col_width, row_height, "Location", 1, 0, 'C', True)
         pdf.cell(col_width, row_height, "Weight", 1, 1, 'C', True)
@@ -161,17 +161,15 @@ def generate_pdf(treatment_group, control_group, holdout_percentage, impact_grap
 
 
 
-        for _, row in weights.iterrows():
-            #Location columns
-            pdf.set_fill_color(187, 178, 199)
-            pdf.set_font("Poppins", style='B', size=10)  
-            pdf.set_text_color(33, 31, 36)
-            pdf.cell(col_width, row_height, str(row['Control Location']), 1, 0, 'C',True)  
-            #Weights columns
-            pdf.set_fill_color(255, 255, 255)
-            pdf.set_font("Poppins", size=10)  
-            pdf.set_text_color(33, 31, 36)
-            pdf.cell(col_width, row_height, f"{row['Weights']:.4f}", 1, 1, 'C',True)
+        for i, row in weights.iterrows():
+            bg_color = alt_row_bg if i % 2 else white_row_bg
+
+            pdf.set_fill_color(*bg_color)
+            pdf.set_text_color(*text_color)
+            pdf.set_font("Poppins", size=10)
+    
+            pdf.cell(col_width, row_height, row['Control Location'], 1, 0, 'C', True)
+            pdf.cell(col_width, row_height, f"{row['Weights']:.4f}", 1, 1, 'C', True)
 
 
         pdf.ln(5)  
