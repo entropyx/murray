@@ -1,4 +1,5 @@
 from .main import run_geo_analysis
+from .post_analysis import run_geo_evaluation
 from .plots import (
     plot_geodata,
     print_locations,
