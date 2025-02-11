@@ -2,5 +2,11 @@ pandas
 numpy
 scikit-learn
 cvxpy
-tqdm
 matplotlib
+streamlit
+fpdf
+streamlit-js-eval
+streamlit-plotly-events
+seaborn
+plotly
+
