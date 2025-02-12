@@ -31,3 +31,4 @@ venv/
 *.pyo
 __pycache__/
 *.swp
+*.ipynb
