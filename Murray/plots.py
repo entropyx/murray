@@ -874,7 +874,8 @@ def plot_impact_graphs_evaluation(results_evaluation):
     fig, att, incremental = plot_impact_evaluation(results_evaluation)
     return fig
 
-def print_incremental_results_evaluation(results_evaluation):
+def print_incremental_results_evaluation(results_evaluation,metric_mmm):
+    spend = results_evaluation['spend']
     
     fig, att, incremental = plot_impact_evaluation(results_evaluation)
     title = "Incremental Results"
@@ -883,7 +884,7 @@ def print_incremental_results_evaluation(results_evaluation):
     print("=" * 30)
     print(f"ATT: {round(att,2)}")
     print(f"Lift total: {round(incremental,2)}")
-
+    print(f"{metric_mmm}: {round(incremental/spend,2)}")
 
     print("=" * 30)
 
