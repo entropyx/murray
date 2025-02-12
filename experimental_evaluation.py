@@ -1,5 +1,5 @@
 import streamlit as st
-from Murray.post_analysis import post_analysis
+from Murray.post_analysis import run_geo_evaluation
 import pandas as pd
 from Murray.auxiliary import cleaned_data
 from Murray.plots import *
@@ -340,7 +340,6 @@ if file is not None:
             end_treatment = st.date_input("Treatment end date",min_value=firt_day,max_value=last_day,value=last_day)
             treatment_group = st.multiselect("Select treatment group", data1['location'].unique())
 
-            lift = st.number_input("Select lift")
 
             spend = st.number_input("Select spend")
 
@@ -375,8 +374,7 @@ if file is not None:
             current_params = {
                 "start_treatment": start_treatment,
                 "end_treatment": end_treatment,
-                "treatment_group": treatment_group,
-                "lift": lift
+                "treatment_group": treatment_group
             }
 
             
@@ -392,7 +390,7 @@ if file is not None:
                     st.session_state.evaluation_button_clicked = True
                     with st.spinner('Running analysis... Please wait.'):
                         
-                        results = post_analysis(data1, start_position_treatment, end_position_treatment, treatment_group, lift)
+                        results = run_geo_evaluation(data1, start_treatment, end_treatment, treatment_group,spend)
                         print(f"type(results): {type(results)}")
                         treatment = results['treatment']
                         st.session_state.treatment = treatment
