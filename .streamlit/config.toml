@@ -1,16 +1,16 @@
 [theme]
 
 # Primary accent for interactive elements
-primaryColor="#d1ccd9" 
+primaryColor="#1b0043" 
 
 # Background color for the page
 backgroundColor="#ffffff"
 
 # Secondary background color for the page
-secondaryBackgroundColor="#1b0043"
+secondaryBackgroundColor="#5f4d7b"
 
 # Text color for the page
-textColor="#ffffff"
+textColor="#000000"
 font="sans serif"
 
 
