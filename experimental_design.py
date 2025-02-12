@@ -312,7 +312,47 @@ if file is not None:
 
             st.subheader("3. Experimental design")
             st.text("Parameter configuration")
+            st.markdown("""
+            <style>
+                /* Estilizar los tags de selección del multiselect */
+                .stMultiSelect span[data-baseweb="tag"] {
+                    background-color: #aec4e7 !important;
+                    color: black !important;
+                    border-radius: 5px !important;
+                    display: inline-block !important;
+                }
+
+                /* Asegurar que los tags tengan un margen y padding adecuado */
+                .stMultiSelect span[data-baseweb="tag"] div {
+                    color: black !important;
+                }
+            </style>
+            """, unsafe_allow_html=True)
             excluded_locations = st.multiselect("Select excluded locations", data1['location'].unique())
+            st.markdown(
+            """
+            <style>
+            /* Cambiar el color del track antes del handle (parte izquierda) */
+            div[data-baseweb="slider"] > div > div:nth-child(2) {
+                background: #ff5733 !important;
+            }
+
+            /* Cambiar el color del track después del handle (parte derecha) */
+            div[data-baseweb="slider"] > div > div:nth-child(3) {
+                background: #ccc !important;
+            }
+
+            /* Cambiar el color del handle (círculo del slider) */
+            div[data-baseweb="slider"] > div > div:nth-child(4) {
+                background-color: #ff5733 !important;
+                border-radius: 50%;
+                width: 15px;
+                height: 15px;
+            }
+            </style>
+            """,
+            unsafe_allow_html=True
+            )
             maximum_treatment_percentage = st.slider("Select maximum_treatment_percentage", 5, 50, 30)
             significance_level = st.number_input("Select significance level", min_value=0.01, max_value=0.10, value=0.05, step=0.01)
             st.text("Select range of lifts")
