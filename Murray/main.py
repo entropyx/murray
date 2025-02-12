@@ -54,8 +54,8 @@ def select_treatments(similarity_matrix, treatment_size, excluded_locations):
     max_combinations = comb(n, r)
 
     n_combinations = max_combinations
-    if n_combinations > 500:
-        n_combinations = 500
+    if n_combinations > 3000:
+        n_combinations = 3000
 
 
     combinations = set()
@@ -73,14 +73,16 @@ def select_treatments(similarity_matrix, treatment_size, excluded_locations):
 
 
 
-def select_controls(correlation_matrix, treatment_group, min_correlation=0.8):
+def select_controls(correlation_matrix, treatment_group, min_correlation=0.8, fallback_n=1):
     """
-    Dynamically selects control group states based on correlation values.
+    Dynamically selects control group states based on correlation values. 
+    If no state meets the min_correlation, it selects the top `fallback_n` correlated states.
 
     Args:
         correlation_matrix (pd.DataFrame): Correlation matrix between states.
         treatment_group (list): List of states in the treatment group.
         min_correlation (float): Minimum correlation threshold to consider a state as part of the control group.
+        fallback_n (int): Number of top correlated states to select if no state meets the min_correlation.
 
     Returns:
         list: List of states selected as the control group.
@@ -92,10 +94,18 @@ def select_controls(correlation_matrix, treatment_group, min_correlation=0.8):
             continue
         treatment_row = correlation_matrix.loc[treatment_location]
 
+        
         similar_states = treatment_row[
-            (treatment_row >= min_correlation) &
-            (~treatment_row.index.isin(treatment_group))
+            (treatment_row >= min_correlation) & (~treatment_row.index.isin(treatment_group))
         ].sort_values(ascending=False).index.tolist()
+
+        if not similar_states:
+            similar_states = (
+                treatment_row[~treatment_row.index.isin(treatment_group)]
+                .sort_values(ascending=False)
+                .head(fallback_n)
+                .index.tolist()
+            )
 
         control_group.update(similar_states)
 
@@ -540,7 +550,7 @@ def transform_results_data(results_by_size):
         }
     return transformed_data
 
-def run_geo_analysis_streamlit_app(data, maximum_treatment_percentage, significance_level, deltas_range, periods_range, excluded_locations, progress_bar_1=None, status_text_1=None, progress_bar_2=None, status_text_2=None ,n_permutaciones=500):
+def run_geo_analysis_streamlit_app(data, maximum_treatment_percentage, significance_level, deltas_range, periods_range, excluded_locations, progress_bar_1=None, status_text_1=None, progress_bar_2=None, status_text_2=None ,n_permutaciones=5000):
     """
     Runs a complete geo analysis pipeline including market correlation, group optimization,
     sensitivity evaluation, and visualization of MDE results.
@@ -570,6 +580,7 @@ def run_geo_analysis_streamlit_app(data, maximum_treatment_percentage, significa
 
     # Step 1: Generate market correlations
     correlation_matrix = market_correlations(data)
+    print(correlation_matrix)
 
     # Step 2: Find the best groups for control and treatment
     simulation_results = BetterGroups(
@@ -630,6 +641,7 @@ def run_geo_analysis(data, maximum_treatment_percentage, significance_level, del
 
     # Step 1: Generate market correlations
     correlation_matrix = market_correlations(data)
+    print(correlation_matrix)
 
     # Step 2: Find the best groups for control and treatment
     simulation_results = BetterGroups(
