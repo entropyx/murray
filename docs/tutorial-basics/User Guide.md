@@ -103,7 +103,7 @@ You can get a graph about lift, point difference and cumulative effect with the 
 
 
 ```python
-plot_impact(geo_test,period=10,holdout_percentage=85.75)
+plot_impact_graphs(geo_test,period=10,holdout_percentage=85.75)
 ```
 
 
@@ -152,14 +152,21 @@ To evaluate an implemented experiment you can use Murray. This analysis is simpl
 ```python
 data = pd.read_csv("data_marketing_campaign.csv")
 ```
-You can also use the same function to display the graph of the entered data.
+
+Then, as explained in the experimental design, you can clean the data with the ```cleaned_data``` function.
+
+```python
+data = cleaned_data(data,col_target='sessions',col_locations='location',col_dates='date')
+```
+
+Now, you can also use the same function to display the graph of the entered data.
 
 ```python
 plot_geodata(data)
 ```
 
 ### 2. Experimental evaluation
-This part is very similar to the experimental design, but in this case you must add the parameter to ```post_analysis``` function. The parameters needed to run are:
+This part is very similar to the experimental design, but in this case you must add the parameter to ```run_geo_evaluation`` function. The parameters needed to run are:
 
 * ```data```: A data frame containing historical conversions by locations. This parameters must cotain a ```location``` column, ```time``` column and ```Y``` column. That columns get after to run ```cleaned_fuction``` or add the data manually with these feactures or the data must have this columns.
 
@@ -172,7 +179,7 @@ This part is very similar to the experimental design, but in this case you must 
 
 
 ```python
-results = post_analysis(data,start_treatment='2020-01-01',end_treatment='2020-01-31',treatment_group=['durango','puebla','queretaro'])
+results = run_geo_evaluation(data,start_treatment='2020-01-01',end_treatment='2020-01-31',treatment_group=['durango','puebla','queretaro'])
 ```
 
 ### 3. Results
