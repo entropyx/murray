@@ -1,5 +1,6 @@
 from .main import run_geo_analysis
 from .post_analysis import run_geo_evaluation
+from .auxiliary import cleaned_data
 from .plots import (
     plot_geodata,
     print_locations,
@@ -11,6 +12,6 @@ from .plots import (
     print_incremental_results_evaluation,
     plot_permutation_test
 )
-from .auxiliary import cleaned_data
+
 
 __version__ = "0.1.0"
