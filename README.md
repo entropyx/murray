@@ -8,7 +8,6 @@ You can install Murray using pip:
 
 ```bash
 pip install git+https://github.com/entropyx/murray.git
-pip install git+https://github.com/entropyx/murray.git
 ```
 
 # Prepare your data
