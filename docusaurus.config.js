@@ -61,7 +61,7 @@ const config = {
   themeConfig:
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
-      image: 'img/docusaurus-social-card.jpg',
+      image: 'img/card social.jpg',
       navbar: {
         title: 'Murray',
         logo: {
