@@ -11,7 +11,8 @@ setup(
         "cvxpy",
         "tqdm",
         "matplotlib",
-        "seaborn"
+        "seaborn",
+        "plotly"
     ],
     author="Entropy Team",
     author_email="dev@entropy.tech",
