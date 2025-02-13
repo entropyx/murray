@@ -17,9 +17,8 @@ const config = {
   // If you aren't using GitHub pages, you don't need these.
   organizationName: 'entropyx', // Usually your GitHub org/user name.
   projectName: 'murray', // Usually your repo name.
-  trailingSlash: false,
   deploymentBranch: 'gh-pages',
-
+  trailingSlash: false,
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
 
@@ -40,8 +39,6 @@ const config = {
           sidebarPath: './sidebars.js',
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
-          editUrl:
-            'https://github.com/entropyx/murray/edit/documentation/',
         },
         blog: {
           showReadingTime: true,
@@ -49,10 +46,6 @@ const config = {
             type: ['rss', 'atom'],
             xslt: true,
           },
-          // Please change this to your repo.
-          // Remove this to remove the "edit this page" links.
-          editUrl:
-            'https://github.com/facebook/docusaurus/tree/main/packages/create-docusaurus/templates/shared/',
           // Useful options to enforce blogging best practices
           onInlineTags: 'warn',
           onInlineAuthors: 'warn',
