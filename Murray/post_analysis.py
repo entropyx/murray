@@ -1,10 +1,24 @@
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler
-from .main import select_controls,apply_lift,SyntheticControl
-from .auxiliary import market_correlations
+from Murray.main import select_controls,SyntheticControl
+from Murray.auxiliary import market_correlations
+import pandas as pd
 
-
-def post_analysis(data_input, start_treatment,end_treatment,treatment_group,lift=0.1,n_permutaciones=5000,inference_type='iid',significance_level=0.1):
+def run_geo_evaluation(data_input, start_treatment,end_treatment,treatment_group,spend,n_permutaciones=5000,inference_type='iid',significance_level=0.1):
+        
+        random_sate = data_input['location'].unique()[0]
+        filtered_data = data_input[data_input['location'] == random_sate]
+        firt_day = filtered_data['time'].min()
+        last_day = filtered_data['time'].max()
+        start_treatment = pd.to_datetime(start_treatment, dayfirst=True)
+        end_treatment = pd.to_datetime(end_treatment,dayfirst=True)
+        print(f"data_input: {start_treatment}")
+        print(f"data_output: {end_treatment}")
+        filtered_data['time'] = pd.to_datetime(filtered_data['time'])
+        start_idx = (filtered_data['time'].dt.date == start_treatment.date()).idxmax()
+        end_idx = (filtered_data['time'].dt.date == end_treatment.date()).idxmax()
+        start_position_treatment = filtered_data.index.get_loc(start_idx)
+        end_position_treatment = filtered_data.index.get_loc(end_idx)
 
         def smape(A, F):
           return 100/len(A) * np.sum(2 * np.abs(F - A) / (np.abs(A) + np.abs(F+1e-10)))
@@ -18,11 +32,11 @@ def post_analysis(data_input, start_treatment,end_treatment,treatment_group,lift
             min_correlation=0.8
         )
 
-        period = end_treatment - start_treatment
+        period = end_position_treatment - start_position_treatment
         df_pivot = data_input.pivot(index='time', columns='location', values='Y')
         X = df_pivot[control_group].values  
         y = df_pivot[list(treatment_group)].sum(axis=1).values  
-        y_lift = apply_lift(y,lift,start_treatment,end_treatment)
+        
         
         scaler_x = MinMaxScaler()
         scaler_y = MinMaxScaler()
@@ -30,8 +44,8 @@ def post_analysis(data_input, start_treatment,end_treatment,treatment_group,lift
         X_scaled = scaler_x.fit_transform(X)  
         y_scaled = scaler_y.fit_transform(y.reshape(-1, 1))  
 
-        X_train, X_test = X_scaled[:start_treatment], X_scaled[start_treatment:]
-        y_train, y_test = y_scaled[:start_treatment], y_scaled[start_treatment:]
+        X_train, X_test = X_scaled[:start_position_treatment], X_scaled[start_position_treatment:]
+        y_train, y_test = y_scaled[:start_position_treatment], y_scaled[start_position_treatment:]
 
         
         model = SyntheticControl()
@@ -52,11 +66,11 @@ def post_analysis(data_input, start_treatment,end_treatment,treatment_group,lift
         MAPE = np.mean(np.abs((y_original - predictions) / (y_original + 1e-10))) * 100
         SMAPE = smape(y_original, predictions)
 
-        percenge_lift = ((np.sum(y_lift[start_treatment:]) - np.sum(predictions[start_treatment:])) / np.abs(np.sum(predictions[start_treatment:]))) * 100
+        percenge_lift = ((np.sum(y[start_position_treatment:]) - np.sum(predictions[start_position_treatment:])) / np.abs(np.sum(predictions[start_position_treatment:]))) * 100
 
 
-        conformidad_observada = np.mean(y_lift[start_treatment:]) - np.mean(predictions[start_treatment:])
-        combined = np.concatenate([y_lift, predictions])
+        conformidad_observada = np.mean(y[start_position_treatment:]) - np.mean(predictions[start_position_treatment:])
+        combined = np.concatenate([y, predictions])
         
 
         conformidades_nulas = []
@@ -71,7 +85,7 @@ def post_analysis(data_input, start_treatment,end_treatment,treatment_group,lift
             perm_treatment = combined[np.random.choice(len(combined), len(y), replace=False)]
             perm_control = combined[np.random.choice(len(combined), len(y), replace=False)]
 
-            conformidad_perm = np.mean(perm_treatment[start_treatment:]) - np.mean(perm_control[start_treatment:])
+            conformidad_perm = np.mean(perm_treatment[start_position_treatment:]) - np.mean(perm_control[start_position_treatment:])
             conformidades_nulas.append(conformidad_perm)
 
         
@@ -82,9 +96,9 @@ def post_analysis(data_input, start_treatment,end_treatment,treatment_group,lift
         results_evaluation = {
             'MAPE': MAPE,
             'SMAPE': SMAPE,
-            'y_lift': y_lift,
+            'y_lift': y,
             'predictions': predictions,
-            'treatment': y_lift,
+            'treatment': y,
             'p_value': p_value,
             'power': power,
             'percenge_lift': percenge_lift,
@@ -92,9 +106,9 @@ def post_analysis(data_input, start_treatment,end_treatment,treatment_group,lift
             'conformidad_observada': conformidad_observada,
             'conformidades_nulas': conformidades_nulas,
             'weights': weights,
-            'period': period
+            'period': period,
+            'spend': spend
         }
 
 
         return results_evaluation
-

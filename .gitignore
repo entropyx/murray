@@ -10,3 +10,4 @@ node_modules/
 *.pyz
 *.pdf
 *.pkl
+build/
