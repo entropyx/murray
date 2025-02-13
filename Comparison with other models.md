@@ -54,18 +54,6 @@ It is worth noting that no extensive knowledge of the required parameters is nec
 The package focuses on delivering critical metrics, such as the Minimum Detectable Effect (MDE), leveraging advanced synthetic control methods to generate robust counterfactuals, ensuring reliable and solid results.
 
 
-### Comparison Table
-
-
-
-| Features                              | Geolift  | GeoX        | Murray        |
-|:--------------------------------------|:--------:|:-----------:|:-------------:|
-| Easy result interpretability          |    ✗     |     ✔       |       ✔   |   |
-| Low knowledge requirement             |    ✗     |     ✔       |       ✔       |
-| Low computational cost                |    ✗     |     ✔       |       ✔ |     |
-| Functional flexibility                |    ✔     |     ✗       |       ✔|      |
-| Open source                           |    ✔     |     ✗       |       ✔ |     |
-
 ## Conclusions
 
 Although Murray is a new product in the market, it introduces key features for geographical experiments. It is a user-friendly package, suitable for any user, and provides a highly viable solution for identifying the best combinations of locations and periods to apply treatments. The results are presented in a simple manner, eliminating the need to manually configure parameters for your experiments. This enables users to gain a comprehensive view of different scenarios when applying a treatment, with the confidence of obtaining results through robust synthetic control methods that generate a representative counterfactual for the treated group.
