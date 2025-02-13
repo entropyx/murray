@@ -639,7 +639,7 @@ def run_geo_analysis(data, maximum_treatment_percentage, significance_level, del
 
     # Step 1: Generate market correlations
     correlation_matrix = market_correlations(data)
-    print(correlation_matrix)
+    
 
     # Step 2: Find the best groups for control and treatment
     simulation_results = BetterGroups(
