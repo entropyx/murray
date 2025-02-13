@@ -69,11 +69,11 @@ def run_geo_evaluation(data_input, start_treatment,end_treatment,treatment_group
         percenge_lift = ((np.sum(y[start_position_treatment:]) - np.sum(predictions[start_position_treatment:])) / np.abs(np.sum(predictions[start_position_treatment:]))) * 100
 
 
-        conformidad_observada = np.mean(y[start_position_treatment:]) - np.mean(predictions[start_position_treatment:])
+        observed_conformity = np.mean(y[start_position_treatment:]) - np.mean(predictions[start_position_treatment:])
         combined = np.concatenate([y, predictions])
         
 
-        conformidades_nulas = []
+        null_conformities = []
         for _ in range(n_permutaciones):
             if inference_type == "iid":
                 np.random.shuffle(combined)
@@ -86,10 +86,10 @@ def run_geo_evaluation(data_input, start_treatment,end_treatment,treatment_group
             perm_control = combined[np.random.choice(len(combined), len(y), replace=False)]
 
             conformidad_perm = np.mean(perm_treatment[start_position_treatment:]) - np.mean(perm_control[start_position_treatment:])
-            conformidades_nulas.append(conformidad_perm)
+            null_conformities.append(conformidad_perm)
 
         
-        p_value = np.mean(np.abs(conformidades_nulas) >= np.abs(conformidad_observada))
+        p_value = np.mean(np.abs(null_conformities) >= np.abs(observed_conformity))
         power = np.mean(p_value < significance_level)
 
         
@@ -103,8 +103,8 @@ def run_geo_evaluation(data_input, start_treatment,end_treatment,treatment_group
             'power': power,
             'percenge_lift': percenge_lift,
             'control_group': control_group,
-            'conformidad_observada': conformidad_observada,
-            'conformidades_nulas': conformidades_nulas,
+            'observed_conformity': observed_conformity,
+            'null_conformities': null_conformities,
             'weights': weights,
             'period': period,
             'spend': spend

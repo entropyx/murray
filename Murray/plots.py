@@ -92,7 +92,6 @@ def plot_geodata(merged_data,custom_colors=custom_colors):
 
 
 
-
         yaxis_title="Conversions",
         yaxis_title_font=dict(size=16, color='black'),
         yaxis_tickfont=dict(size=12, color='black'),
@@ -195,8 +194,10 @@ def plot_counterfactuals(geo_test):
         None: Displays plots for each group size showing counterfactuals.
     """
 
+
     results_by_size = geo_test['simulation_results']
 
+    # Iterar sobre cada tamaño de grupo
     for size, result in results_by_size.items():
         real_y = result['Actual Target Metric (y)']
         predictions = result['Predictions']
@@ -225,7 +226,6 @@ def plot_counterfactuals(geo_test):
             margin=dict(l=50, r=50, t=50, b=50))
 
         return fig
-
 
 
 
@@ -264,7 +264,6 @@ def plot_mde_results(results_by_size, sensitivity_results, periods):
 
     fig = go.Figure()
     custom_colorscale = [[0,heatmap_green], [1,heatmap_red]]
-
 
 
 
@@ -849,7 +848,6 @@ def plot_impact_evaluation(results_evaluation):
         showlegend=True,
         template="plotly_white",
         margin=dict(l=20, r=20, t=20, b=20),
-
         legend=dict(
             x=0.02,
             y=0.98,
@@ -925,7 +923,6 @@ def plot_permutation_test(results_evaluation, nivel_significancia=0.1):
         nbinsx=30,
         histnorm='probability density',
         name="Null Conformities",
-
         marker=dict(color=blue,line=dict(color="black",width=1)),
         opacity=0.6
     ))
@@ -968,7 +965,6 @@ def plot_permutation_test(results_evaluation, nivel_significancia=0.1):
         line=dict(color="rgba(255,0,0,0)"),
         name="Significance Zone"
     ))
-
 
     fig.update_layout(
         title="Permutation Test",
@@ -1297,6 +1293,5 @@ def plot_permutation_test_report(results_evaluation, nivel_significancia=0.1):
     ax.set_ylabel("Frequency", fontsize=12)
     ax.set_title("Permutation Test", fontsize=14)
     ax.legend()
-
 
     return fig 

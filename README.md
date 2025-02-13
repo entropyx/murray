@@ -7,7 +7,6 @@ Murray is a Python package for geographic incrementality testing that helps dete
 You can install Murray using pip:
 
 ```bash
-pip install git+https://github.com/entropyx/murray.git
 <<<<<<< HEAD
 pip install git+https://github.com/entropyx/murray.git
 =======
@@ -35,3 +34,7 @@ results = run_geo_analysis(
 )
 
 ```
+
+
+# Documentation
+[Entropy Murray Documentation](https://entropy.tech/murray/docs/Murray)

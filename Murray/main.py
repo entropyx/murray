@@ -10,7 +10,6 @@ from Murray.auxiliary import market_correlations
 
 
 
-
 def select_treatments(similarity_matrix, treatment_size, excluded_locations):
     """
     Selects n combinations of treatments based on a similarity DataFrame, excluding certain states
@@ -39,7 +38,6 @@ def select_treatments(similarity_matrix, treatment_size, excluded_locations):
         ~similarity_matrix.index.isin(excluded_locations),
         ~similarity_matrix.columns.isin(excluded_locations)
     ]
-
 
     
     if treatment_size > similarity_matrix_filtered.shape[1]:
