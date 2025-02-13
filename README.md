@@ -22,11 +22,12 @@ data = pd.DataFrame({
 # Run analysis
 ```python
 results = run_geo_analysis(
-data=data,
-excluyed_states=[],
-minimum_holdout_percentage=70,
-nivel_significancia=0.05,
-deltas_range=(0.01, 0.20, 0.01),
-periodos_range=(4, 13, 1)
+    data = data,
+    excluded_locations = [],
+    maximum_treatment_percentage=30,
+    significance_level = 0.1,
+    deltas_range = (0.01, 0.3, 0.02),
+    periods_range = (5, 45, 5)
 )
+
 ```
