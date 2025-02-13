@@ -3,9 +3,8 @@ sidebar_position: 1
 ---
 
 # User Guide
---- 
 
-The Streamlit app was created to expand user options for conducting geographic lift experiments. Additionally, while the Python package is easy to use, the Streamlit app makes it even more accessible. The workflow of this tool consists of four steps, two of which are mandatory, while the other two are optional as they provide additional information.
+The Streamlit app was developed to enhance user options for conducting geographic lift experiments. While the Python package is easy to use, the Streamlit app makes it even more accessible. The workflow of this tool consists of four steps—two mandatory and two optional, with the latter providing additional insight.
 
 ## Experimental Design 
 

@@ -3,8 +3,8 @@ sidebar_position: 2
 ---
 
 #  Walkthrough
----
-This guide constains an overview of Package Murray, as well as instructions for your used.
+
+This guide constains an overview of package Murray, as well as instructions for its use.
 
 ## Experimental Design 
 
@@ -16,8 +16,9 @@ First, you need to read data with Pandas:
 data = pd.read_csv("data.csv")
 ```
 
+
 #### Cleaned data
-After, if is neccesary, you can use the fuctions ```cleaned_data ``` where you add the data, name of target column, name of location and date columns. For example:
+After, this function is necessary to clean it and avoid errors. In the  ```cleaned_data ``` function you have to add the name of target column, name of location and date columns. For example:
 
 ```python
 data = cleaned_data(data,col_target='sessions',col_locations='location',col_dates='date')
@@ -28,28 +29,28 @@ If you data have NaN values or the data is incomplete, this function is necessar
 
 :::
 
-The function will clean the data of irregularities. After, you can ue the ```plot_geodata``` function to see the data.
+The function will clean the data of irregularities. After, you can use the ```plot_geodata``` function to see the data.
 
 ```python
 plot_geodata(data)
 ```
+![Locale Dropdown](/img/plot_data.png)
 
-
-### 2. Experimental desing
+### 2. Experimental design
 
 Now, you must configure the experimental design. In the ```run_geo_analysis``` fuction must add the following parameters:
 
 The parameters needed to run this function are:
 
-* ```data```: A data frame containing historical conversions by locations. This parameters must cotain a ```location``` column, ```time``` column and ```Y``` column. That columns get after to run ```cleaned_fuction``` or add the data manually with these feactures or the data must have this columns.
+* ```data```: A data frame containing historical conversions by locations. This parameters must cotain a ```location``` column, ```time``` column and ```Y``` column. These columns are generated after running cleaned_function, or they can be added manually with these features. Alternatively, the data must already contain these columns
 
-* ```excluded_states```: A list of states to exclude from treatment groups. These states will no be include in the treatment groups, but these can be include in the control groups. 
+* ```excluded_states```: A list of states to exclude from treatment groups. These states will not be included in the treatment groups, but these can be included in the control groups. 
 
 * ```significance_level```: A number which is a significance level, that is mean, with ```significance_level=0.1``` you have a 90% confidence level in your results.
 
-* ```deltas_range```: This parameter contains a range of different lifts. You can agg the minimum lift, maximum lift and the steps. For example, if ```deltas_range = (0.01, 0.3, 0.02)``` so the lifts will from 1% until 30% with 2% increments.
+* ```deltas_range```: This parameter contains a range of different lifts. You can add the minimum lift, maximum lift and the steps. For example, if ```deltas_range = (0.01, 0.3, 0.02)``` so the lifts will from 1% until 30% with 2% increments.
 
-* ```periods_range```: A list constain a range of differents periods. This one is very parameter before. You can agg the minimum period, maximum period and the steps. For example, if ```periods_range = (5, 40, 5)``` so the lifts will from 5 days until 40 days with 5 days of increments.
+* ```periods_range```: A list constain a range of differents periods. This one is very parameter before. You can agg the minimum period, maximum period and the steps. For example, if ```periods_range = (5, 40, 5)```, the lifts will range from 5 days to 40 days, increasing in 5 day increments.
 
 
 
@@ -66,8 +67,10 @@ geo_test = run_geo_analysis(
 ```
 
 
-The results of the test provide us a visualization about the sensitivity in all periods admitted and differents holdouts. The holdouts depend of the data and locations, by default the number of treatment locations is 20% until 50% of total of locations. For example, if you have 32 locations, the range of size of treatment groups is 6-16 locations.
+The results of the test provide us a visualization about the sensitivity in all periods admitted and different holdouts. The holdouts depend on the data and locations. By default, the number of treatment locations ranges from 20% to 50% of the total locations. For example, if you have 32 locations, the range of size of treatment groups is 6-16 locations.
 Whe the simulation finish, you can see the heatmap of the results like this:
+
+![Locale Dropdown](/img/heatmap.png)
 
 
 
@@ -79,17 +82,22 @@ Once the heatmap is displayed you can choose the best configuration for you, aft
 
 #### Treatment and control groups
 
-For can get the treatment and control groups, you must run ```print_locations()``` function, this one print the treatment and control group you choose. The parameters needed to run are:
+To obtain the treatment and control groups, you must run the  ```print_locations()``` function. This function prints the selected treatment and control groups. The required parameters are:
 
 * ```geo_test```: Results of the main function (```run_geo_analysis```).
 
-* ```holdout_percentage```: The number of holdout percentage, this number you can see in the heatmap of the ```run_geo_analysis``` function.
+* ```holdout_percentage```: The holdout percentage, which can be viewed in the heatmap generated by the ```run_geo_analysis``` function.
 
 
 
-```python
+```py
 print_locations(geo_test,holdout_percentage=85.75)
 ```
+```bash title='consola'
+Treatment Locations: ['california', 'chiapas', 'durango', 'guerrero', 'hidalgo', 'jalisco', 'michoacan', 'morelos', 'nayarit', 'oaxaca', 'queretaro', 'sonora', 'tabasco', 'veracruz']
+Control Locations: ['chihuahua', 'san luis potosi', 'aguascalientes', 'nuevo leon', 'campeche', 'guanajuato', 'zacatecas', 'tamaulipas', 'baja california sur', 'mexico city', 'coahuila', 'yucatan', 'state of mexico', 'tlaxcala', 'colima', 'puebla', 'baja california']
+```
+
 
 #### Impact graphs
 
@@ -105,13 +113,13 @@ You can get a graph about lift, point difference and cumulative effect with the 
 ```python
 plot_impact_graphs(geo_test,period=10,holdout_percentage=85.75)
 ```
-
+![Locale Dropdown](/img/plot_impact.png)
 
 
 
 #### Weights
 
-Murry can print the weights of the control locations that built the counterfactual, you just must run ```print_weighs()```. The parameters is the same that ```print_locations()``` function. For example:
+Murray can print the weights of the control locations used to build the counterfactual. To do this, you just need to run the ```print_weights()``` function. The parameters are the same as those used in the ```print_locations()``` function. For example:
 
 
 ```python
@@ -120,7 +128,7 @@ print_weights(geo_test,holdout_percentage=85.75)
 
 ### Incremental results
 
-You can get the incremental results with the ```plint_incremental_results()``` function. The parameter is:
+You can get the incremental results with the ```print_incremental_results()``` function. The parameter is:
 
 * ```geo_test```: Results of the main function (```run_geo_analysis```).
 
@@ -128,6 +136,15 @@ You can get the incremental results with the ```plint_incremental_results()``` f
 ```python
 print_incremental_results(geo_test)
 ```
+```bash title='consola'
+==============================
+     Incremental Results      
+==============================
+ATT: 22125.98
+Lift total: 442519.56
+==============================
+```
+
 
 ### Metrics
 
@@ -140,14 +157,13 @@ You can get the metrics of the experiment with the ```plot_metrics()``` function
 plot_metrics(geo_test)
 ```
 
-
-
+![Locale Dropdown](/img/plot_metrics.png)
 
 
 ## Experimental Evaluation
 
 ### 1. Data
-To evaluate an implemented experiment you can use Murray. This analysis is simpler than the design, but it is very similar in terms of functions and workflow. The first thing is to load read your data.
+To evaluate an implemented experiment, you can use Murray. This analysis is simpler than the design but follows a similar workflow and function structure. The first step is to load and read your data.
 
 ```python
 data = pd.read_csv("data_marketing_campaign.csv")
@@ -165,10 +181,12 @@ Now, you can also use the same function to display the graph of the entered data
 plot_geodata(data)
 ```
 
-### 2. Experimental evaluation
-This part is very similar to the experimental design, but in this case you must add the parameter to ```run_geo_evaluation`` function. The parameters needed to run are:
+![Locale Dropdown](/img/plot_data.png)
 
-* ```data```: A data frame containing historical conversions by locations. This parameters must cotain a ```location``` column, ```time``` column and ```Y``` column. That columns get after to run ```cleaned_fuction``` or add the data manually with these feactures or the data must have this columns.
+### 2. Experimental evaluation
+This part is very similar to the experimental design, but in this case you must add the parameter to ```run_geo_evaluation``` function. The parameters needed to run are:
+
+* ```data```: A DataFrame containing historical conversions by location. This parameter must include a ```location``` column, a ```time``` column, and a ```Y``` column. These columns are generated after running the cleaned_function, or they can be added manually with these features. Alternatively, the data must already contain these columns.
 
 * ```start_treatment```: The start date of the treatment.
 
@@ -196,18 +214,26 @@ You can get the impact graph with the ```plot_impact_graphs_evaluation()``` func
 ```python
 plot_impact_graphs_evaluation(results)
 ```
-
+![Locale Dropdown](/img/plot_impact2.png)
 
 #### Incremental results
 
 You can get the incremental results with the ```print_incremental_results_evaluation()``` function. The parameters are:
 
-* ```results```: The results of the post analysis.
+* ```results```: The results of ```run_geo_evaluation()``` function.
 
 ```python
 print_incremental_results_evaluation(results)
 ```
-
+```bash title='consola'
+==============================
+     Incremental Results      
+==============================
+ATT: 858.21
+Lift total: 23171.54
+iCPA: 0.93
+==============================
+```
 
 #### Permutation test
 
@@ -219,7 +245,7 @@ You can get the permutation test with the ```plot_permutation_test()``` function
 plot_permutation_test(results)
 ``` 
 
-
+![Locale Dropdown](/img/test.png)
 
 
 
