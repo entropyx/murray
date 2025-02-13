@@ -1,7 +1,7 @@
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler
-from .main import select_controls,SyntheticControl
-from .auxiliary import market_correlations
+from Murray.main import select_controls,SyntheticControl
+from Murray.auxiliary import market_correlations
 import pandas as pd
 
 def run_geo_evaluation(data_input, start_treatment,end_treatment,treatment_group,spend,n_permutaciones=5000,inference_type='iid',significance_level=0.1):

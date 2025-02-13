@@ -146,7 +146,7 @@ def generate_pdf(treatment_group, control_group, holdout_percentage, impact_grap
 
         pdf.set_font("Poppins", style='B', size=12)
         pdf.set_text_color(27, 0, 67)
-        pdf.cell(200, 10, "Metric MMM", ln=True)
+        pdf.cell(200, 10, "Incrementality", ln=True)
         pdf.set_font("Poppins", size=10)
         pdf.set_text_color(33, 31, 36)
         pdf.multi_cell(0, 5, f"The {mmm_option} is a important value to evaluate the performance of the treatment. "
@@ -343,7 +343,7 @@ if file is not None:
 
             spend = st.number_input("Select spend")
 
-            mmm_option = st.selectbox("Select the option to calculate the iROAS or iCAC", ["iROAS", "iCAP"])
+            mmm_option = st.selectbox("Select the option to calculate the iROAS or iCPA", ["iROAS", "iCPA"])
             st.session_state.mmm_option = mmm_option
 
             start_treatment = pd.to_datetime(start_treatment)
@@ -352,7 +352,6 @@ if file is not None:
             filtered_data['time'] = pd.to_datetime(filtered_data['time'])
             start_idx = (filtered_data['time'].dt.date == start_treatment.date()).idxmax()
             end_idx = (filtered_data['time'].dt.date == end_treatment.date()).idxmax()
-
 
             
             start_position_treatment = filtered_data.index.get_loc(start_idx)

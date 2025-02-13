@@ -5,8 +5,8 @@ import cvxpy as cp
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.base import BaseEstimator, RegressorMixin
 from sklearn.utils.validation import check_is_fitted
-from .plots import plot_mde_results
-from .auxiliary import market_correlations
+from Murray.plots import plot_mde_results
+from Murray.auxiliary import market_correlations
 
 
 
