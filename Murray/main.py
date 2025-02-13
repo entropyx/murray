@@ -580,7 +580,7 @@ def run_geo_analysis_streamlit_app(data, maximum_treatment_percentage, significa
 
     # Step 1: Generate market correlations
     correlation_matrix = market_correlations(data)
-    print(correlation_matrix)
+    
 
     # Step 2: Find the best groups for control and treatment
     simulation_results = BetterGroups(
