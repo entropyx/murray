@@ -5,8 +5,8 @@ import cvxpy as cp
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.base import BaseEstimator, RegressorMixin
 from sklearn.utils.validation import check_is_fitted
-from .plots import plot_mde_results
-from .auxiliary import market_correlations
+from Murray.plots import plot_mde_results
+from Murray.auxiliary import market_correlations
 
 
 
@@ -52,8 +52,8 @@ def select_treatments(similarity_matrix, treatment_size, excluded_locations):
     max_combinations = comb(n, r)
 
     n_combinations = max_combinations
-    if n_combinations > 500:
-        n_combinations = 500
+    if n_combinations > 5000:
+        n_combinations = 5000
 
 
     combinations = set()
@@ -71,14 +71,16 @@ def select_treatments(similarity_matrix, treatment_size, excluded_locations):
 
 
 
-def select_controls(correlation_matrix, treatment_group, min_correlation=0.8):
+def select_controls(correlation_matrix, treatment_group, min_correlation=0.8, fallback_n=1):
     """
-    Dynamically selects control group states based on correlation values.
+    Dynamically selects control group states based on correlation values. 
+    If no state meets the min_correlation, it selects the top `fallback_n` correlated states.
 
     Args:
         correlation_matrix (pd.DataFrame): Correlation matrix between states.
         treatment_group (list): List of states in the treatment group.
         min_correlation (float): Minimum correlation threshold to consider a state as part of the control group.
+        fallback_n (int): Number of top correlated states to select if no state meets the min_correlation.
 
     Returns:
         list: List of states selected as the control group.
@@ -90,14 +92,23 @@ def select_controls(correlation_matrix, treatment_group, min_correlation=0.8):
             continue
         treatment_row = correlation_matrix.loc[treatment_location]
 
+        
         similar_states = treatment_row[
-            (treatment_row >= min_correlation) &
-            (~treatment_row.index.isin(treatment_group))
+            (treatment_row >= min_correlation) & (~treatment_row.index.isin(treatment_group))
         ].sort_values(ascending=False).index.tolist()
+
+        if not similar_states:
+            similar_states = (
+                treatment_row[~treatment_row.index.isin(treatment_group)]
+                .sort_values(ascending=False)
+                .head(fallback_n)
+                .index.tolist()
+            )
 
         control_group.update(similar_states)
 
     return list(control_group)
+
 
 class SyntheticControl(BaseEstimator, RegressorMixin):
     def __init__(self, regularization_strength_l1=0.1, regularization_strength_l2=0.1, seasonality=None, delta=1.0):
@@ -195,7 +206,7 @@ class SyntheticControl(BaseEstimator, RegressorMixin):
         return X @ self.w_, self.w_
 
 
-def BetterGroups(similarity_matrix, excluded_locations, data, correlation_matrix, min_holdout=70,progress_updater=None, status_updater=None):
+def BetterGroups(similarity_matrix, excluded_locations, data, correlation_matrix, maximum_treatment_percentage=50,progress_updater=None, status_updater=None):
     """
     Simulates possible treatment groups and evaluates their performance.
 
@@ -205,7 +216,7 @@ def BetterGroups(similarity_matrix, excluded_locations, data, correlation_matrix
         excluded_locations (list): List of locations to exclude from treatment combinations.
         data (pd.DataFrame): Dataset with columns 'time', 'location', and 'Y'.
         correlation_matrix (pd.DataFrame): Correlation matrix between locations.
-        min_holdout (float): Minimum percentage of data to reserve as holdout (untreated).
+        maximum_treatment_percentage (float): Maximum percentage of data to reserve as treatment.
 
 
     Returns:
@@ -217,6 +228,7 @@ def BetterGroups(similarity_matrix, excluded_locations, data, correlation_matrix
     no_locations = int(len(data['location'].unique()))
     max_group_size = round(no_locations * 0.5)
     min_elements_in_treatment = round(no_locations * 0.2)
+    min_holdout = 100 - maximum_treatment_percentage
 
     def smape(A, F):
         denominator = np.abs(A) + np.abs(F)
@@ -287,6 +299,7 @@ def BetterGroups(similarity_matrix, excluded_locations, data, correlation_matrix
         return (treatment_group, control_group, MAPE, SMAPE, y_original, predictions, weights)
 
         #----------------------------------------------------------------------------------
+
     total_groups = len(possible_groups)
 
     with concurrent.futures.ThreadPoolExecutor() as executor:
@@ -535,7 +548,7 @@ def transform_results_data(results_by_size):
         }
     return transformed_data
 
-def run_geo_analysis(data, minimum_holdout_percentage, significance_level, deltas_range, periods_range, excluded_locations, progress_bar_1=None, status_text_1=None, progress_bar_2=None, status_text_2=None ,n_permutaciones=500):
+def run_geo_analysis_streamlit_app(data, maximum_treatment_percentage, significance_level, deltas_range, periods_range, excluded_locations, progress_bar_1=None, status_text_1=None, progress_bar_2=None, status_text_2=None ,n_permutaciones=8000):
     """
     Runs a complete geo analysis pipeline including market correlation, group optimization,
     sensitivity evaluation, and visualization of MDE results.
@@ -543,17 +556,16 @@ def run_geo_analysis(data, minimum_holdout_percentage, significance_level, delta
     Args:
         data (pd.DataFrame): Input data containing metrics for analysis.
         excluded_locations (list): List of states to exclude from the analysis.
-        minimum_holdout_percentage (float): Minimum holdout percentage to ensure sufficient control.
+        maximum_treatment_percentage (float): Maximum treatment percentage to ensure sufficient control.
         significance_level (float): Significance level for statistical testing.
         deltas_range (tuple): Range of delta values to evaluate as (start, stop, step).
         periods_range (tuple): Range of treatment periods to evaluate as (start, stop, step).
         n_permutaciones (int, optional): Number of permutations for sensitivity evaluation. Default is 5000.
 
     Returns:
+        fig: MDE visualization figure.
+        tuple: Tuple containing periods
         dict: Dictionary containing simulation results, sensitivity results, and adjusted series lifts.
-            - "fig": MDE visualization figure.
-            - "config": Configuration for the MDE visualization.
-            - "results_by_size": Results from group optimization.
             - "simulation_results": Results from group optimization.
             - "sensitivity_results": Sensitivity results for evaluated deltas and periods.
             - "series_lifts": Adjusted series for each delta and period.
@@ -566,11 +578,12 @@ def run_geo_analysis(data, minimum_holdout_percentage, significance_level, delta
 
     # Step 1: Generate market correlations
     correlation_matrix = market_correlations(data)
+    
 
     # Step 2: Find the best groups for control and treatment
     simulation_results = BetterGroups(
         similarity_matrix=correlation_matrix,
-        min_holdout=minimum_holdout_percentage,
+        maximum_treatment_percentage=maximum_treatment_percentage,
         excluded_locations=excluded_locations,
         data=data,
         correlation_matrix=correlation_matrix,
@@ -596,5 +609,67 @@ def run_geo_analysis(data, minimum_holdout_percentage, significance_level, delta
         "sensitivity_results": sensitivity_results,
         "series_lifts": series_lifts
     }
+
+
+def run_geo_analysis(data, maximum_treatment_percentage, significance_level, deltas_range, periods_range, excluded_locations, progress_bar_1=None, status_text_1=None, progress_bar_2=None, status_text_2=None ,n_permutaciones=500):
+    """
+    Runs a complete geo analysis pipeline including market correlation, group optimization,
+    sensitivity evaluation, and visualization of MDE results.
+
+    Args:
+        data (pd.DataFrame): Input data containing metrics for analysis.
+        excluded_locations (list): List of states to exclude from the analysis.
+        maximum_treatment_percentage (float): Maximum treatment percentage to ensure sufficient control.
+        significance_level (float): Significance level for statistical testing.
+        deltas_range (tuple): Range of delta values to evaluate as (start, stop, step).
+        periods_range (tuple): Range of treatment periods to evaluate as (start, stop, step).
+        n_permutaciones (int, optional): Number of permutations for sensitivity evaluation. Default is 5000.
+
+    Returns:
+        dict: Dictionary containing simulation results, sensitivity results, and adjusted series lifts.
+            - "simulation_results": Results from group optimization.
+            - "sensitivity_results": Sensitivity results for evaluated deltas and periods.
+            - "series_lifts": Adjusted series for each delta and period.
+    """
+    if progress_bar_1 or progress_bar_2 or status_text_1 or status_text_2 is None:
+      print("Simulation in progress........")
+    
+    periods = list(np.arange(*periods_range))
+    deltas = np.arange(*deltas_range)
+
+    # Step 1: Generate market correlations
+    correlation_matrix = market_correlations(data)
+    print(correlation_matrix)
+
+    # Step 2: Find the best groups for control and treatment
+    simulation_results = BetterGroups(
+        similarity_matrix=correlation_matrix,
+        maximum_treatment_percentage=maximum_treatment_percentage,
+        excluded_locations=excluded_locations,
+        data=data,
+        correlation_matrix=correlation_matrix,
+        progress_updater=progress_bar_1,
+        status_updater=status_text_1
+    )
+
+    # Step 3: Evaluate sensitivity for different deltas and periods
+    sensitivity_results, series_lifts = evaluate_sensitivity(
+        simulation_results, deltas, periods, n_permutaciones, significance_level,progress_bar=progress_bar_2, status_text=status_text_2
+    )
+    if sensitivity_results is not None:
+      print("Complete.")
+      
+    # Step 4: Generate MDE visualizations
+    fig = plot_mde_results(simulation_results, sensitivity_results, periods)
+
+    fig.show()
+
+
+    return {
+        "simulation_results": simulation_results,
+        "sensitivity_results": sensitivity_results,
+        "series_lifts": series_lifts
+    }
+
 
 

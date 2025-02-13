@@ -370,14 +370,14 @@ def print_weights(geo_test, holdout_percentage=None, num_locations=None):
 
 
 
-def plot_impact_streamlit_app(geo_test, periodo_especifico, holdout_target):
+def plot_impact_streamlit_app(geo_test, period, holdout_percentage):
         """
         Generates graphs for a specific holdout percentage in a specific period.
 
         Args:
             geo_test (dict): Dictionary with results including sensitivity, simulations, and treated series.
-            periodo_especifico (int): Period in which the MDE is to be analyzed.
-            holdout_target (float): Target holdout percentage to plot.
+            period (int): Period in which the MDE is to be analyzed.
+            holdout_percentage (float): Target holdout percentage to plot.
 
         Returns:
             fig: matplotlib figure object with the plots
@@ -388,40 +388,40 @@ def plot_impact_streamlit_app(geo_test, periodo_especifico, holdout_target):
         sensibilidad_resultados = geo_test['sensitivity_results']
         results_by_size = geo_test['simulation_results']
         series_lifts = geo_test['series_lifts']
-        periodos = next(iter(sensibilidad_resultados.values())).keys()
+        periods = next(iter(sensibilidad_resultados.values())).keys()
 
         
-        if periodo_especifico not in periodos:
-            raise ValueError(f"The period {periodo_especifico} is not in the evaluated periods list.")
+        if period not in periods:
+            raise ValueError(f"The period {period} is not in the evaluated periods list.")
 
         
         target_size_key = None
         target_mde = None
         for size_key, result in results_by_size.items():
             current_holdout = result['Holdout Percentage']
-            if abs(current_holdout - holdout_target) < 0.01:
+            if abs(current_holdout - holdout_percentage) < 0.01:
                 target_size_key = size_key
-                target_mde = sensibilidad_resultados[size_key][periodo_especifico].get('MDE', None)
+                target_mde = sensibilidad_resultados[size_key][period].get('MDE', None)
                 break
 
         if target_size_key is None:
-            print(f"DEBUG: No data found for holdout percentage {holdout_target}%")
+            print(f"DEBUG: No data found for holdout percentage {holdout_percentage}%")
             raise ValueError("No matching data found.")
 
         
         available_deltas = [
             delta for s, delta, period in series_lifts.keys() 
-            if s == target_size_key and period == periodo_especifico
+            if s == target_size_key and period == period
         ]
 
         if not available_deltas:
-            print(f"DEBUG: No available deltas for holdout {holdout_target}% and period {periodo_especifico}.")
+            print(f"DEBUG: No available deltas for holdout {holdout_percentage}% and period {period}.")
             raise ValueError("No available deltas found.")
 
         
         delta_specific = target_mde
         closest_delta = min(available_deltas, key=lambda x: abs(x - delta_specific))
-        comb = (target_size_key, closest_delta, periodo_especifico)
+        comb = (target_size_key, closest_delta, period)
 
         
         resultados_size = results_by_size[target_size_key]
@@ -430,11 +430,11 @@ def plot_impact_streamlit_app(geo_test, periodo_especifico, holdout_target):
 
         
         point_difference = serie_tratamiento - y_real
-        cumulative_effect = ([0] * (len(serie_tratamiento) - periodo_especifico) + 
-                              np.cumsum(point_difference[len(serie_tratamiento)-periodo_especifico:]).tolist())
+        cumulative_effect = ([0] * (len(serie_tratamiento) - period) + 
+                              np.cumsum(point_difference[len(serie_tratamiento)-period:]).tolist())
         
 
-        star_treatment = len(y_real) - periodo_especifico
+        star_treatment = len(y_real) - period
         y_treatment = y_real[star_treatment:]
 
 
@@ -442,7 +442,7 @@ def plot_impact_streamlit_app(geo_test, periodo_especifico, holdout_target):
         mean_y_real = np.mean(y_treatment)
         std_dev_y_real = np.std(y_treatment)
         std_error_y_real = std_dev_y_real / np.sqrt(len(y_treatment))
-        x_confiance_band = list(range((len(y_real) - periodo_especifico), len(y_real)))
+        x_confiance_band = list(range((len(y_real) - period), len(y_real)))
         upper_bound = y_treatment + 1.96 * std_error_y_real
         lower_bound = y_treatment - 1.96 * std_error_y_real
 
@@ -470,7 +470,7 @@ def plot_impact_streamlit_app(geo_test, periodo_especifico, holdout_target):
         
         fig = make_subplots(rows=3, cols=1, shared_xaxes=True, 
                             subplot_titles=[
-                                f'Holdout: {holdout_target:.2f}% - MDE: {target_mde:.2f}',
+                                f'Holdout: {holdout_percentage:.2f}% - MDE: {target_mde:.2f}',
                                 "Point Difference (Causal Effect)",
                                 "Cumulative Effect"
                             ])
@@ -619,13 +619,13 @@ def plot_impact_streamlit_app(geo_test, periodo_especifico, holdout_target):
         return att, incremental,fig
 
 
-def plot_impact_graphs(geo_test, periodo_especifico, holdout_target):
-  att, incremental, fig = plot_impact_streamlit_app(geo_test, periodo_especifico, holdout_target)
+def plot_impact_graphs(geo_test, period, holdout_percentage):
+  att, incremental, fig = plot_impact_streamlit_app(geo_test, period, holdout_percentage)
   return fig
 
-def print_incremental_results(geo_test, periodo_especifico, holdout_target):
+def print_incremental_results(geo_test, period, holdout_percentage):
     title = "Incremental Results"
-    att, incremental, fig = plot_impact_streamlit_app(geo_test, periodo_especifico, holdout_target)
+    att, incremental, fig = plot_impact_streamlit_app(geo_test, period, holdout_percentage)
     print("=" * 30)
     print(title.center(30))
     print("=" * 30)
@@ -872,7 +872,8 @@ def plot_impact_graphs_evaluation(results_evaluation):
     fig, att, incremental = plot_impact_evaluation(results_evaluation)
     return fig
 
-def print_incremental_results_evaluation(results_evaluation):
+def print_incremental_results_evaluation(results_evaluation,metric_mmm):
+    spend = results_evaluation['spend']
     
     fig, att, incremental = plot_impact_evaluation(results_evaluation)
     title = "Incremental Results"
@@ -881,7 +882,7 @@ def print_incremental_results_evaluation(results_evaluation):
     print("=" * 30)
     print(f"ATT: {round(att,2)}")
     print(f"Lift total: {round(incremental,2)}")
-
+    print(f"{metric_mmm}: {round(incremental/spend,2)}")
 
     print("=" * 30)
 
@@ -1063,14 +1064,14 @@ def plot_metrics_report(geo_test):
 
 
 
-def plot_impact_report(geo_test, periodo_especifico, holdout_target):
+def plot_impact_report(geo_test, period, holdout_percentage):
     """
     Generates graphs for a specific holdout percentage in a specific period.
 
     Args:
         geo_test (dict): Dictionary with results including sensitivity, simulations, and treated series.
-        periodo_especifico (int): Period in which the MDE is to be analyzed.
-        holdout_target (float): Target holdout percentage to plot.
+        period (int): Period in which the MDE is to be analyzed.
+        holdout_percentage (float): Target holdout percentage to plot.
 
     Returns:
         fig: matplotlib figure object with the plots
@@ -1079,43 +1080,43 @@ def plot_impact_report(geo_test, periodo_especifico, holdout_target):
     sensibilidad_resultados = geo_test['sensitivity_results']
     results_by_size = geo_test['simulation_results']
     series_lifts = geo_test['series_lifts']
-    periodos = next(iter(sensibilidad_resultados.values())).keys()
+    periods = next(iter(sensibilidad_resultados.values())).keys()
 
-    if periodo_especifico not in periodos:
-        raise ValueError(f"The period {periodo_especifico} is not in the evaluated periods list.")
+    if period not in periods:
+        raise ValueError(f"The period {period} is not in the evaluated periods list.")
 
     target_size_key = None
     target_mde = None
     for size_key, result in results_by_size.items():
         current_holdout = result['Holdout Percentage']
-        if abs(current_holdout - holdout_target) < 0.01: 
+        if abs(current_holdout - holdout_percentage) < 0.01: 
             target_size_key = size_key
-            target_mde = sensibilidad_resultados[size_key][periodo_especifico].get('MDE', None)
+            target_mde = sensibilidad_resultados[size_key][period].get('MDE', None)
             break
 
     if target_size_key is None:
-        print(f"DEBUG: No data found for holdout percentage {holdout_target}%")
+        print(f"DEBUG: No data found for holdout percentage {holdout_percentage}%")
         return None
 
     available_deltas = [delta for s, delta, period in series_lifts.keys() 
-                        if s == target_size_key and period == periodo_especifico]
+                        if s == target_size_key and period == period]
 
     if not available_deltas:
-        print(f"DEBUG: No available deltas for holdout {holdout_target}% and period {periodo_especifico}.")
+        print(f"DEBUG: No available deltas for holdout {holdout_percentage}% and period {period}.")
         return None
 
     delta_specific = target_mde
     closest_delta = min(available_deltas, key=lambda x: abs(x - delta_specific))
-    comb = (target_size_key, closest_delta, periodo_especifico)
+    comb = (target_size_key, closest_delta, period)
 
     resultados_size = results_by_size[target_size_key]
     y_real = resultados_size['Predictions'].flatten()
     serie_tratamiento = series_lifts[comb]
     diferencia_puntual = serie_tratamiento - y_real
-    efecto_acumulativo = ([0] * (len(serie_tratamiento) - periodo_especifico) + 
-                         np.cumsum(diferencia_puntual[len(serie_tratamiento)-periodo_especifico:]).tolist())
+    efecto_acumulativo = ([0] * (len(serie_tratamiento) - period) + 
+                         np.cumsum(diferencia_puntual[len(serie_tratamiento)-period:]).tolist())
     
-    star_treatment = len(y_real) - periodo_especifico
+    star_treatment = len(y_real) - period
     y_treatment = y_real[star_treatment:]
     
     mean_y_real = np.mean(y_treatment)
@@ -1147,8 +1148,8 @@ def plot_impact_report(geo_test, periodo_especifico, holdout_target):
     axes[0].plot(y_real, label='Control Group', linestyle='--', color=black_secondary, linewidth=1)
     axes[0].plot(serie_tratamiento, label='Treatment Group', linestyle='-', color=green, linewidth=1)
     axes[0].axvline(x=star_treatment, color='black', linestyle='--', linewidth=1.5)
-    axes[0].fill_between(range(len(y_real)-periodo_especifico, len(y_real)), lower_bound, upper_bound, color='gray', alpha=0.2)
-    axes[0].set_title(f'Holdout: {holdout_target:.2f}% - MDE: {target_mde:.2f}')
+    axes[0].fill_between(range(len(y_real)-period, len(y_real)), lower_bound, upper_bound, color='gray', alpha=0.2)
+    axes[0].set_title(f'Holdout: {holdout_percentage:.2f}% - MDE: {target_mde:.2f}')
     axes[0].yaxis.set_label_position('right')
     axes[0].set_ylabel('Original')
     axes[0].legend()
@@ -1156,7 +1157,7 @@ def plot_impact_report(geo_test, periodo_especifico, holdout_target):
 
     # Panel 2: Point Difference 
     axes[1].plot(diferencia_puntual, label='Point Difference (Causal Effect)', color=green, linewidth=1)
-    axes[1].fill_between(range(len(y_real)-periodo_especifico, len(y_real)), lower_bound_effect, upper_bound_effect, color='gray', alpha=0.2)
+    axes[1].fill_between(range(len(y_real)-period, len(y_real)), lower_bound_effect, upper_bound_effect, color='gray', alpha=0.2)
 
     axes[1].plot([0, len(y_real)], [0, 0], color='gray', linestyle='--', linewidth=2)
     axes[1].axvline(x=star_treatment, color='black', linestyle='--', linewidth=1.5)
@@ -1167,7 +1168,7 @@ def plot_impact_report(geo_test, periodo_especifico, holdout_target):
 
     # Panel 3: Cumulative Effect
     axes[2].plot(efecto_acumulativo, label='Cumulative Effect', color=green, linewidth=1)
-    axes[2].fill_between(range(len(y_real)-periodo_especifico, len(y_real)), lower_bound_cumulative, upper_bound_cumulative, color='gray', alpha=0.2)
+    axes[2].fill_between(range(len(y_real)-period, len(y_real)), lower_bound_cumulative, upper_bound_cumulative, color='gray', alpha=0.2)
     axes[2].axvline(x=star_treatment, color='black', linestyle='--', linewidth=1.5)
     axes[2].set_xlabel('Days')
     axes[2].yaxis.set_label_position('right')
