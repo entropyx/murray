@@ -11,5 +11,6 @@ from .plots import (
     print_incremental_results_evaluation,
     plot_permutation_test
 )
+from .auxiliary import cleaned_data
 
 __version__ = "0.1.0"
