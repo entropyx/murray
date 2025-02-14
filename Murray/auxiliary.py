@@ -1,6 +1,5 @@
 import streamlit as st
 import pandas as pd
-import difflib  # Library for fuzzy matching
 
 def cleaned_data(data, col_target, col_locations, col_dates, fill_value=0):
     """
@@ -77,17 +76,6 @@ def cleaned_data(data, col_target, col_locations, col_dates, fill_value=0):
             st.stop()
 
         
-        location_counts = data_input['location'].value_counts()
-        low_freq_locations = location_counts[location_counts < 5].index  
-
-        suggested_corrections = {}
-        for loc in low_freq_locations:
-            close_matches = difflib.get_close_matches(loc, all_locations, n=1, cutoff=0.8)
-            if close_matches and close_matches[0] != loc:
-                suggested_corrections[loc] = close_matches[0]
-        if not low_freq_locations.empty:
-            st.write(" **Locations with few values:**", ", ".join(low_freq_locations))
-
 
         
         full_index = pd.MultiIndex.from_product([all_dates, all_locations], names=['time', 'location'])
