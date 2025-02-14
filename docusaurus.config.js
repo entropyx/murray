@@ -50,7 +50,7 @@ const config = {
   ],
 
   themeConfig: {
-    image: 'img/card social.jpg',
+    image: 'img/card_social.jpg',
     navbar: {
       title: 'Murray',
       logo: {
