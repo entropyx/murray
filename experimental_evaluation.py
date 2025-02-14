@@ -15,6 +15,24 @@ MURRAY_LOGO = "utils/Group 105.png"
 options = [ENTROPY_LOGO, MURRAY_LOGO]
 sidebar_logo = ENTROPY_LOGO
 main_body_logo = MURRAY_LOGO
+st.sidebar.markdown(
+    """
+    <style>
+    .custom-link {
+        color: #211F24 !important;  
+        text-decoration: none;  
+        display: block;
+        padding: 5px;
+        border-radius: 5px;
+    }
+    .custom-link:hover {
+        color: #3e7cb1 !important;  
+    }
+    </style>
+    <a class='custom-link' href="https://entropy.tech/murray/" target="_blank">Murray Documentation</a>
+    """,
+    unsafe_allow_html=True
+)
 
 
 
@@ -325,8 +343,6 @@ if file is not None:
 #--------------------------------------------------------------------------------------------------------------------------------
 
             st.subheader("3. Experimental evaluation")
-            longitud_data = len(data1['time'].unique())
-            #st.write(longitud_data)
             random_sate = data1['location'].unique()[0]
             filtered_data = data1[data1['location'] == random_sate]
             firt_day = filtered_data['time'].min()
@@ -403,10 +419,10 @@ if file is not None:
                         st.session_state.percenge_lift = percenge_lift
                         control_group = results['control_group']
                         st.session_state.control_group = control_group
-                        conformidad_observada = results['conformidad_observada']
-                        st.session_state.conformidad_observada = conformidad_observada
-                        conformidades_nulas = results['conformidades_nulas']
-                        st.session_state.conformidades_nulas = conformidades_nulas
+                        observed_conformity = results['observed_conformity']
+                        st.session_state.observed_conformity = observed_conformity
+                        null_conformities = results['null_conformities']
+                        st.session_state.null_conformities = null_conformities
                         #print(st.session_state.conformidades_nulas)
                         
 
