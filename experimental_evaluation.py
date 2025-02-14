@@ -343,8 +343,6 @@ if file is not None:
 #--------------------------------------------------------------------------------------------------------------------------------
 
             st.subheader("3. Experimental evaluation")
-            longitud_data = len(data1['time'].unique())
-            #st.write(longitud_data)
             random_sate = data1['location'].unique()[0]
             filtered_data = data1[data1['location'] == random_sate]
             firt_day = filtered_data['time'].min()

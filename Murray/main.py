@@ -52,8 +52,8 @@ def select_treatments(similarity_matrix, treatment_size, excluded_locations):
     max_combinations = comb(n, r)
 
     n_combinations = max_combinations
-    if n_combinations > 500:
-        n_combinations = 500
+    if n_combinations > 5000:
+        n_combinations = 5000
 
 
     combinations = set()
@@ -167,8 +167,6 @@ class SyntheticControl(BaseEstimator, RegressorMixin):
 
         w = cp.Variable(X.shape[1])
 
-        # Elastic Net Regularization (L1 + L2)
-        regularization_l1 = self.regularization_strength_l1 * cp.norm1(w)
         regularization_l2 = self.regularization_strength_l2 * cp.norm2(w)
 
         errors = X @ w - y
@@ -550,7 +548,7 @@ def transform_results_data(results_by_size):
         }
     return transformed_data
 
-def run_geo_analysis_streamlit_app(data, maximum_treatment_percentage, significance_level, deltas_range, periods_range, excluded_locations, progress_bar_1=None, status_text_1=None, progress_bar_2=None, status_text_2=None ,n_permutaciones=8000):
+def run_geo_analysis_streamlit_app(data, maximum_treatment_percentage, significance_level, deltas_range, periods_range, excluded_locations, progress_bar_1=None, status_text_1=None, progress_bar_2=None, status_text_2=None ,n_permutaciones=5000):
     """
     Runs a complete geo analysis pipeline including market correlation, group optimization,
     sensitivity evaluation, and visualization of MDE results.
@@ -613,7 +611,7 @@ def run_geo_analysis_streamlit_app(data, maximum_treatment_percentage, significa
     }
 
 
-def run_geo_analysis(data, maximum_treatment_percentage, significance_level, deltas_range, periods_range, excluded_locations, progress_bar_1=None, status_text_1=None, progress_bar_2=None, status_text_2=None ,n_permutaciones=500):
+def run_geo_analysis(data, maximum_treatment_percentage, significance_level, deltas_range, periods_range, excluded_locations, progress_bar_1=None, status_text_1=None, progress_bar_2=None, status_text_2=None ,n_permutaciones=5000):
     """
     Runs a complete geo analysis pipeline including market correlation, group optimization,
     sensitivity evaluation, and visualization of MDE results.

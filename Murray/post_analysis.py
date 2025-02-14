@@ -4,16 +4,12 @@ from Murray.main import select_controls,SyntheticControl
 from Murray.auxiliary import market_correlations
 import pandas as pd
 
-def run_geo_evaluation(data_input, start_treatment,end_treatment,treatment_group,spend,n_permutaciones=5000,inference_type='iid',significance_level=0.1):
+def run_geo_evaluation(data_input, start_treatment,end_treatment,treatment_group,spend,n_permutations=5000,inference_type='iid',significance_level=0.1):
         
         random_sate = data_input['location'].unique()[0]
         filtered_data = data_input[data_input['location'] == random_sate]
-        firt_day = filtered_data['time'].min()
-        last_day = filtered_data['time'].max()
         start_treatment = pd.to_datetime(start_treatment, dayfirst=True)
         end_treatment = pd.to_datetime(end_treatment,dayfirst=True)
-        print(f"data_input: {start_treatment}")
-        print(f"data_output: {end_treatment}")
         filtered_data['time'] = pd.to_datetime(filtered_data['time'])
         start_idx = (filtered_data['time'].dt.date == start_treatment.date()).idxmax()
         end_idx = (filtered_data['time'].dt.date == end_treatment.date()).idxmax()
@@ -74,7 +70,7 @@ def run_geo_evaluation(data_input, start_treatment,end_treatment,treatment_group
         
 
         null_conformities = []
-        for _ in range(n_permutaciones):
+        for _ in range(n_permutations):
             if inference_type == "iid":
                 np.random.shuffle(combined)
             elif inference_type == "block":
@@ -85,8 +81,8 @@ def run_geo_evaluation(data_input, start_treatment,end_treatment,treatment_group
             perm_treatment = combined[np.random.choice(len(combined), len(y), replace=False)]
             perm_control = combined[np.random.choice(len(combined), len(y), replace=False)]
 
-            conformidad_perm = np.mean(perm_treatment[start_position_treatment:]) - np.mean(perm_control[start_position_treatment:])
-            null_conformities.append(conformidad_perm)
+            perm_conformity = np.mean(perm_treatment[start_position_treatment:]) - np.mean(perm_control[start_position_treatment:])
+            null_conformities.append(perm_conformity)
 
         
         p_value = np.mean(np.abs(null_conformities) >= np.abs(observed_conformity))

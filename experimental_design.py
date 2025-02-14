@@ -332,7 +332,6 @@ if file is not None:
             st.text("Parameter configuration")
             st.markdown("""
             <style>
-                /* Estilizar los tags de selección del multiselect */
                 .stMultiSelect span[data-baseweb="tag"] {
                     background-color: #aec4e7 !important;
                     color: black !important;

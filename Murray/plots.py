@@ -29,7 +29,7 @@ custom_colors = ["#3E7CB1", "#6596C1",
 
 
 def generate_gradient_palette(start_color, end_color, num_colors):
-    """Genera una lista de colores en gradiente desde start_color hasta end_color."""
+    """Generates a gradient color list from start_color to end_color."""
     cmap = mcolors.LinearSegmentedColormap.from_list("custom_gradient", [start_color, end_color], N=num_colors)
     return [mcolors.to_hex(cmap(i/num_colors)) for i in range(num_colors)]
 
