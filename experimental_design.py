@@ -14,6 +14,24 @@ options = [ENTROPY_LOGO, MURRAY_LOGO]
 sidebar_logo = ENTROPY_LOGO
 main_body_logo = MURRAY_LOGO
 
+st.sidebar.markdown(
+    """
+    <style>
+    .custom-link {
+        color: #211F24 !important;  
+        text-decoration: none;  
+        display: block;
+        padding: 5px;
+        border-radius: 5px;
+    }
+    .custom-link:hover {
+        color: #3e7cb1 !important;  
+    }
+    </style>
+    <a class='custom-link' href="https://entropy.tech/murray/" target="_blank">Murray Documentation</a>
+    """,
+    unsafe_allow_html=True
+)
 
 
 
@@ -329,32 +347,11 @@ if file is not None:
             </style>
             """, unsafe_allow_html=True)
             excluded_locations = st.multiselect("Select excluded locations", data1['location'].unique())
-            st.markdown(
-            """
-            <style>
-            /* Cambiar el color del track antes del handle (parte izquierda) */
-            div[data-baseweb="slider"] > div > div:nth-child(2) {
-                background: #ff5733 !important;
-            }
-
-            /* Cambiar el color del track después del handle (parte derecha) */
-            div[data-baseweb="slider"] > div > div:nth-child(3) {
-                background: #ccc !important;
-            }
-
-            /* Cambiar el color del handle (círculo del slider) */
-            div[data-baseweb="slider"] > div > div:nth-child(4) {
-                background-color: #ff5733 !important;
-                border-radius: 50%;
-                width: 15px;
-                height: 15px;
-            }
-            </style>
-            """,
-            unsafe_allow_html=True
-            )
             maximum_treatment_percentage = st.slider("Select maximum_treatment_percentage", 5, 50, 30)
-            significance_level = st.number_input("Select significance level", min_value=0.01, max_value=0.10, value=0.05, step=0.01)
+            
+            significance_level = st.number_input("Select significance level", min_value=0.01, max_value=0.30, value=0.05, step=0.01)
+            if significance_level > 0.2:
+                st.warning("A high value could lead to false results")
             st.text("Select range of lifts")
             col1, col2, col3 = st.columns(3)
             with col1:
@@ -362,7 +359,7 @@ if file is not None:
             with col2:
                 delta_max = st.number_input("Lift Max:", min_value=0.02, max_value=1.0, value=0.3, step=0.01)
             with col3:
-                delta_step = st.number_input("Lift Step:", min_value=0.01, max_value=1.0, value=0.01, step=0.01)
+                delta_step = st.number_input("Lift Step:", min_value=0.01, max_value=1.0, value=0.02, step=0.01)
             if delta_min > delta_max:
                 st.error("Lift Min must be less than Lift Max")
             elif delta_min == delta_max:
@@ -453,9 +450,9 @@ if file is not None:
                 )
                 st.success('Simulation completed successfully!')
                 results_by_size = transform_results_data(results['simulation_results'])
-
                 
-
+                
+                
                 st.session_state.results = results
                 st.session_state.simulation_results = results_by_size
                 st.session_state.sensitivity_results = results['sensitivity_results']
@@ -464,6 +461,7 @@ if file is not None:
                 st.session_state.fig1 = plot_mde_results(results_by_size, results['sensitivity_results'], periods)
                 #st.write(st.session_state.fig)
 
+                
 
 
             if st.session_state.simulation_results is not None:
