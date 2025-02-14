@@ -52,8 +52,8 @@ def select_treatments(similarity_matrix, treatment_size, excluded_locations):
     max_combinations = comb(n, r)
 
     n_combinations = max_combinations
-    if n_combinations > 5000:
-        n_combinations = 5000
+    if n_combinations > 500:
+        n_combinations = 500
 
 
     combinations = set()
@@ -86,7 +86,7 @@ def select_controls(correlation_matrix, treatment_group, min_correlation=0.8, fa
         list: List of states selected as the control group.
     """
     control_group = set()
-
+    
     for treatment_location in treatment_group:
         if treatment_location not in correlation_matrix.index:
             continue
@@ -104,6 +104,7 @@ def select_controls(correlation_matrix, treatment_group, min_correlation=0.8, fa
                 .head(fallback_n)
                 .index.tolist()
             )
+            
 
         control_group.update(similar_states)
 
@@ -321,7 +322,7 @@ def BetterGroups(similarity_matrix, excluded_locations, data, correlation_matrix
 
         if best_results:
             best_result = min(best_results, key=lambda x: (x[2], -x[3]))
-            best_treatment_group, best_control_group, best_MAPE, best_SMAPE, y, predictions, weights = best_result
+            best_treatment_group, best_control_group, best_MAPE, best_SMAPE, y, predictions, weights= best_result
 
             treatment_Y = data[data['location'].isin(best_treatment_group)]['Y'].sum()
             holdout_percentage = ((total_Y - treatment_Y) / total_Y) * 100
@@ -334,7 +335,8 @@ def BetterGroups(similarity_matrix, excluded_locations, data, correlation_matrix
                 'Actual Target Metric (y)': y,
                 'Predictions': predictions,
                 'Weights': weights,
-                'Holdout Percentage': holdout_percentage
+                'Holdout Percentage': holdout_percentage,
+                
             }
 
     return results_by_size
@@ -602,7 +604,7 @@ def run_geo_analysis_streamlit_app(data, maximum_treatment_percentage, significa
     fig = plot_mde_results(simulation_results, sensitivity_results, periods)
 
     
-
+    
 
     return periods,fig, {
         "simulation_results": simulation_results,

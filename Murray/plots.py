@@ -886,40 +886,40 @@ def print_incremental_results_evaluation(results_evaluation,metric_mmm):
 
     print("=" * 30)
 
-def plot_permutation_test(results_evaluation, nivel_significancia=0.1):
+def plot_permutation_test(results_evaluation, Significance_level=0.1):
     """
     Plot the permutation test results using Plotly with KDE density curve.
     
     Args:
-        conformidades_nulas (array): Distribution of null conformities.
-        conformidad_observada (float): Observed conformity score.
-        nivel_significancia (float): Significance level (default: 0.1).
+        null_conformities (array): Distribution of null conformities.
+        observed_conformity (float): Observed conformity score.
+        Significance_level (float): Significance level (default: 0.1).
     
     Returns:
         fig: Plotly figure.
     """
 
-    conformidades_nulas = results_evaluation['conformidades_nulas']
-    conformidad_observada = results_evaluation['conformidad_observada']
+    null_conformities = results_evaluation['null_conformities']
+    observed_conformity = results_evaluation['observed_conformity']
     
 
-    upper_bound = np.percentile(conformidades_nulas, 100 * (1 - (nivel_significancia / 2)))
+    upper_bound = np.percentile(null_conformities, 100 * (1 - (Significance_level / 2)))
     
 
 
-    kde = stats.gaussian_kde(conformidades_nulas)
-    x_kde = np.linspace(min(conformidades_nulas), max(conformidades_nulas), 300)
+    kde = stats.gaussian_kde(null_conformities)
+    x_kde = np.linspace(min(null_conformities), max(null_conformities), 300)
     y_kde = kde(x_kde)
 
 
-    max_hist_y = max(kde(conformidades_nulas))  
+    max_hist_y = max(kde(null_conformities))  
 
 
     fig = go.Figure()
 
 
     fig.add_trace(go.Histogram(
-        x=conformidades_nulas,
+        x=null_conformities,
         nbinsx=30,
         histnorm='probability density',
         name="Null Conformities",
@@ -941,7 +941,7 @@ def plot_permutation_test(results_evaluation, nivel_significancia=0.1):
 
 
     fig.add_trace(go.Scatter(
-        x=[conformidad_observada, conformidad_observada],
+        x=[observed_conformity, observed_conformity],
         y=[0, max_hist_y],  
         mode="lines",
         name="Observed Conformity",
@@ -957,7 +957,7 @@ def plot_permutation_test(results_evaluation, nivel_significancia=0.1):
 
 
     fig.add_trace(go.Scatter(
-        x=[upper_bound, max(conformidades_nulas), max(conformidades_nulas), upper_bound],
+        x=[upper_bound, max(null_conformities), max(null_conformities), upper_bound],
 
         y=[0, 0, max_hist_y, max_hist_y],  
         fill="toself",
@@ -1268,27 +1268,27 @@ def plot_impact_evaluation_report(results_evaluation):
         plt.tight_layout()
         return fig,round(att,2), round(incremental,2)
 
-def plot_permutation_test_report(results_evaluation, nivel_significancia=0.1):
+def plot_permutation_test_report(results_evaluation, Significance_level=0.1):
     
     """
     Plot the permutation test results
     
     Args:
         results_evaluation (dict): Dictionary with results including predictions, treatment, period, and conformity scores
-        nivel_significancia (float): Significance level for the permutation test
+        Significance_level (float): Significance level for the permutation test
     """
 
-    conformidades_nulas = results_evaluation['conformidades_nulas']
-    conformidad_observada = results_evaluation['conformidad_observada']
+    null_conformities = results_evaluation['null_conformities']
+    observed_conformity = results_evaluation['observed_conformity']
 
 
     sns.set_theme(style="whitegrid")
 
     fig, ax = plt.subplots(figsize=(10, 6))
-    sns.histplot(conformidades_nulas, bins=30, kde=True, color=blue, alpha=0.6, label='Null Conformities', ax=ax)
-    ax.axvline(conformidad_observada, color='black', linestyle='--', linewidth=1.5, label='Observed Conformity')
-    upper_bound = np.percentile(conformidades_nulas, 100 * (1 - (nivel_significancia / 2)))
-    ax.axvspan(upper_bound, max(conformidades_nulas), color=purple_light, alpha=0.2,label='Significance Zone')
+    sns.histplot(null_conformities, bins=30, kde=True, color=blue, alpha=0.6, label='Null Conformities', ax=ax)
+    ax.axvline(observed_conformity, color='black', linestyle='--', linewidth=1.5, label='Observed Conformity')
+    upper_bound = np.percentile(null_conformities, 100 * (1 - (Significance_level / 2)))
+    ax.axvspan(upper_bound, max(null_conformities), color=purple_light, alpha=0.2,label='Significance Zone')
     ax.set_xlabel("Conformity Score", fontsize=12)
     ax.set_ylabel("Frequency", fontsize=12)
     ax.set_title("Permutation Test", fontsize=14)
