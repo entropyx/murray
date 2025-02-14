@@ -387,7 +387,7 @@ def calculate_conformity(y_real, y_control, start_treatment, end_treatment):
                 np.mean(y_control[start_treatment:end_treatment])
     return conformity
 
-def simulate_power(y_real, y_control, delta, period, n_permutaciones=1000, significance_level=0.05, inference_type="iid", size_block=None):
+def simulate_power(y_real, y_control, delta, period, n_permutations=1000, significance_level=0.05, inference_type="iid", size_block=None):
     """
     Simulates statistical power using conformal inference and returns the adjusted series.
 
@@ -396,7 +396,7 @@ def simulate_power(y_real, y_control, delta, period, n_permutaciones=1000, signi
         y_control (numpy array): Control metrics.
         delta (float): Effect size applied.
         period (int): Duration of the treatment period.
-        n_permutaciones (int): Number of permutations.
+        n_permutations (int): Number of permutations.
         significance_level (float): Significance level.
         inference_type (str): Type of conformal inference ("iid" or "block").
         size_block (int): Size of blocks for block shuffling (if applicable).
@@ -413,7 +413,7 @@ def simulate_power(y_real, y_control, delta, period, n_permutaciones=1000, signi
     combined = np.concatenate([y_real, y_control])
     conformidades_nulas = []
 
-    for _ in range(n_permutaciones):
+    for _ in range(n_permutations):
         if inference_type == "iid":
             np.random.shuffle(combined)
         elif inference_type == "block":
@@ -434,7 +434,7 @@ def simulate_power(y_real, y_control, delta, period, n_permutaciones=1000, signi
 
     return delta, power, y_with_lift
 
-def run_simulation(delta, y_real, y_control, period, n_permutaciones, significance_level, inference_type="iid", size_block=None):
+def run_simulation(delta, y_real, y_control, period, n_permutations, significance_level, inference_type="iid", size_block=None):
     """
     Wrapper function to run a single simulation of statistical power.
 
@@ -443,7 +443,7 @@ def run_simulation(delta, y_real, y_control, period, n_permutaciones, significan
         y_real (numpy.ndarray): Actual target metrics.
         y_control (numpy.ndarray): Control metrics.
         period (int): Treatment period duration.
-        n_permutaciones (int): Number of permutations.
+        n_permutations (int): Number of permutations.
         significance_level (float): Significance level.
         inference_type (str): Type of conformal inference ("iid" or "block").
         size_block (int, optional): Size of blocks for block shuffling. Defaults to None.
@@ -456,13 +456,13 @@ def run_simulation(delta, y_real, y_control, period, n_permutaciones, significan
         y_control=y_control,
         delta=delta,
         period=period,
-        n_permutaciones=n_permutaciones,
+        n_permutations=n_permutations,
         significance_level=significance_level,
         inference_type=inference_type,
         size_block=size_block
     )
 
-def evaluate_sensitivity(results_by_size, deltas, periods, n_permutaciones, significance_level=0.05, inference_type="iid",  size_block=None, progress_bar=None, status_text=None):
+def evaluate_sensitivity(results_by_size, deltas, periods, n_permutations, significance_level=0.05, inference_type="iid",  size_block=None, progress_bar=None, status_text=None):
     """
     Evaluates sensitivity of results to different treatment periods and deltas using permutations.
 
@@ -470,7 +470,7 @@ def evaluate_sensitivity(results_by_size, deltas, periods, n_permutaciones, sign
         results_by_size (dict): Results organized by sample size.
         deltas (list): List of delta values to evaluate.
         periods (list): List of treatment periods to evaluate.
-        n_permutaciones (int): Number of permutations.
+        n_permutations (int): Number of permutations.
         significance_level (float): Significance level.
         inference_type (str): Type of conformal inference ("iid" or "block").
         size_block (int): Size of blocks for block shuffling (if applicable).
@@ -504,7 +504,7 @@ def evaluate_sensitivity(results_by_size, deltas, periods, n_permutaciones, sign
 
             
             for delta in deltas:
-                res = run_simulation(delta, y_real, y_control, period, n_permutaciones, significance_level, inference_type, size_block)
+                res = run_simulation(delta, y_real, y_control, period, n_permutations, significance_level, inference_type, size_block)
                 results.append(res)
 
                 
@@ -548,7 +548,7 @@ def transform_results_data(results_by_size):
         }
     return transformed_data
 
-def run_geo_analysis_streamlit_app(data, maximum_treatment_percentage, significance_level, deltas_range, periods_range, excluded_locations, progress_bar_1=None, status_text_1=None, progress_bar_2=None, status_text_2=None ,n_permutaciones=5000):
+def run_geo_analysis_streamlit_app(data, maximum_treatment_percentage, significance_level, deltas_range, periods_range, excluded_locations, progress_bar_1=None, status_text_1=None, progress_bar_2=None, status_text_2=None ,n_permutations=5000):
     """
     Runs a complete geo analysis pipeline including market correlation, group optimization,
     sensitivity evaluation, and visualization of MDE results.
@@ -560,7 +560,7 @@ def run_geo_analysis_streamlit_app(data, maximum_treatment_percentage, significa
         significance_level (float): Significance level for statistical testing.
         deltas_range (tuple): Range of delta values to evaluate as (start, stop, step).
         periods_range (tuple): Range of treatment periods to evaluate as (start, stop, step).
-        n_permutaciones (int, optional): Number of permutations for sensitivity evaluation. Default is 5000.
+        n_permutations (int, optional): Number of permutations for sensitivity evaluation. Default is 5000.
 
     Returns:
         fig: MDE visualization figure.
@@ -593,7 +593,7 @@ def run_geo_analysis_streamlit_app(data, maximum_treatment_percentage, significa
 
     # Step 3: Evaluate sensitivity for different deltas and periods
     sensitivity_results, series_lifts = evaluate_sensitivity(
-        simulation_results, deltas, periods, n_permutaciones, significance_level,progress_bar=progress_bar_2, status_text=status_text_2
+        simulation_results, deltas, periods, n_permutations, significance_level,progress_bar=progress_bar_2, status_text=status_text_2
     )
     if sensitivity_results is not None:
       print("Complete.")
@@ -611,7 +611,7 @@ def run_geo_analysis_streamlit_app(data, maximum_treatment_percentage, significa
     }
 
 
-def run_geo_analysis(data, maximum_treatment_percentage, significance_level, deltas_range, periods_range, excluded_locations, progress_bar_1=None, status_text_1=None, progress_bar_2=None, status_text_2=None ,n_permutaciones=5000):
+def run_geo_analysis(data, maximum_treatment_percentage, significance_level, deltas_range, periods_range, excluded_locations, progress_bar_1=None, status_text_1=None, progress_bar_2=None, status_text_2=None ,n_permutations=5000):
     """
     Runs a complete geo analysis pipeline including market correlation, group optimization,
     sensitivity evaluation, and visualization of MDE results.
@@ -623,7 +623,7 @@ def run_geo_analysis(data, maximum_treatment_percentage, significance_level, del
         significance_level (float): Significance level for statistical testing.
         deltas_range (tuple): Range of delta values to evaluate as (start, stop, step).
         periods_range (tuple): Range of treatment periods to evaluate as (start, stop, step).
-        n_permutaciones (int, optional): Number of permutations for sensitivity evaluation. Default is 5000.
+        n_permutations (int, optional): Number of permutations for sensitivity evaluation. Default is 5000.
 
     Returns:
         dict: Dictionary containing simulation results, sensitivity results, and adjusted series lifts.
@@ -654,7 +654,7 @@ def run_geo_analysis(data, maximum_treatment_percentage, significance_level, del
 
     # Step 3: Evaluate sensitivity for different deltas and periods
     sensitivity_results, series_lifts = evaluate_sensitivity(
-        simulation_results, deltas, periods, n_permutaciones, significance_level,progress_bar=progress_bar_2, status_text=status_text_2
+        simulation_results, deltas, periods, n_permutations, significance_level,progress_bar=progress_bar_2, status_text=status_text_2
     )
     if sensitivity_results is not None:
       print("Complete.")
