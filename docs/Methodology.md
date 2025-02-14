@@ -19,15 +19,13 @@ Murray arises from the need to achieve solid results with a model that is easy f
 
 
 
+This ensures that the weights sum to 1 and remain positive for all states that make up the counterfactual, improving the interpretability of the locations that constitute the control group and avoiding problematic extrapolations.  
 
-
-This essentially ensures that the weights sum up to 1 and are positive for all the states that make up the counterfactual, improving the interpretability of the locations that constitute the control group and avoiding dangerous extrapolations.
-
-Additionally, the synthetic control model in Murray includes the minimization of prediction error (quadratic error) combined with Elastic Net regularization (Ridge + Lasso). This allows for addressing multicollinearity issues and selecting only a subset of relevant locations. Mathematically, this function can be expressed as follows:
-
+Additionally, the synthetic control model in Murray includes minimizing prediction error (squared error) combined with Ridge regression. This approach improves the estimation of intervention effects by penalizing the magnitude of the coefficients. This regularization prevents overfitting, enhances robustness in control selection, and stabilizes the estimation process, leading to more reliable and interpretable results, especially in cases where the assumptions of the standard synthetic control model are relaxed.Mathematically, this function can be expressed as follows:
 
 
 ![Locale Dropdown](/img/1_ecuacion.png)
+
 
 
 The synthetic control approach in Murray was based on the augmented synthetic control method, as convex optimization tools with constraints are employed.
@@ -56,4 +54,6 @@ The package focuses on delivering critical metrics, such as the Minimum Detectab
 
 ## Conclusions
 
-Although Murray is a new product in the market, it introduces key features for geographical experiments. It is a user-friendly package, suitable for any user, and provides a highly viable solution for identifying the best combinations of locations and periods to apply treatments. The results are presented in a simple manner, eliminating the need to manually configure parameters for your experiments. This enables users to gain a comprehensive view of different scenarios when applying a treatment, with the confidence of obtaining results through robust synthetic control methods that generate a representative counterfactual for the treated group.
+Although Murray is a new product in the market, it introduces key features for geographical experiments. One of its most important objectives is to build a highly representative counterfactual, enabling an accurate evaluation of a treatment’s impact. It is a user-friendly package, suitable for any user, and provides a highly viable solution for identifying the best combinations of locations and periods to apply treatments.  
+
+The results are presented in a simple manner, eliminating the need to manually configure experiment parameters. This allows users to gain a comprehensive view of different scenarios when applying a treatment, with the confidence that results are generated through robust synthetic control methods, ensuring a representative counterfactual for the treated group.

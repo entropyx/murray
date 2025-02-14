@@ -33,7 +33,7 @@ export default function Home() {
   return (
     <Layout
       title={`${siteConfig.title} from Entropy`}
-      description="Entropy offers marketing solutions and services.">
+      description="A Tool Designed for Geographic Experimental Design and Evaluation.">
       <HomepageHeader />
       <main>
         <HomepageFeatures />

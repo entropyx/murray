@@ -4,9 +4,16 @@ sidebar_position: 2
 
 #  Walkthrough
 
-This guide constains an overview of package Murray, as well as instructions for its use.
+This guide constains an overview of package Murray, as well as instructions for its use, although it is not necessary to do so if you don't need all of them.
+
+```python
+import Murray as murray
+```
+
 
 ## Experimental Design 
+
+First of all, we must import the functions that we are going to use. On this occasion, all of them will be used to explain each one.
 
 ### 1. Upload data
 
@@ -58,12 +65,12 @@ The parameters needed to run this function are:
 ```python
 geo_test = run_geo_analysis(
     data = data,
-    excluded_states = ['mexico city', 'méxico'],
+    excluded_locations = ['mexico city', 'méxico'],
+    maximum_treatment_percentage=30,
     significance_level = 0.1,
     deltas_range = (0.01, 0.3, 0.02),
     periods_range = (5, 45, 5)
 )
-
 ```
 
 
@@ -93,7 +100,7 @@ To obtain the treatment and control groups, you must run the  ```print_locations
 ```py
 print_locations(geo_test,holdout_percentage=85.75)
 ```
-```bash title='consola'
+```bash 
 Treatment Locations: ['california', 'chiapas', 'durango', 'guerrero', 'hidalgo', 'jalisco', 'michoacan', 'morelos', 'nayarit', 'oaxaca', 'queretaro', 'sonora', 'tabasco', 'veracruz']
 Control Locations: ['chihuahua', 'san luis potosi', 'aguascalientes', 'nuevo leon', 'campeche', 'guanajuato', 'zacatecas', 'tamaulipas', 'baja california sur', 'mexico city', 'coahuila', 'yucatan', 'state of mexico', 'tlaxcala', 'colima', 'puebla', 'baja california']
 ```
@@ -136,7 +143,7 @@ You can get the incremental results with the ```print_incremental_results()``` f
 ```python
 print_incremental_results(geo_test)
 ```
-```bash title='consola'
+```bash 
 ==============================
      Incremental Results      
 ==============================
@@ -225,7 +232,7 @@ You can get the incremental results with the ```print_incremental_results_evalua
 ```python
 print_incremental_results_evaluation(results)
 ```
-```bash title='consola'
+```bash 
 ==============================
      Incremental Results      
 ==============================
