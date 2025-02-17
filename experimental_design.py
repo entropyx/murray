@@ -161,9 +161,9 @@ def generate_pdf(treatment_group, control_group, holdout_percentage, impact_grap
 
         col_width = 95  
         row_height = 8  
-        header_bg = (103, 85, 130)  # Morado oscuro para los títulos
-        alt_row_bg = (209, 204, 217)  # Morado pastel
-        white_row_bg = (246, 246, 246)  # Gris claro
+        header_bg = (103, 85, 130)  
+        alt_row_bg = (209, 204, 217)  
+        white_row_bg = (246, 246, 246)  
         text_color = (33, 31, 36)
 
         
@@ -291,6 +291,8 @@ if file is not None:
         with col2:
             contains_locations = ["location", "region", "state"]
             matching_column2 = next((col for col in data.columns if any(q in col.lower() for q in contains_locations)), None)
+            if matching_column2:
+                data[matching_column2] = data[matching_column2].astype(str)
             col_locations = st.text_input("Locations", matching_column2 if matching_column2 else "", 
                                         on_change=reset_states, key="locations")
         with col3:
@@ -303,13 +305,26 @@ if file is not None:
             st.warning("Please fill in all required fields (Dates, Locations, and Target).")
         elif col_dates not in data.columns or col_locations not in data.columns or col_target not in data.columns:
             st.error("Please enter correct column names.")
+            st.stop()
         else:
             if 'graph_generated' not in st.session_state:
                 st.session_state.graph_generated = False
             if 'current_fig' not in st.session_state:
                 st.session_state.current_fig = None
             if col_dates and col_locations and col_target:
-                data1 = cleaned_data(data, col_dates=col_dates, col_locations=col_locations, col_target=col_target)
+                try:
+                    data1, high_zero_locations = cleaned_data(data, col_target=col_target, col_locations=col_locations, col_dates=col_dates)
+                except TypeError as e:
+                    st.error(str(e))
+                    st.stop()
+                except ValueError as e:
+                    st.error(str(e))
+                    st.stop()
+                except Exception as e:
+                    st.error(str(e))
+                    st.stop()
+
+
 
     #--------------------------------------------------------------------------------------------------------------------------------
 
@@ -361,12 +376,16 @@ if file is not None:
                 delta_step = st.number_input("Lift Step:", min_value=0.01, max_value=1.0, value=0.02, step=0.01)
             if delta_min > delta_max:
                 st.error("Lift Min must be less than Lift Max")
+                st.stop()
             elif delta_min == delta_max:
                 st.error("Lift Min and Lift Max must be different")
+                st.stop()
             elif delta_step == delta_max:
                 st.error("Lift Step must be less than Lift Max")
+                st.stop()
             elif delta_step > delta_max - delta_min:
                 st.error("Lift Step must be less than the range of lifts")
+                st.stop()
             else:
                 deltas_range = (delta_min, delta_max, delta_step)
             st.text("Select range of periods")
@@ -379,12 +398,16 @@ if file is not None:
                 period_step = st.number_input("Period Step:", min_value=1, max_value=100, value=5, step=1)
             if period_min > period_max:
                 st.error("Period Min must be less than Period Max")
+                st.stop()
             elif period_min == period_max:
                 st.error("Period Min and Period Max must be different")
+                st.stop()
             elif period_step == period_max:
                 st.error("Period Step must be less than Period Max")
+                st.stop()
             elif period_step > period_max - period_min:
                 st.error("Period Step must be less than the range of periods")  
+                st.stop()
             else:
                 periods_range = (period_min, period_max+1, period_step)
             st.text("Click on the button to start simulation")
@@ -434,20 +457,31 @@ if file is not None:
                 status_text_2 = st.empty()        
 
                 
-                periods, fig1, results = run_geo_analysis_streamlit_app(
-                    data=data1,
-                    excluded_locations=excluded_locations,
-                    maximum_treatment_percentage=maximum_treatment_percentage,
-                    significance_level=significance_level,
-                    deltas_range=deltas_range,
-                    periods_range=periods_range,
-                    progress_bar_1=progress_bar_1,
-                    status_text_1=status_text_1,
+                try:
+                    periods, fig1, results = run_geo_analysis_streamlit_app(
+                        data=data1,
+                        excluded_locations=excluded_locations,
+                        maximum_treatment_percentage=maximum_treatment_percentage,
+                        significance_level=significance_level,
+                        deltas_range=deltas_range,
+                        periods_range=periods_range,
+                        progress_bar_1=progress_bar_1,
+                        status_text_1=status_text_1,
+                        progress_bar_2=progress_bar_2,
+                        status_text_2=status_text_2
+                    )
+                    
 
-                    progress_bar_2=progress_bar_2,
-                    status_text_2=status_text_2
-                )
-                st.success('Simulation completed successfully!')
+                    st.success('Simulation completed successfully!')
+
+                except ValueError as e:  
+                    st.error(str(e))
+                    st.stop()
+
+                except Exception as e:  
+                    st.error(f"An unexpected error occurred: {str(e)}")
+                    st.stop()
+                
                 results_by_size = transform_results_data(results['simulation_results'])
                 
                 
@@ -458,7 +492,7 @@ if file is not None:
 
 
                 st.session_state.fig1 = plot_mde_results(results_by_size, results['sensitivity_results'], periods)
-                #st.write(st.session_state.fig)
+                
 
                 
 
@@ -467,13 +501,12 @@ if file is not None:
                 st.write('<h4 style="text-align: center;"> Geo Murray MDE Heatmap</h4>', unsafe_allow_html=True)
                 fig1 = st.session_state.fig1
                 event = st.plotly_chart(fig1,key="heatmap",on_select="rerun")
-                #selected_point = plotly_events(fig, click_event=True)
+                
 
 
 
                 selected_point = event.selection
-                #st.write(selected_point)
-                #st.write(selected_point2)
+               
                 
 
    
@@ -559,8 +592,9 @@ if file is not None:
 
                                     if st.session_state.results is None:
                                         st.error("Please run the simulation first before generating a PDF.")
-
                                         st.stop()
+
+                                        
 
                                     location = None
                                     for loc, data in st.session_state.simulation_results.items():
@@ -608,8 +642,10 @@ if file is not None:
                     except Exception as e:
                         st.error(f"Error recovering information: {str(e)}")
                         st.error(f"Error type: {type(e).__name__}")
+                        
                         import traceback
                         st.error(f"Full error trace:\n{traceback.format_exc()}")  
+                        st.stop()
                   
 
 

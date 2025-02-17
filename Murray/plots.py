@@ -9,7 +9,7 @@ import matplotlib.dates as mdates
 import seaborn as sns
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
-
+import streamlit as st
 
 
 #Color palette
@@ -250,6 +250,19 @@ def plot_mde_results(results_by_size, sensitivity_results, periods):
             mde = period_results.get(period, {}).get('MDE', None)
             row.append(mde if mde is not None else np.nan)
         heatmap_data[size] = row
+
+    
+    total_values = heatmap_data.size
+    nan_values = heatmap_data.isna().sum().sum()
+    nan_ratio = nan_values / total_values if total_values > 0 else 1
+
+    
+    if nan_ratio == 1:  
+        raise ValueError("Error: No satisfactory results found. The heatmap does not contain values (MDE) with the entered data.")
+        
+
+    elif nan_ratio > 0.8:  
+        raise ValueError("Warning: The analysis shows few satisfactory results. You can try modifying the parameters or entering a different target column.")
 
 
     heatmap_data = heatmap_data.T
