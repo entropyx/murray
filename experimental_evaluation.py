@@ -343,7 +343,6 @@ if file is not None:
             
             st.subheader("3. Experimental evaluation")
             random_sate = data1['location'].unique()[0]
-            st.write(random_sate)
             filtered_data = data1[data1['location'] == random_sate]
             firt_day = filtered_data['time'].min()
             last_day = filtered_data['time'].max()
