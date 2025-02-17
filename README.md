@@ -32,4 +32,4 @@ results = run_geo_analysis(
 
 ```
 # Documentation
-[Entropy Murray Documentation](https://entropy.tech/murray/docs/Murray)
+[Entropy Murray Documentation](https://entropy.tech/murray/docs/Welcome%20to%20Murray)
