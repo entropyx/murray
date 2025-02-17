@@ -305,7 +305,6 @@ if file is not None:
             col_locations = st.text_input("Locations", matching_column2 if matching_column2 else "", 
                                         on_change=reset_states, key="locations")
         with col3:
-            # Create a filtered list of columns excluding date and location-like columns
             target_columns = [col for col in data.columns 
                             if not any(d in col.lower() for d in contains_date) 
                             and not any(l in col.lower() for l in contains_locations)]
@@ -423,7 +422,7 @@ if file is not None:
                         st.session_state.observed_conformity = observed_conformity
                         null_conformities = results['null_conformities']
                         st.session_state.null_conformities = null_conformities
-                        #print(st.session_state.conformidades_nulas)
+                        
                         
 
 
@@ -496,8 +495,7 @@ if file is not None:
                 st.write("--------------------------------")
                 st.write('<h4 style="text-align: center;"> Graphical representation of the evaluation</h4>', unsafe_allow_html=True)
                 st.plotly_chart(st.session_state.impact_graph,use_container_width=True)
-                #st.write(st.session_state.permutation_test_report)
-                #st.write(st.session_state.impact_graph_report)
+                
 
 
                 
