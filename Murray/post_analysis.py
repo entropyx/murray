@@ -16,7 +16,7 @@ def run_geo_evaluation(data_input, start_treatment,end_treatment,treatment_group
         start_position_treatment = filtered_data.index.get_loc(start_idx)
         end_position = filtered_data.index.get_loc(end_idx)
         end_position_treatment = end_position + 1 
-        print(end_position_treatment)
+        
         
 
         def smape(A, F):
