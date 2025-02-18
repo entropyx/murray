@@ -345,21 +345,7 @@ if file is not None:
 
             st.subheader("3. Experimental design")
             st.text("Parameter configuration")
-            st.markdown("""
-            <style>
-                .stMultiSelect span[data-baseweb="tag"] {
-                    background-color: #aec4e7 !important;
-                    color: black !important;
-                    border-radius: 5px !important;
-                    display: inline-block !important;
-                }
-
-                /* Asegurar que los tags tengan un margen y padding adecuado */
-                .stMultiSelect span[data-baseweb="tag"] div {
-                    color: black !important;
-                }
-            </style>
-            """, unsafe_allow_html=True)
+            
             excluded_locations = st.multiselect("Select excluded locations", data1['location'].unique())
             maximum_treatment_percentage = st.slider("Select maximum_treatment_percentage", 5, 50, 30)
             
@@ -434,6 +420,7 @@ if file is not None:
                 "significance_level": significance_level,
                 "deltas_range": (delta_min, delta_max, delta_step),
                 "periods_range": (period_min, period_max+1, period_step),
+                "col_target": col_target
             }
 
             
