@@ -680,6 +680,182 @@ def print_locations(geo_test, holdout_percentage=None, num_locations=None):
     print(f"Control Locations: {control_locations}")
 
 
+def plot_impact_evaluation_streamlit(results_evaluation, df):
+    """
+    Plot the impact evaluation results using Plotly with hover text for dates.
+    """
+    
+    dates = df['time'].dt.date.astype(str).tolist()
+    counterfactual = results_evaluation['predictions']
+    treatment = results_evaluation['treatment']
+    period = results_evaluation['period']
+    
+
+    point_difference = treatment - counterfactual
+    cumulative_effect = ([0] * (len(treatment) - period)) + (np.cumsum(point_difference[len(treatment)-period:])).tolist()
+
+    start_treatment = len(counterfactual) - period
+    y_treatment = counterfactual[start_treatment:]
+    point_difference_treatment = point_difference[start_treatment:]
+    cumulative_effect_treatment = cumulative_effect[start_treatment:]
+
+    mean_y_real = np.mean(y_treatment)
+    std_dev_y_real = np.std(y_treatment)
+    std_error_y_real = std_dev_y_real / np.sqrt(len(y_treatment))
+    upper_bound = y_treatment + 1.96 * std_error_y_real
+    lower_bound = y_treatment - 1.96 * std_error_y_real
+
+    mean_point_difference = np.mean(point_difference_treatment)
+    std_dev_point_difference = np.std(point_difference_treatment)
+    std_error_point_difference = std_dev_point_difference / np.sqrt(len(y_treatment))
+    upper_bound_pd = point_difference_treatment + 1.96 * std_error_point_difference
+    lower_bound_pd = point_difference_treatment - 1.96 * std_error_point_difference
+
+    mean_cumulative_effect = np.mean(cumulative_effect_treatment)
+    std_dev_cumulative_effect = np.std(cumulative_effect_treatment)
+    std_error_cumulative_effect = std_dev_cumulative_effect / np.sqrt(len(y_treatment))
+    upper_bound_ce = cumulative_effect_treatment + 1.96 * std_error_cumulative_effect
+    lower_bound_ce = cumulative_effect_treatment - 1.96 * std_error_cumulative_effect
+
+    att = np.mean(treatment[start_treatment:] - counterfactual[start_treatment:])
+    incremental = np.sum(treatment[start_treatment:] - counterfactual[start_treatment:])
+
+    fig = make_subplots(rows=3, cols=1, shared_xaxes=True, 
+                        subplot_titles=[
+                            "Observed Data vs Counterfactual",
+                            "Point Difference (Causal Effect)",
+                            "Cumulative Effect"
+                        ])
+
+    # Panel 1: Observed data vs counterfactual prediction
+    fig.add_trace(go.Scatter(
+        x=dates,
+        y=counterfactual,
+        mode='lines',
+        name='Control Group',
+        line=dict(color=black_secondary, dash='dash', width=1),
+        hovertext=dates,
+        hoverinfo="text+y",
+        showlegend=True
+    ), row=1, col=1)
+
+    fig.add_trace(go.Scatter(
+        x=dates,
+        y=treatment,
+        mode='lines',
+        name='Treatment Group',
+        line=dict(color=green, width=1),
+        hovertext=dates,
+        hoverinfo="text+y",
+        showlegend=True
+    ), row=1, col=1)
+
+    # Confidence band 1
+    fig.add_trace(go.Scatter(
+        x=dates[start_treatment:],
+        y=upper_bound,
+        mode='lines',
+        name='95% CI)',
+        line=dict(color='rgba(0,0,0,0)'),
+        showlegend=False
+    ), row=1, col=1)
+
+    fig.add_trace(go.Scatter(
+        x=dates[start_treatment:],
+        y=lower_bound,
+        mode='lines',
+        name='95% CI',
+        line=dict(color='rgba(0,0,0,0)'),
+        fill='tonexty',
+        fillcolor='rgba(128,128,128,0.3)',
+        showlegend=False
+    ), row=1, col=1)
+
+    # Panel 2: Point Difference
+    fig.add_trace(go.Scatter(
+        x=dates,
+        y=point_difference,
+        mode='lines',
+        name='Point Difference (Causal Effect)',
+        line=dict(color=green, width=1),
+        hovertext=dates,
+        hoverinfo="text+y",
+        showlegend=False
+    ), row=2, col=1)
+
+    # Confidence band 2
+    fig.add_trace(go.Scatter(
+        x=dates[start_treatment:],
+        y=upper_bound_pd,
+        mode='lines',
+        name='95% CI)',
+        line=dict(color='rgba(0,0,0,0)'),
+        showlegend=False
+    ), row=2, col=1)
+
+    fig.add_trace(go.Scatter(
+        x=dates[start_treatment:],
+        y=lower_bound_pd,
+        mode='lines',
+        name='95% CI',
+        line=dict(color='rgba(0,0,0,0)'),
+        fill='tonexty',
+        fillcolor='rgba(128,128,128,0.3)',
+        showlegend=False
+    ), row=2, col=1)
+
+    # Panel 3: Cumulative Effect
+    fig.add_trace(go.Scatter(
+        x=dates,
+        y=cumulative_effect,
+        mode='lines',
+        name='Cumulative Effect',
+        line=dict(color=green, width=1),
+        hovertext=dates,
+        hoverinfo="text+y",
+        showlegend=False
+    ), row=3, col=1)
+
+    # Confidence band 3
+    fig.add_trace(go.Scatter(
+        x=dates[start_treatment:],
+        y=upper_bound_ce,
+        mode='lines',
+        name='95% CI)',
+        line=dict(color='rgba(0,0,0,0)'),
+        showlegend=False
+    ), row=3, col=1)
+
+    fig.add_trace(go.Scatter(
+        x=dates[start_treatment:],
+        y=lower_bound_ce,
+        mode='lines',
+        name='95% CI',
+        line=dict(color='rgba(0,0,0,0)'),
+        fill='tonexty',
+        fillcolor='rgba(128,128,128,0.3)',
+        showlegend=False
+    ), row=3, col=1)
+
+    for i in range(1, 4):
+        fig.add_vline(x=dates[start_treatment], line=dict(color="black", dash="dash"), row=i, col=1)
+
+    fig.update_layout(
+        height=900,
+        width=1000,
+        showlegend=True,
+        template="plotly_white",
+        margin=dict(l=20, r=20, t=20, b=20),
+        legend=dict(
+            x=0.02,
+            y=0.98,
+            bgcolor="rgba(255,255,255,0.6)",
+        )
+    )
+
+    fig.update_xaxes(title_text="Days", title_font=dict(size=16, color='black'), tickfont=dict(size=12, color='black'))
+    
+    return fig, round(att, 2), round(incremental, 2)
 
 
 def plot_impact_evaluation(results_evaluation):
@@ -880,6 +1056,8 @@ def plot_impact_evaluation(results_evaluation):
   
 
     return fig, round(att,2), round(incremental,2)
+
+
 
 def plot_impact_graphs_evaluation(results_evaluation):
     fig, att, incremental = plot_impact_evaluation(results_evaluation)
@@ -1300,8 +1478,11 @@ def plot_permutation_test_report(results_evaluation, Significance_level=0.1):
     fig, ax = plt.subplots(figsize=(10, 6))
     sns.histplot(null_conformities, bins=30, kde=True, color=blue, alpha=0.6, label='Null Conformities', ax=ax)
     ax.axvline(observed_conformity, color='black', linestyle='--', linewidth=1.5, label='Observed Conformity')
+    lower_bound = np.percentile(null_conformities, 100 * (Significance_level / 2))
     upper_bound = np.percentile(null_conformities, 100 * (1 - (Significance_level / 2)))
-    ax.axvspan(upper_bound, max(null_conformities), color=purple_light, alpha=0.2,label='Significance Zone')
+    ax.axvspan(min(null_conformities), lower_bound, color=purple_light, alpha=0.2, label='Significance Zone (Lower)')
+    ax.axvspan(upper_bound, max(null_conformities), color=purple_light, alpha=0.2, label='Significance Zone (Upper)')
+
     ax.set_xlabel("Conformity Score", fontsize=12)
     ax.set_ylabel("Frequency", fontsize=12)
     ax.set_title("Permutation Test", fontsize=14)
