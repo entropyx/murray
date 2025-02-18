@@ -14,7 +14,10 @@ def run_geo_evaluation(data_input, start_treatment,end_treatment,treatment_group
         start_idx = (filtered_data['time'].dt.date == start_treatment.date()).idxmax()
         end_idx = (filtered_data['time'].dt.date == end_treatment.date()).idxmax()
         start_position_treatment = filtered_data.index.get_loc(start_idx)
-        end_position_treatment = filtered_data.index.get_loc(end_idx)
+        end_position = filtered_data.index.get_loc(end_idx)
+        end_position_treatment = end_position + 1 
+        print(end_position_treatment)
+        
 
         def smape(A, F):
           return 100/len(A) * np.sum(2 * np.abs(F - A) / (np.abs(A) + np.abs(F+1e-10)))
@@ -32,6 +35,7 @@ def run_geo_evaluation(data_input, start_treatment,end_treatment,treatment_group
         df_pivot = data_input.pivot(index='time', columns='location', values='Y')
         X = df_pivot[control_group].values  
         y = df_pivot[list(treatment_group)].sum(axis=1).values  
+        
         
         
         scaler_x = MinMaxScaler()
@@ -92,7 +96,6 @@ def run_geo_evaluation(data_input, start_treatment,end_treatment,treatment_group
         results_evaluation = {
             'MAPE': MAPE,
             'SMAPE': SMAPE,
-            'y_lift': y,
             'predictions': predictions,
             'treatment': y,
             'p_value': p_value,
