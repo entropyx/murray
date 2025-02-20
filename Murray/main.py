@@ -205,7 +205,7 @@ class SyntheticControl(BaseEstimator, RegressorMixin):
         return X @ self.w_, self.w_
 
 
-def BetterGroups(similarity_matrix, excluded_locations, data, correlation_matrix, maximum_treatment_percentage=50,progress_updater=None, status_updater=None):
+def BetterGroups(similarity_matrix, excluded_locations, data, correlation_matrix, maximum_treatment_percentage=0.50,progress_updater=None, status_updater=None):
     """
     Simulates possible treatment groups and evaluates their performance.
 
@@ -227,7 +227,7 @@ def BetterGroups(similarity_matrix, excluded_locations, data, correlation_matrix
     no_locations = int(len(data['location'].unique()))
     max_group_size = round(no_locations * 0.5)
     min_elements_in_treatment = round(no_locations * 0.2)
-    min_holdout = 100 - maximum_treatment_percentage
+    min_holdout = 100 - (maximum_treatment_percentage * 100)
 
     def smape(A, F):
         denominator = np.abs(A) + np.abs(F)
@@ -599,13 +599,13 @@ def run_geo_analysis_streamlit_app(data, maximum_treatment_percentage, significa
     if sensitivity_results is not None:
       print("Complete.")
       
-    # Step 4: Generate MDE visualizations
-    fig = plot_mde_results(simulation_results, sensitivity_results, periods)
+    
+    
 
     
     
 
-    return periods,fig, {
+    return {
         "simulation_results": simulation_results,
         "sensitivity_results": sensitivity_results,
         "series_lifts": series_lifts
