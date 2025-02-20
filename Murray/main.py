@@ -52,8 +52,8 @@ def select_treatments(similarity_matrix, treatment_size, excluded_locations):
     max_combinations = comb(n, r)
 
     n_combinations = max_combinations
-    if n_combinations > 200:
-        n_combinations = 200
+    if n_combinations > 5000:
+        n_combinations = 5000
 
 
     combinations = set()
