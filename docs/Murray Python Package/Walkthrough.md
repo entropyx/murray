@@ -4,11 +4,17 @@ sidebar_position: 2
 
 #  Walkthrough
 
-This guide constains an overview of package Murray, as well as instructions for its use, although it is not necessary to do so if you don't need all of them.
+This guide constains an overview of package Murray, as well as instructions for its use, although it is not necessary to do so if you don't need all of them. First of all, we must import the necessary functions and packages.
 
 ```python
-import Murray as murray
+import pandas as pd
+from Murray import cleaned_data
+from Murray import plot_geodata,plot_impact_graphs,plot_impact_graphs_evaluation,plot_metrics,plot_permutation_test
+from Murray import print_locations,print_weights,print_incremental_results,print_incremental_results_evaluation
+from Murray import run_geo_analysis,run_geo_evaluation
 ```
+
+
 
 
 ## Experimental Design 
@@ -53,6 +59,8 @@ The parameters needed to run this function are:
 
 * ```excluded_states```: A list of states to exclude from treatment groups. These states will not be included in the treatment groups, but these can be included in the control groups. 
 
+* ```maximum_treatment_percentage```: Maximum percentage of the target variable that can be contained in the treatment group.
+
 * ```significance_level```: A number which is a significance level, that is mean, with ```significance_level=0.1``` you have a 90% confidence level in your results.
 
 * ```deltas_range```: This parameter contains a range of different lifts. You can add the minimum lift, maximum lift and the steps. For example, if ```deltas_range = (0.01, 0.3, 0.02)``` so the lifts will from 1% until 30% with 2% increments.
@@ -66,7 +74,7 @@ The parameters needed to run this function are:
 geo_test = run_geo_analysis(
     data = data,
     excluded_locations = ['mexico city', 'méxico'],
-    maximum_treatment_percentage=30,
+    maximum_treatment_percentage=0.3,
     significance_level = 0.1,
     deltas_range = (0.01, 0.3, 0.02),
     periods_range = (5, 45, 5)
@@ -201,11 +209,20 @@ This part is very similar to the experimental design, but in this case you must 
 
 * ```treatment_group```: The locations that are in the treatment group.
 
+* ```spend```: The expenditure value during the treatment.
+
+
 
 
 ```python
-results = run_geo_evaluation(data,start_treatment='2020-01-01',end_treatment='2020-01-31',treatment_group=['durango','puebla','queretaro'])
+results = run_geo_evaluation(data,start_treatment='01-12-2024',end_treatment='31-12-2024',treatment_group=['durango','puebla','queretaro'], spend=10000)
 ```
+
+:::info
+
+It is important to enter the dates in DD/MM/YYYY format to avoid errors.
+
+:::
 
 ### 3. Results
 
@@ -229,8 +246,10 @@ You can get the incremental results with the ```print_incremental_results_evalua
 
 * ```results```: The results of ```run_geo_evaluation()``` function.
 
+And in the second parameter, you must specify which metric you want to calculate: iROAS or iCPA.
+
 ```python
-print_incremental_results_evaluation(results)
+print_incremental_results_evaluation(results, 'iCPA')
 ```
 ```bash 
 ==============================
