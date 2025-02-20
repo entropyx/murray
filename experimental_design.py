@@ -313,7 +313,7 @@ if file is not None:
                 st.session_state.current_fig = None
             if col_dates and col_locations and col_target:
                 try:
-                    data1, high_zero_locations = cleaned_data(data, col_target=col_target, col_locations=col_locations, col_dates=col_dates)
+                    data1 = cleaned_data(data, col_target=col_target, col_locations=col_locations, col_dates=col_dates)
                 except TypeError as e:
                     st.error(str(e))
                     st.stop()
