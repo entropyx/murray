@@ -39,7 +39,10 @@ st.sidebar.markdown(
 st.logo(sidebar_logo, size="large", icon_image=main_body_logo)
 
 
-def generate_pdf(treatment_group, control_group, holdout_percentage, impact_graph,percenge_lift,p_value,power,period,permutation_test,treatment_day,firt_day,last_day,col_target,metric_mmm,mmm_option):
+def generate_pdf(treatment_group, control_group, holdout_percentage, 
+                 impact_graph,percenge_lift,p_value,power,period,
+                 permutation_test,treatment_day,firt_day,last_day,
+                 col_target,metric_mmm,mmm_option,lift_total):
         """
         Generates a PDF report with explanations for each aspect.
         """
@@ -189,6 +192,7 @@ def generate_pdf(treatment_group, control_group, holdout_percentage, impact_grap
         pdf.set_font("Poppins",style='B', size=10)
         pdf.set_text_color(33, 31, 36)
         pdf.multi_cell(0, 5, f"Percentage Lift: {percenge_lift}%")
+        pdf.multi_cell(0, 5, f"Lift total: {lift_total}")
         pdf.multi_cell(0, 5, f"P-value: {p_value}")
         pdf.multi_cell(0, 5, f"Power: {power}")
 
@@ -249,9 +253,8 @@ if "iROAS" not in st.session_state:
         st.session_state.iROAS = None
 if "iCAC" not in st.session_state:
         st.session_state.iCAC = None
-
-
-
+if 'lift_total' not in st.session_state:
+     st.session_state.lift_total = None
 
 
 
@@ -320,7 +323,7 @@ if file is not None:
             if 'current_fig' not in st.session_state:
                 st.session_state.current_fig = None
             if col_dates and col_locations and col_target:
-                data1 = cleaned_data(data, col_dates=col_dates, col_locations=col_locations, col_target=col_target)
+                data1,high_zero_locations = cleaned_data(data, col_dates=col_dates, col_locations=col_locations, col_target=col_target)
 
 #--------------------------------------------------------------------------------------------------------------------------------
 
@@ -340,7 +343,7 @@ if file is not None:
 
 
 #--------------------------------------------------------------------------------------------------------------------------------
-
+            
             st.subheader("3. Experimental evaluation")
             random_sate = data1['location'].unique()[0]
             filtered_data = data1[data1['location'] == random_sate]
@@ -354,13 +357,10 @@ if file is not None:
             start_treatment = st.date_input("Treatment start date",min_value=firt_day,max_value=last_day,value=firt_day)
             end_treatment = st.date_input("Treatment end date",min_value=firt_day,max_value=last_day,value=last_day)
             treatment_group = st.multiselect("Select treatment group", data1['location'].unique())
-
-
             spend = st.number_input("Select spend")
-
             mmm_option = st.selectbox("Select the option to calculate the iROAS or iCPA", ["iROAS", "iCPA"])
+            
             st.session_state.mmm_option = mmm_option
-
             start_treatment = pd.to_datetime(start_treatment)
             end_treatment = pd.to_datetime(end_treatment)
 
@@ -388,7 +388,10 @@ if file is not None:
             current_params = {
                 "start_treatment": start_treatment,
                 "end_treatment": end_treatment,
-                "treatment_group": treatment_group
+                "treatment_group": treatment_group,
+                "spend": spend,
+                "mmm_option": mmm_option,
+                'col_target': col_target
             }
 
             
@@ -405,7 +408,6 @@ if file is not None:
                     with st.spinner('Running analysis... Please wait.'):
                         
                         results = run_geo_evaluation(data1, start_treatment, end_treatment, treatment_group,spend)
-                        print(f"type(results): {type(results)}")
                         treatment = results['treatment']
                         st.session_state.treatment = treatment
                         counterfactual = results['predictions']
@@ -429,6 +431,9 @@ if file is not None:
                         
                         total_Y = data1['Y'].sum()
                         treatment_Y = data1[data1['location'].isin(treatment_group)]['Y'].sum()
+                        lift_total_pre = results["treatment"] - results["predictions"]
+                        lift_total = np.sum(lift_total_pre[start_position_treatment:])
+                        st.session_state.lift_total = round(lift_total,2)
                         st.session_state.holdout_percentage = round(((total_Y - treatment_Y) / total_Y) * 100, 2)
                         st.session_state.treatment_group = ", ".join(treatment_group)
                         st.session_state.control_group = ", ".join(st.session_state.control_group)
@@ -443,8 +448,8 @@ if file is not None:
 
 
 
-
-                        impact_graph,att,incremental = plot_impact_evaluation(results)
+                        
+                        impact_graph,att,incremental = plot_impact_evaluation_streamlit(results,filtered_data)
                         st.session_state.incremental = incremental
                         
                         st.session_state.impact_graph = impact_graph
@@ -467,7 +472,7 @@ if file is not None:
                 st.write(f"P-value: {st.session_state.p_value}")
                 st.write(f"Power: {st.session_state.power}")
                 st.write(f"Percentage Lift: {st.session_state.percenge_lift} %")
-
+                st.write(f"lift_total: {st.session_state.lift_total}")
                 st.write(f"Holdout percentage: {st.session_state.holdout_percentage} %")
                 st.write(f"Treatment group: {st.session_state.treatment_group}")
                 st.write(f"Control group: {st.session_state.control_group}")
@@ -518,7 +523,8 @@ if file is not None:
                         last_day,
                         col_target,
                         st.session_state.metric_mmm,
-                        st.session_state.mmm_option
+                        st.session_state.mmm_option,
+                        st.session_state.lift_total
                     )
 
 
