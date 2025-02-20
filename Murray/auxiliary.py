@@ -80,7 +80,7 @@ def cleaned_data(data, col_target, col_locations, col_dates, fill_value=0):
         high_zero_locations = zero_counts[zero_counts > len(merged_data) * 0.8]
 
         
-        return merged_data, high_zero_locations
+        return merged_data
 
     except (TypeError, ValueError) as e:
         raise ValueError(f"Data Cleaning Error: {str(e)}") from e

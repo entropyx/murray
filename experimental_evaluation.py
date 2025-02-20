@@ -323,7 +323,7 @@ if file is not None:
             if 'current_fig' not in st.session_state:
                 st.session_state.current_fig = None
             if col_dates and col_locations and col_target:
-                data1,high_zero_locations = cleaned_data(data, col_dates=col_dates, col_locations=col_locations, col_target=col_target)
+                data1 = cleaned_data(data, col_dates=col_dates, col_locations=col_locations, col_target=col_target)
 
 #--------------------------------------------------------------------------------------------------------------------------------
 

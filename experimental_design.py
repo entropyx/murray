@@ -313,7 +313,7 @@ if file is not None:
                 st.session_state.current_fig = None
             if col_dates and col_locations and col_target:
                 try:
-                    data1, high_zero_locations = cleaned_data(data, col_target=col_target, col_locations=col_locations, col_dates=col_dates)
+                    data1 = cleaned_data(data, col_target=col_target, col_locations=col_locations, col_dates=col_dates)
                 except TypeError as e:
                     st.error(str(e))
                     st.stop()
@@ -353,7 +353,7 @@ if file is not None:
             
             significance_level_pre = st.number_input("Select significance level (%)", min_value=1, max_value=100, value=10, step=1, help="Threshold to judge a result as statistically significant. For example, with a 10% significance level, it means you have a 90% confidence level")
             significance_level = significance_level_pre  / 100
-            if significance_level > 20:
+            if significance_level > 0.20:
                 st.warning("A high value could lead to false results")
             st.text("Select range of lifts")
             col1, col2, col3 = st.columns(3)
