@@ -347,10 +347,13 @@ if file is not None:
             st.text("Parameter configuration")
             
             excluded_locations = st.multiselect("Select excluded locations", data1['location'].unique())
-            maximum_treatment_percentage = st.slider("Select maximum_treatment_percentage", 5, 50, 30)
             
-            significance_level = st.number_input("Select significance level", min_value=0.01, max_value=0.30, value=0.05, step=0.01)
-            if significance_level > 0.2:
+            maximum_treatment_percentage_pre = st.slider("Select maximum treatment percentage (%)", 5, 50, 30, help="Maximum percentage of the target variable that can be contained in the treatment group")
+            maximum_treatment_percentage = maximum_treatment_percentage_pre / 100
+            
+            significance_level_pre = st.number_input("Select significance level (%)", min_value=1, max_value=100, value=10, step=1, help="Threshold to judge a result as statistically significant. For example, with a 10% significance level, it means you have a 90% confidence level")
+            significance_level = significance_level_pre  / 100
+            if significance_level > 20:
                 st.warning("A high value could lead to false results")
             st.text("Select range of lifts")
             col1, col2, col3 = st.columns(3)
@@ -416,8 +419,8 @@ if file is not None:
             
             current_params = {
                 "excluded_locations": excluded_locations,
-                "maximum_treatment_percentage": maximum_treatment_percentage,
-                "significance_level": significance_level,
+                "maximum_treatment_percentage_pre": maximum_treatment_percentage_pre,
+                "significance_level_pre": significance_level_pre,
                 "deltas_range": (delta_min, delta_max, delta_step),
                 "periods_range": (period_min, period_max+1, period_step),
                 "col_target": col_target
