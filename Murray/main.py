@@ -599,13 +599,13 @@ def run_geo_analysis_streamlit_app(data, maximum_treatment_percentage, significa
     if sensitivity_results is not None:
       print("Complete.")
       
-    # Step 4: Generate MDE visualizations
-    fig = plot_mde_results(simulation_results, sensitivity_results, periods)
+    
+    
 
     
     
 
-    return periods,fig, {
+    return {
         "simulation_results": simulation_results,
         "sensitivity_results": sensitivity_results,
         "series_lifts": series_lifts

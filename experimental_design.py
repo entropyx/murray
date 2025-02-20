@@ -448,7 +448,7 @@ if file is not None:
 
                 
                 try:
-                    periods, fig1, results = run_geo_analysis_streamlit_app(
+                    results = run_geo_analysis_streamlit_app(
                         data=data1,
                         excluded_locations=excluded_locations,
                         maximum_treatment_percentage=maximum_treatment_percentage,
@@ -479,13 +479,11 @@ if file is not None:
                 st.session_state.results = results
                 st.session_state.simulation_results = results_by_size
                 st.session_state.sensitivity_results = results['sensitivity_results']
+                periods = list(np.arange(*periods_range))
 
 
                 st.session_state.fig1 = plot_mde_results(results_by_size, results['sensitivity_results'], periods)
                 
-
-                
-
 
             if st.session_state.simulation_results is not None:
                 st.write('<h4 style="text-align: center;"> Geo Murray MDE Heatmap</h4>', unsafe_allow_html=True)
