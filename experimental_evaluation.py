@@ -15,13 +15,34 @@ MURRAY_LOGO = "utils/Group 105.png"
 options = [ENTROPY_LOGO, MURRAY_LOGO]
 sidebar_logo = ENTROPY_LOGO
 main_body_logo = MURRAY_LOGO
+st.sidebar.markdown(
+    """
+    <style>
+    .custom-link {
+        color: #211F24 !important;  
+        text-decoration: none;  
+        display: block;
+        padding: 5px;
+        border-radius: 5px;
+    }
+    .custom-link:hover {
+        color: #3e7cb1 !important;  
+    }
+    </style>
+    <a class='custom-link' href="https://entropy.tech/murray/" target="_blank">Murray Documentation</a>
+    """,
+    unsafe_allow_html=True
+)
 
 
 
 st.logo(sidebar_logo, size="large", icon_image=main_body_logo)
 
 
-def generate_pdf(treatment_group, control_group, holdout_percentage, impact_graph,percenge_lift,p_value,power,period,permutation_test,treatment_day,firt_day,last_day,col_target,metric_mmm,mmm_option):
+def generate_pdf(treatment_group, control_group, holdout_percentage, 
+                 impact_graph,percenge_lift,p_value,power,period,
+                 permutation_test,treatment_day,firt_day,last_day,
+                 col_target,metric_mmm,mmm_option,lift_total):
         """
         Generates a PDF report with explanations for each aspect.
         """
@@ -171,6 +192,7 @@ def generate_pdf(treatment_group, control_group, holdout_percentage, impact_grap
         pdf.set_font("Poppins",style='B', size=10)
         pdf.set_text_color(33, 31, 36)
         pdf.multi_cell(0, 5, f"Percentage Lift: {percenge_lift}%")
+        pdf.multi_cell(0, 5, f"Lift total: {lift_total}")
         pdf.multi_cell(0, 5, f"P-value: {p_value}")
         pdf.multi_cell(0, 5, f"Power: {power}")
 
@@ -231,9 +253,8 @@ if "iROAS" not in st.session_state:
         st.session_state.iROAS = None
 if "iCAC" not in st.session_state:
         st.session_state.iCAC = None
-
-
-
+if 'lift_total' not in st.session_state:
+     st.session_state.lift_total = None
 
 
 
@@ -287,7 +308,6 @@ if file is not None:
             col_locations = st.text_input("Locations", matching_column2 if matching_column2 else "", 
                                         on_change=reset_states, key="locations")
         with col3:
-            # Create a filtered list of columns excluding date and location-like columns
             target_columns = [col for col in data.columns 
                             if not any(d in col.lower() for d in contains_date) 
                             and not any(l in col.lower() for l in contains_locations)]
@@ -303,7 +323,7 @@ if file is not None:
             if 'current_fig' not in st.session_state:
                 st.session_state.current_fig = None
             if col_dates and col_locations and col_target:
-                data1 = cleaned_data(data, col_dates=col_dates, col_locations=col_locations, col_target=col_target)
+                data1,high_zero_locations = cleaned_data(data, col_dates=col_dates, col_locations=col_locations, col_target=col_target)
 
 #--------------------------------------------------------------------------------------------------------------------------------
 
@@ -323,10 +343,8 @@ if file is not None:
 
 
 #--------------------------------------------------------------------------------------------------------------------------------
-
+            
             st.subheader("3. Experimental evaluation")
-            longitud_data = len(data1['time'].unique())
-            #st.write(longitud_data)
             random_sate = data1['location'].unique()[0]
             filtered_data = data1[data1['location'] == random_sate]
             firt_day = filtered_data['time'].min()
@@ -339,13 +357,10 @@ if file is not None:
             start_treatment = st.date_input("Treatment start date",min_value=firt_day,max_value=last_day,value=firt_day)
             end_treatment = st.date_input("Treatment end date",min_value=firt_day,max_value=last_day,value=last_day)
             treatment_group = st.multiselect("Select treatment group", data1['location'].unique())
-
-
             spend = st.number_input("Select spend")
-
             mmm_option = st.selectbox("Select the option to calculate the iROAS or iCPA", ["iROAS", "iCPA"])
+            
             st.session_state.mmm_option = mmm_option
-
             start_treatment = pd.to_datetime(start_treatment)
             end_treatment = pd.to_datetime(end_treatment)
 
@@ -373,7 +388,10 @@ if file is not None:
             current_params = {
                 "start_treatment": start_treatment,
                 "end_treatment": end_treatment,
-                "treatment_group": treatment_group
+                "treatment_group": treatment_group,
+                "spend": spend,
+                "mmm_option": mmm_option,
+                'col_target': col_target
             }
 
             
@@ -390,7 +408,6 @@ if file is not None:
                     with st.spinner('Running analysis... Please wait.'):
                         
                         results = run_geo_evaluation(data1, start_treatment, end_treatment, treatment_group,spend)
-                        print(f"type(results): {type(results)}")
                         treatment = results['treatment']
                         st.session_state.treatment = treatment
                         counterfactual = results['predictions']
@@ -403,17 +420,20 @@ if file is not None:
                         st.session_state.percenge_lift = percenge_lift
                         control_group = results['control_group']
                         st.session_state.control_group = control_group
-                        conformidad_observada = results['conformidad_observada']
-                        st.session_state.conformidad_observada = conformidad_observada
-                        conformidades_nulas = results['conformidades_nulas']
-                        st.session_state.conformidades_nulas = conformidades_nulas
-                        #print(st.session_state.conformidades_nulas)
+                        observed_conformity = results['observed_conformity']
+                        st.session_state.observed_conformity = observed_conformity
+                        null_conformities = results['null_conformities']
+                        st.session_state.null_conformities = null_conformities
+                        
                         
 
 
                         
                         total_Y = data1['Y'].sum()
                         treatment_Y = data1[data1['location'].isin(treatment_group)]['Y'].sum()
+                        lift_total_pre = results["treatment"] - results["predictions"]
+                        lift_total = np.sum(lift_total_pre[start_position_treatment:])
+                        st.session_state.lift_total = round(lift_total,2)
                         st.session_state.holdout_percentage = round(((total_Y - treatment_Y) / total_Y) * 100, 2)
                         st.session_state.treatment_group = ", ".join(treatment_group)
                         st.session_state.control_group = ", ".join(st.session_state.control_group)
@@ -428,8 +448,8 @@ if file is not None:
 
 
 
-
-                        impact_graph,att,incremental = plot_impact_evaluation(results)
+                        
+                        impact_graph,att,incremental = plot_impact_evaluation_streamlit(results,filtered_data)
                         st.session_state.incremental = incremental
                         
                         st.session_state.impact_graph = impact_graph
@@ -452,7 +472,7 @@ if file is not None:
                 st.write(f"P-value: {st.session_state.p_value}")
                 st.write(f"Power: {st.session_state.power}")
                 st.write(f"Percentage Lift: {st.session_state.percenge_lift} %")
-
+                st.write(f"lift_total: {st.session_state.lift_total}")
                 st.write(f"Holdout percentage: {st.session_state.holdout_percentage} %")
                 st.write(f"Treatment group: {st.session_state.treatment_group}")
                 st.write(f"Control group: {st.session_state.control_group}")
@@ -480,8 +500,7 @@ if file is not None:
                 st.write("--------------------------------")
                 st.write('<h4 style="text-align: center;"> Graphical representation of the evaluation</h4>', unsafe_allow_html=True)
                 st.plotly_chart(st.session_state.impact_graph,use_container_width=True)
-                #st.write(st.session_state.permutation_test_report)
-                #st.write(st.session_state.impact_graph_report)
+                
 
 
                 
@@ -504,7 +523,8 @@ if file is not None:
                         last_day,
                         col_target,
                         st.session_state.metric_mmm,
-                        st.session_state.mmm_option
+                        st.session_state.mmm_option,
+                        st.session_state.lift_total
                     )
 
 

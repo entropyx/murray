@@ -4,21 +4,20 @@ from Murray.main import select_controls,SyntheticControl
 from Murray.auxiliary import market_correlations
 import pandas as pd
 
-def run_geo_evaluation(data_input, start_treatment,end_treatment,treatment_group,spend,n_permutaciones=5000,inference_type='iid',significance_level=0.1):
+def run_geo_evaluation(data_input, start_treatment,end_treatment,treatment_group,spend,n_permutations=5000,inference_type='iid',significance_level=0.1):
         
         random_sate = data_input['location'].unique()[0]
         filtered_data = data_input[data_input['location'] == random_sate]
-        firt_day = filtered_data['time'].min()
-        last_day = filtered_data['time'].max()
         start_treatment = pd.to_datetime(start_treatment, dayfirst=True)
         end_treatment = pd.to_datetime(end_treatment,dayfirst=True)
-        print(f"data_input: {start_treatment}")
-        print(f"data_output: {end_treatment}")
         filtered_data['time'] = pd.to_datetime(filtered_data['time'])
         start_idx = (filtered_data['time'].dt.date == start_treatment.date()).idxmax()
         end_idx = (filtered_data['time'].dt.date == end_treatment.date()).idxmax()
         start_position_treatment = filtered_data.index.get_loc(start_idx)
-        end_position_treatment = filtered_data.index.get_loc(end_idx)
+        end_position = filtered_data.index.get_loc(end_idx)
+        end_position_treatment = end_position + 1 
+        
+        
 
         def smape(A, F):
           return 100/len(A) * np.sum(2 * np.abs(F - A) / (np.abs(A) + np.abs(F+1e-10)))
@@ -36,6 +35,7 @@ def run_geo_evaluation(data_input, start_treatment,end_treatment,treatment_group
         df_pivot = data_input.pivot(index='time', columns='location', values='Y')
         X = df_pivot[control_group].values  
         y = df_pivot[list(treatment_group)].sum(axis=1).values  
+        
         
         
         scaler_x = MinMaxScaler()
@@ -69,12 +69,12 @@ def run_geo_evaluation(data_input, start_treatment,end_treatment,treatment_group
         percenge_lift = ((np.sum(y[start_position_treatment:]) - np.sum(predictions[start_position_treatment:])) / np.abs(np.sum(predictions[start_position_treatment:]))) * 100
 
 
-        conformidad_observada = np.mean(y[start_position_treatment:]) - np.mean(predictions[start_position_treatment:])
+        observed_conformity = np.mean(y[start_position_treatment:]) - np.mean(predictions[start_position_treatment:])
         combined = np.concatenate([y, predictions])
         
 
-        conformidades_nulas = []
-        for _ in range(n_permutaciones):
+        null_conformities = []
+        for _ in range(n_permutations):
             if inference_type == "iid":
                 np.random.shuffle(combined)
             elif inference_type == "block":
@@ -85,26 +85,25 @@ def run_geo_evaluation(data_input, start_treatment,end_treatment,treatment_group
             perm_treatment = combined[np.random.choice(len(combined), len(y), replace=False)]
             perm_control = combined[np.random.choice(len(combined), len(y), replace=False)]
 
-            conformidad_perm = np.mean(perm_treatment[start_position_treatment:]) - np.mean(perm_control[start_position_treatment:])
-            conformidades_nulas.append(conformidad_perm)
+            perm_conformity = np.mean(perm_treatment[start_position_treatment:]) - np.mean(perm_control[start_position_treatment:])
+            null_conformities.append(perm_conformity)
 
         
-        p_value = np.mean(np.abs(conformidades_nulas) >= np.abs(conformidad_observada))
+        p_value = np.mean(np.abs(null_conformities) >= np.abs(observed_conformity))
         power = np.mean(p_value < significance_level)
 
         
         results_evaluation = {
             'MAPE': MAPE,
             'SMAPE': SMAPE,
-            'y_lift': y,
             'predictions': predictions,
             'treatment': y,
             'p_value': p_value,
             'power': power,
             'percenge_lift': percenge_lift,
             'control_group': control_group,
-            'conformidad_observada': conformidad_observada,
-            'conformidades_nulas': conformidades_nulas,
+            'observed_conformity': observed_conformity,
+            'null_conformities': null_conformities,
             'weights': weights,
             'period': period,
             'spend': spend

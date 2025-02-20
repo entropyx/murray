@@ -29,7 +29,7 @@ custom_colors = ["#3E7CB1", "#6596C1",
 
 
 def generate_gradient_palette(start_color, end_color, num_colors):
-    """Genera una lista de colores en gradiente desde start_color hasta end_color."""
+    """Generates a gradient color list from start_color to end_color."""
     cmap = mcolors.LinearSegmentedColormap.from_list("custom_gradient", [start_color, end_color], N=num_colors)
     return [mcolors.to_hex(cmap(i/num_colors)) for i in range(num_colors)]
 
@@ -89,7 +89,6 @@ def plot_geodata(merged_data,custom_colors=custom_colors):
         xaxis_linecolor='#0d0808',
         xaxis_color='#0d0808',
         xaxis_showgrid=True,
-
 
 
 
@@ -195,8 +194,10 @@ def plot_counterfactuals(geo_test):
         None: Displays plots for each group size showing counterfactuals.
     """
 
+
     results_by_size = geo_test['simulation_results']
 
+    # Iterar sobre cada tamaño de grupo
     for size, result in results_by_size.items():
         real_y = result['Actual Target Metric (y)']
         predictions = result['Predictions']
@@ -228,7 +229,6 @@ def plot_counterfactuals(geo_test):
 
 
 
-
 def plot_mde_results(results_by_size, sensitivity_results, periods):
     """
     Generates an interactive heatmap for the MDE (Minimum Detectable Effect) values using Plotly.
@@ -251,6 +251,19 @@ def plot_mde_results(results_by_size, sensitivity_results, periods):
             row.append(mde if mde is not None else np.nan)
         heatmap_data[size] = row
 
+    
+    total_values = heatmap_data.size
+    nan_values = heatmap_data.isna().sum().sum()
+    nan_ratio = nan_values / total_values if total_values > 0 else 1
+
+    
+    if nan_ratio == 1:  
+        raise ValueError("Error: No satisfactory results found. The heatmap does not contain values (MDE) with the entered data.")
+        
+
+    elif nan_ratio > 0.8:  
+        raise ValueError("Warning: The analysis shows few satisfactory results. You can try modifying the parameters or entering a different target column.")
+
 
     heatmap_data = heatmap_data.T
     heatmap_data.columns = [f"Day-{i}" for i in periods]
@@ -264,7 +277,6 @@ def plot_mde_results(results_by_size, sensitivity_results, periods):
 
     fig = go.Figure()
     custom_colorscale = [[0,heatmap_green], [1,heatmap_red]]
-
 
 
 
@@ -668,6 +680,182 @@ def print_locations(geo_test, holdout_percentage=None, num_locations=None):
     print(f"Control Locations: {control_locations}")
 
 
+def plot_impact_evaluation_streamlit(results_evaluation, df):
+    """
+    Plot the impact evaluation results using Plotly with hover text for dates.
+    """
+    
+    dates = df['time'].dt.date.astype(str).tolist()
+    counterfactual = results_evaluation['predictions']
+    treatment = results_evaluation['treatment']
+    period = results_evaluation['period']
+    
+
+    point_difference = treatment - counterfactual
+    cumulative_effect = ([0] * (len(treatment) - period)) + (np.cumsum(point_difference[len(treatment)-period:])).tolist()
+
+    start_treatment = len(counterfactual) - period
+    y_treatment = counterfactual[start_treatment:]
+    point_difference_treatment = point_difference[start_treatment:]
+    cumulative_effect_treatment = cumulative_effect[start_treatment:]
+
+    mean_y_real = np.mean(y_treatment)
+    std_dev_y_real = np.std(y_treatment)
+    std_error_y_real = std_dev_y_real / np.sqrt(len(y_treatment))
+    upper_bound = y_treatment + 1.96 * std_error_y_real
+    lower_bound = y_treatment - 1.96 * std_error_y_real
+
+    mean_point_difference = np.mean(point_difference_treatment)
+    std_dev_point_difference = np.std(point_difference_treatment)
+    std_error_point_difference = std_dev_point_difference / np.sqrt(len(y_treatment))
+    upper_bound_pd = point_difference_treatment + 1.96 * std_error_point_difference
+    lower_bound_pd = point_difference_treatment - 1.96 * std_error_point_difference
+
+    mean_cumulative_effect = np.mean(cumulative_effect_treatment)
+    std_dev_cumulative_effect = np.std(cumulative_effect_treatment)
+    std_error_cumulative_effect = std_dev_cumulative_effect / np.sqrt(len(y_treatment))
+    upper_bound_ce = cumulative_effect_treatment + 1.96 * std_error_cumulative_effect
+    lower_bound_ce = cumulative_effect_treatment - 1.96 * std_error_cumulative_effect
+
+    att = np.mean(treatment[start_treatment:] - counterfactual[start_treatment:])
+    incremental = np.sum(treatment[start_treatment:] - counterfactual[start_treatment:])
+
+    fig = make_subplots(rows=3, cols=1, shared_xaxes=True, 
+                        subplot_titles=[
+                            "Observed Data vs Counterfactual",
+                            "Point Difference (Causal Effect)",
+                            "Cumulative Effect"
+                        ])
+
+    # Panel 1: Observed data vs counterfactual prediction
+    fig.add_trace(go.Scatter(
+        x=dates,
+        y=counterfactual,
+        mode='lines',
+        name='Control Group',
+        line=dict(color=black_secondary, dash='dash', width=1),
+        hovertext=dates,
+        hoverinfo="text+y",
+        showlegend=True
+    ), row=1, col=1)
+
+    fig.add_trace(go.Scatter(
+        x=dates,
+        y=treatment,
+        mode='lines',
+        name='Treatment Group',
+        line=dict(color=green, width=1),
+        hovertext=dates,
+        hoverinfo="text+y",
+        showlegend=True
+    ), row=1, col=1)
+
+    # Confidence band 1
+    fig.add_trace(go.Scatter(
+        x=dates[start_treatment:],
+        y=upper_bound,
+        mode='lines',
+        name='95% CI)',
+        line=dict(color='rgba(0,0,0,0)'),
+        showlegend=False
+    ), row=1, col=1)
+
+    fig.add_trace(go.Scatter(
+        x=dates[start_treatment:],
+        y=lower_bound,
+        mode='lines',
+        name='95% CI',
+        line=dict(color='rgba(0,0,0,0)'),
+        fill='tonexty',
+        fillcolor='rgba(128,128,128,0.3)',
+        showlegend=False
+    ), row=1, col=1)
+
+    # Panel 2: Point Difference
+    fig.add_trace(go.Scatter(
+        x=dates,
+        y=point_difference,
+        mode='lines',
+        name='Point Difference (Causal Effect)',
+        line=dict(color=green, width=1),
+        hovertext=dates,
+        hoverinfo="text+y",
+        showlegend=False
+    ), row=2, col=1)
+
+    # Confidence band 2
+    fig.add_trace(go.Scatter(
+        x=dates[start_treatment:],
+        y=upper_bound_pd,
+        mode='lines',
+        name='95% CI)',
+        line=dict(color='rgba(0,0,0,0)'),
+        showlegend=False
+    ), row=2, col=1)
+
+    fig.add_trace(go.Scatter(
+        x=dates[start_treatment:],
+        y=lower_bound_pd,
+        mode='lines',
+        name='95% CI',
+        line=dict(color='rgba(0,0,0,0)'),
+        fill='tonexty',
+        fillcolor='rgba(128,128,128,0.3)',
+        showlegend=False
+    ), row=2, col=1)
+
+    # Panel 3: Cumulative Effect
+    fig.add_trace(go.Scatter(
+        x=dates,
+        y=cumulative_effect,
+        mode='lines',
+        name='Cumulative Effect',
+        line=dict(color=green, width=1),
+        hovertext=dates,
+        hoverinfo="text+y",
+        showlegend=False
+    ), row=3, col=1)
+
+    # Confidence band 3
+    fig.add_trace(go.Scatter(
+        x=dates[start_treatment:],
+        y=upper_bound_ce,
+        mode='lines',
+        name='95% CI)',
+        line=dict(color='rgba(0,0,0,0)'),
+        showlegend=False
+    ), row=3, col=1)
+
+    fig.add_trace(go.Scatter(
+        x=dates[start_treatment:],
+        y=lower_bound_ce,
+        mode='lines',
+        name='95% CI',
+        line=dict(color='rgba(0,0,0,0)'),
+        fill='tonexty',
+        fillcolor='rgba(128,128,128,0.3)',
+        showlegend=False
+    ), row=3, col=1)
+
+    for i in range(1, 4):
+        fig.add_vline(x=dates[start_treatment], line=dict(color="black", dash="dash"), row=i, col=1)
+
+    fig.update_layout(
+        height=900,
+        width=1000,
+        showlegend=True,
+        template="plotly_white",
+        margin=dict(l=20, r=20, t=20, b=20),
+        legend=dict(
+            x=0.02,
+            y=0.98,
+            bgcolor="rgba(255,255,255,0.6)",
+        )
+    )
+
+    fig.update_xaxes(title_text="Days", title_font=dict(size=16, color='black'), tickfont=dict(size=12, color='black'))
+    
+    return fig, round(att, 2), round(incremental, 2)
 
 
 def plot_impact_evaluation(results_evaluation):
@@ -849,7 +1037,6 @@ def plot_impact_evaluation(results_evaluation):
         showlegend=True,
         template="plotly_white",
         margin=dict(l=20, r=20, t=20, b=20),
-
         legend=dict(
             x=0.02,
             y=0.98,
@@ -870,6 +1057,8 @@ def plot_impact_evaluation(results_evaluation):
 
     return fig, round(att,2), round(incremental,2)
 
+
+
 def plot_impact_graphs_evaluation(results_evaluation):
     fig, att, incremental = plot_impact_evaluation(results_evaluation)
     return fig
@@ -888,44 +1077,43 @@ def print_incremental_results_evaluation(results_evaluation,metric_mmm):
 
     print("=" * 30)
 
-def plot_permutation_test(results_evaluation, nivel_significancia=0.1):
+def plot_permutation_test(results_evaluation, Significance_level=0.1):
     """
     Plot the permutation test results using Plotly with KDE density curve.
     
     Args:
-        conformidades_nulas (array): Distribution of null conformities.
-        conformidad_observada (float): Observed conformity score.
-        nivel_significancia (float): Significance level (default: 0.1).
+        null_conformities (array): Distribution of null conformities.
+        observed_conformity (float): Observed conformity score.
+        Significance_level (float): Significance level (default: 0.1).
     
     Returns:
         fig: Plotly figure.
     """
 
-    conformidades_nulas = results_evaluation['conformidades_nulas']
-    conformidad_observada = results_evaluation['conformidad_observada']
+    null_conformities = results_evaluation['null_conformities']
+    observed_conformity = results_evaluation['observed_conformity']
     
 
-    upper_bound = np.percentile(conformidades_nulas, 100 * (1 - (nivel_significancia / 2)))
+    upper_bound = np.percentile(null_conformities, 100 * (1 - (Significance_level / 2)))
     
 
 
-    kde = stats.gaussian_kde(conformidades_nulas)
-    x_kde = np.linspace(min(conformidades_nulas), max(conformidades_nulas), 300)
+    kde = stats.gaussian_kde(null_conformities)
+    x_kde = np.linspace(min(null_conformities), max(null_conformities), 300)
     y_kde = kde(x_kde)
 
 
-    max_hist_y = max(kde(conformidades_nulas))  
+    max_hist_y = max(kde(null_conformities))  
 
 
     fig = go.Figure()
 
 
     fig.add_trace(go.Histogram(
-        x=conformidades_nulas,
+        x=null_conformities,
         nbinsx=30,
         histnorm='probability density',
         name="Null Conformities",
-
         marker=dict(color=blue,line=dict(color="black",width=1)),
         opacity=0.6
     ))
@@ -944,7 +1132,7 @@ def plot_permutation_test(results_evaluation, nivel_significancia=0.1):
 
 
     fig.add_trace(go.Scatter(
-        x=[conformidad_observada, conformidad_observada],
+        x=[observed_conformity, observed_conformity],
         y=[0, max_hist_y],  
         mode="lines",
         name="Observed Conformity",
@@ -960,7 +1148,7 @@ def plot_permutation_test(results_evaluation, nivel_significancia=0.1):
 
 
     fig.add_trace(go.Scatter(
-        x=[upper_bound, max(conformidades_nulas), max(conformidades_nulas), upper_bound],
+        x=[upper_bound, max(null_conformities), max(null_conformities), upper_bound],
 
         y=[0, 0, max_hist_y, max_hist_y],  
         fill="toself",
@@ -968,7 +1156,6 @@ def plot_permutation_test(results_evaluation, nivel_significancia=0.1):
         line=dict(color="rgba(255,0,0,0)"),
         name="Significance Zone"
     ))
-
 
     fig.update_layout(
         title="Permutation Test",
@@ -1272,31 +1459,33 @@ def plot_impact_evaluation_report(results_evaluation):
         plt.tight_layout()
         return fig,round(att,2), round(incremental,2)
 
-def plot_permutation_test_report(results_evaluation, nivel_significancia=0.1):
+def plot_permutation_test_report(results_evaluation, Significance_level=0.1):
     
     """
     Plot the permutation test results
     
     Args:
         results_evaluation (dict): Dictionary with results including predictions, treatment, period, and conformity scores
-        nivel_significancia (float): Significance level for the permutation test
+        Significance_level (float): Significance level for the permutation test
     """
 
-    conformidades_nulas = results_evaluation['conformidades_nulas']
-    conformidad_observada = results_evaluation['conformidad_observada']
+    null_conformities = results_evaluation['null_conformities']
+    observed_conformity = results_evaluation['observed_conformity']
 
 
     sns.set_theme(style="whitegrid")
 
     fig, ax = plt.subplots(figsize=(10, 6))
-    sns.histplot(conformidades_nulas, bins=30, kde=True, color=blue, alpha=0.6, label='Null Conformities', ax=ax)
-    ax.axvline(conformidad_observada, color='black', linestyle='--', linewidth=1.5, label='Observed Conformity')
-    upper_bound = np.percentile(conformidades_nulas, 100 * (1 - (nivel_significancia / 2)))
-    ax.axvspan(upper_bound, max(conformidades_nulas), color=purple_light, alpha=0.2,label='Significance Zone')
+    sns.histplot(null_conformities, bins=30, kde=True, color=blue, alpha=0.6, label='Null Conformities', ax=ax)
+    ax.axvline(observed_conformity, color='black', linestyle='--', linewidth=1.5, label='Observed Conformity')
+    lower_bound = np.percentile(null_conformities, 100 * (Significance_level / 2))
+    upper_bound = np.percentile(null_conformities, 100 * (1 - (Significance_level / 2)))
+    ax.axvspan(min(null_conformities), lower_bound, color=purple_light, alpha=0.2, label='Significance Zone (Lower)')
+    ax.axvspan(upper_bound, max(null_conformities), color=purple_light, alpha=0.2, label='Significance Zone (Upper)')
+
     ax.set_xlabel("Conformity Score", fontsize=12)
     ax.set_ylabel("Frequency", fontsize=12)
     ax.set_title("Permutation Test", fontsize=14)
     ax.legend()
-
 
     return fig 
