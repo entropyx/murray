@@ -224,6 +224,36 @@ def generate_pdf(treatment_group, control_group, holdout_percentage,
     
 
 
+st.markdown(
+    """
+    <style>
+    .st-emotion-cache-1652lyb {
+        color: black !important;  
+    }
+    .st-emotion-cache-133trn5 {
+        fill: black !important;  
+    }
+    .st-emotion-cache-8lz9yt {
+        fill: black !important;  
+    }
+    .st-emotion-cache-wifhn2 {
+        background-color: #D7D5D7 !important;  
+    }
+    .st-emotion-cache-1x3ytec {
+        background-color: #E1E0E1 !important;  
+    }
+    div[data-baseweb="select"] > div {
+        background-color: #E1E0E1 !important;  
+    }
+    input, textarea {
+        background-color: #E1E0E1 !important; 
+    }
+    
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
 st.title("Experimental Evaluation")
 
 # Initialize session state variables
