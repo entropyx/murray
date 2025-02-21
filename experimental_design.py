@@ -226,6 +226,37 @@ def generate_pdf(treatment_group, control_group, holdout_percentage, impact_grap
 
         return pdf_output
 
+st.markdown(
+    """
+    <style>
+    .st-emotion-cache-1652lyb {
+        color: black !important;  
+    }
+    .st-emotion-cache-133trn5 {
+        fill: black !important;  
+    }
+    .st-emotion-cache-8lz9yt {
+        fill: black !important;  
+    }
+    .st-emotion-cache-wifhn2 {
+        background-color: #D7D5D7 !important;  
+    }
+    .st-emotion-cache-1x3ytec {
+        background-color: #E1E0E1 !important;  
+    }
+    div[data-baseweb="select"] > div {
+        background-color: #E1E0E1 !important;  
+    }
+    input, textarea {
+        background-color: #E1E0E1 !important; 
+    }
+    
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
+
 
 
 
@@ -345,15 +376,47 @@ if file is not None:
 
             st.subheader("3. Experimental design")
             st.text("Parameter configuration")
-            
+
+            st.markdown("""
+            <style>
+                .stMultiSelect span[data-baseweb="tag"] {
+                    background-color: #ecf2f7 !important;
+                    color: black !important;
+                }
+
+            """, unsafe_allow_html=True)
             excluded_locations = st.multiselect("Select excluded locations", data1['location'].unique())
             
+            st.markdown(
+                """
+                <style>
+                    div[role="slider"] {
+                        background-color: #3e7cb1 !important;
+                    }
+                    
+                    div[data-testid="stSliderTickBarMin"] {
+                        color: black !important;
+                        background-color:: red !important;
+                    }
+
+                    div[data-testid="stSliderTickBarMax"] {
+                        color: black !important;
+                    }
+                    
+                    div[data-testid="stSliderThumbValue"] {
+                        color: #3e7cb1 !important;
+                    }
+                </style>
+                """,
+                unsafe_allow_html=True,
+            )
+
             maximum_treatment_percentage_pre = st.slider("Select maximum treatment percentage (%)", 5, 50, 30, help="Maximum percentage of the target variable that can be contained in the treatment group")
             maximum_treatment_percentage = maximum_treatment_percentage_pre / 100
             
             significance_level_pre = st.number_input("Select significance level (%)", min_value=1, max_value=100, value=10, step=1, help="Threshold to judge a result as statistically significant. For example, with a 10% significance level, it means you have a 90% confidence level")
             significance_level = significance_level_pre  / 100
-            if significance_level > 20:
+            if significance_level > 0.20:
                 st.warning("A high value could lead to false results")
             st.text("Select range of lifts")
             col1, col2, col3 = st.columns(3)
@@ -439,6 +502,23 @@ if file is not None:
 
             if st.button("Run simulation") and not st.session_state.simulation_button_clicked:
                 st.session_state.simulation_button_clicked = True  
+
+                st.markdown(
+                    """
+                    <style>
+                        
+                        div[data-testid="stProgress"] > div > div > div {
+                            background-color: #D8E5EF !important;
+                        }
+
+                        
+                        div[data-testid="stProgress"] > div > div > div > div {
+                            background-color: #8BB0D0 !important;
+                        }
+                    </style>
+                    """,
+                    unsafe_allow_html=True,
+                )
 
 
                 progress_bar_1 = st.progress(0)
