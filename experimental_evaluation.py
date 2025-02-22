@@ -15,6 +15,7 @@ MURRAY_LOGO = "utils/Group 105.png"
 options = [ENTROPY_LOGO, MURRAY_LOGO]
 sidebar_logo = ENTROPY_LOGO
 main_body_logo = MURRAY_LOGO
+
 st.sidebar.markdown(
     """
     <style>

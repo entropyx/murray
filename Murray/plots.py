@@ -268,10 +268,12 @@ def plot_mde_results(results_by_size, sensitivity_results, periods):
     heatmap_data = heatmap_data.T
     heatmap_data.columns = [f"Day-{i}" for i in periods]
     heatmap_data.index = [f"{holdout_by_location.get(size, 0):.2f}%" for size in sorted_sizes]
-    heatmap_data.index.name = "Holdout (%)"
+    
+    heatmap_data.index.name = "Treatment percentage (%)"
 
     y_labels = heatmap_data.index.tolist()
     x_labels = heatmap_data.columns.tolist()
+    y_axis = [f"{100 - float(value.strip('%')):.2f}%" for value in y_labels]
     z_values = heatmap_data.values.tolist()
     annotations = [[f"{val:.2%}" if not np.isnan(val) else "" for val in row] for row in z_values]
 
@@ -324,11 +326,11 @@ def plot_mde_results(results_by_size, sensitivity_results, periods):
                    showgrid=True,
                    tickfont=dict(size=12, color='black')),
 
-        yaxis=dict(title="Holdout (%)",
+        yaxis=dict(title="Treatment percentage (%)",
                    title_font=dict(size=16, color='black'),
                    tickmode="array",
                    tickvals=list(range(len(y_labels))),
-                   ticktext=y_labels,
+                   ticktext=y_axis,
                    type='category',
                    showgrid=True,
                    tickfont=dict(size=12, color='black'))
