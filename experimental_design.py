@@ -190,7 +190,9 @@ def generate_pdf(treatment_group, control_group, holdout_percentage, impact_grap
             pdf.cell(col_width, row_height, f"{row['Weights']:.4f}", 1, 1, 'C', True)
 
 
-        pdf.ln(5)  
+        pdf.ln(5) 
+        if pdf.get_y() > 260:
+            pdf.add_page() 
 
 
         pdf.set_font("Poppins", style='B', size=12)
@@ -213,6 +215,8 @@ def generate_pdf(treatment_group, control_group, holdout_percentage, impact_grap
 
 
         pdf.ln(2)
+        if pdf.get_y() > 250:
+            pdf.add_page()
 
         pdf.image(temp_image_path, x=10, y=pdf.get_y(), w=190)  
 
@@ -590,7 +594,7 @@ if file is not None:
 
                 if st.session_state.selected_point:
                     x_value, y_value = st.session_state.selected_point["x"], st.session_state.selected_point["y"]
-
+                    treatment_percentage = round(100 - float(y_value.strip('%')),2)
                     try:
                         if isinstance(x_value, str) and "Day-" in x_value:
                             period_idx = int(x_value.replace("Day-", "")) 
@@ -599,18 +603,19 @@ if file is not None:
                             period_idx = None
 
                         if isinstance(y_value, (int, float)):
-                            y_value_str = f"{y_value:.2f}%"
+                            
+                            y_value_str = f"{treatment_percentage:.2f}%"
 
                         else:
-                            y_value_str = str(y_value)
+                            y_value_str = str(f'{treatment_percentage}%')
 
-                        st.write(f"###### Locations with a holdout of: {y_value_str}")
+                        st.write(f"###### Locations with a treatment percentage of: {y_value_str}")
 
                         location = None
                         for loc, data in st.session_state.simulation_results.items():
 
                             holdout_str = f"{data['Holdout Percentage']:.2f}%"
-                            if holdout_str == y_value_str:
+                            if holdout_str == y_value:
                                 location = loc
                                 break
 
