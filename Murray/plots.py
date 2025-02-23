@@ -318,6 +318,7 @@ def plot_mde_results(results_by_size, sensitivity_results, periods):
     fig.update_layout(
         margin=dict(l=90, r=10, t=20, b=75),
         dragmode=False,
+        hovermode="closest",
         xaxis=dict(title="Treatment Periods",
                    title_font=dict(size=16, color='black'),
                    tickmode="array",
