@@ -1,0 +1,14 @@
+LICENSE
+MANIFEST.in
+README.md
+setup.py
+Murray/__init__.py
+Murray/auxiliary.py
+Murray/main.py
+Murray/plots.py
+Murray/post_analysis.py
+murray_geo.egg-info/PKG-INFO
+murray_geo.egg-info/SOURCES.txt
+murray_geo.egg-info/dependency_links.txt
+murray_geo.egg-info/requires.txt
+murray_geo.egg-info/top_level.txt

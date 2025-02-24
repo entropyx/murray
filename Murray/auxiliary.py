@@ -99,7 +99,7 @@ def cleaned_data(data, col_target, col_locations, col_dates, fill_value=0):
 
 def market_correlations(data):
     """
-    Determines similarity between states using correlations, while excluding specific states.
+    Determines similarity between locations using correlations.
 
     Args:
         data (pd.DataFrame): The DataFrame containing the locations of interest.
