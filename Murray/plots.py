@@ -258,11 +258,11 @@ def plot_mde_results(results_by_size, sensitivity_results, periods):
 
     
     if nan_ratio == 1:  
-        raise ValueError("Error: No satisfactory results found. The heatmap does not contain values (MDE) with the entered data.")
+        raise ValueError("No satisfactory results found. The heatmap does not contain values (MDE) with the entered data.")
         
 
     elif nan_ratio > 0.8:  
-        raise ValueError("Warning: The analysis shows few satisfactory results. You can try modifying the parameters or entering a different target column.")
+        raise ValueError("The analysis shows few satisfactory results. You can try modifying the parameters or entering a different target column.")
 
 
     heatmap_data = heatmap_data.T

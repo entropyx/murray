@@ -300,25 +300,45 @@ if 'lift_total' not in st.session_state:
 
 st.subheader("1. Upload your data")
 
-file = st.file_uploader("Choose a file", type="csv")
+def style_table(df):
+    return df.style.set_table_styles([
+        {"selector": "thead th", "props": [
+            ("font-weight", "bold"),
+            ("color", "black"),
+            ("background-color", "#f0f0f0"),
+            ("font-size", "16px"),
+            ("text-align", "center")
+        ]}
+    ]).set_properties(**{
+        'text-align': 'center',
+        'white-space': 'nowrap'
+    }).set_table_attributes('class="dataframe"')
+
+
+file = st.file_uploader("Choose a file ", type=["csv"])
+
 if file is not None:
-        data = pd.read_csv(file)
-        def style_table(df):
-            return df.style.set_table_styles([
-            {"selector": "thead th", "props": [
-                ("font-weight", "bold"),  
-                ("color", "black"),   
-                ("background-color", "#f0f0f0"),  
-                ("font-size", "16px"),    
-                ("text-align", "center")  
+    data = pd.read_csv(file)
 
+    if data is not None:
+        st.markdown("""
+            <style>
+            .dataframe-container {
+                width: 100%;
+                overflow-x: auto;
+            }
+            .dataframe-container table {
+                width: 100%;
+                border-collapse: collapse;
+            }
+            </style>
+        """, unsafe_allow_html=True)
 
-            ]}
-        ]).set_properties(**{'text-align': 'center','white-space': 'nowrap'}).set_table_attributes('class="dataframe"')
-        col1, col2, col3 = st.columns([1, 3, 1])
-        with col2:
-            
-            st.markdown(style_table(data.head()).to_html(), unsafe_allow_html=True)
+        
+        styled_table = style_table(data.head()).to_html()
+
+        
+        st.markdown(f'<div class="dataframe-container">{styled_table}</div>', unsafe_allow_html=True)
 
         st.text("Type the name of columns for the following parameters:")
         col1, col2, col3 = st.columns(3)
