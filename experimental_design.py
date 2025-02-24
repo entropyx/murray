@@ -191,7 +191,7 @@ def generate_pdf(treatment_group, control_group, holdout_percentage, impact_grap
 
 
         pdf.ln(5) 
-        if pdf.get_y() > 20:
+        if pdf.get_y() > 250:
             pdf.add_page() 
 
 
@@ -215,7 +215,7 @@ def generate_pdf(treatment_group, control_group, holdout_percentage, impact_grap
 
 
         pdf.ln(2)
-        if pdf.get_y() > 250:
+        if pdf.get_y() > 150:
             pdf.add_page()
 
         pdf.image(temp_image_path, x=10, y=pdf.get_y(), w=190)  
