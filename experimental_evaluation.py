@@ -488,7 +488,7 @@ if file is not None:
                         st.session_state.holdout_percentage = round(((total_Y - treatment_Y) / total_Y) * 100, 2)
                         st.session_state.treatment_group = ", ".join(treatment_group)
                         st.session_state.control_group = ", ".join(st.session_state.control_group)
-                        period = end_position_treatment - start_position_treatment
+                        period = end_position_treatment - start_position_treatment+1
                         st.session_state.permutation_test_report = plot_permutation_test_report(results)
                         st.session_state.period = period
                         
