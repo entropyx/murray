@@ -1102,6 +1102,7 @@ def plot_permutation_test(results_evaluation, Significance_level=0.1):
     
 
     upper_bound = np.percentile(null_conformities, 100 * (1 - (Significance_level / 2)))
+    lower_bound = np.percentile(null_conformities, 100 * (Significance_level / 2))
     
 
 
@@ -1161,7 +1162,16 @@ def plot_permutation_test(results_evaluation, Significance_level=0.1):
         fill="toself",
         fillcolor=hex_to_rgba(purple_light, 0.3),  
         line=dict(color="rgba(255,0,0,0)"),
-        name="Significance Zone"
+        name="Upper Significance Zone"
+    ))
+
+    fig.add_trace(go.Scatter(
+        x=[min(null_conformities), lower_bound, lower_bound, min(null_conformities), min(null_conformities)],
+        y=[0, 0, max_hist_y, max_hist_y, 0],  
+        fill="toself",
+        fillcolor=hex_to_rgba(purple_light, 0.3),  
+        line=dict(color="rgba(255,0,0,0)"),
+        name="Lower Significance Zone"
     ))
 
     fig.update_layout(
