@@ -19,7 +19,7 @@ You can install Murray using pip:
 pip install murray-geo
 ```
 
-Also, you can download the package by downloading it from the GitHub repository:
+Also, you can download the package directly from the GitHub repository:
 
 ```bash
 pip install pip install git+https://github.com/entropyx/murray.git
@@ -39,7 +39,7 @@ data = pd.DataFrame({
 ```python
 results = run_geo_analysis(
     data = data,
-    excluded_locations = [],
+    excluded_locations = ['mexico city', 'méxico'],
     maximum_treatment_percentage=0.30,
     significance_level = 0.1,
     deltas_range = (0.01, 0.3, 0.02),
@@ -58,4 +58,4 @@ results = run_geo_evaluation(
 
 
 # Documentation
-[Entropy Murray Documentation](https://entropy.tech/murray/docs/Welcome%20to%20Murray)
+You can check the documentation [here](https://entropy.tech/murray/docs/Welcome%20to%20Murray)
