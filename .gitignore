@@ -32,3 +32,6 @@ venv/
 __pycache__/
 *.swp
 *.ipynb
+
+# Trash files
+*.egg-info
