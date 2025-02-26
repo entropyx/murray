@@ -39,7 +39,7 @@ st.logo(sidebar_logo,size="large", icon_image=main_body_logo)
 
 
 
-def generate_pdf(treatment_group, control_group, holdout_percentage, impact_graph, weights,period_idx,mde,att,incremental,tarjet_variable,firt_day,last_day,treatment_day):
+def generate_pdf(treatment_group, control_group, holdout_percentage, impact_graph, weights,period_idx,mde,att,incremental,tarjet_variable,firt_day,last_day,treatment_day,df):
         """
         Generates a PDF report with explanations for each aspect.
         """
@@ -176,6 +176,7 @@ def generate_pdf(treatment_group, control_group, holdout_percentage, impact_grap
         pdf.cell(col_width, row_height, "Location", 1, 0, 'C', True)
         pdf.cell(col_width, row_height, "Weight", 1, 1, 'C', True)
         
+        
 
 
 
@@ -202,23 +203,75 @@ def generate_pdf(treatment_group, control_group, holdout_percentage, impact_grap
         pdf.set_text_color(33, 31, 36)
 
         pdf.multi_cell(0, 5, "The results show the impact of the treatment on different treatment locations. "
-                            "The graph below shows the aggregate effect, the point effect, and the cumulative effect. "
-                            "Below is the ATT value and the lift value total of the target variable, as well as the graphs of impact.")
+                            "Below is the ATT value and the lift value total of the target variable.")
+        
+        pdf.ln(1)
+        
         pdf.set_font("Poppins", style='B', size=10)
         pdf.set_text_color(33, 31, 36)
         pdf.cell(200, 5, f"ATT: {att:.2f}", ln=True)
-
         pdf.cell(200, 5, f"Lift total: {incremental:.2f}", ln=True)
         pdf.cell(200, 5, f"Percentage Lift: {round(mde * 100)}%", ln=True)
 
 
+        pdf.ln(4)
+        
+        pdf.set_font("Poppins", size=10)
+        pdf.set_text_color(33, 31, 36)
+        pdf.multi_cell(0, 5, f"It is important to be able to identify the impact of the intervention pre-intervention and" 
+                       f"post-intervention in real values. In this case, a small table is presented where the pre-intervention"
+                       f"value (with the same duration as the treatment period) and the post-intervention value are observed."
+                       f"This allows for a quick and simple identification of the impact that an intervention would have in"
+                       f"comparison to the locations where it is not applied (counterfactual).")
+        pdf.ln(1)
+        col_widths = [62.5, 42.5, 42.5, 42.5]  #
+        row_height = 8
 
 
+        
+        pdf.set_fill_color(*header_bg)
+        pdf.set_text_color(255, 255, 255)
+        pdf.set_font("Poppins", style='B', size=10)
+        
+        
+
+        headers = df.columns.tolist()
+        for i, header in enumerate(headers):
+            pdf.cell(col_widths[i], row_height, header, 1, 0, 'C', True)
+        pdf.ln(row_height)
+
+        # Filas de datos
+        pdf.set_text_color(*text_color)
+        pdf.set_font("Poppins", size=10)
+
+        for i, row in df.iterrows():
+            bg_color = alt_row_bg if i % 2 else white_row_bg
+            pdf.set_fill_color(*bg_color)
+
+            pdf.cell(col_widths[0], row_height, row["Group"], 1, 0, 'C', True)
+            pdf.cell(col_widths[1], row_height, f"{row['Pre-treatment']:,.2f}", 1, 0, 'C', True)
+            pdf.cell(col_widths[2], row_height, f"{row['Post-treatment']:,.2f}", 1, 0, 'C', True)
+            pdf.cell(col_widths[3], row_height, f"{row['Absolute Change']:,.2f}", 1, 1, 'C', True)
+
+        
         pdf.ln(2)
-        if pdf.get_y() > 150:
-            pdf.add_page()
 
+        
+        if pdf.get_y() > 170:
+            pdf.add_page()
+            
+        pdf.set_font("Poppins", size=10)
+        pdf.set_text_color(33, 31, 36)
+        pdf.multi_cell(0, 5, "The graph below shows the aggregate effect, the point effect, and the cumulative effect. ")
+
+        # Insertar la imagen
         pdf.image(temp_image_path, x=10, y=pdf.get_y(), w=190)  
+        
+
+        
+
+        
+         
 
 
         pdf_output = "reporte.pdf"
@@ -711,16 +764,24 @@ if file is not None:
                                         treatment_group = st.session_state.simulation_results[location]['Best Treatment Group']
                                         control_group = st.session_state.simulation_results[location]['Control Group']
                                         holdout_percentage = st.session_state.simulation_results[location]['Holdout Percentage']
-                                        impact_graph,att,incremental = plot_impact_report(st.session_state.results, period_idx, holdout_percentage)
+                                        pre_treatment, pre_counterfactual, post_treatment, post_counterfactual,impact_graph,att,incremental = plot_impact_report(st.session_state.results, period_idx, holdout_percentage)
                                         weights = print_weights(st.session_state.results, round(holdout_percentage, 2))
-                                      
+                                        df = pd.DataFrame(
+                                            {
+                                                "Group": ["Treatment", "Counterfactual (control)", "Absolute Difference"],
+                                                "Pre-treatment": [np.sum(pre_treatment),np.sum(pre_counterfactual), np.sum(pre_treatment-pre_counterfactual)],
+                                                "Post-treatment": [np.sum(post_treatment), np.sum(post_counterfactual),np.sum(post_treatment-post_counterfactual)],
+                                                "Absolute Change": [np.sum(post_treatment-pre_treatment), np.sum(post_counterfactual-pre_counterfactual), np.sum(post_treatment-pre_treatment) - np.sum(post_counterfactual-pre_counterfactual)]
+                                            }
+                                        )
+                                        
 
 
 
 
                                         
 
-                                        pdf_file = generate_pdf(treatment_group, control_group, holdout_percentage, impact_graph,weights,period_idx,mde,att,incremental,col_target,firt_day,last_day,treatment_day)
+                                        pdf_file = generate_pdf(treatment_group, control_group, holdout_percentage, impact_graph,weights,period_idx,mde,att,incremental,col_target,firt_day,last_day,treatment_day,df)
                                         
                                         
 

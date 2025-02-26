@@ -477,7 +477,13 @@ def plot_impact_streamlit_app(geo_test, period, holdout_percentage):
 
         att = np.mean(serie_tratamiento[star_treatment:] - y_real[star_treatment:])
         incremental = np.sum(serie_tratamiento[star_treatment:] - y_real[star_treatment:])
-
+        
+        # Absolute values (comparison)
+        pre_counterfactual = y_real[:star_treatment]
+        pre_treatment = serie_tratamiento[:star_treatment]
+        
+        post_counterfactual = y_real[star_treatment:]
+        post_treatment = serie_tratamiento[star_treatment:]
 
         
 
@@ -1329,7 +1335,12 @@ def plot_impact_report(geo_test, period, holdout_percentage):
     std_error_cumulative = std_dev_cumulative / np.sqrt(len(efecto_acumulativo[star_treatment:]))
     upper_bound_cumulative = efecto_acumulativo[star_treatment:] + 1.96 * std_error_cumulative
     lower_bound_cumulative = efecto_acumulativo[star_treatment:] - 1.96 * std_error_cumulative
-
+    
+    # Absolute values (comoarison)
+    pre_treatment = serie_tratamiento[star_treatment-period:star_treatment]
+    pre_counterfactual = y_real[star_treatment-period:star_treatment]
+    post_treatment = serie_tratamiento[star_treatment:]
+    post_counterfactual = y_real[star_treatment:]
 
     att = np.mean(serie_tratamiento[star_treatment:] - y_real[star_treatment:])
     incremental = np.sum(serie_tratamiento[star_treatment:] - y_real[star_treatment:])
@@ -1371,7 +1382,7 @@ def plot_impact_report(geo_test, period, holdout_percentage):
 
     plt.tight_layout()
     
-    return fig, round(att,2), round(incremental,2)
+    return pre_treatment,pre_counterfactual,post_treatment,post_counterfactual,fig, round(att,2), round(incremental,2)
 
 
 
