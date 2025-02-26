@@ -12,3 +12,7 @@ node_modules/
 *.pkl
 build/
 *.egg-info
+<<<<<<< HEAD
+
+=======
+>>>>>>> dev
