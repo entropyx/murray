@@ -22,7 +22,7 @@ pip install murray-geo
 Also, you can download the package directly from the GitHub repository:
 
 ```bash
-pip install pip install git+https://github.com/entropyx/murray.git
+pip install git+https://github.com/entropyx/murray.git
 ```
 
 
