@@ -636,7 +636,7 @@ def plot_impact_streamlit_app(geo_test, period, holdout_percentage):
 
 
 def plot_impact_graphs(geo_test, period, treatment_percentage):
-  holdout_percentage = 10 - treatment_percentage
+  holdout_percentage = 100 - treatment_percentage
   att, incremental, fig = plot_impact_streamlit_app(geo_test, period, holdout_percentage)
   return fig
 
