@@ -19,6 +19,12 @@ You can install Murray using pip:
 pip install murray-geo
 ```
 
+Also, you can download the package directly from the GitHub repository:
+
+```bash
+pip install git+https://github.com/entropyx/murray.git
+```
+
 
 # Prepare your data
 ```python
