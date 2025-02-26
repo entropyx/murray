@@ -11,3 +11,5 @@ node_modules/
 *.pdf
 *.pkl
 build/
+*.egg-info
+
