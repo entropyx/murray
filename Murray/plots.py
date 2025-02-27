@@ -101,7 +101,9 @@ def plot_geodata(merged_data,custom_colors=custom_colors):
 
 
         margin=dict(l=50, r=50, t=50, b=50),
-        showlegend=False,
+        dragmode=False,
+        showlegend=False
+        
         #paper_bgcolor='white',
         
 
