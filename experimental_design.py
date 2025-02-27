@@ -398,7 +398,26 @@ if file is not None:
             if st.session_state.graph_button_clicked:
                 fig = plot_geodata(data1)
                 st.session_state.fig = fig
-                st.plotly_chart(st.session_state.fig)
+                st.markdown(
+                    """
+                    <style>
+                    .js-plotly-plot .plotly .cursor-crosshair {
+                         cursor: default !important;
+                    </style>
+                    """,
+                    unsafe_allow_html=True
+                )
+                st.plotly_chart(st.session_state.fig,config={
+                    'modeBarButtonsToRemove': [
+                        'zoom2d',
+                        'pan2d',
+                        'select2d',
+                        'lasso2d',
+                        'resetScale2d',
+                    ],
+                    'displaylogo': False
+                })
+                
 
 
     #--------------------------------------------------------------------------------------------------------------------------------
@@ -454,7 +473,7 @@ if file is not None:
             with col2:
                 delta_max = st.number_input("Lift Max:", min_value=0.02, max_value=1.0, value=0.3, step=0.01)
             with col3:
-                delta_step = st.number_input("Lift Step:", min_value=0.01, max_value=1.0, value=0.02, step=0.01)
+                delta_step = st.number_input("Lift Step:", min_value=0.00, max_value=1.0, value=0.02, step=0.01)
             if delta_min > delta_max:
                 st.error("Lift Min must be less than Lift Max")
                 st.stop()
@@ -599,9 +618,32 @@ if file is not None:
                 
 
             if st.session_state.simulation_results is not None:
+
+
+                st.markdown(
+                    """
+                    <style>
+                    .js-plotly-plot .plotly .cursor-move {
+                        cursor: default !important;
+                    }
+                    </style>
+                    """,
+                    unsafe_allow_html=True
+                )
+
+
                 st.write('<h4 style="text-align: center;"> Geo Murray MDE Heatmap</h4>', unsafe_allow_html=True)
                 fig2 = st.session_state.fig2
-                event = st.plotly_chart(fig2,key="heatmap",on_select="rerun")
+                event = st.plotly_chart(fig2,key="heatmap",on_select="rerun",config={
+                    'modeBarButtonsToRemove': [
+                        'zoom2d',
+                        'pan2d',
+                        'select2d',
+                        'lasso2d',
+                        'resetScale2d',
+                    ],
+                    'displaylogo': False
+                })
                 
 
 
