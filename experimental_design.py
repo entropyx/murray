@@ -40,7 +40,9 @@ st.logo(sidebar_logo,size="large", icon_image=main_body_logo)
 
 
 
-def generate_pdf(treatment_group, control_group, holdout_percentage, impact_graph, weights,period_idx,mde,att,incremental,tarjet_variable,firt_day,last_day,treatment_day,df,firt_report_day,second_report_day):
+def generate_pdf(treatment_group, control_group, holdout_percentage, impact_graph, 
+                 weights,period_idx,mde,att,incremental,tarjet_variable,firt_day,
+                 last_day,treatment_day,df,firt_report_day,second_report_day,budget):
         """
         Generates a PDF report with explanations for each aspect.
         """
@@ -197,6 +199,26 @@ def generate_pdf(treatment_group, control_group, holdout_percentage, impact_grap
             pdf.add_page() 
 
 
+
+        pdf.set_font("Poppins", style='B', size=12)
+        pdf.set_text_color(27, 0, 67)
+        pdf.cell(200, 10, "Invesment", ln=True)
+        pdf.set_font("Poppins", size=10)
+        pdf.set_text_color(33, 31, 36)
+
+        pdf.multi_cell(0, 5, "Investment represents the total cost of the intervention in the treated locations during the treatment period.")
+
+        pdf.ln(1)
+        
+        pdf.set_font("Poppins", style='B', size=10)
+        pdf.set_text_color(33, 31, 36)
+        pdf.cell(200, 5, f"Investment: {budget_final:,.2f}", ln=True)
+
+
+        pdf.ln(5) 
+        if pdf.get_y() > 250:
+            pdf.add_page() 
+        
         pdf.set_font("Poppins", style='B', size=12)
         pdf.set_text_color(27, 0, 67)
         pdf.cell(200, 10, "Impact", ln=True)
@@ -205,8 +227,12 @@ def generate_pdf(treatment_group, control_group, holdout_percentage, impact_grap
 
         pdf.multi_cell(0, 5, "The results show the impact of the treatment on different treatment locations. "
                             "Below is the ATT value and the lift value total of the target variable.")
+
+
         
         pdf.ln(1)
+        if pdf.get_y() > 250:
+            pdf.add_page() 
         
         pdf.set_font("Poppins", style='B', size=10)
         pdf.set_text_color(33, 31, 36)
@@ -216,6 +242,8 @@ def generate_pdf(treatment_group, control_group, holdout_percentage, impact_grap
 
 
         pdf.ln(4)
+        if pdf.get_y() > 250:
+            pdf.add_page() 
         
         pdf.set_font("Poppins", size=10)
         pdf.set_text_color(33, 31, 36)
@@ -225,10 +253,12 @@ def generate_pdf(treatment_group, control_group, holdout_percentage, impact_grap
                        f"This allows for a quick and simple identification of the impact that an intervention would have in"
                        f"comparison to the locations where it is not applied (counterfactual).")
         pdf.ln(1)
+        if pdf.get_y() > 210:
+            pdf.add_page() 
         col_widths = [62.5, 42.5, 42.5, 42.5]
         row_height = 8
 
-        # Encabezados en una sola fila, con salto de línea donde quieras:
+        
         header_texts = [
             "Group",
             f"Pre-treatment\n({firt_report_day} to {second_report_day})",
@@ -236,7 +266,7 @@ def generate_pdf(treatment_group, control_group, holdout_percentage, impact_grap
             "Increment"
         ]
 
-        # 1) Calcula la altura máxima (máximo número de líneas)
+        
         max_lines = 0
         for txt in header_texts:
             n = txt.count('\n') + 1
@@ -244,55 +274,54 @@ def generate_pdf(treatment_group, control_group, holdout_percentage, impact_grap
                 max_lines = n
         max_header_height = max_lines * row_height
 
-        # 2) Posición inicial del encabezado
+        
         x_start = pdf.get_x()
         y_start = pdf.get_y()
 
-        # (Se asume que ya has configurado color de fondo, texto y fuente:
+        
         pdf.set_fill_color(*header_bg)
         pdf.set_text_color(255, 255, 255)
         pdf.set_font("Poppins", "B", 10) 
 
         x = x_start
         for i, txt in enumerate(header_texts):
-            # Dibuja la celda vacía (bounding box) con la altura máxima
+            
             pdf.cell(col_widths[i], max_header_height, "", border=1, ln=0, fill=True)
             
-            # Regresa a la esquina superior de la celda que acabas de dibujar
+            
             current_x = pdf.get_x() - col_widths[i]
             pdf.set_xy(current_x, y_start)
             
-            # Verifica si hay salto de línea en el texto (título + fechas)
+            
             if "\n" in txt:
-                lines = txt.split("\n")  # Primera parte: "Pre-treatment", segunda parte: "(...)"
+                lines = txt.split("\n")  
                 
-                # ---- 1ª línea: título principal con fuente normal (ej. 10 pt) ----
+                
                 pdf.cell(col_widths[i], row_height, lines[0], border=0, ln=0, align='C')
                 
-                # Salto de línea DENTRO de la misma columna
-                pdf.ln(row_height)
-                pdf.set_x(current_x)  # Regresamos a la misma posición X para alinear la 2ª línea
                 
-                # Ajustamos la fuente a un tamaño más pequeño para la fecha
+                pdf.ln(row_height)
+                pdf.set_x(current_x)  
+                
+                
                 current_font_size = pdf.font_size_pt
                 smaller_font = current_font_size * 0.7
                 pdf.set_font("Poppins", "B", smaller_font)
                 
-                # ---- 2ª línea: fechas ----
+                
                 pdf.cell(col_widths[i], row_height, lines[1], border=0, ln=0, align='C')
                 
-                # Restauramos la fuente original
+                
                 pdf.set_font("Poppins", "B", current_font_size)
                 
             else:
-                # Si no hay salto de línea, usamos multi_cell normal
                 pdf.multi_cell(col_widths[i], row_height, txt, border=0, align='C')
             
-            # Avanzamos a la siguiente columna
+            
             x += col_widths[i]
             pdf.set_xy(x, y_start)
 
-        # Bajamos el cursor por debajo del encabezado
+        
         pdf.set_xy(x_start, y_start + max_header_height)
 
         # 3) Imprimir datos (3 columnas)
@@ -319,10 +348,10 @@ def generate_pdf(treatment_group, control_group, holdout_percentage, impact_grap
         pdf.set_font("Poppins", "B", 10)
         pdf.cell(col_widths[3], altura_total, f"{round(mde * 100)}%", border=1, ln=1, align='C', fill=True)
 
-
-
-
         
+
+
+        pdf.ln(9)
         if pdf.get_y() > 170:
             pdf.add_page()
             
@@ -610,6 +639,16 @@ if file is not None:
                 st.stop()
             else:
                 periods_range = (period_min, period_max+1, period_step)
+            
+            budget = st.number_input("Available budget")
+            cpic = st.number_input("CPIC")
+            
+            total_days = len(data1['time'].unique())
+            
+            target_daily = (data1['Y'].sum()) / total_days
+            
+
+            
             st.text("Click on the button to start simulation")
 
 
@@ -634,7 +673,9 @@ if file is not None:
                 "significance_level_pre": significance_level_pre,
                 "deltas_range": (delta_min, delta_max, delta_step),
                 "periods_range": (period_min, period_max+1, period_step),
-                "col_target": col_target
+                "col_target": col_target,
+                "budget": budget,
+                "cpic": cpic
             }
 
             
@@ -802,6 +843,14 @@ if file is not None:
                                 
                                 if matching_size is not None:
                                     mde = st.session_state.sensitivity_results[matching_size][period_idx]['MDE']
+
+                            
+                            
+                            increment_necesary = target_daily * period_idx
+                            target_necesary = increment_necesary * cpic
+
+                            budget_final = target_necesary * mde
+                            
                                     
 
 
@@ -852,8 +901,10 @@ if file is not None:
 
 
                                         
+                                        
 
-                                        pdf_file = generate_pdf(treatment_group, control_group, holdout_percentage, impact_graph,weights,period_idx,mde,att,incremental,col_target,firt_day,last_day,treatment_day,df,firt_report_day,second_report_day)
+
+                                        pdf_file = generate_pdf(treatment_group, control_group, holdout_percentage, impact_graph,weights,period_idx,mde,att,incremental,col_target,firt_day,last_day,treatment_day,df,firt_report_day,second_report_day, budget_final)
                                         
                                         
 
