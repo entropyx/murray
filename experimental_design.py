@@ -8,6 +8,7 @@ from fpdf import FPDF
 import base64
 import os
 
+
 ENTROPY_LOGO = "utils/Logo Entropy Dark Gray.png" 
 MURRAY_LOGO = "utils/Group 105.png"
 options = [ENTROPY_LOGO, MURRAY_LOGO]
@@ -39,7 +40,7 @@ st.logo(sidebar_logo,size="large", icon_image=main_body_logo)
 
 
 
-def generate_pdf(treatment_group, control_group, holdout_percentage, impact_graph, weights,period_idx,mde,att,incremental,tarjet_variable,firt_day,last_day,treatment_day,df):
+def generate_pdf(treatment_group, control_group, holdout_percentage, impact_graph, weights,period_idx,mde,att,incremental,tarjet_variable,firt_day,last_day,treatment_day,df,firt_report_day,second_report_day):
         """
         Generates a PDF report with explanations for each aspect.
         """
@@ -209,8 +210,8 @@ def generate_pdf(treatment_group, control_group, holdout_percentage, impact_grap
         
         pdf.set_font("Poppins", style='B', size=10)
         pdf.set_text_color(33, 31, 36)
-        pdf.cell(200, 5, f"ATT: {att:.2f}", ln=True)
-        pdf.cell(200, 5, f"Lift total: {incremental:.2f}", ln=True)
+        pdf.cell(200, 5, f"ATT: {att:,.2f}", ln=True)
+        pdf.cell(200, 5, f"Lift total: {incremental:,.2f}", ln=True)
         pdf.cell(200, 5, f"Percentage Lift: {round(mde * 100)}%", ln=True)
 
 
@@ -224,37 +225,102 @@ def generate_pdf(treatment_group, control_group, holdout_percentage, impact_grap
                        f"This allows for a quick and simple identification of the impact that an intervention would have in"
                        f"comparison to the locations where it is not applied (counterfactual).")
         pdf.ln(1)
-        col_widths = [62.5, 42.5, 42.5, 42.5]  #
+        col_widths = [62.5, 42.5, 42.5, 42.5]
         row_height = 8
 
+        # Encabezados en una sola fila, con salto de línea donde quieras:
+        header_texts = [
+            "Group",
+            f"Pre-treatment\n({firt_report_day} to {second_report_day})",
+            f"Post-treatment\n({treatment_day} to {last_day})",
+            "Increment"
+        ]
 
-        
+        # 1) Calcula la altura máxima (máximo número de líneas)
+        max_lines = 0
+        for txt in header_texts:
+            n = txt.count('\n') + 1
+            if n > max_lines:
+                max_lines = n
+        max_header_height = max_lines * row_height
+
+        # 2) Posición inicial del encabezado
+        x_start = pdf.get_x()
+        y_start = pdf.get_y()
+
+        # (Se asume que ya has configurado color de fondo, texto y fuente:
         pdf.set_fill_color(*header_bg)
         pdf.set_text_color(255, 255, 255)
-        pdf.set_font("Poppins", style='B', size=10)
-        
-        
+        pdf.set_font("Poppins", "B", 10) 
 
-        headers = df.columns.tolist()
-        for i, header in enumerate(headers):
-            pdf.cell(col_widths[i], row_height, header, 1, 0, 'C', True)
-        pdf.ln(row_height)
+        x = x_start
+        for i, txt in enumerate(header_texts):
+            # Dibuja la celda vacía (bounding box) con la altura máxima
+            pdf.cell(col_widths[i], max_header_height, "", border=1, ln=0, fill=True)
+            
+            # Regresa a la esquina superior de la celda que acabas de dibujar
+            current_x = pdf.get_x() - col_widths[i]
+            pdf.set_xy(current_x, y_start)
+            
+            # Verifica si hay salto de línea en el texto (título + fechas)
+            if "\n" in txt:
+                lines = txt.split("\n")  # Primera parte: "Pre-treatment", segunda parte: "(...)"
+                
+                # ---- 1ª línea: título principal con fuente normal (ej. 10 pt) ----
+                pdf.cell(col_widths[i], row_height, lines[0], border=0, ln=0, align='C')
+                
+                # Salto de línea DENTRO de la misma columna
+                pdf.ln(row_height)
+                pdf.set_x(current_x)  # Regresamos a la misma posición X para alinear la 2ª línea
+                
+                # Ajustamos la fuente a un tamaño más pequeño para la fecha
+                current_font_size = pdf.font_size_pt
+                smaller_font = current_font_size * 0.7
+                pdf.set_font("Poppins", "B", smaller_font)
+                
+                # ---- 2ª línea: fechas ----
+                pdf.cell(col_widths[i], row_height, lines[1], border=0, ln=0, align='C')
+                
+                # Restauramos la fuente original
+                pdf.set_font("Poppins", "B", current_font_size)
+                
+            else:
+                # Si no hay salto de línea, usamos multi_cell normal
+                pdf.multi_cell(col_widths[i], row_height, txt, border=0, align='C')
+            
+            # Avanzamos a la siguiente columna
+            x += col_widths[i]
+            pdf.set_xy(x, y_start)
 
-        # Filas de datos
+        # Bajamos el cursor por debajo del encabezado
+        pdf.set_xy(x_start, y_start + max_header_height)
+
+        # 3) Imprimir datos (3 columnas)
         pdf.set_text_color(*text_color)
-        pdf.set_font("Poppins", size=10)
+        pdf.set_font("Poppins", "", 10)
+        y_data_start = pdf.get_y()
 
         for i, row in df.iterrows():
             bg_color = alt_row_bg if i % 2 else white_row_bg
             pdf.set_fill_color(*bg_color)
+            
+            pdf.cell(col_widths[0], row_height, str(row["Group"]), border=1, ln=0, align='C', fill=True)
+            pdf.cell(col_widths[1], row_height, f"{row['Pre-treatment']:,.2f}", border=1, ln=0, align='C', fill=True)
+            pdf.cell(col_widths[2], row_height, f"{row['Post-treatment']:,.2f}", border=1, ln=1, align='C', fill=True)
 
-            pdf.cell(col_widths[0], row_height, row["Group"], 1, 0, 'C', True)
-            pdf.cell(col_widths[1], row_height, f"{row['Pre-treatment']:,.2f}", 1, 0, 'C', True)
-            pdf.cell(col_widths[2], row_height, f"{row['Post-treatment']:,.2f}", 1, 0, 'C', True)
-            pdf.cell(col_widths[3], row_height, f"{row['Absolute Change']:,.2f}", 1, 1, 'C', True)
+        y_data_end = pdf.get_y()
+        altura_total = y_data_end - y_data_start
 
-        
-        pdf.ln(2)
+        # 4) Fusionar la 4ta columna
+        x_fourth_col = x_start + col_widths[0] + col_widths[1] + col_widths[2]
+        pdf.set_xy(x_fourth_col, y_data_start)
+
+        pdf.set_text_color(*text_color)
+        pdf.set_font("Poppins", "B", 10)
+        pdf.cell(col_widths[3], altura_total, f"{round(mde * 100)}%", border=1, ln=1, align='C', fill=True)
+
+
+
 
         
         if pdf.get_y() > 170:
@@ -712,9 +778,14 @@ if file is not None:
                             filtered_data = data1[data1['location'] == random_sate]
                             firt_day = filtered_data['time'].min()
                             last_day = filtered_data['time'].max()
+                            second_report_day = last_day - pd.Timedelta(days=period_idx+1)
+                            firt_report_day = last_day - pd.Timedelta(days=period_idx*2)
                             treatment_day = last_day - pd.Timedelta(days=period_idx)
                             last_day = last_day.strftime('%Y-%m-%d')
                             firt_day = firt_day.strftime('%Y-%m-%d')
+                            firt_report_day = firt_report_day.strftime('%Y-%m-%d')
+                            second_report_day = second_report_day.strftime('%Y-%m-%d')
+
                             treatment_day = treatment_day.strftime('%Y-%m-%d')
     
                             mde = 'N/A'
@@ -768,10 +839,11 @@ if file is not None:
                                         weights = print_weights(st.session_state.results, round(holdout_percentage, 2))
                                         df = pd.DataFrame(
                                             {
-                                                "Group": ["Treatment", "Counterfactual (control)", "Absolute Difference"],
-                                                "Pre-treatment": [np.sum(pre_treatment),np.sum(pre_counterfactual), np.sum(pre_treatment-pre_counterfactual)],
-                                                "Post-treatment": [np.sum(post_treatment), np.sum(post_counterfactual),np.sum(post_treatment-post_counterfactual)],
-                                                "Absolute Change": [np.sum(post_treatment-pre_treatment), np.sum(post_counterfactual-pre_counterfactual), np.sum(post_treatment-pre_treatment) - np.sum(post_counterfactual-pre_counterfactual)]
+                                                "Group": ["Treatment", "Counterfactual (control)", "Absolute difference"],
+                                                "Pre-treatment": [np.sum(pre_treatment),np.sum(pre_counterfactual), np.sum(pre_treatment)-np.sum(pre_counterfactual)],
+                                                "Post-treatment": [np.sum(post_treatment), np.sum(post_counterfactual),np.sum(post_treatment)- np.sum(post_counterfactual)],
+                                                "Increment": [" " ," " ," " ]
+                                                
                                             }
                                         )
                                         
@@ -781,7 +853,7 @@ if file is not None:
 
                                         
 
-                                        pdf_file = generate_pdf(treatment_group, control_group, holdout_percentage, impact_graph,weights,period_idx,mde,att,incremental,col_target,firt_day,last_day,treatment_day,df)
+                                        pdf_file = generate_pdf(treatment_group, control_group, holdout_percentage, impact_graph,weights,period_idx,mde,att,incremental,col_target,firt_day,last_day,treatment_day,df,firt_report_day,second_report_day)
                                         
                                         
 
