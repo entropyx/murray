@@ -11,3 +11,4 @@ streamlit-js-eval
 streamlit-plotly-events
 seaborn
 plotly
+protobuf==3.20.*
