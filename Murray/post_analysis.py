@@ -7,7 +7,7 @@ import pandas as pd
 def run_geo_evaluation(data_input, start_treatment,end_treatment,treatment_group,spend,n_permutations=5000,inference_type='iid',significance_level=0.1):
         
         random_sate = data_input['location'].unique()[0]
-        filtered_data = data_input[data_input['location'] == random_sate]
+        filtered_data = data_input[data_input['location'] == random_sate].copy()
         start_treatment = pd.to_datetime(start_treatment, dayfirst=True)
         end_treatment = pd.to_datetime(end_treatment,dayfirst=True)
         filtered_data['time'] = pd.to_datetime(filtered_data['time'])
