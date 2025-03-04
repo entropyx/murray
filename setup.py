@@ -1,9 +1,7 @@
 from setuptools import setup, find_packages
 import re 
 import os
-import shutil
 
-shutil.copy("app.py", "Murray/app.py")
 
 with open(os.path.join("Murray", "__init__.py")) as f:
     version = re.search(r'__version__ = "(.*?)"', f.read()).group(1)
@@ -24,7 +22,7 @@ setup(
     ],
     entry_points={
         "console_scripts": [
-            "murray-app=Murray.run:main",  # Asocia un comando con la función de ejecución
+            "murray-app=Murray.run:main",  
         ],
         },
     author="Entropy Team",
@@ -52,7 +50,8 @@ setup(
         "Source Code": "https://github.com/entropyx/murray",
     },
     include_package_data=True,
-    package_data={"Murray": ["*.py"]},  # Mantiene todos los archivos .py dentro del paquete
-    data_files=[("", ["experimental_design.py", "experimental_evaluation.py"])],
+    package_data={
+        "Murray": ["experimental_design.py", "experimental_evaluation.py"],  
+    },
 
 )

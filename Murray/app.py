@@ -1,9 +1,7 @@
+import os
 import streamlit as st
 
 
-
-
-# Configure page
 st.set_page_config(
     page_title="Geo Murray",
     page_icon="utils/Group 105.png",
@@ -11,16 +9,30 @@ st.set_page_config(
 )
 
 
-# Navigation setup
+package_root = os.path.dirname(__file__)
+
+
+design_path = os.path.join(package_root, "experimental_design.py")
+evaluation_path = os.path.join(package_root, "experimental_evaluation.py")
+
+
+if not os.path.exists(design_path):
+    st.error(f"Error: No se encontró {design_path}")
+if not os.path.exists(evaluation_path):
+    st.error(f"Error: No se encontró {evaluation_path}")
+
+
 Pages = {
     "Murray": [
-        st.Page("experimental_design.py", title="Experimental design"),
-        st.Page("experimental_evaluation.py", title="Experimental evaluation")
+        st.Page(design_path, title="Experimental Design"),
+        st.Page(evaluation_path, title="Experimental Evaluation")
     ]
 }
 
 pg = st.navigation(Pages)
 pg.run()
+
+
 
 st.markdown(
     """

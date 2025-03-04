@@ -9,6 +9,7 @@ import base64
 import os
 
 
+
 ENTROPY_LOGO = "utils/Logo Entropy Dark Gray.png" 
 MURRAY_LOGO = "utils/Group 105.png"
 options = [ENTROPY_LOGO, MURRAY_LOGO]
@@ -340,7 +341,7 @@ def generate_pdf(treatment_group, control_group, holdout_percentage, impact_grap
         y_data_end = pdf.get_y()
         altura_total = y_data_end - y_data_start
 
-        # 4) Fusionar la 4ta columna
+        
         x_fourth_col = x_start + col_widths[0] + col_widths[1] + col_widths[2]
         pdf.set_xy(x_fourth_col, y_data_start)
 
