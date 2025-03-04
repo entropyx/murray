@@ -224,121 +224,126 @@ def BetterGroups(similarity_matrix, excluded_locations, data, correlation_matrix
               Each entry contains the best treatment group, control group, MAE,
               actual target metrics, predictions, weights, and holdout percentage.
     """
-    results_by_size = {}
-    no_locations = int(len(data['location'].unique()))
-    max_group_size = round(no_locations * 0.5)
-    min_elements_in_treatment = round(no_locations * 0.2)
-    min_holdout = 100 - (maximum_treatment_percentage * 100)
+    if not data.empty:
+        results_by_size = {}
+        no_locations = int(len(data['location'].unique()))
+        max_group_size = round(no_locations * 0.5)
+        min_elements_in_treatment = round(no_locations * 0.2)
+        min_holdout = 100 - (maximum_treatment_percentage * 100)
 
-    def smape(A, F):
-        denominator = np.abs(A) + np.abs(F)
-        denominator = np.where(denominator == 0, 1e-8, denominator)  
-        return 100 / len(A) * np.sum(2 * np.abs(F - A) / denominator)
+        def smape(A, F):
+            denominator = np.abs(A) + np.abs(F)
+            denominator = np.where(denominator == 0, 1e-8, denominator)  
+            return 100 / len(A) * np.sum(2 * np.abs(F - A) / denominator)
 
-    total_Y = data['Y'].sum()
-    possible_groups = []
-    for size in range(min_elements_in_treatment, max_group_size + 1):
-        groups = select_treatments(similarity_matrix, size, excluded_locations)
-        possible_groups.extend(groups)
+        total_Y = data['Y'].sum()
+        possible_groups = []
+        for size in range(min_elements_in_treatment, max_group_size + 1):
+            groups = select_treatments(similarity_matrix, size, excluded_locations)
+            possible_groups.extend(groups)
 
-    if not possible_groups:
-        return None
-
-    def evaluate_group(treatment_group):
-        treatment_Y = data[data['location'].isin(treatment_group)]['Y'].sum()
-        holdout_percentage = (1 - (treatment_Y / total_Y)) * 100
-
-        
-        if holdout_percentage < min_holdout:
+        if not possible_groups:
             return None
 
-        control_group = select_controls(
-            correlation_matrix=correlation_matrix,
-            treatment_group=treatment_group,
-            min_correlation=0.8
-        )
+        def evaluate_group(treatment_group):
+            treatment_Y = data[data['location'].isin(treatment_group)]['Y'].sum()
+            holdout_percentage = (1 - (treatment_Y / total_Y)) * 100
 
-        if not control_group:
-            return (treatment_group, [], float('inf'), float('inf'), None, None, None)
-
-        df_pivot = data.pivot(index='time', columns='location', values='Y')
-        X = df_pivot[control_group].values
-        y = df_pivot[list(treatment_group)].sum(axis=1).values
-
-        model = SyntheticControl()
-
-        #----------------------------------------------------------------------------------
-
-        scaler_x = MinMaxScaler()
-        scaler_y = MinMaxScaler()
-
-        X_scaled = scaler_x.fit_transform(X)
-        y_scaled = scaler_y.fit_transform(y.reshape(-1, 1))
-
-        split_index = int(len(X_scaled) * 0.8)
-        X_train, X_test = X_scaled[:split_index], X_scaled[split_index:]
-        y_train, y_test = y_scaled[:split_index], y_scaled[split_index:]
-
-        model = SyntheticControl()
-        model.fit(X_train, y_train)
-
-        predictions_val, weights = model.predict(X_test)
-
-        contrafactual_train = (weights @ X_train.T).reshape(-1, 1)
-        contrafactual_test = (weights @ X_test.T).reshape(-1, 1)
-        contrafactual_full = np.vstack((contrafactual_train, contrafactual_test))
-
-        contrafactual_full_original = scaler_y.inverse_transform(contrafactual_full)
-        predictions = contrafactual_full_original.flatten()
-
-        y_original = scaler_y.inverse_transform(y_scaled).flatten()
-
-        MAPE = np.mean(np.abs((y_original - predictions) / (y_original + 1e-10))) * 100
-        SMAPE = smape(y_original, predictions)
-
-        return (treatment_group, control_group, MAPE, SMAPE, y_original, predictions, weights)
-
-        #----------------------------------------------------------------------------------
-
-    total_groups = len(possible_groups)
-
-    with concurrent.futures.ThreadPoolExecutor() as executor:
-        results = []
-        for idx, result in enumerate(executor.map(evaluate_group, possible_groups)):
-            results.append(result)
-            if progress_updater:
-                progress_updater.progress((idx + 1) / total_groups)
             
-            
-            if status_updater:
-                status_updater.text(f"Finding the best groups: {int((idx + 1) / total_groups * 100)}% complete ⏳")
+            if holdout_percentage < min_holdout:
+                return None
+
+            control_group = select_controls(
+                correlation_matrix=correlation_matrix,
+                treatment_group=treatment_group,
+                min_correlation=0.8
+            )
+
+            if not control_group:
+                return (treatment_group, [], float('inf'), float('inf'), None, None, None)  
 
 
-    total_Y = data['Y'].sum()
+            df_pivot = data.pivot(index='time', columns='location', values='Y')
+            X = df_pivot[control_group].values
+            y = df_pivot[list(treatment_group)].sum(axis=1).values
 
-    for size in range(min_elements_in_treatment, max_group_size + 1):
-        best_results = [result for result in results if result is not None and len(result[0]) == size]
+            model = SyntheticControl()
 
-        if best_results:
-            best_result = min(best_results, key=lambda x: (x[2], -x[3]))
-            best_treatment_group, best_control_group, best_MAPE, best_SMAPE, y, predictions, weights= best_result
+            #----------------------------------------------------------------------------------
 
-            treatment_Y = data[data['location'].isin(best_treatment_group)]['Y'].sum()
-            holdout_percentage = ((total_Y - treatment_Y) / total_Y) * 100
+            scaler_x = MinMaxScaler()
+            scaler_y = MinMaxScaler()
 
-            results_by_size[size] = {
-                'Best Treatment Group': best_treatment_group,
-                'Control Group': best_control_group,
-                'MAPE': best_MAPE,
-                'SMAPE': best_SMAPE,
-                'Actual Target Metric (y)': y,
-                'Predictions': predictions,
-                'Weights': weights,
-                'Holdout Percentage': holdout_percentage,
+            X_scaled = scaler_x.fit_transform(X)
+            y_scaled = scaler_y.fit_transform(y.reshape(-1, 1))
+
+            split_index = int(len(X_scaled) * 0.8)
+            X_train, X_test = X_scaled[:split_index], X_scaled[split_index:]
+            y_train, y_test = y_scaled[:split_index], y_scaled[split_index:]
+
+            model = SyntheticControl()
+            model.fit(X_train, y_train)
+
+            predictions_val, weights = model.predict(X_test)
+
+            contrafactual_train = (weights @ X_train.T).reshape(-1, 1)
+            contrafactual_test = (weights @ X_test.T).reshape(-1, 1)
+            contrafactual_full = np.vstack((contrafactual_train, contrafactual_test))
+
+            contrafactual_full_original = scaler_y.inverse_transform(contrafactual_full)
+            predictions = contrafactual_full_original.flatten()
+
+            y_original = scaler_y.inverse_transform(y_scaled).flatten()
+
+            MAPE = np.mean(np.abs((y_original - predictions) / (y_original + 1e-10))) * 100
+            SMAPE = smape(y_original, predictions)
+
+            return (treatment_group, control_group, MAPE, SMAPE, y_original, predictions, weights)
+
+            #----------------------------------------------------------------------------------
+
+        total_groups = len(possible_groups)
+
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            results = []
+            for idx, result in enumerate(executor.map(evaluate_group, possible_groups)):
+                results.append(result)
+                if progress_updater:
+                    progress_updater.progress((idx + 1) / total_groups)
                 
-            }
+                
+                if status_updater:
+                    status_updater.text(f"Finding the best groups: {int((idx + 1) / total_groups * 100)}% complete ⏳")
 
-    return results_by_size
+
+        total_Y = data['Y'].sum()
+
+        for size in range(min_elements_in_treatment, max_group_size + 1):
+            best_results = [result for result in results if result is not None and len(result[0]) == size]
+
+            if best_results:
+                best_result = min(best_results, key=lambda x: (x[2], -x[3]))
+                best_treatment_group, best_control_group, best_MAPE, best_SMAPE, y, predictions, weights= best_result
+
+                treatment_Y = data[data['location'].isin(best_treatment_group)]['Y'].sum()
+                holdout_percentage = ((total_Y - treatment_Y) / total_Y) * 100
+
+                results_by_size[size] = {
+                    'Best Treatment Group': best_treatment_group,
+                    'Control Group': best_control_group,
+                    'MAPE': best_MAPE,
+                    'SMAPE': best_SMAPE,
+                    'Actual Target Metric (y)': y,
+                    'Predictions': predictions,
+                    'Weights': weights,
+                    'Holdout Percentage': holdout_percentage,
+                    
+                }
+
+
+        return results_by_size
+    else:
+        return None
 
 
 
