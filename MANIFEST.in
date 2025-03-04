@@ -1,3 +1,7 @@
 include README.md
 include LICENSE
 include app.py
+recursive-include Murray *.py
+include experimental_design.py
+include experimental_evaluation.py
+

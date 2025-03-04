@@ -1,6 +1,9 @@
 from setuptools import setup, find_packages
 import re 
 import os
+import shutil
+
+shutil.copy("app.py", "Murray/app.py")
 
 with open(os.path.join("Murray", "__init__.py")) as f:
     version = re.search(r'__version__ = "(.*?)"', f.read()).group(1)
@@ -48,4 +51,8 @@ setup(
         "Documentation": "https://entropy.tech/murray/",
         "Source Code": "https://github.com/entropyx/murray",
     },
+    include_package_data=True,
+    package_data={"Murray": ["*.py"]},  # Mantiene todos los archivos .py dentro del paquete
+    data_files=[("", ["experimental_design.py", "experimental_evaluation.py"])],
+
 )
