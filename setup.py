@@ -14,6 +14,11 @@ setup(
         "seaborn",
         "plotly"
     ],
+    entry_points={
+        "console_scripts": [
+            "murray-app=Murray.run:main",  # Asocia un comando con la función de ejecución
+        ],
+        },
     author="Entropy Team",
     author_email="dev@entropy.tech",
     description="A package for geographical incrementality testing",
