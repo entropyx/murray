@@ -469,7 +469,7 @@ if file is not None:
             st.text("Select range of lifts")
             col1, col2, col3 = st.columns(3)
             with col1:
-                delta_min = st.number_input("Lift Min:", min_value=0.01, max_value=0.9, value=0.01, step=0.01)
+                delta_min = st.number_input("Lift Min:", min_value=0.00, max_value=0.9, value=0.01, step=0.01)
             with col2:
                 delta_max = st.number_input("Lift Max:", min_value=0.02, max_value=1.0, value=0.3, step=0.01)
             with col3:
