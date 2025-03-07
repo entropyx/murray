@@ -345,7 +345,7 @@ def plot_mde_results(results_by_size, sensitivity_results, periods):
 
 
 
-def print_weights(geo_test, holdout_percentage=None, num_locations=None):
+def print_weights(geo_test, treatment_percentage=None, num_locations=None):
     """
     Extracts control group weights based on holdout percentage or number of locations.
 
@@ -360,6 +360,7 @@ def print_weights(geo_test, holdout_percentage=None, num_locations=None):
     results_by_size = geo_test['simulation_results']
     control_weights = []
     control_locations = []
+    holdout_percentage = 100 - treatment_percentage
 
     
     for size, result in results_by_size.items():
@@ -636,11 +637,13 @@ def plot_impact_streamlit_app(geo_test, period, holdout_percentage):
         return att, incremental,fig
 
 
-def plot_impact_graphs(geo_test, period, holdout_percentage):
+def plot_impact_graphs(geo_test, period, treatment_percentage):
+  holdout_percentage = 100 - treatment_percentage
   att, incremental, fig = plot_impact_streamlit_app(geo_test, period, holdout_percentage)
   return fig
 
-def print_incremental_results(geo_test, period, holdout_percentage):
+def print_incremental_results(geo_test, period, treatment_percentage):
+    holdout_percentage = 100 - treatment_percentage
     title = "Incremental Results"
     att, incremental, fig = plot_impact_streamlit_app(geo_test, period, holdout_percentage)
     print("=" * 30)
@@ -653,7 +656,7 @@ def print_incremental_results(geo_test, period, holdout_percentage):
 
 
 
-def print_locations(geo_test, holdout_percentage=None, num_locations=None):
+def print_locations(geo_test, treatment_percentage=None, num_locations=None):
     """
     Extracts treatment and control locations based on holdout percentage or number of locations.
 
@@ -665,6 +668,8 @@ def print_locations(geo_test, holdout_percentage=None, num_locations=None):
     Returns:
         None: Prints the treatment and control locations.
     """
+    holdout_percentage = 100 - treatment_percentage
+
     results_by_size = geo_test['simulation_results']
     treatment_locations = []
     control_locations = []
@@ -1067,7 +1072,7 @@ def plot_impact_graphs_evaluation(results_evaluation):
     fig, att, incremental = plot_impact_evaluation(results_evaluation)
     return fig
 
-def print_incremental_results_evaluation(results_evaluation,metric_mmm):
+def print_incremental_results_evaluation(results_evaluation,metric):
     spend = results_evaluation['spend']
     
     fig, att, incremental = plot_impact_evaluation(results_evaluation)
@@ -1077,7 +1082,7 @@ def print_incremental_results_evaluation(results_evaluation,metric_mmm):
     print("=" * 30)
     print(f"ATT: {round(att,2)}")
     print(f"Lift total: {round(incremental,2)}")
-    print(f"{metric_mmm}: {round(incremental/spend,2)}")
+    print(f"{metric}: {round(incremental/spend,2)}")
 
     print("=" * 30)
 
@@ -1099,6 +1104,7 @@ def plot_permutation_test(results_evaluation, Significance_level=0.1):
     
 
     upper_bound = np.percentile(null_conformities, 100 * (1 - (Significance_level / 2)))
+    lower_bound = np.percentile(null_conformities, 100 * (Significance_level / 2))
     
 
 
@@ -1158,7 +1164,16 @@ def plot_permutation_test(results_evaluation, Significance_level=0.1):
         fill="toself",
         fillcolor=hex_to_rgba(purple_light, 0.3),  
         line=dict(color="rgba(255,0,0,0)"),
-        name="Significance Zone"
+        name="Upper Significance Zone"
+    ))
+
+    fig.add_trace(go.Scatter(
+        x=[min(null_conformities), lower_bound, lower_bound, min(null_conformities), min(null_conformities)],
+        y=[0, 0, max_hist_y, max_hist_y, 0],  
+        fill="toself",
+        fillcolor=hex_to_rgba(purple_light, 0.3),  
+        line=dict(color="rgba(255,0,0,0)"),
+        name="Lower Significance Zone"
     ))
 
     fig.update_layout(
