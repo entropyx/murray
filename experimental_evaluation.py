@@ -471,10 +471,10 @@ if file is not None:
                         st.session_state.percenge_lift = percenge_lift
                         control_group = results['control_group']
                         st.session_state.control_group = control_group
-                        observed_conformity = results['observed_conformity']
-                        st.session_state.observed_conformity = observed_conformity
-                        null_conformities = results['null_conformities']
-                        st.session_state.null_conformities = null_conformities
+                        observed_stat = results['observed_stat']
+                        st.session_state.observed_stat = observed_stat
+                        null_stats = results['null_stats']
+                        st.session_state.null_stats = null_stats
                         
                         
 
@@ -523,7 +523,7 @@ if file is not None:
                 st.write(f"P-value: {st.session_state.p_value}")
                 st.write(f"Power: {st.session_state.power}")
                 st.write(f"Percentage Lift: {st.session_state.percenge_lift} %")
-                st.write(f"lift_total: {st.session_state.lift_total}")
+                st.write(f"Lift_total: {st.session_state.lift_total}")
                 st.write(f"Holdout percentage: {st.session_state.holdout_percentage} %")
                 st.write(f"Treatment group: {st.session_state.treatment_group}")
                 st.write(f"Control group: {st.session_state.control_group}")
