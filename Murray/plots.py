@@ -156,27 +156,27 @@ def plot_metrics(geo_test):
         x=metrics['Size'],
         y=metrics['MAPE'],
         mode='lines+markers',
-        name='MAPE',
+        name='Value',
         marker=dict(color=blue)), row=1, col=1)
 
     fig.add_trace(go.Scatter(
         x=metrics['Size'],
         y=metrics['SMAPE'],
         mode='lines+markers',
-        name='SMAPE',
+        name='Value',
         marker=dict(color=black_secondary)), row=1, col=2)
 
-    fig.update_layout(
-        template="plotly_white",
-        margin=dict(l=50, r=50, t=50, b=50))
+    #fig.update_layout(
+    #    template="plotly_white",
+    #    margin=dict(l=50, r=50, t=50, b=50))
 
 
     fig.update_xaxes(title_text="Group Size", row=1, col=1)
     fig.update_xaxes(title_text="Group Size", row=1, col=2)
 
 
-    fig.update_yaxes(title_text="MAPE", row=1, col=1)
-    fig.update_yaxes(title_text="SMAPE", row=1, col=2)
+    fig.update_yaxes(title_text="Value", row=1, col=1)
+    fig.update_yaxes(title_text="Value", row=1, col=2)
 
 
     return fig
@@ -253,19 +253,14 @@ def plot_mde_results(results_by_size, sensitivity_results, periods):
             row.append(mde if mde is not None else np.nan)
         heatmap_data[size] = row
 
-    
     total_values = heatmap_data.size
     nan_values = heatmap_data.isna().sum().sum()
     nan_ratio = nan_values / total_values if total_values > 0 else 1
 
-    
     if nan_ratio == 1:  
         raise ValueError("No satisfactory results found. The heatmap does not contain values (MDE) with the entered data.")
-        
-
     elif nan_ratio > 0.8:  
         raise ValueError("The analysis shows few satisfactory results. You can try modifying the parameters or entering a different target column.")
-
 
     heatmap_data = heatmap_data.T
     heatmap_data.columns = [f"Day-{i}" for i in periods]
@@ -280,11 +275,9 @@ def plot_mde_results(results_by_size, sensitivity_results, periods):
     annotations = [[f"{val:.2%}" if not np.isnan(val) else "" for val in row] for row in z_values]
 
     fig = go.Figure()
-    custom_colorscale = [[0,heatmap_green], [1,heatmap_red]]
+    custom_colorscale = [[0, heatmap_green], [1, heatmap_red]]
 
-
-
-
+    
     fig.add_trace(go.Heatmap(
         z=z_values,
         x=x_labels,
@@ -292,9 +285,9 @@ def plot_mde_results(results_by_size, sensitivity_results, periods):
         colorscale=custom_colorscale,
         colorbar=dict(title="MDE (%)"),
         colorbar_tickfont=dict(size=12, color='black'),
-        hoverongaps=False,
-        text=annotations, 
-        texttemplate="%{text}",  
+        hoverongaps=True,
+        text=annotations,
+        texttemplate="%{text}",
         textfont={"size": 12, "color": "black"},
         hoverinfo="text",
         showscale=True,
@@ -307,7 +300,6 @@ def plot_mde_results(results_by_size, sensitivity_results, periods):
     scatter_x = scatter_x.flatten()
     scatter_y = scatter_y.flatten()
 
-
     fig.add_trace(go.Scatter(
         x=[x_labels[i] for i in scatter_x],
         y=[y_labels[i] for i in scatter_y],
@@ -316,7 +308,7 @@ def plot_mde_results(results_by_size, sensitivity_results, periods):
         hoverinfo="none"
     ))
 
-
+    
     fig.update_layout(
         margin=dict(l=90, r=10, t=20, b=75),
         dragmode=False,
@@ -338,6 +330,14 @@ def plot_mde_results(results_by_size, sensitivity_results, periods):
                    tickfont=dict(size=12, color='black'))
     )
 
+
+    custom_data = []
+    for s in sorted_sizes:
+        custom_data.append([s] * len(periods))
+
+    fig.data[0].customdata = custom_data
+    fig.data[0].hovertemplate = "Treatment size: %{customdata}<br><extra></extra>"
+    fig.data[0].hoverinfo = "skip"
 
     return fig
 
