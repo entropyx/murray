@@ -68,28 +68,28 @@ def run_geo_evaluation(data_input, start_treatment,end_treatment,treatment_group
 
         percenge_lift = ((np.sum(y[start_position_treatment:]) - np.sum(predictions[start_position_treatment:])) / np.abs(np.sum(predictions[start_position_treatment:]))) * 100
 
+        def compute_residuals(y_treatment, y_control):
+            return y_treatment - y_control
+        
+        def stat_func(x):
+            return np.sum(x)
 
-        observed_conformity = np.mean(y[start_position_treatment:]) - np.mean(predictions[start_position_treatment:])
-        combined = np.concatenate([y, predictions])
+        residuals = compute_residuals(y,predictions)
+        treatment_residuals = residuals[start_position_treatment:]
+
+        observed_stat = stat_func(treatment_residuals)
+        
         
 
-        null_conformities = []
+        null_stats = []
         for _ in range(n_permutations):
-            if inference_type == "iid":
-                np.random.shuffle(combined)
-            elif inference_type == "block":
-                block_size = len(combined) // 10
-                np.random.shuffle(combined.reshape(-1, block_size))
-            
-            
-            perm_treatment = combined[np.random.choice(len(combined), len(y), replace=False)]
-            perm_control = combined[np.random.choice(len(combined), len(y), replace=False)]
-
-            perm_conformity = np.mean(perm_treatment[start_position_treatment:]) - np.mean(perm_control[start_position_treatment:])
-            null_conformities.append(perm_conformity)
-
+            permuted_residuals = np.random.permutation(residuals)
+            permuted = permuted_residuals[start_position_treatment:]
+            null_stats.append(stat_func(permuted))
+        null_stats = np.array(null_stats)
         
-        p_value = np.mean(np.abs(null_conformities) >= np.abs(observed_conformity))
+        
+        p_value = np.mean(np.abs(null_stats) >= np.abs(observed_stat))
         power = np.mean(p_value < significance_level)
 
         
@@ -102,8 +102,8 @@ def run_geo_evaluation(data_input, start_treatment,end_treatment,treatment_group
             'power': power,
             'percenge_lift': percenge_lift,
             'control_group': control_group,
-            'observed_conformity': observed_conformity,
-            'null_conformities': null_conformities,
+            'observed_stat': observed_stat,
+            'null_stats': null_stats,
             'weights': weights,
             'period': period,
             'spend': spend

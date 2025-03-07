@@ -7,7 +7,7 @@ from sklearn.base import BaseEstimator, RegressorMixin
 from sklearn.utils.validation import check_is_fitted
 from Murray.plots import plot_mde_results
 from Murray.auxiliary import market_correlations
-
+import concurrent.futures
 
 
 
@@ -27,6 +27,8 @@ def select_treatments(similarity_matrix, treatment_size, excluded_locations):
     Returns:
         list: A list of unique combinations, each combination being a list of states.
     """
+    #if seed is not None:
+     #   np.random.seed(seed)
     missing_locations = [location for location in excluded_locations if location not in similarity_matrix.index or location not in similarity_matrix.columns]
     
 
@@ -53,8 +55,8 @@ def select_treatments(similarity_matrix, treatment_size, excluded_locations):
     max_combinations = comb(n, r)
 
     n_combinations = max_combinations
-    if n_combinations > 500:
-        n_combinations = 500
+    if n_combinations > 5000:
+        n_combinations = 5000
 
 
     combinations = set()
@@ -168,10 +170,10 @@ class SyntheticControl(BaseEstimator, RegressorMixin):
 
         w = cp.Variable(X.shape[1])
 
-        regularization_l1 = self.regularization_strength_l1 * cp.norm1(w)
+        regularization_l2 = self.regularization_strength_l2 * cp.norm2(w)
 
         errors = X @ w - y
-        objective = cp.Minimize(self.squared_loss(errors) + regularization_l1)
+        objective = cp.Minimize(self.squared_loss(errors) + regularization_l2)
 
         # Constraints
         constraints = [cp.sum(w) == 1, w >= 0]
@@ -206,10 +208,62 @@ class SyntheticControl(BaseEstimator, RegressorMixin):
         return X @ self.w_, self.w_
 
 
-def BetterGroups(similarity_matrix, excluded_locations, data, correlation_matrix, maximum_treatment_percentage=0.50,progress_updater=None, status_updater=None):
+def smape(A, F):
+    denominator = np.abs(A) + np.abs(F)
+    denominator = np.where(denominator == 0, 1e-8, denominator)
+    return 100 / len(A) * np.sum(2 * np.abs(F - A) / denominator)
+
+def evaluate_group(treatment_group, data, total_Y, correlation_matrix, min_holdout, df_pivot):
+    """
+    Evalúa un grupo de tratamiento y retorna métricas de error.
+    """
+    treatment_Y = data[data['location'].isin(treatment_group)]['Y'].sum()
+    holdout_percentage = (1 - (treatment_Y / total_Y)) * 100
+
+    if holdout_percentage < min_holdout:
+        return None
+
+    control_group = select_controls(
+        correlation_matrix=correlation_matrix,
+        treatment_group=treatment_group,
+        min_correlation=0.8
+    )
+
+    if not control_group:
+        return (treatment_group, [], float('inf'), float('inf'), None, None, None)
+
+    X = df_pivot[control_group].values
+    y = df_pivot[treatment_group].sum(axis=1).values
+
+    scaler_x = MinMaxScaler()
+    scaler_y = MinMaxScaler()
+    X_scaled = scaler_x.fit_transform(X)
+    y_scaled = scaler_y.fit_transform(y.reshape(-1, 1))
+
+    split_index = int(len(X_scaled) * 0.8)
+    X_train, X_test = X_scaled[:split_index], X_scaled[split_index:]
+    y_train, y_test = y_scaled[:split_index], y_scaled[split_index:]
+
+    model = SyntheticControl()
+    model.fit(X_train, y_train)
+    predictions_val, weights = model.predict(X_test)
+
+    contrafactual_train = (weights @ X_train.T).reshape(-1, 1)
+    contrafactual_test = (weights @ X_test.T).reshape(-1, 1)
+    contrafactual_full = np.vstack((contrafactual_train, contrafactual_test))
+
+    contrafactual_full_original = scaler_y.inverse_transform(contrafactual_full)
+    predictions = contrafactual_full_original.flatten()
+    y_original = scaler_y.inverse_transform(y_scaled).flatten()
+
+    MAPE = np.mean(np.abs((y_original - predictions) / (y_original + 1e-10))) * 100
+    SMAPE_value = smape(y_original, predictions)
+
+    return (treatment_group, control_group, MAPE, SMAPE_value, y_original, predictions, weights)
+
+def BetterGroups(similarity_matrix, excluded_locations, data, correlation_matrix, maximum_treatment_percentage=0.50, progress_updater=None, status_updater=None):
     """
     Simulates possible treatment groups and evaluates their performance.
-
 
     Parameters:
         similarity_matrix (pd.DataFrame): Similarity matrix between locations.
@@ -217,112 +271,62 @@ def BetterGroups(similarity_matrix, excluded_locations, data, correlation_matrix
         data (pd.DataFrame): Dataset with columns 'time', 'location', and 'Y'.
         correlation_matrix (pd.DataFrame): Correlation matrix between locations.
         maximum_treatment_percentage (float): Maximum percentage of data to reserve as treatment.
-
+        progress_updater: Function or method to update progress.
+        status_updater: Function or method to update status.
 
     Returns:
         dict: Simulation results, organized by treatment group size.
-              Each entry contains the best treatment group, control group, MAE,
-              actual target metrics, predictions, weights, and holdout percentage.
+            Each entry contains the best treatment group, control group, MAPE,
+            SMAPE, actual target metric, predictions, weights, and the holdout percentage.
     """
-    results_by_size = {}
-    no_locations = int(len(data['location'].unique()))
-    max_group_size = round(no_locations * 0.5)
-    min_elements_in_treatment = round(no_locations * 0.2)
+
+    unique_locations = data['location'].unique()
+    no_locations = len(unique_locations)
+    max_group_size = round(no_locations * 0.45)
+    min_elements_in_treatment = round(no_locations * 0.15)
     min_holdout = 100 - (maximum_treatment_percentage * 100)
-
-    def smape(A, F):
-        denominator = np.abs(A) + np.abs(F)
-        denominator = np.where(denominator == 0, 1e-8, denominator)  
-        return 100 / len(A) * np.sum(2 * np.abs(F - A) / denominator)
-
     total_Y = data['Y'].sum()
+    
+    
+    df_pivot = data.pivot(index='time', columns='location', values='Y')
+    
+    
     possible_groups = []
     for size in range(min_elements_in_treatment, max_group_size + 1):
         groups = select_treatments(similarity_matrix, size, excluded_locations)
         possible_groups.extend(groups)
-
+    
     if not possible_groups:
         return None
 
-    def evaluate_group(treatment_group):
-        treatment_Y = data[data['location'].isin(treatment_group)]['Y'].sum()
-        holdout_percentage = (1 - (treatment_Y / total_Y)) * 100
-
-        
-        if holdout_percentage < min_holdout:
-            return None
-
-        control_group = select_controls(
-            correlation_matrix=correlation_matrix,
-            treatment_group=treatment_group,
-            min_correlation=0.8
-        )
-
-        if not control_group:
-            return (treatment_group, [], float('inf'), float('inf'), None, None, None)
-
-        df_pivot = data.pivot(index='time', columns='location', values='Y')
-        X = df_pivot[control_group].values
-        y = df_pivot[list(treatment_group)].sum(axis=1).values
-
-        model = SyntheticControl()
-
-        #----------------------------------------------------------------------------------
-
-        scaler_x = MinMaxScaler()
-        scaler_y = MinMaxScaler()
-
-        X_scaled = scaler_x.fit_transform(X)
-        y_scaled = scaler_y.fit_transform(y.reshape(-1, 1))
-
-        split_index = int(len(X_scaled) * 0.8)
-        X_train, X_test = X_scaled[:split_index], X_scaled[split_index:]
-        y_train, y_test = y_scaled[:split_index], y_scaled[split_index:]
-
-        model = SyntheticControl()
-        model.fit(X_train, y_train)
-
-        predictions_val, weights = model.predict(X_test)
-
-        contrafactual_train = (weights @ X_train.T).reshape(-1, 1)
-        contrafactual_test = (weights @ X_test.T).reshape(-1, 1)
-        contrafactual_full = np.vstack((contrafactual_train, contrafactual_test))
-
-        contrafactual_full_original = scaler_y.inverse_transform(contrafactual_full)
-        predictions = contrafactual_full_original.flatten()
-
-        y_original = scaler_y.inverse_transform(y_scaled).flatten()
-
-        MAPE = np.mean(np.abs((y_original - predictions) / (y_original + 1e-10))) * 100
-        SMAPE = smape(y_original, predictions)
-
-        return (treatment_group, control_group, MAPE, SMAPE, y_original, predictions, weights)
-
-        #----------------------------------------------------------------------------------
-
     total_groups = len(possible_groups)
-
-    with concurrent.futures.ThreadPoolExecutor() as executor:
-        results = []
-        for idx, result in enumerate(executor.map(evaluate_group, possible_groups)):
+    results = []
+    
+    
+    with concurrent.futures.ProcessPoolExecutor(max_workers=2) as executor:
+        futures = executor.map(
+            evaluate_group,
+            possible_groups,
+            [data] * total_groups,
+            [total_Y] * total_groups,
+            [correlation_matrix] * total_groups,
+            [min_holdout] * total_groups,
+            [df_pivot] * total_groups,
+            chunksize=5
+        )
+        for idx, result in enumerate(futures):
             results.append(result)
             if progress_updater:
                 progress_updater.progress((idx + 1) / total_groups)
-            
-            
             if status_updater:
                 status_updater.text(f"Finding the best groups: {int((idx + 1) / total_groups * 100)}% complete ⏳")
-
-
-    total_Y = data['Y'].sum()
-
+    
+    results_by_size = {}
     for size in range(min_elements_in_treatment, max_group_size + 1):
         best_results = [result for result in results if result is not None and len(result[0]) == size]
-
         if best_results:
             best_result = min(best_results, key=lambda x: (x[2], -x[3]))
-            best_treatment_group, best_control_group, best_MAPE, best_SMAPE, y, predictions, weights= best_result
-
+            best_treatment_group, best_control_group, best_MAPE, best_SMAPE, y, predictions, weights = best_result
             treatment_Y = data[data['location'].isin(best_treatment_group)]['Y'].sum()
             holdout_percentage = ((total_Y - treatment_Y) / total_Y) * 100
 
@@ -335,7 +339,6 @@ def BetterGroups(similarity_matrix, excluded_locations, data, correlation_matrix
                 'Predictions': predictions,
                 'Weights': weights,
                 'Holdout Percentage': holdout_percentage,
-                
             }
 
     return results_by_size
@@ -388,7 +391,11 @@ def calculate_conformity(y_real, y_control, start_treatment, end_treatment):
                 np.mean(y_control[start_treatment:end_treatment])
     return conformity
 
-def simulate_power(y_real, y_control, delta, period, n_permutations=1000, significance_level=0.05, inference_type="iid", size_block=None):
+def compute_residuals(y_treatment, y_control):
+    return y_treatment - y_control
+
+
+def simulate_power(y_real, y_control, delta, period, n_permutations=1000, significance_level=0.05, inference_type="iid", stat_func=None):
     """
     Simulates statistical power using conformal inference and returns the adjusted series.
 
@@ -400,37 +407,35 @@ def simulate_power(y_real, y_control, delta, period, n_permutations=1000, signif
         n_permutations (int): Number of permutations.
         significance_level (float): Significance level.
         inference_type (str): Type of conformal inference ("iid" or "block").
-        size_block (int): Size of blocks for block shuffling (if applicable).
 
     Returns:
         tuple: Delta, statistical power, and the adjusted series with the applied effect.
     """
+    
     start_treatment = len(y_real) - period
     end_treatment = start_treatment + period
     
     y_with_lift = apply_lift(y_real, delta, start_treatment, end_treatment)
-    observed_conformity = calculate_conformity(y_with_lift, y_control, start_treatment, end_treatment)
+    residuals = compute_residuals(y_with_lift,y_control)
+    treatment_residuals = residuals[start_treatment:]
     
-    combined = np.concatenate([y_real, y_control])
-    conformidades_nulas = []
+
+    def stat_func(x):
+        return np.sum(x)
+    
+    observed_stat = stat_func(treatment_residuals)
+    
+    
+    null_stats = []
 
     for _ in range(n_permutations):
-        if inference_type == "iid":
-            np.random.shuffle(combined)
-        elif inference_type == "block":
-            if size_block is None:
-                size_block = max(1, len(combined) // 10)
-            for i in range(0, len(combined), size_block):
-                np.random.shuffle(combined[i:i+size_block])
-
-        perm_treatment = combined[:len(y_real)]
-        perm_control = combined[len(y_real):]
-
-        conformidad_perm = calculate_conformity(
-            perm_treatment, perm_control, start_treatment, end_treatment)
-        conformidades_nulas.append(conformidad_perm)
-
-    p_value = np.mean(np.abs(conformidades_nulas) >= np.abs(observed_conformity))
+        permuted_residuals = np.random.permutation(residuals)
+        permuted = permuted_residuals[start_treatment:]
+        null_stats.append(stat_func(permuted))
+    null_stats = np.array(null_stats)
+    
+    
+    p_value = np.mean(null_stats >= observed_stat)
     power = np.mean(p_value < significance_level)
 
     return delta, power, y_with_lift
@@ -460,7 +465,7 @@ def run_simulation(delta, y_real, y_control, period, n_permutations, significanc
         n_permutations=n_permutations,
         significance_level=significance_level,
         inference_type=inference_type,
-        size_block=size_block
+        
     )
 
 def evaluate_sensitivity(results_by_size, deltas, periods, n_permutations, significance_level=0.05, inference_type="iid",  size_block=None, progress_bar=None, status_text=None):
@@ -549,7 +554,7 @@ def transform_results_data(results_by_size):
         }
     return transformed_data
 
-def run_geo_analysis_streamlit_app(data, maximum_treatment_percentage, significance_level, deltas_range, periods_range, excluded_locations, progress_bar_1=None, status_text_1=None, progress_bar_2=None, status_text_2=None ,n_permutations=5000):
+def run_geo_analysis_streamlit_app(data, maximum_treatment_percentage, significance_level, deltas_range, periods_range, excluded_locations, progress_bar_1=None, status_text_1=None, progress_bar_2=None, status_text_2=None ,n_permutations=10000):
     """
     Runs a complete geo analysis pipeline including market correlation, group optimization,
     sensitivity evaluation, and visualization of MDE results.
@@ -613,7 +618,7 @@ def run_geo_analysis_streamlit_app(data, maximum_treatment_percentage, significa
     }
 
 
-def run_geo_analysis(data, maximum_treatment_percentage, significance_level, deltas_range, periods_range, excluded_locations, progress_bar_1=None, status_text_1=None, progress_bar_2=None, status_text_2=None ,n_permutations=5000):
+def run_geo_analysis(data, maximum_treatment_percentage, significance_level, deltas_range, periods_range, excluded_locations, progress_bar_1=None, status_text_1=None, progress_bar_2=None, status_text_2=None ,n_permutations=10000):
     """
     Runs a complete geo analysis pipeline including market correlation, group optimization,
     sensitivity evaluation, and visualization of MDE results.
@@ -672,6 +677,3 @@ def run_geo_analysis(data, maximum_treatment_percentage, significance_level, del
         "sensitivity_results": sensitivity_results,
         "series_lifts": series_lifts
     }
-
-
-

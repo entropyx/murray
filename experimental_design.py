@@ -927,7 +927,7 @@ if file is not None:
                                         control_group = st.session_state.simulation_results[location]['Control Group']
                                         holdout_percentage = st.session_state.simulation_results[location]['Holdout Percentage']
                                         pre_treatment, pre_counterfactual, post_treatment, post_counterfactual,impact_graph,att,incremental = plot_impact_report(st.session_state.results, period_idx, holdout_percentage)
-                                        weights = print_weights(st.session_state.results, round(holdout_percentage, 2))
+                                        weights = print_weights(st.session_state.results, treatment_percentage)
                                         df = pd.DataFrame(
                                             {
                                                 "Group": ["Treatment", "Counterfactual (control)", "Absolute difference"],
