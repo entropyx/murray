@@ -754,7 +754,9 @@ if file is not None:
                                         control_group = st.session_state.simulation_results[location]['Control Group']
                                         holdout_percentage = st.session_state.simulation_results[location]['Holdout Percentage']
                                         impact_graph,att,incremental = plot_impact_report(st.session_state.results, period_idx, holdout_percentage)
-                                        weights = print_weights(st.session_state.results, round(holdout_percentage, 2))
+                                        weights = print_weights(st.session_state.results, treatment_percentage)
+                        
+                                        
                                       
 
 
