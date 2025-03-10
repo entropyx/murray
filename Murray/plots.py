@@ -458,20 +458,20 @@ def plot_impact_streamlit_app(geo_test, period, holdout_percentage):
 
 
         mean_y_real = np.mean(y_treatment)
-        std_dev_y_real = np.std(y_treatment)
+        std_dev_y_real = np.std(y_treatment,ddof=1)
         std_error_y_real = std_dev_y_real / np.sqrt(len(y_treatment))
         x_confiance_band = list(range((len(y_real) - period), len(y_real)))
         upper_bound = y_treatment + 1.96 * std_error_y_real
         lower_bound = y_treatment - 1.96 * std_error_y_real
 
         mean_point_difference = np.mean(point_difference)
-        std_dev_point_difference = np.std(point_difference)
+        std_dev_point_difference = np.std(point_difference,ddof=1)
         std_error_point_difference = std_dev_point_difference / np.sqrt(len(y_treatment))
         upper_bound_pd = point_difference[star_treatment:] + 1.96 * std_error_point_difference
         lower_bound_pd = point_difference[star_treatment:] - 1.96 * std_error_point_difference
 
         mean_cumulative_effect = np.mean(cumulative_effect)
-        std_dev_cumulative_effect = np.std(cumulative_effect)
+        std_dev_cumulative_effect = np.std(cumulative_effect,ddof=1)
         std_error_cumulative_effect = std_dev_cumulative_effect / np.sqrt(len(y_treatment))
         upper_bound_ce = cumulative_effect[star_treatment:] + 1.96 * std_error_cumulative_effect
         lower_bound_ce = cumulative_effect[star_treatment:] - 1.96 * std_error_cumulative_effect
@@ -715,13 +715,13 @@ def plot_impact_evaluation_streamlit(results_evaluation, df):
     lower_bound = y_treatment - 1.96 * std_error_y_real
 
     mean_point_difference = np.mean(point_difference_treatment)
-    std_dev_point_difference = np.std(point_difference_treatment)
+    std_dev_point_difference = np.std(point_difference_treatment,ddof=1)
     std_error_point_difference = std_dev_point_difference / np.sqrt(len(y_treatment))
     upper_bound_pd = point_difference_treatment + 1.96 * std_error_point_difference
     lower_bound_pd = point_difference_treatment - 1.96 * std_error_point_difference
 
     mean_cumulative_effect = np.mean(cumulative_effect_treatment)
-    std_dev_cumulative_effect = np.std(cumulative_effect_treatment)
+    std_dev_cumulative_effect = np.std(cumulative_effect_treatment,ddof=1)
     std_error_cumulative_effect = std_dev_cumulative_effect / np.sqrt(len(y_treatment))
     upper_bound_ce = cumulative_effect_treatment + 1.96 * std_error_cumulative_effect
     lower_bound_ce = cumulative_effect_treatment - 1.96 * std_error_cumulative_effect
@@ -898,14 +898,14 @@ def plot_impact_evaluation(results_evaluation):
 
 
     mean_point_difference = np.mean(point_difference_treatment)
-    std_dev_point_difference = np.std(point_difference_treatment)
+    std_dev_point_difference = np.std(point_difference_treatment,ddof=1)
     std_error_point_difference = std_dev_point_difference / np.sqrt(len(y_treatment))
     upper_bound_pd = point_difference_treatment + 1.96 * std_error_point_difference
     lower_bound_pd = point_difference_treatment - 1.96 * std_error_point_difference
 
 
     mean_cumulative_effect = np.mean(cumulative_effect_treatment)
-    std_dev_cumulative_effect = np.std(cumulative_effect_treatment)
+    std_dev_cumulative_effect = np.std(cumulative_effect_treatment,ddof=1)
     std_error_cumulative_effect = std_dev_cumulative_effect / np.sqrt(len(y_treatment))
     upper_bound_ce = cumulative_effect_treatment + 1.96 * std_error_cumulative_effect
     lower_bound_ce = cumulative_effect_treatment - 1.96 * std_error_cumulative_effect
@@ -1431,14 +1431,14 @@ def plot_impact_evaluation_report(results_evaluation):
         lower_bound = y_treatment - 1.96 * std_error_y_real
 
         mean_point_difference = np.mean(point_difference_treatment)
-        std_dev_point_difference = np.std(point_difference_treatment)
+        std_dev_point_difference = np.std(point_difference_treatment,ddof=1)
         std_error_point_difference = std_dev_point_difference / np.sqrt(len(y_treatment))
         upper_bound_pd = point_difference_treatment + 1.96 * std_error_point_difference
         lower_bound_pd = point_difference_treatment - 1.96 * std_error_point_difference
 
 
         mean_cumulative_effect = np.mean(cumulative_effect_treatment)
-        std_dev_cumulative_effect = np.std(cumulative_effect_treatment)
+        std_dev_cumulative_effect = np.std(cumulative_effect_treatment,ddof=1)
         std_error_cumulative_effect = std_dev_cumulative_effect / np.sqrt(len(y_treatment))
         upper_bound_ce = cumulative_effect_treatment + 1.96 * std_error_cumulative_effect
         lower_bound_ce = cumulative_effect_treatment - 1.96 * std_error_cumulative_effect
