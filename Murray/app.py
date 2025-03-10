@@ -1,12 +1,53 @@
 import os
 import streamlit as st
-
+import toml
 
 st.set_page_config(
     page_title="Geo Murray",
     page_icon="utils/Group 105.png",
     layout="wide"
 )
+
+
+
+
+# Obtener la ruta del paquete instalado
+package_root = os.path.dirname(__file__)
+
+# Ruta del config.toml dentro del paquete
+config_path = os.path.join(package_root, ".streamlit", "config.toml")
+
+# Verificar si el archivo existe antes de cargarlo
+if not os.path.exists(config_path):
+    st.error(f"Error: No se encontró {config_path}")
+else:
+    config = toml.load(config_path)
+    ui_colors = config.get("theme", {})
+
+    primaryColor = ui_colors.get("primaryColor", "#8bb0d0")
+    backgroundColor = ui_colors.get("backgroundColor", "#F3F5F7")
+    secondaryBackgroundColor = ui_colors.get("secondaryBackgroundColor", "#8BB0D0")
+    textColor = ui_colors.get("textColor", "#000000")
+
+    # Aplicar los estilos manualmente con CSS en Streamlit
+    st.markdown(
+        f"""
+        <style>
+            body {{
+                background-color: {backgroundColor};
+                color: {textColor};
+            }}
+            .stApp {{
+                background-color: {secondaryBackgroundColor};
+            }}
+            .stButton>button {{
+                background-color: {primaryColor} !important;
+                color: {textColor} !important;
+            }}
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
 
 
 package_root = os.path.dirname(__file__)

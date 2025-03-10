@@ -1,5 +1,9 @@
 include README.md
 include LICENSE
-recursive-include Murray *.py
-
+recursive-include Murray *.py 
+recursive-include Murray utils/*.png
+recursive-include Murray utils/*.jpg
+recursive-include Murray utils/*.jpeg
+recursive-include Murray utils/*.ttf
+recursive-include Murray .streamlit/*.toml
 

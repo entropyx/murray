@@ -10,11 +10,25 @@ import os
 
 
 
-ENTROPY_LOGO = "utils/Logo Entropy Dark Gray.png" 
-MURRAY_LOGO = "utils/Group 105.png"
-options = [ENTROPY_LOGO, MURRAY_LOGO]
-sidebar_logo = ENTROPY_LOGO
-main_body_logo = MURRAY_LOGO
+# Obtener la ruta del paquete instalado
+package_root = os.path.dirname(__file__)
+
+# Construir rutas absolutas para las imágenes en utils/
+sidebar_logo = os.path.join(package_root, "utils", "Group 105.png")
+main_body_logo = os.path.join(package_root, "utils", "Logo Entropy White.png")
+
+# Verificar si las imágenes existen antes de usarlas en Streamlit
+if not os.path.exists(sidebar_logo):
+    st.error(f"Error: No se encontró la imagen: {sidebar_logo}")
+    sidebar_logo = None  # Evitar que Streamlit reciba un path inválido
+
+if not os.path.exists(main_body_logo):
+    st.error(f"Error: No se encontró la imagen: {main_body_logo}")
+    main_body_logo = None  # Evitar que Streamlit reciba un path inválido
+
+# Usar en Streamlit solo si las imágenes existen
+if sidebar_logo:
+    st.logo(sidebar_logo, size="large", icon_image=main_body_logo)
 
 st.sidebar.markdown(
     """
@@ -36,8 +50,6 @@ st.sidebar.markdown(
 )
 
 
-
-st.logo(sidebar_logo,size="large", icon_image=main_body_logo)
 
 
 

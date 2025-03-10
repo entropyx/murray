@@ -51,7 +51,7 @@ setup(
     },
     include_package_data=True,
     package_data={
-        "Murray": ["experimental_design.py", "experimental_evaluation.py"],  
+        "Murray": ["experimental_design.py", "experimental_evaluation.py", "utils/*.png", "utils/*.jpg", "utils/*.jpeg","utils/*.ttf", ".streamlit/*.toml"],  
     },
 
 )

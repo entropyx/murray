@@ -13,5 +13,5 @@ from .plots import (
     plot_permutation_test
 )
 
-__version__ = "1.0.0b11"
+__version__ = "1.0.0b12"
 
