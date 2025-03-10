@@ -6,7 +6,7 @@ from Murray.auxiliary import market_correlations, cleaned_data
 
 @pytest.fixture
 def sample_data():
-    """Fixture que genera un DataFrame de prueba con datos ficticios"""
+    """Fixture that generates a test DataFrame with synthetic data."""
     np.random.seed(42)
     data = pd.DataFrame({
         "time": np.tile(pd.date_range("2023-01-01", periods=100, freq="D"), 10),

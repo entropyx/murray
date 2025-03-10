@@ -358,7 +358,7 @@ def generate_pdf(treatment_group, control_group, holdout_percentage, impact_grap
         pdf.set_text_color(33, 31, 36)
         pdf.multi_cell(0, 5, "The graph below shows the aggregate effect, the point effect, and the cumulative effect. ")
 
-        # Insertar la imagen
+        
         pdf.image(temp_image_path, x=10, y=pdf.get_y(), w=190)  
         
 
