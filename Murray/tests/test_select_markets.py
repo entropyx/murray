@@ -8,9 +8,9 @@ from Murray.main import select_treatments, select_controls
 def cleaned_dataframe():
     """Fixture that loads and cleans the real data"""
     dataset_path = r"Murray\data\data1.csv" 
-    col_target = "total_carts"
-    col_locations = "location_region"
-    col_dates = "day"
+    col_target = "add_to_carts"
+    col_locations = "region"
+    col_dates = "date"
 
     df = pd.read_csv(dataset_path)
     df_cleaned = cleaned_data(df, col_target, col_locations, col_dates)

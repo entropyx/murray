@@ -8,8 +8,8 @@ DATA_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "data")
 
 
 tests = [
-    (os.path.join(DATA_DIR, "data1.csv"), "total_carts", "location_region", "day"),
-    (os.path.join(DATA_DIR, "data2.csv"), "sessions", "location", "date"),
+    (os.path.join(DATA_DIR, "data1.csv"), "add_to_carts", "region", "date"),
+    (os.path.join(DATA_DIR, "data2.csv"), "sessions", "location", "day"),
 ]
 
 @pytest.fixture
