@@ -53,8 +53,8 @@ def select_treatments(similarity_matrix, treatment_size, excluded_locations):
     max_combinations = comb(n, r)
 
     n_combinations = max_combinations
-    if n_combinations > 500:
-        n_combinations = 500
+    if n_combinations > 5000:
+        n_combinations = 5000
 
 
     combinations = set()
@@ -168,10 +168,10 @@ class SyntheticControl(BaseEstimator, RegressorMixin):
 
         w = cp.Variable(X.shape[1])
 
-        regularization_l1 = self.regularization_strength_l1 * cp.norm1(w)
+        regularization_l2 = self.regularization_strength_l2 * cp.norm2(w)
 
         errors = X @ w - y
-        objective = cp.Minimize(self.squared_loss(errors) + regularization_l1)
+        objective = cp.Minimize(self.squared_loss(errors) + regularization_l2)
 
         # Constraints
         constraints = [cp.sum(w) == 1, w >= 0]
