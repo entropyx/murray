@@ -6,7 +6,7 @@ from Murray.auxiliary import market_correlations, cleaned_data
 
 @pytest.fixture
 def sample_data():
-    """Fixture que genera un DataFrame de prueba con datos ficticios"""
+    """Fixture that generates a test DataFrame with fictitious data"""
     np.random.seed(42)
     data = pd.DataFrame({
         "time": np.tile(pd.date_range("2023-01-01", periods=100, freq="D"), 10),
@@ -17,7 +17,7 @@ def sample_data():
 
 
 def test_run_geo_evaluation(sample_data):
-    """Verifica que la función de evaluación geográfica se ejecute correctamente"""
+    """Checks that the geographic evaluation function runs correctly"""
     results = run_geo_evaluation(
         data_input=sample_data,
         start_treatment="2023-03-01",
@@ -29,18 +29,18 @@ def test_run_geo_evaluation(sample_data):
         significance_level=0.05
     )
 
-    assert isinstance(results, dict), "El resultado debe ser un diccionario"
+    assert isinstance(results, dict), "The result must be a dictionary"
     expected_keys = [
         "MAPE", "SMAPE", "predictions", "treatment", "p_value", "power",
         "percenge_lift", "control_group", "observed_conformity",
         "null_conformities", "weights", "period", "spend"
     ]
     for key in expected_keys:
-        assert key in results, f"Falta la clave '{key}' en los resultados"
+        assert key in results, f"Missing the key '{key}' in the results"
 
-    assert isinstance(results["MAPE"], float), "MAPE debe ser un float"
-    assert isinstance(results["p_value"], float), "p_value debe ser un float"
-    assert isinstance(results["power"], float), "Power debe ser un float"
-    assert isinstance(results["control_group"], list), "Control group debe ser una lista"
-    assert 0 <= results["power"] <= 1, "Power debe estar entre 0 y 1"
-    assert 0 <= results["p_value"] <= 1, "p_value debe estar entre 0 y 1"
+    assert isinstance(results["MAPE"], float), "MAPE must be a float"
+    assert isinstance(results["p_value"], float), "p_value must be a float"
+    assert isinstance(results["power"], float), "Power must be a float"
+    assert isinstance(results["control_group"], list), "Control group must be a list"
+    assert 0 <= results["power"] <= 1, "Power must be between 0 and 1"
+    assert 0 <= results["p_value"] <= 1, "p_value must be between 0 and 1"

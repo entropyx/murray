@@ -17,7 +17,7 @@ def sample_data():
 
 
 def test_run_geo_analysis(sample_data):
-    """Verifica que la función de análisis se ejecute correctamente"""
+    """Checks that the analysis function runs correctly."""
     results = run_geo_analysis_streamlit_app(
         data=sample_data,
         maximum_treatment_percentage=0.50,
@@ -28,11 +28,11 @@ def test_run_geo_analysis(sample_data):
         n_permutations=100  
     )
 
-    assert isinstance(results, dict), "El resultado debe ser un diccionario"
-    assert "simulation_results" in results, "Falta 'simulation_results' en los resultados"
-    assert "sensitivity_results" in results, "Falta 'sensitivity_results' en los resultados"
-    assert "series_lifts" in results, "Falta 'series_lifts' en los resultados"
+    assert isinstance(results, dict), "The result must be a dictionary"
+    assert "simulation_results" in results, "Missing 'simulation_results' in the results"
+    assert "sensitivity_results" in results, "Missing 'sensitivity_results' in the results"
+    assert "series_lifts" in results, "Missing 'series_lifts' in the results"
 
-    assert isinstance(results["simulation_results"], dict), "simulation_results debe ser un diccionario"
-    assert isinstance(results["sensitivity_results"], dict), "sensitivity_results debe ser un diccionario"
-    assert isinstance(results["series_lifts"], dict), "series_lifts debe ser un diccionario"
+    assert isinstance(results["simulation_results"], dict), "simulation_results must be a dictionary"
+    assert isinstance(results["sensitivity_results"], dict), "sensitivity_results must be a dictionary"
+    assert isinstance(results["series_lifts"], dict), "series_lifts must be a dictionary"
