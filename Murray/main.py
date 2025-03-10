@@ -4,11 +4,10 @@ import numpy as np
 import cvxpy as cp
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.base import BaseEstimator, RegressorMixin
-from sklearn.utils.validation import check_is_fitted
 from Murray.plots import plot_mde_results
 from Murray.auxiliary import market_correlations
 import concurrent.futures
-
+from sklearn.linear_model import Ridge
 
 
 def select_treatments(similarity_matrix, treatment_size, excluded_locations):
@@ -27,8 +26,7 @@ def select_treatments(similarity_matrix, treatment_size, excluded_locations):
     Returns:
         list: A list of unique combinations, each combination being a list of states.
     """
-    #if seed is not None:
-     #   np.random.seed(seed)
+
     missing_locations = [location for location in excluded_locations if location not in similarity_matrix.index or location not in similarity_matrix.columns]
     
 
@@ -115,18 +113,28 @@ def select_controls(correlation_matrix, treatment_group, min_correlation=0.8, fa
 
 
 class SyntheticControl(BaseEstimator, RegressorMixin):
-    def __init__(self, regularization_strength_l1=0.1, regularization_strength_l2=0.1, seasonality=None, delta=1.0):
+    def __init__(self, 
+                 regularization_strength_l1=0.1, 
+                 regularization_strength_l2=0.1, 
+                 seasonality=None, 
+                 delta=1.0,
+                 use_ridge_adjustment=False,
+                 ridge_alpha=1.0):
         """
         Args:
-            regularization_strength_l1: Strength of the L1 regularization (Lasso).
-            regularization_strength_l2: Strength of the L2 regularization (Ridge).
+            regularization_strength_l1: Strength of L1 regularization (not used in this example, but can be expanded).
+            regularization_strength_l2: Strength of L2 regularization in the optimization of the weights.
             seasonality: DataFrame with the calculated seasonality, indexed by time.
-            delta: Parameter for the Huber loss.
+            delta: Parameter for the Huber loss function (not used in this example).
+            use_ridge_adjustment: If True, adjusts the pre-intervention residual with Ridge regression.
+            ridge_alpha: Parameter alpha for Ridge regression (regularization strength).
         """
         self.regularization_strength_l1 = regularization_strength_l1
         self.regularization_strength_l2 = regularization_strength_l2
         self.seasonality = seasonality
         self.delta = delta
+        self.use_ridge_adjustment = use_ridge_adjustment
+        self.ridge_alpha = ridge_alpha
 
     def _prepare_data(self, X, time_index=None):
         """
@@ -134,10 +142,10 @@ class SyntheticControl(BaseEstimator, RegressorMixin):
         
         Args:
             X: Input features
-            time_index: Index of timestamps if seasonality is used
+            time_index: Time index in case of using seasonality
             
         Returns:
-            numpy.ndarray: Processed feature matrix
+            numpy.ndarray: Processed features matrix
         """
         X = np.array(X)
         if self.seasonality is not None and time_index is not None:
@@ -148,36 +156,35 @@ class SyntheticControl(BaseEstimator, RegressorMixin):
         return X
 
     def squared_loss(self, x):
-        """Compute squared loss."""
+        """Calculates the quadratic loss."""
         return cp.sum_squares(x)
 
-    def fit(self, X, y):
+    def fit(self, X, y, time_train=None):
         """
-        Fit the synthetic control model.
-        
+        Fits the synthetic control model.
+
         Args:
             X: Training features
             y: Target values
-            
+            time_train (optional): Time vector or indices for the training data, required if Ridge adjustment is enabled.
+
         Returns:
-            self: The fitted model
+            self: Fitted model
         """
-        X = self._prepare_data(X)
+
+        X_proc = self._prepare_data(X, time_index=time_train)
         y = np.ravel(y)
 
-        if X.shape[0] != y.shape[0]:
+        if X_proc.shape[0] != y.shape[0]:
             raise ValueError("The number of rows in X must match the size of y.")
 
-        w = cp.Variable(X.shape[1])
-
+        w = cp.Variable(X_proc.shape[1])
+        errors = X_proc @ w - y
+        
         regularization_l2 = self.regularization_strength_l2 * cp.norm2(w)
-
-        errors = X @ w - y
         objective = cp.Minimize(self.squared_loss(errors) + regularization_l2)
-
-        # Constraints
+        
         constraints = [cp.sum(w) == 1, w >= 0]
-
         problem = cp.Problem(objective, constraints)
         problem.solve(solver=cp.SCS, verbose=False)
 
@@ -185,27 +192,51 @@ class SyntheticControl(BaseEstimator, RegressorMixin):
             problem.solve(solver=cp.ECOS, verbose=False)
 
         if problem.status != cp.OPTIMAL:
-            raise ValueError("Optimization did not converge. Status: " + problem.status)
+            raise ValueError("The optimization did not converge. Status: " + problem.status)
 
-        self.X_ = X
+        self.X_ = X_proc
         self.y_ = y
         self.w_ = w.value
         self.is_fitted_ = True
+
+        self.synthetic_prediction_ = X_proc.dot(self.w_)
+        
+        if self.use_ridge_adjustment:
+            if time_train is None:
+                raise ValueError("The time vector is required for Ridge adjustment.")
+            self.residuals_ = y - self.synthetic_prediction_
+            time_train = np.array(time_train).reshape(-1, 1)
+            self.ridge_model_ = Ridge(alpha=self.ridge_alpha)
+            self.ridge_model_.fit(time_train, self.residuals_)
         return self
 
-    def predict(self, X):
+    def predict(self, X, time_index=None):
         """
-        Make predictions using the fitted model.
-        
+        Performs prediction using synthetic control. If Ridge adjustment is enabled and a time vector is provided,  
+        the prediction is adjusted with the predicted residual.
+
         Args:
-            X: Features to predict on
-            
+            X: Test features
+            time_index (optional): Time vector for the test data
+
         Returns:
-            tuple: (predictions, weights)
+            numpy.ndarray: Final prediction
         """
-        check_is_fitted(self)
-        X = self._prepare_data(X)
-        return X @ self.w_, self.w_
+
+        if not self.is_fitted_:
+            raise ValueError("The model has not been fitted yet. Call 'fit' first.")
+        
+        X_proc = self._prepare_data(X, time_index=time_index)
+        base_prediction = X_proc.dot(self.w_)
+        
+        if self.use_ridge_adjustment:
+            if time_index is None:
+                raise ValueError("The time vector is required to predict with the Ridge adjustment.")
+            time_index = np.array(time_index).reshape(-1, 1)
+            ridge_adjustment = self.ridge_model_.predict(time_index)
+            return base_prediction + ridge_adjustment
+        
+        return base_prediction
 
 
 def smape(A, F):
@@ -215,7 +246,7 @@ def smape(A, F):
 
 def evaluate_group(treatment_group, data, total_Y, correlation_matrix, min_holdout, df_pivot):
     """
-    Evalúa un grupo de tratamiento y retorna métricas de error.
+    Evaluates a treatment group and returns error metrics.
     """
     treatment_Y = data[data['location'].isin(treatment_group)]['Y'].sum()
     holdout_percentage = (1 - (treatment_Y / total_Y)) * 100
@@ -232,34 +263,45 @@ def evaluate_group(treatment_group, data, total_Y, correlation_matrix, min_holdo
     if not control_group:
         return (treatment_group, [], float('inf'), float('inf'), None, None, None)
 
-    X = df_pivot[control_group].values
-    y = df_pivot[treatment_group].sum(axis=1).values
+   
+    X = df_pivot[control_group].values  
+    y = df_pivot[treatment_group].sum(axis=1).values  
+
+    time_index = np.arange(len(df_pivot))
 
     scaler_x = MinMaxScaler()
     scaler_y = MinMaxScaler()
+
     X_scaled = scaler_x.fit_transform(X)
     y_scaled = scaler_y.fit_transform(y.reshape(-1, 1))
 
     split_index = int(len(X_scaled) * 0.8)
+
     X_train, X_test = X_scaled[:split_index], X_scaled[split_index:]
     y_train, y_test = y_scaled[:split_index], y_scaled[split_index:]
 
-    model = SyntheticControl()
-    model.fit(X_train, y_train)
-    predictions_val, weights = model.predict(X_test)
+    time_train = time_index[:split_index]
+    time_test  = time_index[split_index:]
 
-    contrafactual_train = (weights @ X_train.T).reshape(-1, 1)
-    contrafactual_test = (weights @ X_test.T).reshape(-1, 1)
-    contrafactual_full = np.vstack((contrafactual_train, contrafactual_test))
+    model = SyntheticControl(
+        use_ridge_adjustment=True,  
+        ridge_alpha=1.0             
+    )
+    model.fit(X_train, y_train, time_train=time_train)
 
-    contrafactual_full_original = scaler_y.inverse_transform(contrafactual_full)
-    predictions = contrafactual_full_original.flatten()
-    y_original = scaler_y.inverse_transform(y_scaled).flatten()
+    counterfactual_test = model.predict(X_test, time_index=time_test)
+    counterfactual_full = model.predict(X_scaled, time_index=time_index).reshape(-1,1)
+    counterfactual_full_original = scaler_y.inverse_transform(counterfactual_full)
+    y_original = scaler_y.inverse_transform(y_scaled)
+    counterfactual_full_original = counterfactual_full_original.flatten()
+    y_original = y_original.flatten()
 
-    MAPE = np.mean(np.abs((y_original - predictions) / (y_original + 1e-10))) * 100
-    SMAPE_value = smape(y_original, predictions)
+    weights = model.w_
 
-    return (treatment_group, control_group, MAPE, SMAPE_value, y_original, predictions, weights)
+    MAPE = np.mean(np.abs((y_original - counterfactual_full_original) / (y_original + 1e-10))) * 100
+    SMAPE_value = smape(y_original, counterfactual_full_original)
+
+    return (treatment_group, control_group, MAPE, SMAPE_value, y_original, counterfactual_full_original, weights)
 
 def BetterGroups(similarity_matrix, excluded_locations, data, correlation_matrix, maximum_treatment_percentage=0.50, progress_updater=None, status_updater=None):
     """
@@ -303,7 +345,7 @@ def BetterGroups(similarity_matrix, excluded_locations, data, correlation_matrix
     results = []
     
     
-    with concurrent.futures.ProcessPoolExecutor(max_workers=2) as executor:
+    with concurrent.futures.ProcessPoolExecutor(max_workers=5) as executor:
         futures = executor.map(
             evaluate_group,
             possible_groups,
@@ -312,7 +354,7 @@ def BetterGroups(similarity_matrix, excluded_locations, data, correlation_matrix
             [correlation_matrix] * total_groups,
             [min_holdout] * total_groups,
             [df_pivot] * total_groups,
-            chunksize=5
+            chunksize=10
         )
         for idx, result in enumerate(futures):
             results.append(result)
