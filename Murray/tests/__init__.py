@@ -13,5 +13,5 @@ from Murray.plots import (
     plot_permutation_test
 )
 
-__version__ = "1.0.0"
+__version__ = "1.0.1"
 
