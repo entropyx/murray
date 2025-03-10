@@ -931,8 +931,8 @@ if file is not None:
                                         df = pd.DataFrame(
                                             {
                                                 "Group": ["Treatment", "Counterfactual (control)", "Absolute difference"],
-                                                "Pre-treatment": [np.sum(pre_treatment),np.sum(pre_counterfactual), np.sum(pre_treatment)-np.sum(pre_counterfactual)],
-                                                "Post-treatment": [np.sum(post_treatment), np.sum(post_counterfactual),np.sum(post_treatment)- np.sum(post_counterfactual)],
+                                                "Pre-treatment": [np.sum(pre_treatment),np.sum(pre_counterfactual), np.abs(np.sum(pre_treatment)-np.sum(pre_counterfactual))],
+                                                "Post-treatment": [np.sum(post_treatment), np.sum(post_counterfactual),np.abs(np.sum(post_treatment)- np.sum(post_counterfactual))],
                                                 "Increment": [" " ," " ," " ]
                                                 
                                             }
