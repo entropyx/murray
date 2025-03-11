@@ -609,7 +609,7 @@ if file is not None:
             with col2:
                 delta_max = st.number_input("Lift Max:", min_value=0.02, max_value=1.0, value=0.3, step=0.01)
             with col3:
-                delta_step = st.number_input("Lift Step:", min_value=0.00, max_value=1.0, value=0.02, step=0.01)
+                delta_step = st.number_input("Lift Step:", min_value=0.00, max_value=1.0, value=0.01, step=0.01)
             if delta_min > delta_max:
                 st.error("Lift Min must be less than Lift Max")
                 st.stop()
@@ -850,7 +850,7 @@ if file is not None:
                             firt_day = filtered_data['time'].min()
                             last_day = filtered_data['time'].max()
                             second_report_day = last_day - pd.Timedelta(days=period_idx)
-                            firt_report_day = last_day - pd.Timedelta(days=(period_idx*2))
+                            firt_report_day = last_day - pd.Timedelta(days=(period_idx*2)-1)
                             treatment_day = last_day - pd.Timedelta(days=period_idx-1)
                             last_day = last_day.strftime('%Y-%m-%d')
                             firt_day = firt_day.strftime('%Y-%m-%d')
