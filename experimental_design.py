@@ -858,16 +858,16 @@ if file is not None:
                             filtered_data = data1[data1['location'] == random_sate]
                             firt_day = filtered_data['time'].min()
                             last_day = filtered_data['time'].max()
-                            second_report_day = last_day - pd.Timedelta(days=period_idx+1)
-                            firt_report_day = last_day - pd.Timedelta(days=period_idx*2)
-                            treatment_day = last_day - pd.Timedelta(days=period_idx)
+                            second_report_day = last_day - pd.Timedelta(days=period_idx)
+                            firt_report_day = last_day - pd.Timedelta(days=(period_idx*2)-1)
+                            treatment_day = last_day - pd.Timedelta(days=period_idx-1)
                             last_day = last_day.strftime('%Y-%m-%d')
                             firt_day = firt_day.strftime('%Y-%m-%d')
                             firt_report_day = firt_report_day.strftime('%Y-%m-%d')
                             second_report_day = second_report_day.strftime('%Y-%m-%d')
 
                             treatment_day = treatment_day.strftime('%Y-%m-%d')
-    
+                           
                             mde = 'N/A'
                             if period_idx is not None and y_value is not None:
                                 y_value_float = float(y_value.strip('%')) if isinstance(y_value, str) else float(y_value)
