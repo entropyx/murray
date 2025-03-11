@@ -344,7 +344,7 @@ def BetterGroups(similarity_matrix, excluded_locations, data, correlation_matrix
     results = []
     
     
-    with concurrent.futures.ProcessPoolExecutor(max_workers=5) as executor:
+    with concurrent.futures.ProcessPoolExecutor(max_workers=2) as executor:
         futures = executor.map(
             evaluate_group,
             possible_groups,
@@ -353,7 +353,7 @@ def BetterGroups(similarity_matrix, excluded_locations, data, correlation_matrix
             [correlation_matrix] * total_groups,
             [min_holdout] * total_groups,
             [df_pivot] * total_groups,
-            chunksize=10
+            chunksize=5
         )
         for idx, result in enumerate(futures):
             results.append(result)
