@@ -42,7 +42,7 @@ st.logo(sidebar_logo,size="large", icon_image=main_body_logo)
 
 def generate_pdf(treatment_group, control_group, holdout_percentage, impact_graph, 
                  weights,period_idx,mde,att,incremental,tarjet_variable,firt_day,
-                 last_day,treatment_day,df,firt_report_day,second_report_day,budget):
+                 last_day,treatment_day,df,firt_report_day,second_report_day):
         """
         Generates a PDF report with explanations for each aspect.
         """
@@ -193,26 +193,6 @@ def generate_pdf(treatment_group, control_group, holdout_percentage, impact_grap
             pdf.cell(col_width, row_height, row['Control Location'], 1, 0, 'C', True)
             pdf.cell(col_width, row_height, f"{row['Weights']:.4f}", 1, 1, 'C', True)
 
-
-        pdf.ln(5) 
-        if pdf.get_y() > 250:
-            pdf.add_page() 
-
-
-
-        pdf.set_font("Poppins", style='B', size=12)
-        pdf.set_text_color(27, 0, 67)
-        pdf.cell(200, 10, "Invesment", ln=True)
-        pdf.set_font("Poppins", size=10)
-        pdf.set_text_color(33, 31, 36)
-
-        pdf.multi_cell(0, 5, "Investment represents the total cost of the intervention in the treated locations during the treatment period.")
-
-        pdf.ln(1)
-        
-        pdf.set_font("Poppins", style='B', size=10)
-        pdf.set_text_color(33, 31, 36)
-        pdf.cell(200, 5, f"Investment: {budget_final:,.2f}", ln=True)
 
 
         pdf.ln(5) 
@@ -647,12 +627,9 @@ if file is not None:
             else:
                 periods_range = (period_min, period_max+1, period_step)
             
-            budget = st.number_input("Available budget")
-            cpic = st.number_input("CPIC")
             
-            total_days = len(data1['time'].unique())
             
-            target_daily = (data1['Y'].sum()) / total_days
+            
             
 
             
@@ -681,8 +658,6 @@ if file is not None:
                 "deltas_range": (delta_min, delta_max, delta_step),
                 "periods_range": (period_min, period_max+1, period_step),
                 "col_target": col_target,
-                "budget": budget,
-                "cpic": cpic
             }
 
             
@@ -876,10 +851,7 @@ if file is not None:
 
                             
                             
-                            increment_necesary = target_daily * period_idx
-                            target_necesary = increment_necesary * cpic
-
-                            budget_final = target_necesary * mde
+                           
                             
                                     
 
@@ -933,7 +905,7 @@ if file is not None:
                                         
 
 
-                                        pdf_file = generate_pdf(treatment_group, control_group, holdout_percentage, impact_graph,weights,period_idx,mde,att,incremental,col_target,firt_day,last_day,treatment_day,df,firt_report_day,second_report_day, budget_final)
+                                        pdf_file = generate_pdf(treatment_group, control_group, holdout_percentage, impact_graph,weights,period_idx,mde,att,incremental,col_target,firt_day,last_day,treatment_day,df,firt_report_day,second_report_day)
                                         
                                         
 
