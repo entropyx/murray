@@ -44,7 +44,7 @@ def generate_pdf(treatment_group, control_group, holdout_percentage,
                  impact_graph,percenge_lift,p_value,power,period,
                  permutation_test,treatment_day,firt_day,last_day,
                  col_target,metric_mmm,mmm_option,lift_total,firt_report_day,second_report_day,
-                 pre_treatment,pre_counterfactual,post_treatment,post_counterfactual,att,incremental,df):
+                 pre_treatment,pre_counterfactual,post_treatment,post_counterfactual,att,incremental,df,spend):
         """
         Generates a PDF report with explanations for each aspect.
         """
@@ -291,7 +291,7 @@ def generate_pdf(treatment_group, control_group, holdout_percentage,
         pdf.multi_cell(0, 5, f"The permutation test below shows the results of the permutation test. "
                             f"It compares the treatment group with the control group over time and demonstrates the cumulative effect of the treatment." 
                             f"In this case, the metric observed in the graph, called Observed difference, represents the value of the difference (increase "
-                            f"or decrease) observed in the previous table. This value is {round(increment,2)}, and the graph visually indicates whether it falls"
+                            f"or decrease) observed in the previous table. This value is {round(increment,2):,.2f}, and the graph visually indicates whether it falls"
                             f" within the significance zone, allowing us to conclude whether the result is statistically significant.")
             
         pdf.image(temp_image_path_permutation, x=10, y=pdf.get_y(), w=180, h=100)  
@@ -324,14 +324,37 @@ def generate_pdf(treatment_group, control_group, holdout_percentage,
         pdf.cell(200, 10, "Incremental Performance Evaluation", ln=True)
         pdf.set_font("Poppins", size=10)
         pdf.set_text_color(33, 31, 36)
-        pdf.multi_cell(0, 5, f"The {mmm_option} is a important value to evaluate the performance of the treatment. "
+        pdf.multi_cell(0, 5, f"The {mmm_option} is a important value to evaluate the performance of the treatment which calculate the {mmm_option} based on the spend and the incremental. "
                             f"However, it can support calibration of MMM, value is the following")
 
-        pdf.set_font("Poppins", style='B', size=10)
-        pdf.set_text_color(33, 31, 36)
-        pdf.multi_cell(0, 5, f"{mmm_option}: {round(metric_mmm, 2)}")
 
+        pdf.ln(1.5)
         
+        col_widths = [60, 60, 60]
+        row_height = 8
+
+        header_texts = ["Spend", "Incremental", mmm_option]
+        
+        x_start = pdf.get_x()
+        y_start = pdf.get_y() + 5  
+
+        pdf.set_fill_color(*header_bg)
+        pdf.set_text_color(255, 255, 255)
+        pdf.set_font("Poppins", "B", 10)
+
+        for i, txt in enumerate(header_texts):
+            pdf.cell(col_widths[i], row_height, txt, border=1, ln=0, align='C', fill=True)
+        pdf.ln(row_height)
+
+        pdf.set_text_color(*text_color)
+        pdf.set_font("Poppins", "", 10)
+        pdf.set_fill_color(*white_row_bg)
+        
+        pdf.cell(col_widths[0], row_height, f"${spend:,.2f}", border=1, ln=0, align='C', fill=True)
+        pdf.cell(col_widths[1], row_height, f"{incremental:,.2f}", border=1, ln=0, align='C', fill=True)
+        pdf.cell(col_widths[2], row_height, f"{round(metric_mmm, 2)}", border=1, ln=1, align='C', fill=True)
+
+        pdf.ln(5)  
 
 
 
@@ -666,9 +689,9 @@ if file is not None:
 
                 
                 if mmm_option == "iROAS":
-                    st.session_state.metric_mmm = st.session_state.incremental / spend
+                    st.session_state.metric_mmm = spend / st.session_state.incremental 
                 else:
-                    st.session_state.metric_mmm = st.session_state.incremental / spend
+                    st.session_state.metric_mmm = spend / st.session_state.incremental 
 
 
                 
@@ -763,7 +786,8 @@ if file is not None:
                         st.session_state.post_counterfactual,
                         st.session_state.att_report,
                         st.session_state.incremental_report,
-                        df
+                        df,
+                        spend
                     )
 
 
