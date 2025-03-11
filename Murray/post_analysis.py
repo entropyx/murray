@@ -95,8 +95,7 @@ def run_geo_evaluation(data_input, start_treatment,end_treatment,treatment_group
             null_stats.append(stat_func(permuted))
         null_stats = np.array(null_stats)
         
-        print(np.mean(null_stats))
-        print(observed_stat)
+        
         p_value = np.mean(abs(null_stats) >= abs(observed_stat))
         power = np.mean(p_value < significance_level)
 
