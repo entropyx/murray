@@ -633,8 +633,8 @@ if file is not None:
                         st.session_state.permutation_test_report = plot_permutation_test_report(results)
                         st.session_state.period = period
                         second_report_day = last_day - pd.Timedelta(days=period)
-                        firt_report_day = last_day - pd.Timedelta(days=period*2)
-                        treatment_day = last_day - pd.Timedelta(days=period+1)
+                        firt_report_day = last_day - pd.Timedelta(days=(period*2)-1)
+                        treatment_day = last_day - pd.Timedelta(days=period-1)
                 
                         
                         
@@ -688,8 +688,8 @@ if file is not None:
                 last_day = pd.to_datetime(last_day)
                 treatment_day = last_day - pd.Timedelta(days=end_position_treatment - start_position_treatment)
                 second_report_day = last_day - pd.Timedelta(days=st.session_state.period)
-                firt_report_day = last_day - pd.Timedelta(days=st.session_state.period*2)
-                treatment_day = last_day - pd.Timedelta(days=st.session_state.period+1)
+                firt_report_day = last_day - pd.Timedelta(days=(st.session_state.period*2)-1)
+                treatment_day = last_day - pd.Timedelta(days=st.session_state.period-1)
                 last_day = last_day.strftime('%Y-%m-%d')
                 firt_day = firt_day.strftime('%Y-%m-%d')
                 firt_report_day = firt_report_day.strftime('%Y-%m-%d')
