@@ -4,7 +4,7 @@ from Murray.main import select_controls,SyntheticControl
 from Murray.auxiliary import market_correlations
 import pandas as pd
 
-def run_geo_evaluation(data_input, start_treatment,end_treatment,treatment_group,spend,n_permutations=5000,inference_type='iid',significance_level=0.1):
+def run_geo_evaluation(data_input, start_treatment,end_treatment,treatment_group,spend,n_permutations=500000,inference_type='iid',significance_level=0.1):
         
         random_sate = data_input['location'].unique()[0]
         filtered_data = data_input[data_input['location'] == random_sate]
@@ -34,34 +34,39 @@ def run_geo_evaluation(data_input, start_treatment,end_treatment,treatment_group
         period = end_position_treatment - start_position_treatment
         df_pivot = data_input.pivot(index='time', columns='location', values='Y')
         X = df_pivot[control_group].values  
-        y = df_pivot[list(treatment_group)].sum(axis=1).values  
-        
-        
-        
+        y = df_pivot[treatment_group].sum(axis=1).values  
+
+        time_index = np.arange(len(df_pivot))
+
         scaler_x = MinMaxScaler()
         scaler_y = MinMaxScaler()
 
-        X_scaled = scaler_x.fit_transform(X)  
-        y_scaled = scaler_y.fit_transform(y.reshape(-1, 1))  
+        X_scaled = scaler_x.fit_transform(X)
+        y_scaled = scaler_y.fit_transform(y.reshape(-1, 1))
 
-        X_train, X_test = X_scaled[:start_position_treatment], X_scaled[start_position_treatment:]
-        y_train, y_test = y_scaled[:start_position_treatment], y_scaled[start_position_treatment:]
+        split_index = int(len(X_scaled) * 0.8)
 
-        
-        model = SyntheticControl()
-        model.fit(X_train, y_train)
+        X_train, X_test = X_scaled[:split_index], X_scaled[split_index:]
+        y_train, y_test = y_scaled[:split_index], y_scaled[split_index:]
 
-        
-        predictions_val, weights = model.predict(X_test)
+        time_train = time_index[:split_index]
+        time_test  = time_index[split_index:]
 
-        contrafactual_train = (weights @ X_train.T).reshape(-1, 1)
-        contrafactual_test = (weights @ X_test.T).reshape(-1, 1)
-        contrafactual_full = np.vstack((contrafactual_train, contrafactual_test))
+        model = SyntheticControl(
+        use_ridge_adjustment=True,  
+        ridge_alpha=1.0             
+    )
+        model.fit(X_train, y_train, time_train=time_train)
 
-        contrafactual_full_original = scaler_y.inverse_transform(contrafactual_full)
-        predictions = contrafactual_full_original.flatten()
+        counterfactual_test = model.predict(X_test, time_index=time_test)
+        counterfactual_full = model.predict(X_scaled, time_index=time_index).reshape(-1,1)
+        counterfactual_full_original = scaler_y.inverse_transform(counterfactual_full)
+        y_original = scaler_y.inverse_transform(y_scaled)
+        counterfactual_full_original = counterfactual_full_original.flatten()
+        y_original = y_original.flatten()
 
-        y_original = scaler_y.inverse_transform(y_scaled).flatten()
+        predictions = counterfactual_full_original
+        weights = model.w_
         
         MAPE = np.mean(np.abs((y_original - predictions) / (y_original + 1e-10))) * 100
         SMAPE = smape(y_original, predictions)
@@ -70,26 +75,29 @@ def run_geo_evaluation(data_input, start_treatment,end_treatment,treatment_group
 
         def compute_residuals(y_treatment, y_control):
             return y_treatment - y_control
-        
-        def stat_func(x):
-            return np.sum(x)
 
         residuals = compute_residuals(y,predictions)
         treatment_residuals = residuals[start_position_treatment:]
 
+        def stat_func(x):
+            return np.sum(x)
+        
+
+    
         observed_stat = stat_func(treatment_residuals)
         
         
-
         null_stats = []
+
         for _ in range(n_permutations):
             permuted_residuals = np.random.permutation(residuals)
             permuted = permuted_residuals[start_position_treatment:]
             null_stats.append(stat_func(permuted))
         null_stats = np.array(null_stats)
         
-        
-        p_value = np.mean(np.abs(null_stats) >= np.abs(observed_stat))
+        print(np.mean(null_stats))
+        print(observed_stat)
+        p_value = np.mean(abs(null_stats) >= abs(observed_stat))
         power = np.mean(p_value < significance_level)
 
         
@@ -106,7 +114,7 @@ def run_geo_evaluation(data_input, start_treatment,end_treatment,treatment_group
             'null_stats': null_stats,
             'weights': weights,
             'period': period,
-            'spend': spend
+            'spend': spend,
         }
 
 
