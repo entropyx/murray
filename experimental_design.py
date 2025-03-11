@@ -255,7 +255,7 @@ def generate_pdf(treatment_group, control_group, holdout_percentage, impact_grap
         pdf.ln(1)
         if pdf.get_y() > 210:
             pdf.add_page() 
-        col_widths = [62.5, 42.5, 42.5, 42.5]
+        col_widths = [70, 60,60]
         row_height = 8
 
         
@@ -263,7 +263,7 @@ def generate_pdf(treatment_group, control_group, holdout_percentage, impact_grap
             "Group",
             f"Pre-treatment\n({firt_report_day} to {second_report_day})",
             f"Post-treatment\n({treatment_day} to {last_day})",
-            "Increment"
+            
         ]
 
         
@@ -336,16 +336,7 @@ def generate_pdf(treatment_group, control_group, holdout_percentage, impact_grap
             pdf.cell(col_widths[1], row_height, f"{row['Pre-treatment']:,.2f}", border=1, ln=0, align='C', fill=True)
             pdf.cell(col_widths[2], row_height, f"{row['Post-treatment']:,.2f}", border=1, ln=1, align='C', fill=True)
 
-        y_data_end = pdf.get_y()
-        altura_total = y_data_end - y_data_start
-
-        x_fourth_col = x_start + col_widths[0] + col_widths[1] + col_widths[2]
-        pdf.set_xy(x_fourth_col, y_data_start)
-
-        pdf.set_text_color(*text_color)
-        pdf.set_font("Poppins", "B", 10)
-        pdf.cell(col_widths[3], altura_total, f"{round(mde * 100)}%", border=1, ln=1, align='C', fill=True)
-
+       
         
 
 
@@ -859,7 +850,7 @@ if file is not None:
                             firt_day = filtered_data['time'].min()
                             last_day = filtered_data['time'].max()
                             second_report_day = last_day - pd.Timedelta(days=period_idx)
-                            firt_report_day = last_day - pd.Timedelta(days=(period_idx*2)-1)
+                            firt_report_day = last_day - pd.Timedelta(days=(period_idx*2))
                             treatment_day = last_day - pd.Timedelta(days=period_idx-1)
                             last_day = last_day.strftime('%Y-%m-%d')
                             firt_day = firt_day.strftime('%Y-%m-%d')
@@ -929,8 +920,7 @@ if file is not None:
                                             {
                                                 "Group": ["Treatment", "Counterfactual (control)", "Absolute difference"],
                                                 "Pre-treatment": [np.sum(pre_treatment),np.sum(pre_counterfactual), np.abs(np.sum(pre_treatment)-np.sum(pre_counterfactual))],
-                                                "Post-treatment": [np.sum(post_treatment), np.sum(post_counterfactual),np.abs(np.sum(post_treatment)- np.sum(post_counterfactual))],
-                                                "Increment": [" " ," " ," " ]
+                                                "Post-treatment": [np.sum(post_treatment), np.sum(post_counterfactual),np.abs(np.sum(post_treatment)- np.sum(post_counterfactual))]
                                                 
                                             }
                                         )
