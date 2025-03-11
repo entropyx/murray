@@ -44,13 +44,13 @@ def run_geo_evaluation(data_input, start_treatment,end_treatment,treatment_group
         X_scaled = scaler_x.fit_transform(X)
         y_scaled = scaler_y.fit_transform(y.reshape(-1, 1))
 
-        split_index = int(len(X_scaled) * 0.8)
+        
 
-        X_train, X_test = X_scaled[:split_index], X_scaled[split_index:]
-        y_train, y_test = y_scaled[:split_index], y_scaled[split_index:]
+        X_train, X_test = X_scaled[:start_position_treatment], X_scaled[start_position_treatment:]
+        y_train, y_test = y_scaled[:start_position_treatment], y_scaled[start_position_treatment:]
 
-        time_train = time_index[:split_index]
-        time_test  = time_index[split_index:]
+        time_train = time_index[:start_position_treatment]
+        time_test  = time_index[start_position_treatment:]
 
         model = SyntheticControl(
         use_ridge_adjustment=True,  
