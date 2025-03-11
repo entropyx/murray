@@ -183,11 +183,6 @@ class SyntheticControl(BaseEstimator, RegressorMixin):
         
         regularization_l2 = self.regularization_strength_l2 * cp.norm2(w)
         objective = cp.Minimize(self.squared_loss(errors) + regularization_l2)
-
-
-        # Constraints
-        
-        # Constraints
         constraints = [cp.sum(w) == 1, w >= 0]
         problem = cp.Problem(objective, constraints)
         problem.solve(solver=cp.SCS, verbose=False)
@@ -349,7 +344,7 @@ def BetterGroups(similarity_matrix, excluded_locations, data, correlation_matrix
     results = []
     
     
-    with concurrent.futures.ProcessPoolExecutor(max_workers=2) as executor:
+    with concurrent.futures.ProcessPoolExecutor(max_workers=5) as executor:
         futures = executor.map(
             evaluate_group,
             possible_groups,
@@ -358,7 +353,7 @@ def BetterGroups(similarity_matrix, excluded_locations, data, correlation_matrix
             [correlation_matrix] * total_groups,
             [min_holdout] * total_groups,
             [df_pivot] * total_groups,
-            chunksize=5
+            chunksize=10
         )
         for idx, result in enumerate(futures):
             results.append(result)
