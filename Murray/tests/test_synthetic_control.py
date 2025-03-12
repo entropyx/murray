@@ -8,32 +8,10 @@ from Murray.auxiliary import cleaned_data, market_correlations
 def synthetic_data():
     """Fixture that creates synthetic test data"""
     np.random.seed(42)
+    X = np.random.rand(100, 3)  
+    y = X @ np.array([0.3, 0.5, 0.2]) + np.random.normal(0, 0.1, 100)
     
-    dates = pd.date_range(start='2023-01-01', periods=100)
-    regions = ['Control_1', 'Control_2', 'Control_3', 'Treatment']
-    
-    data = []
-    for region in regions:
-        base_value = np.random.randint(50, 100)
-        trend = np.linspace(0, 10, len(dates))
-        
-        for i, date in enumerate(dates):
-            value = (base_value + 
-                    trend[i] + 
-                    np.sin(date.day/15) * 10 + 
-                    np.random.normal(0, 2))
-            
-            if region == 'Treatment' and i > 70:
-                value += 20
-                
-            data.append({
-                'date': date,
-                'region': region,
-                'add_to_carts': max(0, int(value))
-            })
-    
-    df = pd.DataFrame(data)
-    return cleaned_data(df, "add_to_carts", "region", "date")
+    return X, y
 
 @pytest.fixture(scope="module")
 def correlation_matrix(synthetic_data):
@@ -41,31 +19,33 @@ def correlation_matrix(synthetic_data):
     return market_correlations(synthetic_data)
 
 @pytest.fixture(scope="module")
-def synthetic_control(synthetic_data):
+def synthetic_control():
     """Fixture that creates a synthetic control instance"""
-    treatment_group = ['Treatment']
-    control_group = ['Control_1', 'Control_2', 'Control_3']
-    
-    sc = SyntheticControl(
-        data=synthetic_data,
-        treatment_group=treatment_group,
-        control_group=control_group,
-        date_column='date'
+    return SyntheticControl(
+        regularization_strength_l1=0.1,
+        regularization_strength_l2=0.1,
+        seasonality=None,
+        delta=1.0
     )
-    return sc
 
-def test_synthetic_control_fit(synthetic_control):
+def test_synthetic_control_fit(synthetic_control, synthetic_data):
     """Test that synthetic control can fit the data"""
-    synthetic_control.fit()
-    assert hasattr(synthetic_control, 'weights_')
-    assert isinstance(synthetic_control.weights_, dict)
-    assert len(synthetic_control.weights_) > 0
+    X, y = synthetic_data
+    synthetic_control.fit(X, y)
     
-def test_synthetic_control_predict(synthetic_control):
+    assert hasattr(synthetic_control, 'is_fitted_')
+    assert hasattr(synthetic_control, 'w_')
+    assert isinstance(synthetic_control.w_, np.ndarray)
+    assert len(synthetic_control.w_) == X.shape[1]
+
+def test_synthetic_control_predict(synthetic_control, synthetic_data):
     """Test that synthetic control can make predictions"""
-    synthetic_control.fit()
-    predictions = synthetic_control.predict()
+    X, y = synthetic_data
+    synthetic_control.fit(X, y)
+    predictions, weights = synthetic_control.predict(X)
     
-    assert isinstance(predictions, pd.Series)
-    assert len(predictions) > 0
-    assert not predictions.isna().any()
+    assert isinstance(predictions, np.ndarray)
+    assert len(predictions) == len(y)
+    assert not np.isnan(predictions).any()
+    assert isinstance(weights, np.ndarray)
+    assert len(weights) == X.shape[1]
