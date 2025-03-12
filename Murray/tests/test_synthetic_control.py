@@ -6,16 +6,50 @@ from Murray.main import SyntheticControl, select_controls, select_treatments
 from Murray.auxiliary import market_correlations, cleaned_data
 
 @pytest.fixture(scope="module")
-def cleaned_dataframe():
-    """Fixture that loads and cleans the real data"""
-    dataset_path = r"Murray\data\data1.csv" 
-    col_target = "add_to_carts"
-    col_locations = "region"
-    col_dates = "date"
+def synthetic_data():
+    """Fixture that creates synthetic test data"""
+    np.random.seed(42)
+    
+    dates = pd.date_range(start='2023-01-01', periods=100)
+    regions = ['Control_1', 'Control_2', 'Treatment']
+    
+    data = []
+    for region in regions:
+        base_value = np.random.randint(50, 100)
+        trend = np.linspace(0, 10, len(dates))  
+        
+        for i, date in enumerate(dates):
+            value = (base_value + 
+                    trend[i] + 
+                    np.sin(date.day/15) * 10 + 
+                    np.random.normal(0, 2))
+            
+            
+            if region == 'Treatment' and i > 70:  
+                value += 20
+                
+            data.append({
+                'date': date,
+                'region': region,
+                'add_to_carts': max(0, int(value))
+            })
+    
+    df = pd.DataFrame(data)
+    return cleaned_data(df, "add_to_carts", "region", "date")
 
-    df = pd.read_csv(dataset_path)
-    df_cleaned = cleaned_data(df, col_target, col_locations, col_dates)
-    return df_cleaned
+@pytest.fixture(scope="module")
+def synthetic_control(synthetic_data):
+    """Fixture that creates a synthetic control instance"""
+    treatment_group = ['Treatment']
+    control_group = ['Control_1', 'Control_2']
+    
+    sc = SyntheticControl(
+        data=synthetic_data,
+        treatment_group=treatment_group,
+        control_group=control_group,
+        date_column='date'
+    )
+    return sc
 
 @pytest.fixture(scope="module")
 def correlation_matrix(cleaned_dataframe):

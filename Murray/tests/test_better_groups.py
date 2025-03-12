@@ -7,19 +7,29 @@ from Murray.auxiliary import market_correlations, cleaned_data
 
 @pytest.fixture(scope="module")
 def cleaned_dataframe():
-    """Fixture that loads and cleans the real data"""
-    dataset_path = r"Murray\data\data1.csv" 
-    col_target = "add_to_carts"
-    col_locations = "region"
-    col_dates = "date"
-
-    df = pd.read_csv(dataset_path)
-    df_cleaned = cleaned_data(df, col_target, col_locations, col_dates)
-    return df_cleaned
+    """Fixture that creates synthetic test data"""
+    np.random.seed(42)  
+    
+    dates = pd.date_range(start='2023-01-01', periods=100)
+    regions = ['Region_A', 'Region_B', 'Region_C', 'Region_D', 'Region_E']
+    
+    data = []
+    for region in regions:
+        base_value = np.random.randint(50, 100)
+        for date in dates:
+            value = base_value + np.sin(date.day/15) * 10 + np.random.normal(0, 2)
+            data.append({
+                'date': date,
+                'region': region,
+                'add_to_carts': max(0, int(value))  
+            })
+    
+    df = pd.DataFrame(data)
+    return cleaned_data(df, "add_to_carts", "region", "date")
 
 @pytest.fixture(scope="module")
 def correlation_matrix(cleaned_dataframe):
-    """Fixture that generates the correlation matrix from the cleaned data"""
+    """Fixture that generates the correlation matrix from synthetic data"""
     return market_correlations(cleaned_dataframe)
 
 @pytest.fixture(scope="module")
