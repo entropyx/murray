@@ -27,7 +27,7 @@ def cleaned_data(data, col_target, col_locations, col_dates, fill_value=0):
             raise ValueError(f"Missing required columns: {', '.join(missing_columns)}")
 
         
-        invalid_values = ['(not set)']
+        invalid_values = ['(not set)', 'nan']
         data = data[~data[col_locations].isin(invalid_values)]
         data = data.dropna(subset=[col_locations])
 
@@ -99,7 +99,7 @@ def cleaned_data(data, col_target, col_locations, col_dates, fill_value=0):
 
 def market_correlations(data):
     """
-    Determines similarity between states using correlations, while excluding specific states.
+    Determines similarity between locations using correlations.
 
     Args:
         data (pd.DataFrame): The DataFrame containing the locations of interest.

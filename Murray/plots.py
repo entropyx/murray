@@ -9,7 +9,7 @@ import matplotlib.dates as mdates
 import seaborn as sns
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
-
+import matplotlib.ticker as ticker 
 
 
 #Color palette
@@ -101,7 +101,9 @@ def plot_geodata(merged_data,custom_colors=custom_colors):
 
 
         margin=dict(l=50, r=50, t=50, b=50),
-        showlegend=False,
+        dragmode=False,
+        showlegend=False
+        
         #paper_bgcolor='white',
         
 
@@ -154,27 +156,27 @@ def plot_metrics(geo_test):
         x=metrics['Size'],
         y=metrics['MAPE'],
         mode='lines+markers',
-        name='MAPE',
+        name='Value',
         marker=dict(color=blue)), row=1, col=1)
 
     fig.add_trace(go.Scatter(
         x=metrics['Size'],
         y=metrics['SMAPE'],
         mode='lines+markers',
-        name='SMAPE',
+        name='Value',
         marker=dict(color=black_secondary)), row=1, col=2)
 
-    fig.update_layout(
-        template="plotly_white",
-        margin=dict(l=50, r=50, t=50, b=50))
+    #fig.update_layout(
+    #    template="plotly_white",
+    #    margin=dict(l=50, r=50, t=50, b=50))
 
 
     fig.update_xaxes(title_text="Group Size", row=1, col=1)
     fig.update_xaxes(title_text="Group Size", row=1, col=2)
 
 
-    fig.update_yaxes(title_text="MAPE", row=1, col=1)
-    fig.update_yaxes(title_text="SMAPE", row=1, col=2)
+    fig.update_yaxes(title_text="Value", row=1, col=1)
+    fig.update_yaxes(title_text="Value", row=1, col=2)
 
 
     return fig
@@ -251,19 +253,14 @@ def plot_mde_results(results_by_size, sensitivity_results, periods):
             row.append(mde if mde is not None else np.nan)
         heatmap_data[size] = row
 
-    
     total_values = heatmap_data.size
     nan_values = heatmap_data.isna().sum().sum()
     nan_ratio = nan_values / total_values if total_values > 0 else 1
 
-    
     if nan_ratio == 1:  
-        raise ValueError("Error: No satisfactory results found. The heatmap does not contain values (MDE) with the entered data.")
-        
-
+        raise ValueError("No satisfactory results found. The heatmap does not contain values (MDE) with the entered data.")
     elif nan_ratio > 0.8:  
-        raise ValueError("Warning: The analysis shows few satisfactory results. You can try modifying the parameters or entering a different target column.")
-
+        raise ValueError("The analysis shows few satisfactory results. You can try modifying the parameters or entering a different target column.")
 
     heatmap_data = heatmap_data.T
     heatmap_data.columns = [f"Day-{i}" for i in periods]
@@ -278,11 +275,9 @@ def plot_mde_results(results_by_size, sensitivity_results, periods):
     annotations = [[f"{val:.2%}" if not np.isnan(val) else "" for val in row] for row in z_values]
 
     fig = go.Figure()
-    custom_colorscale = [[0,heatmap_green], [1,heatmap_red]]
+    custom_colorscale = [[0, heatmap_green], [1, heatmap_red]]
 
-
-
-
+    
     fig.add_trace(go.Heatmap(
         z=z_values,
         x=x_labels,
@@ -290,9 +285,9 @@ def plot_mde_results(results_by_size, sensitivity_results, periods):
         colorscale=custom_colorscale,
         colorbar=dict(title="MDE (%)"),
         colorbar_tickfont=dict(size=12, color='black'),
-        hoverongaps=False,
-        text=annotations, 
-        texttemplate="%{text}",  
+        hoverongaps=True,
+        text=annotations,
+        texttemplate="%{text}",
         textfont={"size": 12, "color": "black"},
         hoverinfo="text",
         showscale=True,
@@ -305,7 +300,6 @@ def plot_mde_results(results_by_size, sensitivity_results, periods):
     scatter_x = scatter_x.flatten()
     scatter_y = scatter_y.flatten()
 
-
     fig.add_trace(go.Scatter(
         x=[x_labels[i] for i in scatter_x],
         y=[y_labels[i] for i in scatter_y],
@@ -314,7 +308,7 @@ def plot_mde_results(results_by_size, sensitivity_results, periods):
         hoverinfo="none"
     ))
 
-
+    
     fig.update_layout(
         margin=dict(l=90, r=10, t=20, b=75),
         dragmode=False,
@@ -338,13 +332,21 @@ def plot_mde_results(results_by_size, sensitivity_results, periods):
     )
 
 
+    custom_data = []
+    for s in sorted_sizes:
+        custom_data.append([s] * len(periods))
+
+    fig.data[0].customdata = custom_data
+    fig.data[0].hovertemplate = "Treatment size: %{customdata}<br><extra></extra>"
+    fig.data[0].hoverinfo = "skip"
+
     return fig
 
 
 
 
 
-def print_weights(geo_test, holdout_percentage=None, num_locations=None):
+def print_weights(geo_test, treatment_percentage=None, num_locations=None):
     """
     Extracts control group weights based on holdout percentage or number of locations.
 
@@ -359,6 +361,7 @@ def print_weights(geo_test, holdout_percentage=None, num_locations=None):
     results_by_size = geo_test['simulation_results']
     control_weights = []
     control_locations = []
+    holdout_percentage = 100 - treatment_percentage
 
     
     for size, result in results_by_size.items():
@@ -456,20 +459,20 @@ def plot_impact_streamlit_app(geo_test, period, holdout_percentage):
 
 
         mean_y_real = np.mean(y_treatment)
-        std_dev_y_real = np.std(y_treatment)
+        std_dev_y_real = np.std(y_treatment,ddof=1)
         std_error_y_real = std_dev_y_real / np.sqrt(len(y_treatment))
         x_confiance_band = list(range((len(y_real) - period), len(y_real)))
         upper_bound = y_treatment + 1.96 * std_error_y_real
         lower_bound = y_treatment - 1.96 * std_error_y_real
 
         mean_point_difference = np.mean(point_difference)
-        std_dev_point_difference = np.std(point_difference)
+        std_dev_point_difference = np.std(point_difference,ddof=1)
         std_error_point_difference = std_dev_point_difference / np.sqrt(len(y_treatment))
         upper_bound_pd = point_difference[star_treatment:] + 1.96 * std_error_point_difference
         lower_bound_pd = point_difference[star_treatment:] - 1.96 * std_error_point_difference
 
         mean_cumulative_effect = np.mean(cumulative_effect)
-        std_dev_cumulative_effect = np.std(cumulative_effect)
+        std_dev_cumulative_effect = np.std(cumulative_effect,ddof=1)
         std_error_cumulative_effect = std_dev_cumulative_effect / np.sqrt(len(y_treatment))
         upper_bound_ce = cumulative_effect[star_treatment:] + 1.96 * std_error_cumulative_effect
         lower_bound_ce = cumulative_effect[star_treatment:] - 1.96 * std_error_cumulative_effect
@@ -635,11 +638,13 @@ def plot_impact_streamlit_app(geo_test, period, holdout_percentage):
         return att, incremental,fig
 
 
-def plot_impact_graphs(geo_test, period, holdout_percentage):
+def plot_impact_graphs(geo_test, period, treatment_percentage):
+  holdout_percentage = 100 - treatment_percentage
   att, incremental, fig = plot_impact_streamlit_app(geo_test, period, holdout_percentage)
   return fig
 
-def print_incremental_results(geo_test, period, holdout_percentage):
+def print_incremental_results(geo_test, period, treatment_percentage):
+    holdout_percentage = 100 - treatment_percentage
     title = "Incremental Results"
     att, incremental, fig = plot_impact_streamlit_app(geo_test, period, holdout_percentage)
     print("=" * 30)
@@ -652,7 +657,7 @@ def print_incremental_results(geo_test, period, holdout_percentage):
 
 
 
-def print_locations(geo_test, holdout_percentage=None, num_locations=None):
+def print_locations(geo_test, treatment_percentage=None, num_locations=None):
     """
     Extracts treatment and control locations based on holdout percentage or number of locations.
 
@@ -664,6 +669,8 @@ def print_locations(geo_test, holdout_percentage=None, num_locations=None):
     Returns:
         None: Prints the treatment and control locations.
     """
+    holdout_percentage = 100 - treatment_percentage
+
     results_by_size = geo_test['simulation_results']
     treatment_locations = []
     control_locations = []
@@ -709,13 +716,13 @@ def plot_impact_evaluation_streamlit(results_evaluation, df):
     lower_bound = y_treatment - 1.96 * std_error_y_real
 
     mean_point_difference = np.mean(point_difference_treatment)
-    std_dev_point_difference = np.std(point_difference_treatment)
+    std_dev_point_difference = np.std(point_difference_treatment,ddof=1)
     std_error_point_difference = std_dev_point_difference / np.sqrt(len(y_treatment))
     upper_bound_pd = point_difference_treatment + 1.96 * std_error_point_difference
     lower_bound_pd = point_difference_treatment - 1.96 * std_error_point_difference
 
     mean_cumulative_effect = np.mean(cumulative_effect_treatment)
-    std_dev_cumulative_effect = np.std(cumulative_effect_treatment)
+    std_dev_cumulative_effect = np.std(cumulative_effect_treatment,ddof=1)
     std_error_cumulative_effect = std_dev_cumulative_effect / np.sqrt(len(y_treatment))
     upper_bound_ce = cumulative_effect_treatment + 1.96 * std_error_cumulative_effect
     lower_bound_ce = cumulative_effect_treatment - 1.96 * std_error_cumulative_effect
@@ -892,14 +899,14 @@ def plot_impact_evaluation(results_evaluation):
 
 
     mean_point_difference = np.mean(point_difference_treatment)
-    std_dev_point_difference = np.std(point_difference_treatment)
+    std_dev_point_difference = np.std(point_difference_treatment,ddof=1)
     std_error_point_difference = std_dev_point_difference / np.sqrt(len(y_treatment))
     upper_bound_pd = point_difference_treatment + 1.96 * std_error_point_difference
     lower_bound_pd = point_difference_treatment - 1.96 * std_error_point_difference
 
 
     mean_cumulative_effect = np.mean(cumulative_effect_treatment)
-    std_dev_cumulative_effect = np.std(cumulative_effect_treatment)
+    std_dev_cumulative_effect = np.std(cumulative_effect_treatment,ddof=1)
     std_error_cumulative_effect = std_dev_cumulative_effect / np.sqrt(len(y_treatment))
     upper_bound_ce = cumulative_effect_treatment + 1.96 * std_error_cumulative_effect
     lower_bound_ce = cumulative_effect_treatment - 1.96 * std_error_cumulative_effect
@@ -1066,7 +1073,7 @@ def plot_impact_graphs_evaluation(results_evaluation):
     fig, att, incremental = plot_impact_evaluation(results_evaluation)
     return fig
 
-def print_incremental_results_evaluation(results_evaluation,metric_mmm):
+def print_incremental_results_evaluation(results_evaluation,metric):
     spend = results_evaluation['spend']
     
     fig, att, incremental = plot_impact_evaluation(results_evaluation)
@@ -1076,7 +1083,7 @@ def print_incremental_results_evaluation(results_evaluation,metric_mmm):
     print("=" * 30)
     print(f"ATT: {round(att,2)}")
     print(f"Lift total: {round(incremental,2)}")
-    print(f"{metric_mmm}: {round(incremental/spend,2)}")
+    print(f"{metric}: {round(incremental/spend,2)}")
 
     print("=" * 30)
 
@@ -1085,38 +1092,39 @@ def plot_permutation_test(results_evaluation, Significance_level=0.1):
     Plot the permutation test results using Plotly with KDE density curve.
     
     Args:
-        null_conformities (array): Distribution of null conformities.
-        observed_conformity (float): Observed conformity score.
+        null_stats (array): Distribution of null stats.
+        observed_stat (float): Observed stat score.
         Significance_level (float): Significance level (default: 0.1).
     
     Returns:
         fig: Plotly figure.
     """
 
-    null_conformities = results_evaluation['null_conformities']
-    observed_conformity = results_evaluation['observed_conformity']
+    null_stats = results_evaluation['null_stats']
+    observed_stat = results_evaluation['observed_stat']
     
 
-    upper_bound = np.percentile(null_conformities, 100 * (1 - (Significance_level / 2)))
+    upper_bound = np.percentile(null_stats, 100 * (1 - (Significance_level / 2)))
+    lower_bound = np.percentile(null_stats, 100 * (Significance_level / 2))
     
 
 
-    kde = stats.gaussian_kde(null_conformities)
-    x_kde = np.linspace(min(null_conformities), max(null_conformities), 300)
+    kde = stats.gaussian_kde(null_stats)
+    x_kde = np.linspace(min(null_stats), max(null_stats), 300)
     y_kde = kde(x_kde)
 
 
-    max_hist_y = max(kde(null_conformities))  
+    max_hist_y = max(kde(null_stats))  
 
 
     fig = go.Figure()
 
 
     fig.add_trace(go.Histogram(
-        x=null_conformities,
+        x=null_stats,
         nbinsx=30,
         histnorm='probability density',
-        name="Null Conformities",
+        name="Null Stats",
         marker=dict(color=blue,line=dict(color="black",width=1)),
         opacity=0.6
     ))
@@ -1135,10 +1143,10 @@ def plot_permutation_test(results_evaluation, Significance_level=0.1):
 
 
     fig.add_trace(go.Scatter(
-        x=[observed_conformity, observed_conformity],
+        x=[observed_stat, observed_stat],
         y=[0, max_hist_y],  
         mode="lines",
-        name="Observed Conformity",
+        name="Observed Stat",
         line=dict(color="black", dash="dash", width=1.5)
     ))
 
@@ -1151,13 +1159,22 @@ def plot_permutation_test(results_evaluation, Significance_level=0.1):
 
 
     fig.add_trace(go.Scatter(
-        x=[upper_bound, max(null_conformities), max(null_conformities), upper_bound],
+        x=[upper_bound, max(null_stats), max(null_stats), upper_bound],
 
         y=[0, 0, max_hist_y, max_hist_y],  
         fill="toself",
         fillcolor=hex_to_rgba(purple_light, 0.3),  
         line=dict(color="rgba(255,0,0,0)"),
-        name="Significance Zone"
+        name="Upper Significance Zone"
+    ))
+
+    fig.add_trace(go.Scatter(
+        x=[min(null_stats), lower_bound, lower_bound, min(null_stats), min(null_stats)],
+        y=[0, 0, max_hist_y, max_hist_y, 0],  
+        fill="toself",
+        fillcolor=hex_to_rgba(purple_light, 0.3),  
+        line=dict(color="rgba(255,0,0,0)"),
+        name="Lower Significance Zone"
     ))
 
     fig.update_layout(
@@ -1330,12 +1347,18 @@ def plot_impact_report(geo_test, period, holdout_percentage):
     std_error_cumulative = std_dev_cumulative / np.sqrt(len(efecto_acumulativo[star_treatment:]))
     upper_bound_cumulative = efecto_acumulativo[star_treatment:] + 1.96 * std_error_cumulative
     lower_bound_cumulative = efecto_acumulativo[star_treatment:] - 1.96 * std_error_cumulative
-
+    
+    # Absolute values (comoarison)
+    pre_treatment = serie_tratamiento[star_treatment-period:star_treatment]
+    pre_counterfactual = y_real[star_treatment-period:star_treatment]
+    post_treatment = serie_tratamiento[star_treatment:]
+    post_counterfactual = y_real[star_treatment:]
 
     att = np.mean(serie_tratamiento[star_treatment:] - y_real[star_treatment:])
     incremental = np.sum(serie_tratamiento[star_treatment:] - y_real[star_treatment:])
 
     fig, axes = plt.subplots(3, 1, figsize=(15, 9.5), sharex=True)
+    formatter = ticker.EngFormatter(places=0)
 
 
     # Panel 1: Data vs Counterfactual Prediction
@@ -1344,6 +1367,7 @@ def plot_impact_report(geo_test, period, holdout_percentage):
     axes[0].axvline(x=star_treatment, color='black', linestyle='--', linewidth=1.5)
     axes[0].fill_between(range(len(y_real)-period, len(y_real)), lower_bound, upper_bound, color='gray', alpha=0.2)
     axes[0].set_title(f'Holdout: {holdout_percentage:.2f}% - MDE: {target_mde:.2f}')
+    axes[0].yaxis.set_major_formatter(formatter)
     axes[0].yaxis.set_label_position('right')
     axes[0].set_ylabel('Original')
     axes[0].legend()
@@ -1352,10 +1376,10 @@ def plot_impact_report(geo_test, period, holdout_percentage):
     # Panel 2: Point Difference 
     axes[1].plot(diferencia_puntual, label='Point Difference (Causal Effect)', color=green, linewidth=1)
     axes[1].fill_between(range(len(y_real)-period, len(y_real)), lower_bound_effect, upper_bound_effect, color='gray', alpha=0.2)
-
     axes[1].plot([0, len(y_real)], [0, 0], color='gray', linestyle='--', linewidth=2)
     axes[1].axvline(x=star_treatment, color='black', linestyle='--', linewidth=1.5)
     axes[1].set_ylabel('Point Difference')
+    axes[1].yaxis.set_major_formatter(formatter)
     axes[1].yaxis.set_label_position('right')
     axes[1].legend()
     axes[1].grid(True)
@@ -1365,6 +1389,7 @@ def plot_impact_report(geo_test, period, holdout_percentage):
     axes[2].fill_between(range(len(y_real)-period, len(y_real)), lower_bound_cumulative, upper_bound_cumulative, color='gray', alpha=0.2)
     axes[2].axvline(x=star_treatment, color='black', linestyle='--', linewidth=1.5)
     axes[2].set_xlabel('Days')
+    axes[2].yaxis.set_major_formatter(formatter)
     axes[2].yaxis.set_label_position('right')
     axes[2].set_ylabel('Cumulative Effect')
     axes[2].legend()
@@ -1372,7 +1397,7 @@ def plot_impact_report(geo_test, period, holdout_percentage):
 
     plt.tight_layout()
     
-    return fig, round(att,2), round(incremental,2)
+    return pre_treatment,pre_counterfactual,post_treatment,post_counterfactual,fig, round(att,2), round(incremental,2)
 
 
 
@@ -1407,18 +1432,23 @@ def plot_impact_evaluation_report(results_evaluation):
         lower_bound = y_treatment - 1.96 * std_error_y_real
 
         mean_point_difference = np.mean(point_difference_treatment)
-        std_dev_point_difference = np.std(point_difference_treatment)
+        std_dev_point_difference = np.std(point_difference_treatment,ddof=1)
         std_error_point_difference = std_dev_point_difference / np.sqrt(len(y_treatment))
         upper_bound_pd = point_difference_treatment + 1.96 * std_error_point_difference
         lower_bound_pd = point_difference_treatment - 1.96 * std_error_point_difference
 
 
         mean_cumulative_effect = np.mean(cumulative_effect_treatment)
-        std_dev_cumulative_effect = np.std(cumulative_effect_treatment)
+        std_dev_cumulative_effect = np.std(cumulative_effect_treatment,ddof=1)
         std_error_cumulative_effect = std_dev_cumulative_effect / np.sqrt(len(y_treatment))
         upper_bound_ce = cumulative_effect_treatment + 1.96 * std_error_cumulative_effect
         lower_bound_ce = cumulative_effect_treatment - 1.96 * std_error_cumulative_effect
 
+         # Absolute values (comoarison)
+        pre_treatment = treatment[star_treatment-period:star_treatment]
+        pre_counterfactual = counterfactual[star_treatment-period:star_treatment]
+        post_treatment = treatment[star_treatment:]
+        post_counterfactual = counterfactual[star_treatment:]
 
         att = np.mean(treatment[star_treatment:] - counterfactual[star_treatment:])
         incremental = np.sum(treatment[star_treatment:] - counterfactual[star_treatment:])
@@ -1430,7 +1460,7 @@ def plot_impact_evaluation_report(results_evaluation):
         # Panel 1: Observed data vs counterfactual prediction
         axes[0].plot(counterfactual, label='Control Group', linestyle='--', color=black_secondary,linewidth=1)
         axes[0].plot(treatment, label='Treatment Group', linestyle='-', color=green,linewidth=1)
-        axes[0].axvline(x=star_treatment, color='black', linestyle='--', linewidth=1.5)
+        axes[0].axvline(x=star_treatment, color='black', linestyle='--', linewidth=1)
         axes[0].fill_between(range((star_treatment), len(counterfactual)),  lower_bound, upper_bound, color='gray', alpha=0.2)
         axes[0].yaxis.set_label_position('right')
         axes[0].set_ylabel('Original')
@@ -1441,7 +1471,7 @@ def plot_impact_evaluation_report(results_evaluation):
         axes[1].plot(point_difference, label='Point Difference (Causal Effect)', color=green, linewidth=1)
         axes[1].fill_between(range((star_treatment), len(counterfactual)), lower_bound_pd, upper_bound_pd, color='gray', alpha=0.2)
         axes[1].plot([0, len(counterfactual)], [0, 0], color='gray', linestyle='--', linewidth=2)
-        axes[1].axvline(x=star_treatment, color='black', linestyle='--', linewidth=1.5)
+        axes[1].axvline(x=star_treatment, color='black', linestyle='--', linewidth=1)
         axes[1].set_ylabel('Point Difference')
         axes[1].yaxis.set_label_position('right')
         axes[1].legend()
@@ -1452,7 +1482,7 @@ def plot_impact_evaluation_report(results_evaluation):
         # Panel 3: Cumulative effect
         axes[2].plot(cumulative_effect, label='Cumulative Effect', color=green, linewidth=1)
         axes[2].fill_between(range((star_treatment), len(counterfactual)), lower_bound_ce, upper_bound_ce, color='gray', alpha=0.2)
-        axes[2].axvline(x=star_treatment, color='black', linestyle='--', linewidth=1.5)
+        axes[2].axvline(x=star_treatment, color='black', linestyle='--', linewidth=1)
         axes[2].set_xlabel('Days')
         axes[2].yaxis.set_label_position('right')
         axes[2].set_ylabel('Cumulative Effect')
@@ -1460,7 +1490,7 @@ def plot_impact_evaluation_report(results_evaluation):
         axes[2].grid(True)
 
         plt.tight_layout()
-        return fig,round(att,2), round(incremental,2)
+        return fig,pre_treatment,pre_counterfactual,post_treatment,post_counterfactual,round(att,2), round(incremental,2)
 
 def plot_permutation_test_report(results_evaluation, Significance_level=0.1):
     
@@ -1468,27 +1498,25 @@ def plot_permutation_test_report(results_evaluation, Significance_level=0.1):
     Plot the permutation test results
     
     Args:
-        results_evaluation (dict): Dictionary with results including predictions, treatment, period, and conformity scores
+        results_evaluation (dict): Dictionary with results including predictions, treatment, period, and stats scores
         Significance_level (float): Significance level for the permutation test
     """
 
-    null_conformities = results_evaluation['null_conformities']
-    observed_conformity = results_evaluation['observed_conformity']
+    null_stats = results_evaluation['null_stats']
+    observed_stat = results_evaluation['observed_stat']
 
 
     sns.set_theme(style="whitegrid")
 
     fig, ax = plt.subplots(figsize=(10, 6))
-    sns.histplot(null_conformities, bins=30, kde=True, color=blue, alpha=0.6, label='Null Conformities', ax=ax)
-    ax.axvline(observed_conformity, color='black', linestyle='--', linewidth=1.5, label='Observed Conformity')
-    lower_bound = np.percentile(null_conformities, 100 * (Significance_level / 2))
-    upper_bound = np.percentile(null_conformities, 100 * (1 - (Significance_level / 2)))
-    ax.axvspan(min(null_conformities), lower_bound, color=purple_light, alpha=0.2, label='Significance Zone (Lower)')
-    ax.axvspan(upper_bound, max(null_conformities), color=purple_light, alpha=0.2, label='Significance Zone (Upper)')
-
-    ax.set_xlabel("Conformity Score", fontsize=12)
+    sns.histplot(null_stats, bins=30, kde=True, color=blue, alpha=0.6, label='Difference', ax=ax)
+    ax.axvline(observed_stat, color='black', linestyle='--', linewidth=1.5, label='Observed Difference')
+    lower_bound = np.percentile(null_stats, 100 * (Significance_level / 2))
+    upper_bound = np.percentile(null_stats, 100 * (1 - (Significance_level / 2)))
+    ax.axvspan(min(null_stats), lower_bound, color=purple_light, alpha=0.2, label='Significance Zone (Lower)')
+    ax.axvspan(upper_bound, max(null_stats), color=purple_light, alpha=0.2, label='Significance Zone (Upper)')
+    ax.set_xlabel("Difference", fontsize=12)
     ax.set_ylabel("Frequency", fontsize=12)
-    ax.set_title("Permutation Test", fontsize=14)
     ax.legend()
 
     return fig 
