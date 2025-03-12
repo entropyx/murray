@@ -344,21 +344,14 @@ def BetterGroups(similarity_matrix, excluded_locations, data, correlation_matrix
     results = []
     
     
-    with concurrent.futures.ProcessPoolExecutor(max_workers=2) as executor:
-        futures = executor.map(
-            evaluate_group,
-            possible_groups,
-            [data] * total_groups,
-            [total_Y] * total_groups,
-            [correlation_matrix] * total_groups,
-            [min_holdout] * total_groups,
-            [df_pivot] * total_groups,
-            chunksize=5
-        )
-        for idx, result in enumerate(futures):
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        results = []
+        for idx, result in enumerate(executor.map(evaluate_group, possible_groups, [data] * total_groups, [total_Y] * total_groups, [correlation_matrix] * total_groups, [min_holdout] * total_groups, [df_pivot] * total_groups)):
             results.append(result)
             if progress_updater:
                 progress_updater.progress((idx + 1) / total_groups)
+            
+            
             if status_updater:
                 status_updater.text(f"Finding the best groups: {int((idx + 1) / total_groups * 100)}% complete ⏳")
     
