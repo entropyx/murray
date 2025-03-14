@@ -53,8 +53,8 @@ def select_treatments(similarity_matrix, treatment_size, excluded_locations):
     max_combinations = comb(n, r)
 
     n_combinations = max_combinations
-    if n_combinations > 500:
-        n_combinations = 500
+    if n_combinations > 1000:
+        n_combinations = 1000
 
 
     combinations = set()
@@ -243,9 +243,66 @@ def smape(A, F):
     denominator = np.where(denominator == 0, 1e-8, denominator)
     return 100 / len(A) * np.sum(2 * np.abs(F - A) / denominator)
 
-def evaluate_group(treatment_group, data, total_Y, correlation_matrix, min_holdout, df_pivot):
+def prepare_stacked_data(treated_unit, control_units, 
+                         df_pivot_outcome, covariate_pivots, 
+                         pre_period_condition):
+    """
+    Prepara los datos apilando la serie de outcome y los resúmenes de covariables.
+
+    Args:
+        treated_unit (str): Identificador de la unidad tratada.
+        control_units (list): Lista de identificadores de las unidades donantes.
+        df_pivot_outcome (pd.DataFrame): Pivot table de la métrica objetivo (e.g. ventas).
+        covariate_pivots (dict): Diccionario donde cada clave es el nombre de una covariable y el valor es su pivot table.
+            Ejemplo: {'sessions': df_pivot_sessions, 'carts': df_pivot_carts}
+        pre_period_condition (pd.Series o filtro): Condición para seleccionar el periodo pre-intervención.
+
+    Returns:
+        X_stacked (np.ndarray): Matriz en la que cada columna es la combinación apilada del outcome y covariables para un donante.
+        y_stacked (np.ndarray): Vector de la unidad tratada (outcome y covariables apiladas).
+    """
+    # Para la unidad tratada:
+    treated_outcome = df_pivot_outcome.loc[pre_period_condition, treated_unit].values.flatten()
+    # Por cada covariable, calculamos un resumen (por ejemplo, el promedio pre-intervención)
+    treated_cov = np.array([
+        pivot.loc[pre_period_condition, treated_unit].mean() for pivot in covariate_pivots.values()
+    ])
+    # Apilamos: primero la serie de outcome, luego los resúmenes de covariables
+    y_stacked = np.concatenate([treated_outcome, treated_cov])
+    
+    # Para los donantes:
+    donor_vectors = []
+    for donor in control_units:
+        donor_outcome = df_pivot_outcome.loc[pre_period_condition, donor].values.flatten()
+        donor_cov = np.array([
+            pivot.loc[pre_period_condition, donor].mean() for pivot in covariate_pivots.values()
+        ])
+        donor_vector = np.concatenate([donor_outcome, donor_cov])
+        donor_vectors.append(donor_vector)
+        
+    # Cada columna corresponde a un donante
+    X_stacked = np.column_stack(donor_vectors)
+    
+    return X_stacked, y_stacked
+
+
+def evaluate_group(treatment_group, data, total_Y, correlation_matrix, min_holdout, 
+                   df_pivot_outcome, df_pivot_sessions, df_pivot_carts):
     """
     Evaluates a treatment group and returns error metrics.
+    
+    Args:
+        treatment_group (list): Lista con la unidad tratada, por ejemplo, ['treated'].
+        data (pd.DataFrame): DataFrame original con la métrica 'Y'.
+        total_Y (float): Total de Y en los datos.
+        correlation_matrix (pd.DataFrame): Matriz de correlaciones.
+        min_holdout (float): Porcentaje mínimo para considerar la evaluación.
+        df_pivot_outcome (pd.DataFrame): Pivot table de la métrica objetivo (e.g., ventas).
+        df_pivot_sessions (pd.DataFrame): Pivot table de la covariable 'sessions'.
+        df_pivot_carts (pd.DataFrame): Pivot table de la covariable 'carts'.
+    
+    Returns:
+        tuple: (treatment_group, control_group, MAPE, SMAPE, l2imbalance, outcome_true, outcome_pred, weights)
     """
     treatment_Y = data[data['location'].isin(treatment_group)]['Y'].sum()
     holdout_percentage = (1 - (treatment_Y / total_Y)) * 100
@@ -260,47 +317,81 @@ def evaluate_group(treatment_group, data, total_Y, correlation_matrix, min_holdo
     )
 
     if not control_group:
-        return (treatment_group, [], float('inf'), float('inf'), None, None, None)
+        return (treatment_group, [], float('inf'), float('inf'), None, None, None, None)
 
-   
-    X = df_pivot[control_group].values  
-    y = df_pivot[treatment_group].sum(axis=1).values  
+    # Asumimos que treatment_group es una lista con una única unidad tratada:
+    treated_unit = treatment_group[0]
+    control_units = control_group
 
-    time_index = np.arange(len(df_pivot))
+    # Definir la condición del periodo pre-intervención.
+    # Se asume que df_pivot_outcome tiene un índice datetime.
+    pre_period_condition = df_pivot_outcome.index < '2020-01-01'
 
+    # Preparar el diccionario de pivot tables para las covariables:
+    covariate_pivots = {
+        'sessions': df_pivot_sessions,
+        'carts': df_pivot_carts
+    }
+
+    # Preparar los datos apilados: cada columna en X_stacked es (serie temporal pre-intervención + resumen de covariables)
+    X_stacked, y_stacked = prepare_stacked_data(
+        treated_unit=treated_unit,
+        control_units=control_units,
+        df_pivot_outcome=df_pivot_outcome,
+        covariate_pivots=covariate_pivots,
+        pre_period_condition=pre_period_condition
+    )
+
+    # Definir T: número de períodos de la serie de outcome pre-intervención
+    treated_outcome = df_pivot_outcome.loc[pre_period_condition, treated_unit].values.flatten()
+    T = len(treated_outcome)
+    num_covariates = len(covariate_pivots)
+    total_length = T + num_covariates  # Longitud del vector apilado
+
+    # Definir el índice de tiempo para el vector apilado
+    time_index = np.arange(total_length)
+
+    # Escalado de datos
     scaler_x = MinMaxScaler()
     scaler_y = MinMaxScaler()
+    X_scaled = scaler_x.fit_transform(X_stacked)
+    y_scaled = scaler_y.fit_transform(y_stacked.reshape(-1, 1))
 
-    X_scaled = scaler_x.fit_transform(X)
-    y_scaled = scaler_y.fit_transform(y.reshape(-1, 1))
-
-    split_index = int(len(X_scaled) * 0.8)
-
-    X_train, X_test = X_scaled[:split_index], X_scaled[split_index:]
-    y_train, y_test = y_scaled[:split_index], y_scaled[split_index:]
-
-    time_train = time_index[:split_index]
-    time_test  = time_index[split_index:]
-
+    # Para este ejemplo, ajustaremos el modelo sobre todo el vector apilado pre-intervención.
     model = SyntheticControl(
-        use_ridge_adjustment=True,  
-        ridge_alpha=1.0             
+        use_ridge_adjustment=True,
+        ridge_alpha=1.0
     )
-    model.fit(X_train, y_train, time_train=time_train)
+    model.fit(X_scaled, y_scaled, time_train=time_index)
 
-    counterfactual_test = model.predict(X_test, time_index=time_test)
-    counterfactual_full = model.predict(X_scaled, time_index=time_index).reshape(-1,1)
-    counterfactual_full_original = scaler_y.inverse_transform(counterfactual_full)
-    y_original = scaler_y.inverse_transform(y_scaled)
-    counterfactual_full_original = counterfactual_full_original.flatten()
-    y_original = y_original.flatten()
+    # Obtener las predicciones completas (vector apilado predicho)
+    counterfactual_full = model.predict(X_scaled, time_index=time_index).reshape(-1, 1)
+    counterfactual_full_original = scaler_y.inverse_transform(counterfactual_full).flatten()
+    y_original = scaler_y.inverse_transform(y_scaled).flatten()
 
-    weights = model.w_
+    # Extraer la parte correspondiente a la serie de outcome (primeros T elementos)
+    outcome_pred = counterfactual_full_original[:T]
+    outcome_true = y_original[:T]
 
-    MAPE = np.mean(np.abs((y_original - counterfactual_full_original) / (y_original + 1e-10))) * 100
-    SMAPE_value = smape(y_original, counterfactual_full_original)
+    # Definir un split para evaluar la parte temporal, por ejemplo, usando 80% de T para entrenamiento
+    split_index = int(T * 0.8)
 
-    return (treatment_group, control_group, MAPE, SMAPE_value, y_original, counterfactual_full_original, weights)
+    # Cálculo de MAPE y SMAPE sobre la parte de la serie (excluyendo el resumen de covariables)
+    MAPE = np.mean(np.abs((outcome_true[split_index:] - outcome_pred[split_index:]) / (outcome_true[split_index:] + 1e-10))) * 100
+    SMAPE = smape(outcome_true[split_index:], outcome_pred[split_index:])
+
+    # Cálculo de l2imbalance basado en la suma de la parte outcome
+    treatment_sum = np.sum(outcome_true[split_index:])
+    prediction_sum = np.sum(outcome_pred[split_index:])
+    total_ideal = 2 * treatment_sum  # Suma ideal: outcome_true + outcome_true
+
+    p_treatment = treatment_sum / total_ideal  # Debería ser 0.5
+    p_prediction = prediction_sum / total_ideal
+
+    l2imbalance = np.sqrt((p_treatment - 0.5)**2 + (p_prediction - 0.5)**2)
+
+    return (treatment_group, control_group, MAPE, SMAPE, l2imbalance, outcome_true, outcome_pred, model.w_)
+
 
 def BetterGroups(similarity_matrix, excluded_locations, data, correlation_matrix, maximum_treatment_percentage=0.50, progress_updater=None, status_updater=None):
     """
@@ -359,8 +450,8 @@ def BetterGroups(similarity_matrix, excluded_locations, data, correlation_matrix
     for size in range(min_elements_in_treatment, max_group_size + 1):
         best_results = [result for result in results if result is not None and len(result[0]) == size]
         if best_results:
-            best_result = min(best_results, key=lambda x: (x[2], -x[3]))
-            best_treatment_group, best_control_group, best_MAPE, best_SMAPE, y, predictions, weights = best_result
+            best_result = min(best_results, key=lambda x: (x[4], x[1], x[2]))
+            best_treatment_group, best_control_group, best_MAPE, best_SMAPE, best_l2imbalance, y, predictions, weights = best_result
             treatment_Y = data[data['location'].isin(best_treatment_group)]['Y'].sum()
             holdout_percentage = ((total_Y - treatment_Y) / total_Y) * 100
 
@@ -369,12 +460,19 @@ def BetterGroups(similarity_matrix, excluded_locations, data, correlation_matrix
                 'Control Group': best_control_group,
                 'MAPE': best_MAPE,
                 'SMAPE': best_SMAPE,
+                'l2imbalance': best_l2imbalance,
                 'Actual Target Metric (y)': y,
                 'Predictions': predictions,
                 'Weights': weights,
                 'Holdout Percentage': holdout_percentage,
             }
-
+    for size, result in results_by_size.items():
+        print(f"Size: {size}")
+        print(f"MAPE: {result['MAPE']}")
+        print(f"SMAPE: {result['SMAPE']}")
+        print(f"l2imbalance: {result['l2imbalance']}")
+        
+        
     return results_by_size
 
 
@@ -581,6 +679,7 @@ def transform_results_data(results_by_size):
             'Control Group': ', '.join(data['Control Group']),
             'MAPE': float(data['MAPE']),
             'SMAPE': float(data['SMAPE']),
+            'l2imbalance': float(data['l2imbalance']),
             'Actual Target Metric (y)': data['Actual Target Metric (y)'].tolist(),
             'Predictions': data['Predictions'].tolist(),
             'Weights': data['Weights'].tolist(),

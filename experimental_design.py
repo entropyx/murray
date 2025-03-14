@@ -768,7 +768,7 @@ if file is not None:
                     'displaylogo': False
                 })
                 
-
+                st.plotly_chart(plot_metrics(st.session_state.results))
 
 
                 selected_point = event.selection

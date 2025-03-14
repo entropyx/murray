@@ -131,7 +131,8 @@ def plot_metrics(geo_test):
     metrics = {
         'Size': [],
         'MAPE': [],
-        'SMAPE': []
+        'SMAPE': [],
+        'l2imbalance': []
     }
 
 
@@ -139,17 +140,16 @@ def plot_metrics(geo_test):
 
 
     for size, result in results_by_size.items():
-        y = result['Actual Target Metric (y)']
-        predictions = result['Predictions']
-
-        mape = mean_absolute_percentage_error(y, predictions)
-        smape = 100 / len(y) * np.sum(2 * np.abs(predictions - y) / (np.abs(y) + np.abs(predictions)))
+        mape = result['MAPE']
+        smape = result['SMAPE']
+        l2imbalance = result['l2imbalance']
 
         metrics['Size'].append(size)
         metrics['MAPE'].append(mape)
         metrics['SMAPE'].append(smape)
+        metrics['l2imbalance'].append(l2imbalance)
 
-    fig = make_subplots(rows=1, cols=2, subplot_titles=["MAPE by Group Size", "SMAPE by Group Size"])
+    fig = make_subplots(rows=1, cols=3, subplot_titles=["MAPE by Group Size", "SMAPE by Group Size", "l2imbalance by Group Size"])
 
 
     fig.add_trace(go.Scatter(
@@ -165,6 +165,13 @@ def plot_metrics(geo_test):
         mode='lines+markers',
         name='Value',
         marker=dict(color=black_secondary)), row=1, col=2)
+    
+    fig.add_trace(go.Scatter(
+        x=metrics['Size'],
+        y=metrics['l2imbalance'],
+        mode='lines+markers',
+        name='Value',
+        marker=dict(color=purple_dark)), row=1, col=3)
 
     #fig.update_layout(
     #    template="plotly_white",
@@ -173,11 +180,11 @@ def plot_metrics(geo_test):
 
     fig.update_xaxes(title_text="Group Size", row=1, col=1)
     fig.update_xaxes(title_text="Group Size", row=1, col=2)
-
+    fig.update_xaxes(title_text="Group Size", row=1, col=3)
 
     fig.update_yaxes(title_text="Value", row=1, col=1)
     fig.update_yaxes(title_text="Value", row=1, col=2)
-
+    fig.update_yaxes(title_text="Value", row=1, col=3)
 
     return fig
 
@@ -231,59 +238,75 @@ def plot_counterfactuals(geo_test):
 
 
 
-def plot_mde_results(results_by_size, sensitivity_results, periods):
+def plot_mde_results(results_by_size, sensitivity_results, periods, alpha=0.5):
     """
-    Generates an interactive heatmap for the MDE (Minimum Detectable Effect) values using Plotly.
-    Compatible with Streamlit.
+    Genera un heatmap interactivo usando Plotly para mostrar un score combinado.
+    El score se calcula como:
+       Score = MDE * (1 + alpha * (MAPE / 100))
+    donde el MDE se extrae de sensitivity_results (por período) y el MAPE de results_by_size (a nivel global por treatment size).
     """
-
+    
+    # Función para combinar MDE y MAPE
+    def combined_score(mde, mape, alpha=0.5):
+        if mde is None or np.isnan(mde) or mape is None or np.isnan(mape):
+            return np.nan
+        return mde * (1 + alpha * (mape / 100.0))
+    
+    # Extraer Holdout Percentage desde results_by_size para ordenar
     holdout_by_location = {
         size: data['Holdout Percentage']
         for size, data in results_by_size.items()
     }
-
+    
+    # Ordenamos por holdout (o el criterio que prefieras)
     sorted_sizes = sorted(holdout_by_location.keys(), key=lambda x: holdout_by_location[x])
-
+    
+    # Construir DataFrame para el heatmap con el score combinado
     heatmap_data = pd.DataFrame()
     for size in sorted_sizes:
         row = []
-        period_results = sensitivity_results.get(size, {})
+        # Extraer el MAPE global para este tamaño
+        mape_value = results_by_size[size].get('l2imbalance', None)
         for period in periods:
-            mde = period_results.get(period, {}).get('MDE', None)
-            row.append(mde if mde is not None else np.nan)
+            # Extraer el MDE para este período desde sensitivity_results
+            mde_value = sensitivity_results.get(size, {}).get(period, {}).get('MDE', None)
+            score_value = combined_score(mde_value, mape_value, alpha=alpha)
+            row.append(score_value if score_value is not None else np.nan)
         heatmap_data[size] = row
 
+    # Validaciones sobre los valores NaN en el DataFrame
     total_values = heatmap_data.size
     nan_values = heatmap_data.isna().sum().sum()
     nan_ratio = nan_values / total_values if total_values > 0 else 1
 
     if nan_ratio == 1:  
-        raise ValueError("No satisfactory results found. The heatmap does not contain values (MDE) with the entered data.")
+        raise ValueError("No se encontraron resultados satisfactorios. El heatmap no contiene valores (score) con los datos ingresados.")
     elif nan_ratio > 0.8:  
-        raise ValueError("The analysis shows few satisfactory results. You can try modifying the parameters or entering a different target column.")
+        raise ValueError("El análisis muestra pocos resultados satisfactorios. Intenta modificar los parámetros o ingresar una columna objetivo diferente.")
 
+    # Transponer para que las filas representen el tamaño (tratamiento) y las columnas el período
     heatmap_data = heatmap_data.T
     heatmap_data.columns = [f"Day-{i}" for i in periods]
     heatmap_data.index = [f"{holdout_by_location.get(size, 0):.2f}%" for size in sorted_sizes]
-    
     heatmap_data.index.name = "Treatment percentage (%)"
 
     y_labels = heatmap_data.index.tolist()
     x_labels = heatmap_data.columns.tolist()
+    # Puedes ajustar el formato de las etiquetas del eje y si lo deseas (por ejemplo, 100 - porcentaje)
     y_axis = [f"{100 - float(value.strip('%')):.2f}%" for value in y_labels]
     z_values = heatmap_data.values.tolist()
-    annotations = [[f"{val:.2%}" if not np.isnan(val) else "" for val in row] for row in z_values]
+    annotations = [[f"{val:.2f}" if not np.isnan(val) else "" for val in row] for row in z_values]
 
     fig = go.Figure()
+    # Definir escala de colores (por ejemplo, verde para valores bajos y rojo para altos)
     custom_colorscale = [[0, heatmap_green], [1, heatmap_red]]
 
-    
     fig.add_trace(go.Heatmap(
         z=z_values,
         x=x_labels,
         y=y_labels,
         colorscale=custom_colorscale,
-        colorbar=dict(title="MDE (%)"),
+        colorbar=dict(title="Score (MDE penalizado)", ticks="outside"),
         colorbar_tickfont=dict(size=12, color='black'),
         hoverongaps=True,
         text=annotations,
@@ -294,7 +317,6 @@ def plot_mde_results(results_by_size, sensitivity_results, periods):
         xgap=1,
         ygap=1
     ))
-
 
     scatter_x, scatter_y = np.meshgrid(range(len(x_labels)), range(len(y_labels)))
     scatter_x = scatter_x.flatten()
@@ -308,7 +330,6 @@ def plot_mde_results(results_by_size, sensitivity_results, periods):
         hoverinfo="none"
     ))
 
-    
     fig.update_layout(
         margin=dict(l=90, r=10, t=20, b=75),
         dragmode=False,
@@ -320,7 +341,6 @@ def plot_mde_results(results_by_size, sensitivity_results, periods):
                    ticktext=x_labels,
                    showgrid=True,
                    tickfont=dict(size=12, color='black')),
-
         yaxis=dict(title="Treatment percentage (%)",
                    title_font=dict(size=16, color='black'),
                    tickmode="array",
@@ -331,7 +351,7 @@ def plot_mde_results(results_by_size, sensitivity_results, periods):
                    tickfont=dict(size=12, color='black'))
     )
 
-
+    # Agregar custom data para el hover, si se desea mostrar el tamaño de tratamiento
     custom_data = []
     for s in sorted_sizes:
         custom_data.append([s] * len(periods))
@@ -341,6 +361,7 @@ def plot_mde_results(results_by_size, sensitivity_results, periods):
     fig.data[0].hoverinfo = "skip"
 
     return fig
+
 
 
 
