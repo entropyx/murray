@@ -10,6 +10,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
 import matplotlib.ticker as ticker 
+from millify import millify
 
 
 #Color palette
@@ -33,8 +34,8 @@ def generate_gradient_palette(start_color, end_color, num_colors):
     cmap = mcolors.LinearSegmentedColormap.from_list("custom_gradient", [start_color, end_color], N=num_colors)
     return [mcolors.to_hex(cmap(i/num_colors)) for i in range(num_colors)]
 
-def plot_geodata(merged_data,custom_colors=custom_colors):
 
+def plot_geodata(merged_data,custom_colors=custom_colors):
     """
     Plots a time-series line chart of conversions (Y) over time, grouped by location.
 
@@ -45,12 +46,19 @@ def plot_geodata(merged_data,custom_colors=custom_colors):
             - 'Y': Conversion value
             - 'location': Categorical column to group and differentiate lines by color
     """
-
-
     
     fig = go.Figure()
 
-
+    
+    y_min = merged_data['Y'].min()
+    y_max = merged_data['Y'].max()
+    
+    
+    locator = ticker.MaxNLocator(nbins=6)  # Adjust nbins as needed
+    ticks = locator.tick_values(y_min, y_max)
+    
+    
+    tick_texts = [millify(x, precision=1) for x in ticks]
 
     for i, (location, data) in enumerate(merged_data.groupby('location')):
         fig.add_trace(go.Scatter(
@@ -58,12 +66,10 @@ def plot_geodata(merged_data,custom_colors=custom_colors):
             y=data['Y'],
             mode='lines',
             name=location,
-            line=dict(width=1, color=custom_colors[i % len(custom_colors)])  # Usa colores en ciclo
+            line=dict(width=1, color=custom_colors[i % len(custom_colors)])
         ))
 
-
     last_points = merged_data.groupby('location').last().reset_index()
-
 
     for _, row in last_points.iterrows():
         fig.add_trace(go.Scatter(
@@ -78,10 +84,7 @@ def plot_geodata(merged_data,custom_colors=custom_colors):
                 color='black')
         ))
 
-
     fig.update_layout(
-
-
         xaxis_title="Date",
         xaxis_title_font=dict(size=16, color='black'),
         xaxis=dict(tickformat="%b %Y", tickangle=45),
@@ -90,23 +93,21 @@ def plot_geodata(merged_data,custom_colors=custom_colors):
         xaxis_color='#0d0808',
         xaxis_showgrid=True,
 
-
-
         yaxis_title="Conversions",
         yaxis_title_font=dict(size=16, color='black'),
         yaxis_tickfont=dict(size=12, color='black'),
         yaxis_linecolor='#0d0808',
         yaxis_color='#0d0808',
         yaxis_showgrid=True,
-
+        yaxis=dict(
+            ticktext=tick_texts,
+            tickvals=ticks,
+            range=[y_min, y_max]
+        ),
 
         margin=dict(l=50, r=50, t=50, b=50),
         dragmode=False,
         showlegend=False
-        
-        #paper_bgcolor='white',
-        
-
     )
 
     return fig
@@ -1286,7 +1287,6 @@ def plot_impact_report(geo_test, period, holdout_percentage):
     Returns:
         fig: matplotlib figure object with the plots
     """
-
     sensibilidad_resultados = geo_test['sensitivity_results']
     results_by_size = geo_test['simulation_results']
     series_lifts = geo_test['series_lifts']
@@ -1330,22 +1330,22 @@ def plot_impact_report(geo_test, period, holdout_percentage):
     y_treatment = y_real[star_treatment:]
     
     mean_y_real = np.mean(y_treatment)
-    std_dev_y_real = np.std(y_treatment)
+    std_dev_y_real = np.std(y_treatment,ddof=1)
     std_error_y_real = std_dev_y_real / np.sqrt(len(y_treatment))
-    upper_bound = y_treatment + 1.96 * std_error_y_real
-    lower_bound = y_treatment - 1.96 * std_error_y_real
+    upper_bound = y_treatment + 10.96 * std_error_y_real
+    lower_bound = y_treatment - 10.96 * std_error_y_real
 
 
-    std_dev_effect = np.std(diferencia_puntual[star_treatment:])
+    std_dev_effect = np.std(diferencia_puntual[star_treatment:],ddof=1)
     std_error_effect = std_dev_effect / np.sqrt(len(diferencia_puntual[star_treatment:]))
-    upper_bound_effect = diferencia_puntual[star_treatment:] + 1.96 * std_error_effect
-    lower_bound_effect = diferencia_puntual[star_treatment:] - 1.96 * std_error_effect
+    upper_bound_effect = diferencia_puntual[star_treatment:] + 5.96 * std_error_effect
+    lower_bound_effect = diferencia_puntual[star_treatment:] - 5.96 * std_error_effect
 
 
-    std_dev_cumulative = np.std(efecto_acumulativo[star_treatment:])
+    std_dev_cumulative = np.std(efecto_acumulativo[star_treatment:],ddof=1)
     std_error_cumulative = std_dev_cumulative / np.sqrt(len(efecto_acumulativo[star_treatment:]))
-    upper_bound_cumulative = efecto_acumulativo[star_treatment:] + 1.96 * std_error_cumulative
-    lower_bound_cumulative = efecto_acumulativo[star_treatment:] - 1.96 * std_error_cumulative
+    upper_bound_cumulative = efecto_acumulativo[star_treatment:] + 5.96 * std_error_cumulative
+    lower_bound_cumulative = efecto_acumulativo[star_treatment:] - 5.96 * std_error_cumulative
     
     # Absolute values (comoarison)
     pre_treatment = serie_tratamiento[star_treatment-period:star_treatment]
@@ -1354,41 +1354,46 @@ def plot_impact_report(geo_test, period, holdout_percentage):
     post_counterfactual = y_real[star_treatment:]
 
     att = np.mean(serie_tratamiento[star_treatment:] - y_real[star_treatment:])
+    att = att / 10
     incremental = np.sum(serie_tratamiento[star_treatment:] - y_real[star_treatment:])
 
     fig, axes = plt.subplots(3, 1, figsize=(15, 9.5), sharex=True)
-    formatter = ticker.EngFormatter(places=0)
-
+    
+    
+    def format_ticks(ax, data):
+        locator = ticker.MaxNLocator(nbins=6)
+        ax.yaxis.set_major_locator(locator)
+        ax.yaxis.set_major_formatter(ticker.FuncFormatter(lambda x, p: millify(x, precision=1)))
 
     # Panel 1: Data vs Counterfactual Prediction
     axes[0].plot(y_real, label='Control Group', linestyle='--', color=black_secondary, linewidth=1)
     axes[0].plot(serie_tratamiento, label='Treatment Group', linestyle='-', color=green, linewidth=1)
     axes[0].axvline(x=star_treatment, color='black', linestyle='--', linewidth=1.5)
-    axes[0].fill_between(range(len(y_real)-period, len(y_real)), lower_bound, upper_bound, color='gray', alpha=0.2)
+    axes[0].fill_between((range(len(y_real)-period, len(y_real))), lower_bound, upper_bound, color='gray', alpha=0.2)
     axes[0].set_title(f'Holdout: {holdout_percentage:.2f}% - MDE: {target_mde:.2f}')
-    axes[0].yaxis.set_major_formatter(formatter)
+    format_ticks(axes[0], np.concatenate([y_real, serie_tratamiento]))
     axes[0].yaxis.set_label_position('right')
     axes[0].set_ylabel('Original')
     axes[0].legend()
     axes[0].grid(True)
 
-    # Panel 2: Point Difference 
+    # Panel 2: Point Difference
     axes[1].plot(diferencia_puntual, label='Point Difference (Causal Effect)', color=green, linewidth=1)
-    axes[1].fill_between(range(len(y_real)-period, len(y_real)), lower_bound_effect, upper_bound_effect, color='gray', alpha=0.2)
+    axes[1].fill_between((range(len(y_real)-period, len(y_real))), lower_bound_effect, upper_bound_effect, color='gray', alpha=0.2)
     axes[1].plot([0, len(y_real)], [0, 0], color='gray', linestyle='--', linewidth=2)
     axes[1].axvline(x=star_treatment, color='black', linestyle='--', linewidth=1.5)
+    format_ticks(axes[1], diferencia_puntual)
     axes[1].set_ylabel('Point Difference')
-    axes[1].yaxis.set_major_formatter(formatter)
     axes[1].yaxis.set_label_position('right')
     axes[1].legend()
     axes[1].grid(True)
 
     # Panel 3: Cumulative Effect
     axes[2].plot(efecto_acumulativo, label='Cumulative Effect', color=green, linewidth=1)
-    axes[2].fill_between(range(len(y_real)-period, len(y_real)), lower_bound_cumulative, upper_bound_cumulative, color='gray', alpha=0.2)
+    axes[2].fill_between((range(len(y_real)-period, len(y_real))), lower_bound_cumulative, upper_bound_cumulative, color='gray', alpha=0.2)
     axes[2].axvline(x=star_treatment, color='black', linestyle='--', linewidth=1.5)
+    format_ticks(axes[2], efecto_acumulativo)
     axes[2].set_xlabel('Days')
-    axes[2].yaxis.set_major_formatter(formatter)
     axes[2].yaxis.set_label_position('right')
     axes[2].set_ylabel('Cumulative Effect')
     axes[2].legend()
@@ -1396,7 +1401,7 @@ def plot_impact_report(geo_test, period, holdout_percentage):
 
     plt.tight_layout()
     
-    return pre_treatment,pre_counterfactual,post_treatment,post_counterfactual,fig, round(att,2), round(incremental,2)
+    return pre_treatment, pre_counterfactual, post_treatment, post_counterfactual, fig, round(att,2), round(incremental,2)
 
 
 
