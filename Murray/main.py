@@ -297,8 +297,8 @@ def evaluate_group(treatment_group, data, total_Y, correlation_matrix, min_holdo
 
     weights = model.w_
 
-    MAPE = np.mean(np.abs((y_original - counterfactual_full_original) / (y_original + 1e-10))) * 100
-    SMAPE_value = smape(y_original, counterfactual_full_original)
+    MAPE = np.mean(np.abs((y_original[split_index:] - counterfactual_full_original[split_index:]) / (y_original[split_index:] + 1e-10))) * 100
+    SMAPE_value = smape(y_original[split_index:], counterfactual_full_original[split_index:])
 
     return (treatment_group, control_group, MAPE, SMAPE_value, y_original, counterfactual_full_original, weights)
 
@@ -344,7 +344,7 @@ def BetterGroups(similarity_matrix, excluded_locations, data, correlation_matrix
     results = []
     
     
-    with concurrent.futures.ProcessPoolExecutor(max_workers=2) as executor:
+    with concurrent.futures.ProcessPoolExecutor(max_workers=5) as executor:
         futures = executor.map(
             evaluate_group,
             possible_groups,
@@ -353,7 +353,7 @@ def BetterGroups(similarity_matrix, excluded_locations, data, correlation_matrix
             [correlation_matrix] * total_groups,
             [min_holdout] * total_groups,
             [df_pivot] * total_groups,
-            chunksize=5
+            chunksize=10
         )
         for idx, result in enumerate(futures):
             results.append(result)
