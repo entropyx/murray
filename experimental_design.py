@@ -587,7 +587,7 @@ if file is not None:
             with col1:
                 delta_min = st.number_input("Lift Min:", min_value=0.00, max_value=0.9, value=0.01, step=0.01)
             with col2:
-                delta_max = st.number_input("Lift Max:", min_value=0.02, max_value=1.0, value=0.3, step=0.01)
+                delta_max = st.number_input("Lift Max:", min_value=0.02, max_value=1.0, value=0.15, step=0.01)
             with col3:
                 delta_step = st.number_input("Lift Step:", min_value=0.00, max_value=1.0, value=0.01, step=0.01)
             if delta_min > delta_max:
@@ -609,7 +609,7 @@ if file is not None:
             with col1:
                 period_min = st.number_input("Period Min:", min_value=1, max_value=100, value=5, step=1)
             with col2:    
-                period_max = st.number_input("Period Max:", min_value=5, max_value=100, value=40, step=1)
+                period_max = st.number_input("Period Max:", min_value=5, max_value=100, value=30, step=1)
             with col3:    
                 period_step = st.number_input("Period Step:", min_value=1, max_value=100, value=5, step=1)
             if period_min > period_max:
