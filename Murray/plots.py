@@ -252,7 +252,7 @@ def plot_mde_results(results_by_size, sensitivity_results, periods):
         if pd.isna(mde):
             return None, None, None, None
             
-        # Get quality metrics
+        # Quality metrics
         mape = results_by_size[size].get('MAPE', 0)
         smape = results_by_size[size].get('SMAPE', 0)
         
@@ -261,20 +261,26 @@ def plot_mde_results(results_by_size, sensitivity_results, periods):
         smape_factor = min(smape / 100, 1)
         quality_score = (mape_factor + smape_factor) / 2
         
-        # Time factor (0 to 1, where later periods are better)
+        # Time factor 
         time_score = (period_idx + 1) / total_periods
         
-        # Calculate final score (0 is best, 1 is worst)
-        quality_weight = 0.8
-        time_weight = 0.2
+        # MDE factor 
+        mde_factor = min(mde, 1)  
+        
+        # Calculate final score 
+        quality_weight = 0.85  
+        time_weight = 0.05    
+        mde_weight = 0.15     
+        
         final_score = (quality_weight * quality_score + 
-                      time_weight * (1 - time_score))
+                      time_weight * (1 - time_score) +
+                      mde_weight * mde_factor)
         
         return final_score, mde, mape, smape
 
-    # Create heatmap data with penalty scores
+    
     heatmap_data = pd.DataFrame()
-    hover_data = []  # Store additional info for hover text
+    hover_data = []  
     
     for size in sorted_sizes:
         row = []
@@ -314,7 +320,7 @@ def plot_mde_results(results_by_size, sensitivity_results, periods):
     y_axis = [f"{100 - float(value.strip('%')):.2f}%" for value in y_labels]
     z_values = heatmap_data.values.tolist()
 
-    # Format annotations to show scores as percentages
+    
     annotations = [[f"{val:.2%}" if not pd.isna(val) else "" for val in row] for row in z_values]
 
     fig = go.Figure()
@@ -325,7 +331,7 @@ def plot_mde_results(results_by_size, sensitivity_results, periods):
         x=x_labels,
         y=y_labels,
         colorscale=custom_colorscale,
-        colorbar=dict(title="Penalty Score"),
+        colorbar=dict(title="Quality Score"),
         colorbar_tickfont=dict(size=12, color='black'),
         hoverongaps=True,
         text=annotations,

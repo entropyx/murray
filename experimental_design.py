@@ -834,8 +834,8 @@ if file is not None:
                                 
                                 if matching_size is not None:
                                     mde = st.session_state.sensitivity_results[matching_size][period_idx]['MDE']
-                            st.write(f"- **Minimum Detectable Effect (MDE):** {mde}%")
-                            st.plotly_chart(plot_metrics(st.session_state.results),use_container_width=True)
+                            st.write(f"- **Minimum Detectable Effect (MDE):** {round(mde*100)}%")
+                            #st.plotly_chart(plot_metrics(st.session_state.results),use_container_width=True)
                             random_sate = data1['location'].unique()[0]
                             filtered_data = data1[data1['location'] == random_sate]
                             firt_day = filtered_data['time'].min()
