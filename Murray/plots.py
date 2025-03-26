@@ -411,7 +411,7 @@ def plot_impact_streamlit_app(geo_test, period, holdout_percentage):
         periods = next(iter(sensitivity_results.values())).keys()
 
         
-        if period not in periods:
+        if str(period) not in periods:
             raise ValueError(f"The period {period} is not in the evaluated periods list.")
 
         
@@ -1254,7 +1254,7 @@ def plot_impact_report(geo_test, period, holdout_percentage):
     series_lifts = geo_test['series_lifts']
     periods = next(iter(sensitivity_results.values())).keys()
 
-    if period not in periods:
+    if str(period) not in periods:
         raise ValueError(f"The period {period} is not in the evaluated periods list.")
 
     target_size_key = None
@@ -1263,7 +1263,7 @@ def plot_impact_report(geo_test, period, holdout_percentage):
         current_holdout = result['Holdout Percentage']
         if abs(current_holdout - holdout_percentage) < 0.01: 
             target_size_key = size_key
-            target_mde = sensitivity_results[size_key][period].get('MDE', None)
+            target_mde = sensitivity_results[size_key][str(period)].get('MDE', None)
             break
 
     if target_size_key is None:
@@ -1271,7 +1271,7 @@ def plot_impact_report(geo_test, period, holdout_percentage):
         return None
 
     available_deltas = [delta for s, delta, period in series_lifts.keys() 
-                        if s == target_size_key and period == period]
+                        if s == target_size_key and period == str(period)]
 
     if not available_deltas:
         print(f"DEBUG: No available deltas for holdout {holdout_percentage}% and period {period}.")
@@ -1279,7 +1279,7 @@ def plot_impact_report(geo_test, period, holdout_percentage):
 
     delta_specific = target_mde
     closest_delta = min(available_deltas, key=lambda x: abs(x - delta_specific))
-    comb = (target_size_key, closest_delta, period)
+    comb = (target_size_key, closest_delta, str(period))
 
     resultados_size = results_by_size[target_size_key]
     y_real = resultados_size['Predictions'].flatten()
