@@ -820,6 +820,21 @@ if file is not None:
                             control_group = st.session_state.simulation_results.get(location, {}).get('Control Group', 'N/A')
                             st.write(f"- **Treatment group:** {treatment_group}")
                             st.write(f"- **Control group:** {control_group}")
+                            mde = 'N/A'
+                            if period_idx is not None and y_value is not None:
+                                y_value_float = float(y_value.strip('%')) if isinstance(y_value, str) else float(y_value)
+
+                                
+                                matching_size = None
+                                for size, data in st.session_state.simulation_results.items():
+
+                                    if abs(float(data['Holdout Percentage']) - y_value_float) < 0.01:
+                                        matching_size = size
+                                        break
+                                
+                                if matching_size is not None:
+                                    mde = st.session_state.sensitivity_results[matching_size][period_idx]['MDE']
+                            st.write(f"- **Minimum Detectable Effect (MDE):** {round(mde*100)}%")
                             random_sate = data1['location'].unique()[0]
                             filtered_data = data1[data1['location'] == random_sate]
                             firt_day = filtered_data['time'].min()
