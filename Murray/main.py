@@ -261,7 +261,7 @@ def evaluate_group(treatment_group, data, total_Y, correlation_matrix, min_holdo
     )
 
     if not control_group:
-        return (treatment_group, [], float('inf'), float('inf'), None, None, None)
+        return (treatment_group, [], float('inf'), float('inf'), None, None, None, None)
 
    
     X = df_pivot[control_group].values  
@@ -501,20 +501,11 @@ def simulate_power(y_real, y_control, delta, period, n_permutations=1000, signif
 def run_simulation(delta, y_real, y_control, period, n_permutations, significance_level, inference_type="iid", size_block=None):
     """
     Wrapper function to run a single simulation of statistical power.
-
-    Args:
-        delta (float): Effect size.
-        y_real (numpy.ndarray): Actual target metrics.
-        y_control (numpy.ndarray): Control metrics.
-        period (int): Treatment period duration.
-        n_permutations (int): Number of permutations.
-        significance_level (float): Significance level.
-        inference_type (str): Type of conformal inference ("iid" or "block").
-        size_block (int, optional): Size of blocks for block shuffling. Defaults to None.
-
-    Returns:
-        tuple: Simulation results including delta, power, and adjusted series.
     """
+    # Asegurarse de que y_real y y_control son arrays de numpy
+    y_real = np.array(y_real).flatten()
+    y_control = np.array(y_control).flatten()
+    
     return simulate_power(
         y_real=y_real,
         y_control=y_control,
@@ -523,7 +514,6 @@ def run_simulation(delta, y_real, y_control, period, n_permutations, significanc
         n_permutations=n_permutations,
         significance_level=significance_level,
         inference_type=inference_type,
-        
     )
 
 def evaluate_sensitivity(results_by_size, deltas, periods, n_permutations, significance_level=0.05, inference_type="iid",  size_block=None, progress_bar=None, status_text=None):
