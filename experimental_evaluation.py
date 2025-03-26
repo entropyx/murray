@@ -667,9 +667,9 @@ if file is not None:
                 
 
 
-
                         
-                        impact_graph,att,incremental = plot_impact_evaluation_streamlit(results,filtered_data)
+                        length_treatment = len(treatment_group)
+                        impact_graph,att,incremental = plot_impact_evaluation_streamlit(results,filtered_data,length_treatment)
                         st.session_state.incremental = incremental
                         
                         st.session_state.impact_graph = impact_graph
