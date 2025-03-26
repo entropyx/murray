@@ -99,7 +99,7 @@ def run_geo_evaluation(data_input, start_treatment,end_treatment,treatment_group
         p_value = np.mean(abs(null_stats) >= abs(observed_stat))
         power = np.mean(p_value < significance_level)
 
-        
+        length_treatment = len(treatment_group)
         results_evaluation = {
             'MAPE': MAPE,
             'SMAPE': SMAPE,
@@ -114,6 +114,7 @@ def run_geo_evaluation(data_input, start_treatment,end_treatment,treatment_group
             'weights': weights,
             'period': period,
             'spend': spend,
+            'length_treatment': length_treatment
         }
 
 
