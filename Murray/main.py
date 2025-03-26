@@ -417,9 +417,8 @@ def apply_lift(y, delta, start_treatment, end_treatment):
         np.array: Time series with lift applied
     """
     
-    y_with_lift = np.array(y).copy()
-    
-    
+    y = np.array(y).flatten()
+    y_with_lift = y.copy()
     
     start_idx = max(0, int(start_treatment))
     end_idx = min(len(y_with_lift), int(end_treatment))
@@ -450,6 +449,12 @@ def calculate_conformity(y_real, y_control, start_treatment, end_treatment):
     return conformity
 
 def compute_residuals(y_treatment, y_control):
+    """
+    Compute residuals between treatment and control series
+    """
+
+    y_treatment = np.array(y_treatment).flatten()
+    y_control = np.array(y_control).flatten()
     return y_treatment - y_control
 
 
@@ -470,28 +475,27 @@ def simulate_power(y_real, y_control, delta, period, n_permutations=1000, signif
         tuple: Delta, statistical power, and the adjusted series with the applied effect.
     """
     
+    y_real = np.array(y_real).flatten()
+    y_control = np.array(y_control).flatten()
+    
     start_treatment = len(y_real) - period
     end_treatment = start_treatment + period
     
     y_with_lift = apply_lift(y_real, delta, start_treatment, end_treatment)
-    residuals = compute_residuals(y_with_lift,y_control)
+    residuals = compute_residuals(y_with_lift, y_control)
     treatment_residuals = residuals[start_treatment:]
     
-
     def stat_func(x):
         return np.sum(x)
     
     observed_stat = stat_func(treatment_residuals)
     
-    
     null_stats = []
-
     for _ in range(n_permutations):
         permuted_residuals = np.random.permutation(residuals)
         permuted = permuted_residuals[start_treatment:]
         null_stats.append(stat_func(permuted))
     null_stats = np.array(null_stats)
-    
     
     p_value = np.mean(null_stats >= observed_stat)
     power = np.mean(p_value < significance_level)
