@@ -12,4 +12,5 @@ streamlit-plotly-events
 seaborn
 plotly
 millify
+statsmodels
 protobuf==3.20.*
