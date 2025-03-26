@@ -291,6 +291,7 @@ def evaluate_group(treatment_group, data, total_Y, correlation_matrix, min_holdo
 
     counterfactual_test, weights = model.predict(X_test, time_index=time_test)
     counterfactual_full, weights = model.predict(X_scaled, time_index=time_index)
+    counterfactual_full = counterfactual_full.reshape(-1,1)
     counterfactual_full_original = scaler_y.inverse_transform(counterfactual_full)
     y_original = scaler_y.inverse_transform(y_scaled)
     counterfactual_full_original = counterfactual_full_original.flatten()
