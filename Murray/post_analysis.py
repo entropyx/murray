@@ -115,7 +115,8 @@ def run_geo_evaluation(data_input, start_treatment,end_treatment,treatment_group
             'weights': weights,
             'period': period,
             'spend': spend,
-            'length_treatment': length_treatment
+            'length_treatment': length_treatment,
+            
         }
 
 

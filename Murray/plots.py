@@ -738,7 +738,8 @@ def plot_impact_evaluation_streamlit(results_evaluation, df, length_treatment):
     counterfactual = results_evaluation['predictions']
     treatment = results_evaluation['treatment']
     period = results_evaluation['period']
-    
+    counterfactual = np.asarray(counterfactual).flatten()
+    treatment = np.asarray(treatment).flatten()
 
     point_difference = treatment - counterfactual
     cumulative_effect = ([0] * (len(treatment) - period)) + (np.cumsum(point_difference[len(treatment)-period:])).tolist()
@@ -1422,6 +1423,9 @@ def plot_impact_evaluation_report(results_evaluation):
         treatment = results_evaluation['treatment']
         period = results_evaluation['period']
         length_treatment = results_evaluation['length_treatment']
+        counterfactual = np.asarray(counterfactual).flatten()
+        treatment = np.asarray(treatment).flatten()
+
 
         point_difference = treatment - counterfactual
         cumulative_effect = ([0] * (len(treatment) - period)) + (np.cumsum(point_difference[len(treatment)-period:])).tolist()
@@ -1429,7 +1433,7 @@ def plot_impact_evaluation_report(results_evaluation):
 
 
         y_treatment = counterfactual[star_treatment:]
-
+        
         lower_bound, upper_bound = calculate_confidence_bands(y_treatment)
         lower_bound_pd, upper_bound_pd = calculate_confidence_bands(point_difference[star_treatment:])
         lower_bound_ce, upper_bound_ce = calculate_confidence_bands(cumulative_effect[star_treatment:])
