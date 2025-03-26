@@ -676,7 +676,7 @@ def print_locations(geo_test, treatment_percentage=None, num_locations=None):
     print(f"Control Locations: {control_locations}")
 
 
-def plot_impact_evaluation_streamlit(results_evaluation, df):
+def plot_impact_evaluation_streamlit(results_evaluation, df, length_treatment):
     """
     Plot the impact evaluation results using Plotly with hover text for dates.
     """
@@ -701,6 +701,7 @@ def plot_impact_evaluation_streamlit(results_evaluation, df):
     lower_bound_ce, upper_bound_ce = calculate_confidence_bands(cumulative_effect[start_treatment:])
 
     att = np.mean(treatment[start_treatment:] - counterfactual[start_treatment:])
+    att = att / length_treatment
     incremental = np.sum(treatment[start_treatment:] - counterfactual[start_treatment:])
 
     fig = make_subplots(rows=3, cols=1, shared_xaxes=True, 
@@ -862,6 +863,7 @@ def plot_impact_evaluation(results_evaluation):
     counterfactual = results_evaluation['predictions']
     treatment = results_evaluation['treatment']
     period = results_evaluation['period']
+    length_treatment = results_evaluation['length_treatment']
 
     point_difference = treatment - counterfactual
     cumulative_effect = ([0] * (len(treatment) - period)) + (np.cumsum(point_difference[len(treatment)-period:])).tolist()
@@ -877,6 +879,7 @@ def plot_impact_evaluation(results_evaluation):
 
 
     att = np.mean(treatment[star_treatment:] - counterfactual[star_treatment:])
+    att = att / length_treatment
     incremental = np.sum(treatment[star_treatment:] - counterfactual[star_treatment:])
 
     
@@ -1237,7 +1240,7 @@ def plot_metrics_report(geo_test):
 
 
 
-def plot_impact_report(geo_test, period, holdout_percentage):
+def plot_impact_report(geo_test, period, holdout_percentage,length_treatment):
     """
     Generates graphs for a specific holdout percentage in a specific period.
 
@@ -1296,7 +1299,7 @@ def plot_impact_report(geo_test, period, holdout_percentage):
     lower_bound_ce, upper_bound_ce = calculate_confidence_bands(cumulative_effect[star_treatment:])
 
     att = np.mean(serie_tratamiento[star_treatment:] - y_real[star_treatment:])
-    att = att / 10
+    att = att / length_treatment
     incremental = np.sum(serie_tratamiento[star_treatment:] - y_real[star_treatment:])
     pre_treatment = y_real[star_treatment-period:star_treatment]
     pre_counterfactual = serie_tratamiento[star_treatment-period:star_treatment]
@@ -1365,6 +1368,7 @@ def plot_impact_evaluation_report(results_evaluation):
         counterfactual = results_evaluation['predictions']
         treatment = results_evaluation['treatment']
         period = results_evaluation['period']
+        length_treatment = results_evaluation['length_treatment']
 
         point_difference = treatment - counterfactual
         cumulative_effect = ([0] * (len(treatment) - period)) + (np.cumsum(point_difference[len(treatment)-period:])).tolist()
@@ -1385,6 +1389,7 @@ def plot_impact_evaluation_report(results_evaluation):
         post_counterfactual = counterfactual[star_treatment:]
 
         att = np.mean(treatment[star_treatment:] - counterfactual[star_treatment:])
+        att = att / length_treatment
         incremental = np.sum(treatment[star_treatment:] - counterfactual[star_treatment:])
 
 
