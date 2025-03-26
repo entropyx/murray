@@ -409,7 +409,7 @@ def plot_impact_streamlit_app(geo_test, period, holdout_percentage):
         results_by_size = geo_test['simulation_results']
         series_lifts = geo_test['series_lifts']
         periods = next(iter(sensitivity_results.values())).keys()
-
+        print(periods)
         
         if period not in periods:
             raise ValueError(f"The period {period} is not in the evaluated periods list.")
