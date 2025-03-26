@@ -1270,8 +1270,10 @@ def plot_impact_report(geo_test, period, holdout_percentage):
         print(f"DEBUG: No data found for holdout percentage {holdout_percentage}%")
         return None
 
-    available_deltas = [delta for s, delta, period in series_lifts.keys() 
-                        if s == target_size_key and period == period]
+    print("Keys structure:", list(series_lifts.keys()))
+
+    available_deltas = [delta for s, delta, p in series_lifts.keys() 
+                        if s == target_size_key and p == period]
 
     if not available_deltas:
         print(f"DEBUG: No available deltas for holdout {holdout_percentage}% and period {period}.")
