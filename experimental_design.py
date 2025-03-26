@@ -8,6 +8,7 @@ from fpdf import FPDF
 import base64
 import os
 
+
 ENTROPY_LOGO = "utils/Logo Entropy Dark Gray.png" 
 MURRAY_LOGO = "utils/Group 105.png"
 options = [ENTROPY_LOGO, MURRAY_LOGO]
@@ -39,7 +40,9 @@ st.logo(sidebar_logo,size="large", icon_image=main_body_logo)
 
 
 
-def generate_pdf(treatment_group, control_group, holdout_percentage, impact_graph, weights,period_idx,mde,att,incremental,tarjet_variable,firt_day,last_day,treatment_day):
+def generate_pdf(treatment_group, control_group, holdout_percentage, impact_graph, 
+                 weights,period_idx,mde,att,incremental,tarjet_variable,firt_day,
+                 last_day,treatment_day,df,firt_report_day,second_report_day):
         """
         Generates a PDF report with explanations for each aspect.
         """
@@ -176,6 +179,7 @@ def generate_pdf(treatment_group, control_group, holdout_percentage, impact_grap
         pdf.cell(col_width, row_height, "Location", 1, 0, 'C', True)
         pdf.cell(col_width, row_height, "Weight", 1, 1, 'C', True)
         
+        
 
 
 
@@ -190,11 +194,11 @@ def generate_pdf(treatment_group, control_group, holdout_percentage, impact_grap
             pdf.cell(col_width, row_height, f"{row['Weights']:.4f}", 1, 1, 'C', True)
 
 
+
         pdf.ln(5) 
-        if pdf.get_y() > 20:
+        if pdf.get_y() > 250:
             pdf.add_page() 
-
-
+        
         pdf.set_font("Poppins", style='B', size=12)
         pdf.set_text_color(27, 0, 67)
         pdf.cell(200, 10, "Impact", ln=True)
@@ -202,23 +206,135 @@ def generate_pdf(treatment_group, control_group, holdout_percentage, impact_grap
         pdf.set_text_color(33, 31, 36)
 
         pdf.multi_cell(0, 5, "The results show the impact of the treatment on different treatment locations. "
-                            "The graph below shows the aggregate effect, the point effect, and the cumulative effect. "
-                            "Below is the ATT value and the lift value total of the target variable, as well as the graphs of impact.")
+                            "Below is the ATT value and the lift value total of the target variable.")
+
+
+        
+        pdf.ln(1)
+        if pdf.get_y() > 250:
+            pdf.add_page() 
+        
         pdf.set_font("Poppins", style='B', size=10)
         pdf.set_text_color(33, 31, 36)
-        pdf.cell(200, 5, f"ATT: {att:.2f}", ln=True)
-
-        pdf.cell(200, 5, f"Lift total: {incremental:.2f}", ln=True)
+        pdf.cell(200, 5, f"ATT: {att:,.2f}", ln=True)
+        pdf.cell(200, 5, f"Lift total: {incremental:,.2f}", ln=True)
         pdf.cell(200, 5, f"Percentage Lift: {round(mde * 100)}%", ln=True)
 
 
-
-
-        pdf.ln(2)
+        pdf.ln(4)
         if pdf.get_y() > 250:
+            pdf.add_page() 
+        
+        pdf.set_font("Poppins", size=10)
+        pdf.set_text_color(33, 31, 36)
+        pdf.multi_cell(0, 5, f"It is important to be able to identify the impact of the intervention pre-intervention and" 
+                       f"post-intervention in real values. In this case, a small table is presented where the pre-intervention"
+                       f"value (with the same duration as the treatment period) and the post-intervention value are observed."
+                       f"This allows for a quick and simple identification of the impact that an intervention would have in"
+                       f"comparison to the locations where it is not applied (counterfactual).")
+        pdf.ln(1)
+        if pdf.get_y() > 210:
+            pdf.add_page() 
+        col_widths = [70, 60,60]
+        row_height = 8
+
+        
+        header_texts = [
+            "Group",
+            f"Pre-treatment\n({firt_report_day} to {second_report_day})",
+            f"Post-treatment\n({treatment_day} to {last_day})",
+            
+        ]
+
+        
+        max_lines = 0
+        for txt in header_texts:
+            n = txt.count('\n') + 1
+            if n > max_lines:
+                max_lines = n
+        max_header_height = max_lines * row_height
+
+        
+        x_start = pdf.get_x()
+        y_start = pdf.get_y()
+
+        
+        pdf.set_fill_color(*header_bg)
+        pdf.set_text_color(255, 255, 255)
+        pdf.set_font("Poppins", "B", 10) 
+
+        x = x_start
+        for i, txt in enumerate(header_texts):
+            
+            pdf.cell(col_widths[i], max_header_height, "", border=1, ln=0, fill=True)
+            
+            
+            current_x = pdf.get_x() - col_widths[i]
+            pdf.set_xy(current_x, y_start)
+            
+            
+            if "\n" in txt:
+                lines = txt.split("\n")  
+                
+                
+                pdf.cell(col_widths[i], row_height, lines[0], border=0, ln=0, align='C')
+                
+                
+                pdf.ln(row_height)
+                pdf.set_x(current_x)  
+                
+                
+                current_font_size = pdf.font_size_pt
+                smaller_font = current_font_size * 0.7
+                pdf.set_font("Poppins", "B", smaller_font)
+                
+                
+                pdf.cell(col_widths[i], row_height, lines[1], border=0, ln=0, align='C')
+                
+                
+                pdf.set_font("Poppins", "B", current_font_size)
+                
+            else:
+                pdf.multi_cell(col_widths[i], row_height, txt, border=0, align='C')
+            
+            
+            x += col_widths[i]
+            pdf.set_xy(x, y_start)
+
+        
+        pdf.set_xy(x_start, y_start + max_header_height)
+
+        pdf.set_text_color(*text_color)
+        pdf.set_font("Poppins", "", 10)
+        y_data_start = pdf.get_y()
+
+        for i, row in df.iterrows():
+            bg_color = alt_row_bg if i % 2 else white_row_bg
+            pdf.set_fill_color(*bg_color)
+            
+            pdf.cell(col_widths[0], row_height, str(row["Group"]), border=1, ln=0, align='C', fill=True)
+            pdf.cell(col_widths[1], row_height, f"{row['Pre-treatment']:,.2f}", border=1, ln=0, align='C', fill=True)
+            pdf.cell(col_widths[2], row_height, f"{row['Post-treatment']:,.2f}", border=1, ln=1, align='C', fill=True)
+
+       
+        
+
+
+        pdf.ln(9)
+        if pdf.get_y() > 170:
             pdf.add_page()
+            
+        pdf.set_font("Poppins", size=10)
+        pdf.set_text_color(33, 31, 36)
+        pdf.multi_cell(0, 5, "The graph below shows the aggregate effect, the point effect, and the cumulative effect. ")
 
         pdf.image(temp_image_path, x=10, y=pdf.get_y(), w=190)  
+        
+
+        
+
+        
+         
 
 
         pdf_output = "reporte.pdf"
@@ -398,7 +514,26 @@ if file is not None:
             if st.session_state.graph_button_clicked:
                 fig = plot_geodata(data1)
                 st.session_state.fig = fig
-                st.plotly_chart(st.session_state.fig)
+                st.markdown(
+                    """
+                    <style>
+                    .js-plotly-plot .plotly .cursor-crosshair {
+                         cursor: default !important;
+                    </style>
+                    """,
+                    unsafe_allow_html=True
+                )
+                st.plotly_chart(st.session_state.fig,config={
+                    'modeBarButtonsToRemove': [
+                        'zoom2d',
+                        'pan2d',
+                        'select2d',
+                        'lasso2d',
+                        'resetScale2d',
+                    ],
+                    'displaylogo': False
+                })
+                
 
 
     #--------------------------------------------------------------------------------------------------------------------------------
@@ -450,11 +585,11 @@ if file is not None:
             st.text("Select range of lifts")
             col1, col2, col3 = st.columns(3)
             with col1:
-                delta_min = st.number_input("Lift Min:", min_value=0.01, max_value=0.9, value=0.01, step=0.01)
+                delta_min = st.number_input("Lift Min:", min_value=0.00, max_value=0.9, value=0.01, step=0.01)
             with col2:
-                delta_max = st.number_input("Lift Max:", min_value=0.02, max_value=1.0, value=0.3, step=0.01)
+                delta_max = st.number_input("Lift Max:", min_value=0.02, max_value=1.0, value=0.15, step=0.01)
             with col3:
-                delta_step = st.number_input("Lift Step:", min_value=0.01, max_value=1.0, value=0.02, step=0.01)
+                delta_step = st.number_input("Lift Step:", min_value=0.00, max_value=1.0, value=0.01, step=0.01)
             if delta_min > delta_max:
                 st.error("Lift Min must be less than Lift Max")
                 st.stop()
@@ -474,7 +609,7 @@ if file is not None:
             with col1:
                 period_min = st.number_input("Period Min:", min_value=1, max_value=100, value=5, step=1)
             with col2:    
-                period_max = st.number_input("Period Max:", min_value=5, max_value=100, value=40, step=1)
+                period_max = st.number_input("Period Max:", min_value=5, max_value=100, value=30, step=1)
             with col3:    
                 period_step = st.number_input("Period Step:", min_value=1, max_value=100, value=5, step=1)
             if period_min > period_max:
@@ -491,6 +626,13 @@ if file is not None:
                 st.stop()
             else:
                 periods_range = (period_min, period_max+1, period_step)
+            
+            
+            
+            
+            
+
+            
             st.text("Click on the button to start simulation")
 
 
@@ -515,7 +657,7 @@ if file is not None:
                 "significance_level_pre": significance_level_pre,
                 "deltas_range": (delta_min, delta_max, delta_step),
                 "periods_range": (period_min, period_max+1, period_step),
-                "col_target": col_target
+                "col_target": col_target,
             }
 
             
@@ -599,9 +741,32 @@ if file is not None:
                 
 
             if st.session_state.simulation_results is not None:
+
+
+                st.markdown(
+                    """
+                    <style>
+                    .js-plotly-plot .plotly .cursor-move {
+                        cursor: default !important;
+                    }
+                    </style>
+                    """,
+                    unsafe_allow_html=True
+                )
+
+
                 st.write('<h4 style="text-align: center;"> Geo Murray MDE Heatmap</h4>', unsafe_allow_html=True)
                 fig2 = st.session_state.fig2
-                event = st.plotly_chart(fig2,key="heatmap",on_select="rerun")
+                event = st.plotly_chart(fig2,key="heatmap",on_select="rerun",config={
+                    'modeBarButtonsToRemove': [
+                        'zoom2d',
+                        'pan2d',
+                        'select2d',
+                        'lasso2d',
+                        'resetScale2d',
+                    ],
+                    'displaylogo': False
+                })
                 
 
 
@@ -655,15 +820,6 @@ if file is not None:
                             control_group = st.session_state.simulation_results.get(location, {}).get('Control Group', 'N/A')
                             st.write(f"- **Treatment group:** {treatment_group}")
                             st.write(f"- **Control group:** {control_group}")
-                            random_sate = data1['location'].unique()[0]
-                            filtered_data = data1[data1['location'] == random_sate]
-                            firt_day = filtered_data['time'].min()
-                            last_day = filtered_data['time'].max()
-                            treatment_day = last_day - pd.Timedelta(days=period_idx)
-                            last_day = last_day.strftime('%Y-%m-%d')
-                            firt_day = firt_day.strftime('%Y-%m-%d')
-                            treatment_day = treatment_day.strftime('%Y-%m-%d')
-    
                             mde = 'N/A'
                             if period_idx is not None and y_value is not None:
                                 y_value_float = float(y_value.strip('%')) if isinstance(y_value, str) else float(y_value)
@@ -678,6 +834,43 @@ if file is not None:
                                 
                                 if matching_size is not None:
                                     mde = st.session_state.sensitivity_results[matching_size][period_idx]['MDE']
+                            st.write(f"- **Minimum Detectable Effect (MDE):** {round(mde*100)}%")
+                            random_sate = data1['location'].unique()[0]
+                            filtered_data = data1[data1['location'] == random_sate]
+                            firt_day = filtered_data['time'].min()
+                            last_day = filtered_data['time'].max()
+                            second_report_day = last_day - pd.Timedelta(days=period_idx)
+                            firt_report_day = last_day - pd.Timedelta(days=(period_idx*2)-1)
+                            treatment_day = last_day - pd.Timedelta(days=period_idx-1)
+                            last_day = last_day.strftime('%Y-%m-%d')
+                            firt_day = firt_day.strftime('%Y-%m-%d')
+                            firt_report_day = firt_report_day.strftime('%Y-%m-%d')
+                            second_report_day = second_report_day.strftime('%Y-%m-%d')
+
+                            treatment_day = treatment_day.strftime('%Y-%m-%d')
+                           
+                            mde = 'N/A'
+                            if period_idx is not None and y_value is not None:
+                                y_value_float = float(y_value.strip('%')) if isinstance(y_value, str) else float(y_value)
+
+                                
+                                matching_size = None
+                                for size, data in st.session_state.simulation_results.items():
+
+                                    if abs(float(data['Holdout Percentage']) - y_value_float) < 0.01:
+                                        matching_size = size
+                                        break
+                                
+                                if matching_size is not None:
+                                    mde = st.session_state.sensitivity_results[matching_size][period_idx]['MDE']
+
+                            
+                            holdout_percentage = st.session_state.simulation_results[location]['Holdout Percentage']
+        
+                            treatment_states = treatment_group.split(',') 
+                            length_treatment = len(treatment_states)
+                           
+                            
                                     
 
 
@@ -710,17 +903,27 @@ if file is not None:
                                     else:
                                         treatment_group = st.session_state.simulation_results[location]['Best Treatment Group']
                                         control_group = st.session_state.simulation_results[location]['Control Group']
-                                        holdout_percentage = st.session_state.simulation_results[location]['Holdout Percentage']
-                                        impact_graph,att,incremental = plot_impact_report(st.session_state.results, period_idx, holdout_percentage)
-                                        weights = print_weights(st.session_state.results, round(holdout_percentage, 2))
-                                      
+                                        
+                                        pre_treatment, pre_counterfactual, post_treatment, post_counterfactual,impact_graph,att,incremental = plot_impact_report(st.session_state.results, period_idx, holdout_percentage,length_treatment)
+                                        weights = print_weights(st.session_state.results, treatment_percentage)
+                                        df = pd.DataFrame(
+                                            {
+                                                "Group": ["Treatment", "Counterfactual (control)", "Absolute difference"],
+                                                "Pre-treatment": [np.sum(pre_treatment),np.sum(pre_counterfactual), np.abs(np.sum(pre_treatment)-np.sum(pre_counterfactual))],
+                                                "Post-treatment": [np.sum(post_treatment), np.sum(post_counterfactual),np.abs(np.sum(post_treatment)- np.sum(post_counterfactual))]
+                                                
+                                            }
+                                        )
+                                        
 
 
 
 
                                         
+                                        
 
-                                        pdf_file = generate_pdf(treatment_group, control_group, holdout_percentage, impact_graph,weights,period_idx,mde,att,incremental,col_target,firt_day,last_day,treatment_day)
+
+                                        pdf_file = generate_pdf(treatment_group, control_group, holdout_percentage, impact_graph,weights,period_idx,mde,att,incremental,col_target,firt_day,last_day,treatment_day,df,firt_report_day,second_report_day)
                                         
                                         
 
