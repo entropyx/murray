@@ -32,8 +32,8 @@ def test_run_geo_evaluation(sample_data):
     assert isinstance(results, dict), "The result must be a dictionary"
     expected_keys = [
         "MAPE", "SMAPE", "predictions", "treatment", "p_value", "power",
-        "percenge_lift", "control_group", "observed_conformity",
-        "null_conformities", "weights", "period", "spend"
+        "percenge_lift", "control_group", "observed_stat",
+        "null_stats", "weights", "period", "spend", "length_treatment"
     ]
     for key in expected_keys:
         assert key in results, f"Missing the key '{key}' in the results"
