@@ -9,6 +9,7 @@ import matplotlib.dates as mdates
 import seaborn as sns
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
+import matplotlib.ticker as ticker 
 
 
 
@@ -101,7 +102,9 @@ def plot_geodata(merged_data,custom_colors=custom_colors):
 
 
         margin=dict(l=50, r=50, t=50, b=50),
-        showlegend=False,
+        dragmode=False,
+        showlegend=False
+        
         #paper_bgcolor='white',
         
 
@@ -442,12 +445,12 @@ def plot_impact_streamlit_app(geo_test, period, holdout_percentage):
         
         resultados_size = results_by_size[target_size_key]
         y_real = resultados_size['Predictions'].flatten()
-        serie_tratamiento = series_lifts[comb]
+        treatment_series = series_lifts[comb]
 
         
-        point_difference = serie_tratamiento - y_real
-        cumulative_effect = ([0] * (len(serie_tratamiento) - period) + 
-                              np.cumsum(point_difference[len(serie_tratamiento)-period:]).tolist())
+        point_difference = treatment_series - y_real
+        cumulative_effect = ([0] * (len(treatment_series) - period) + 
+                              np.cumsum(point_difference[len(treatment_series)-period:]).tolist())
         
 
         star_treatment = len(y_real) - period
@@ -476,9 +479,15 @@ def plot_impact_streamlit_app(geo_test, period, holdout_percentage):
 
 
 
-        att = np.mean(serie_tratamiento[star_treatment:] - y_real[star_treatment:])
-        incremental = np.sum(serie_tratamiento[star_treatment:] - y_real[star_treatment:])
-
+        att = np.mean(treatment_series[star_treatment:] - y_real[star_treatment:])
+        incremental = np.sum(treatment_series[star_treatment:] - y_real[star_treatment:])
+        
+        # Absolute values (comparison)
+        pre_counterfactual = y_real[:star_treatment]
+        pre_treatment = treatment_series[:star_treatment]
+        
+        post_counterfactual = y_real[star_treatment:]
+        post_treatment = treatment_series[star_treatment:]
 
         
 
@@ -501,7 +510,7 @@ def plot_impact_streamlit_app(geo_test, period, holdout_percentage):
         ), row=1, col=1)
 
         fig.add_trace(go.Scatter(
-            y=serie_tratamiento,
+            y=treatment_series,
             mode='lines',
             name='Treatment Group',
             line=dict(color=green,width=1),
@@ -1319,10 +1328,10 @@ def plot_impact_report(geo_test, period, holdout_percentage):
 
     resultados_size = results_by_size[target_size_key]
     y_real = resultados_size['Predictions'].flatten()
-    serie_tratamiento = series_lifts[comb]
-    diferencia_puntual = serie_tratamiento - y_real
-    efecto_acumulativo = ([0] * (len(serie_tratamiento) - period) + 
-                         np.cumsum(diferencia_puntual[len(serie_tratamiento)-period:]).tolist())
+    treatment_series = series_lifts[comb]
+    point_difference = treatment_series - y_real
+    cumulative_effect = ([0] * (len(treatment_series) - period) + 
+                         np.cumsum(point_difference[len(treatment_series)-period:]).tolist())
     
     star_treatment = len(y_real) - period
     y_treatment = y_real[star_treatment:]
@@ -1334,51 +1343,59 @@ def plot_impact_report(geo_test, period, holdout_percentage):
     lower_bound = y_treatment - 1.96 * std_error_y_real
 
 
-    std_dev_effect = np.std(diferencia_puntual[star_treatment:])
-    std_error_effect = std_dev_effect / np.sqrt(len(diferencia_puntual[star_treatment:]))
-    upper_bound_effect = diferencia_puntual[star_treatment:] + 1.96 * std_error_effect
-    lower_bound_effect = diferencia_puntual[star_treatment:] - 1.96 * std_error_effect
+    std_dev_effect = np.std(point_difference[star_treatment:])
+    std_error_effect = std_dev_effect / np.sqrt(len(point_difference[star_treatment:]))
+    upper_bound_effect = point_difference[star_treatment:] + 1.96 * std_error_effect
+    lower_bound_effect = point_difference[star_treatment:] - 1.96 * std_error_effect
 
 
-    std_dev_cumulative = np.std(efecto_acumulativo[star_treatment:])
-    std_error_cumulative = std_dev_cumulative / np.sqrt(len(efecto_acumulativo[star_treatment:]))
-    upper_bound_cumulative = efecto_acumulativo[star_treatment:] + 1.96 * std_error_cumulative
-    lower_bound_cumulative = efecto_acumulativo[star_treatment:] - 1.96 * std_error_cumulative
+    std_dev_cumulative = np.std(cumulative_effect[star_treatment:])
+    std_error_cumulative = std_dev_cumulative / np.sqrt(len(cumulative_effect[star_treatment:]))
+    upper_bound_cumulative = cumulative_effect[star_treatment:] + 1.96 * std_error_cumulative
+    lower_bound_cumulative = cumulative_effect[star_treatment:] - 1.96 * std_error_cumulative
+    
+    # Absolute values (comoarison)
+    pre_treatment = treatment_series[star_treatment-period:star_treatment]
+    pre_counterfactual = y_real[star_treatment-period:star_treatment]
+    post_treatment = treatment_series[star_treatment:]
+    post_counterfactual = y_real[star_treatment:]
 
-
-    att = np.mean(serie_tratamiento[star_treatment:] - y_real[star_treatment:])
-    incremental = np.sum(serie_tratamiento[star_treatment:] - y_real[star_treatment:])
+    att = np.mean(treatment_series[star_treatment:] - y_real[star_treatment:])
+    incremental = np.sum(treatment_series[star_treatment:] - y_real[star_treatment:])
 
     fig, axes = plt.subplots(3, 1, figsize=(15, 9.5), sharex=True)
+    formatter = ticker.EngFormatter(places=0)
 
 
     # Panel 1: Data vs Counterfactual Prediction
     axes[0].plot(y_real, label='Control Group', linestyle='--', color=black_secondary, linewidth=1)
-    axes[0].plot(serie_tratamiento, label='Treatment Group', linestyle='-', color=green, linewidth=1)
+    axes[0].plot(treatment_series, label='Treatment Group', linestyle='-', color=green, linewidth=1)
     axes[0].axvline(x=star_treatment, color='black', linestyle='--', linewidth=1.5)
     axes[0].fill_between(range(len(y_real)-period, len(y_real)), lower_bound, upper_bound, color='gray', alpha=0.2)
     axes[0].set_title(f'Holdout: {holdout_percentage:.2f}% - MDE: {target_mde:.2f}')
+    axes[0].yaxis.set_major_formatter(formatter)
     axes[0].yaxis.set_label_position('right')
     axes[0].set_ylabel('Original')
     axes[0].legend()
     axes[0].grid(True)
 
     # Panel 2: Point Difference 
-    axes[1].plot(diferencia_puntual, label='Point Difference (Causal Effect)', color=green, linewidth=1)
+    axes[1].plot(point_difference, label='Point Difference (Causal Effect)', color=green, linewidth=1)
     axes[1].fill_between(range(len(y_real)-period, len(y_real)), lower_bound_effect, upper_bound_effect, color='gray', alpha=0.2)
-
     axes[1].plot([0, len(y_real)], [0, 0], color='gray', linestyle='--', linewidth=2)
     axes[1].axvline(x=star_treatment, color='black', linestyle='--', linewidth=1.5)
     axes[1].set_ylabel('Point Difference')
+    axes[1].yaxis.set_major_formatter(formatter)
     axes[1].yaxis.set_label_position('right')
     axes[1].legend()
     axes[1].grid(True)
 
     # Panel 3: Cumulative Effect
-    axes[2].plot(efecto_acumulativo, label='Cumulative Effect', color=green, linewidth=1)
+    axes[2].plot(cumulative_effect, label='Cumulative Effect', color=green, linewidth=1)
     axes[2].fill_between(range(len(y_real)-period, len(y_real)), lower_bound_cumulative, upper_bound_cumulative, color='gray', alpha=0.2)
     axes[2].axvline(x=star_treatment, color='black', linestyle='--', linewidth=1.5)
     axes[2].set_xlabel('Days')
+    axes[2].yaxis.set_major_formatter(formatter)
     axes[2].yaxis.set_label_position('right')
     axes[2].set_ylabel('Cumulative Effect')
     axes[2].legend()
@@ -1386,7 +1403,7 @@ def plot_impact_report(geo_test, period, holdout_percentage):
 
     plt.tight_layout()
     
-    return fig, round(att,2), round(incremental,2)
+    return pre_treatment,pre_counterfactual,post_treatment,post_counterfactual,fig, round(att,2), round(incremental,2)
 
 
 
@@ -1439,6 +1456,7 @@ def plot_impact_evaluation_report(results_evaluation):
 
 
         fig, axes = plt.subplots(3, 1, figsize=(15, 9.5), sharex=True)
+        formatter = ticker.EngFormatter(places=0)
 
 
         # Panel 1: Observed data vs counterfactual prediction
@@ -1446,6 +1464,7 @@ def plot_impact_evaluation_report(results_evaluation):
         axes[0].plot(treatment, label='Treatment Group', linestyle='-', color=green,linewidth=1)
         axes[0].axvline(x=star_treatment, color='black', linestyle='--', linewidth=1.5)
         axes[0].fill_between(range((star_treatment), len(counterfactual)),  lower_bound, upper_bound, color='gray', alpha=0.2)
+        axes[0].yaxis.set_major_formatter(formatter)
         axes[0].yaxis.set_label_position('right')
         axes[0].set_ylabel('Original')
         axes[0].legend()
@@ -1457,6 +1476,7 @@ def plot_impact_evaluation_report(results_evaluation):
         axes[1].plot([0, len(counterfactual)], [0, 0], color='gray', linestyle='--', linewidth=2)
         axes[1].axvline(x=star_treatment, color='black', linestyle='--', linewidth=1.5)
         axes[1].set_ylabel('Point Difference')
+        axes[1].yaxis.set_major_formatter(formatter)
         axes[1].yaxis.set_label_position('right')
         axes[1].legend()
 
@@ -1468,6 +1488,7 @@ def plot_impact_evaluation_report(results_evaluation):
         axes[2].fill_between(range((star_treatment), len(counterfactual)), lower_bound_ce, upper_bound_ce, color='gray', alpha=0.2)
         axes[2].axvline(x=star_treatment, color='black', linestyle='--', linewidth=1.5)
         axes[2].set_xlabel('Days')
+        axes[2].yaxis.set_major_formatter(formatter)
         axes[2].yaxis.set_label_position('right')
         axes[2].set_ylabel('Cumulative Effect')
         axes[2].legend()
@@ -1499,7 +1520,6 @@ def plot_permutation_test_report(results_evaluation, Significance_level=0.1):
     upper_bound = np.percentile(null_conformities, 100 * (1 - (Significance_level / 2)))
     ax.axvspan(min(null_conformities), lower_bound, color=purple_light, alpha=0.2, label='Significance Zone (Lower)')
     ax.axvspan(upper_bound, max(null_conformities), color=purple_light, alpha=0.2, label='Significance Zone (Upper)')
-
     ax.set_xlabel("Conformity Score", fontsize=12)
     ax.set_ylabel("Frequency", fontsize=12)
     ax.set_title("Permutation Test", fontsize=14)
