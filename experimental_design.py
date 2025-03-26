@@ -850,7 +850,10 @@ if file is not None:
                                     mde = st.session_state.sensitivity_results[matching_size][period_idx]['MDE']
 
                             
-                            
+                            holdout_percentage = st.session_state.simulation_results[location]['Holdout Percentage']
+        
+                            treatment_states = treatment_group.split(',') 
+                            length_treatment = len(treatment_states)
                            
                             
                                     
@@ -885,8 +888,8 @@ if file is not None:
                                     else:
                                         treatment_group = st.session_state.simulation_results[location]['Best Treatment Group']
                                         control_group = st.session_state.simulation_results[location]['Control Group']
-                                        holdout_percentage = st.session_state.simulation_results[location]['Holdout Percentage']
-                                        pre_treatment, pre_counterfactual, post_treatment, post_counterfactual,impact_graph,att,incremental = plot_impact_report(st.session_state.results, period_idx, holdout_percentage)
+                                        
+                                        pre_treatment, pre_counterfactual, post_treatment, post_counterfactual,impact_graph,att,incremental = plot_impact_report(st.session_state.results, period_idx, holdout_percentage,length_treatment)
                                         weights = print_weights(st.session_state.results, treatment_percentage)
                                         df = pd.DataFrame(
                                             {
