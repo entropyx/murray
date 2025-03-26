@@ -43,7 +43,8 @@ st.logo(sidebar_logo, size="large", icon_image=main_body_logo)
 def generate_pdf(treatment_group, control_group, holdout_percentage, 
                  impact_graph,percenge_lift,p_value,power,period,
                  permutation_test,treatment_day,firt_day,last_day,
-                 col_target,metric_mmm,mmm_option,lift_total):
+                 col_target,metric_mmm,mmm_option,lift_total,firt_report_day,second_report_day,
+                 pre_treatment,pre_counterfactual,post_treatment,post_counterfactual,att,incremental,df,spend):
         """
         Generates a PDF report with explanations for each aspect.
         """
@@ -62,7 +63,10 @@ def generate_pdf(treatment_group, control_group, holdout_percentage,
         permutation_test.savefig(temp_image_path_permutation, bbox_inches='tight', dpi=300)  
         
 
-
+        header_bg = (103, 85, 130)  
+        alt_row_bg = (209, 204, 217)  
+        white_row_bg = (246, 246, 246)  
+        text_color = (33, 31, 36)
         pdf = FPDF()
         pdf.set_auto_page_break(auto=True, margin=15)
         pdf.add_page()
@@ -90,7 +94,7 @@ def generate_pdf(treatment_group, control_group, holdout_percentage,
         pdf.set_font("Poppins", size=10)
         pdf.set_text_color(33, 31, 36)
         pdf.multi_cell(0,5 , f"This report provides information about the the results of the analysis of a treatment on the variable '{col_target}' with a duration of {period} days. "
-                       f"The data included in the design have a period of {firt_day} to {last_day} where the treatment started on {treatment_day} until {last_day}."
+                       f"The data included in the design have a period of {firt_day} to {last_day} where the treatment started on {firt_day} until {last_day}."
                        f"It includes information about the treatment group, control group, and the statistics results of the analysis.")
         
 
@@ -145,46 +149,12 @@ def generate_pdf(treatment_group, control_group, holdout_percentage,
                             "The treatment percentage represents the portion of the total conversions that are allocated to the treatment group.")
 
 
-        pdf.ln(5)
+        pdf.ln(5)       
         
 
         pdf.set_font("Poppins", style='B', size=12)
         pdf.set_text_color(27, 0, 67)
-        pdf.cell(200, 10, "Impact Graph", ln=True)
-        pdf.set_font("Poppins", size=10)
-        pdf.set_text_color(33, 31, 36)
-
-
-        pdf.multi_cell(0, 5, "The impact graph below shows the causal effects observed in the study. "
-                            "It compares the treatment group with the control group over time and demonstrates the cumulative effect of the treatment.")
-
-
-        pdf.image(temp_image_path_impact, x=10, y=pdf.get_y(), w=180, h=100)  
-        os.remove(temp_image_path_impact)
-
-
-        pdf.add_page()
-
-
-        pdf.set_font("Poppins", style='B', size=12)
-        pdf.set_text_color(27, 0, 67)
-        pdf.cell(200, 10, "Incrementality", ln=True)
-        pdf.set_font("Poppins", size=10)
-        pdf.set_text_color(33, 31, 36)
-        pdf.multi_cell(0, 5, f"The {mmm_option} is a important value to evaluate the performance of the treatment. "
-                            f"However, it can support calibration of MMM, value is the following")
-
-        pdf.set_font("Poppins", style='B', size=10)
-        pdf.set_text_color(33, 31, 36)
-        pdf.multi_cell(0, 5, f"{mmm_option}: {round(metric_mmm, 2)}")
-
-
-
-        pdf.ln(5)
-
-        pdf.set_font("Poppins", style='B', size=12)
-        pdf.set_text_color(27, 0, 67)
-        pdf.cell(200, 8, "Results statistics", ln=True)
+        pdf.cell(200, 10, "Incrementality and statistical results.", ln=True)
         pdf.set_font("Poppins", size=10)
         pdf.set_text_color(33, 31, 36)
         pdf.multi_cell(0, 5, f"Based on the analysis of the injected data and configured parameters, "
@@ -197,24 +167,194 @@ def generate_pdf(treatment_group, control_group, holdout_percentage,
         pdf.multi_cell(0, 5, f"P-value: {p_value}")
         pdf.multi_cell(0, 5, f"Power: {power}")
 
-                            
+        pdf.ln(4)
+        
+        pdf.set_font("Poppins", size=10)
+        pdf.set_text_color(33, 31, 36)
+        pdf.multi_cell(0, 5, f"It is important to be able to identify the impact of the intervention pre-intervention and" 
+                       f"post-intervention in real values. In this case, a small table is presented where the pre-intervention"
+                       f"value (with the same duration as the treatment period) and the post-intervention value are observed."
+                       f"This allows for a quick and simple identification of the impact that an intervention would have in"
+                       f"comparison to the locations where it is not applied (counterfactual).")
+
+        pdf.ln(2)
+        if pdf.get_y() > 240:
+            pdf.add_page() 
+
+        col_widths = [62.5, 42.5, 42.5, 42.5]
+        row_height = 8
+
+        
+        header_texts = [
+            "Group",
+            f"Pre-treatment\n({firt_report_day} to {second_report_day})",
+            f"Post-treatment\n({firt_day} to {last_day})",
+            "Increment"
+        ]
+
+        
+        max_lines = 0
+        for txt in header_texts:
+            n = txt.count('\n') + 1
+            if n > max_lines:
+                max_lines = n
+        max_header_height = max_lines * row_height
+
+        
+        x_start = pdf.get_x()
+        y_start = pdf.get_y()
+
+        
+        pdf.set_fill_color(*header_bg)
+        pdf.set_text_color(255, 255, 255)
+        pdf.set_font("Poppins", "B", 10) 
+
+        x = x_start
+        for i, txt in enumerate(header_texts):
+            
+            pdf.cell(col_widths[i], max_header_height, "", border=1, ln=0, fill=True)
+            
+            
+            current_x = pdf.get_x() - col_widths[i]
+            pdf.set_xy(current_x, y_start)
+            
+            
+            if "\n" in txt:
+                lines = txt.split("\n")  
+                
+                
+                pdf.cell(col_widths[i], row_height, lines[0], border=0, ln=0, align='C')
+                
+                
+                pdf.ln(row_height)
+                pdf.set_x(current_x)  
+                
+                
+                current_font_size = pdf.font_size_pt
+                smaller_font = current_font_size * 0.7
+                pdf.set_font("Poppins", "B", smaller_font)
+                
+                
+                pdf.cell(col_widths[i], row_height, lines[1], border=0, ln=0, align='C')
+                
+                
+                pdf.set_font("Poppins", "B", current_font_size)
+                
+            else:
+                pdf.multi_cell(col_widths[i], row_height, txt, border=0, align='C')
+            
+            
+            x += col_widths[i]
+            pdf.set_xy(x, y_start)
+
+        
+        pdf.set_xy(x_start, y_start + max_header_height)
+        row_height = 8  
+        header_bg = (103, 85, 130)  
+        alt_row_bg = (209, 204, 217)  
+        white_row_bg = (246, 246, 246)  
+        text_color = (33, 31, 36)
+
+        
+        pdf.set_text_color(*text_color)
+        pdf.set_font("Poppins", "", 10)
+        y_data_start = pdf.get_y()
+
+        for i, row in df.iterrows():
+            bg_color = alt_row_bg if i % 2 else white_row_bg
+            pdf.set_fill_color(*bg_color)
+            
+            pdf.cell(col_widths[0], row_height, str(row["Group"]), border=1, ln=0, align='C', fill=True)
+            pdf.cell(col_widths[1], row_height, f"{row['Pre-treatment']:,.2f}", border=1, ln=0, align='C', fill=True)
+            pdf.cell(col_widths[2], row_height, f"{row['Post-treatment']:,.2f}", border=1, ln=1, align='C', fill=True)
+
+        y_data_end = pdf.get_y()
+        altura_total = y_data_end - y_data_start
+
+        
+        x_fourth_col = x_start + col_widths[0] + col_widths[1] + col_widths[2]
+        pdf.set_xy(x_fourth_col, y_data_start)
+
+        pdf.set_text_color(*text_color)
+        pdf.set_font("Poppins", "B", 10)
+        pdf.cell(col_widths[3], altura_total, f"{percenge_lift}%", border=1, ln=1, align='C', fill=True)
+
+        
         pdf.ln(5)
+        if pdf.get_y() > 250:
+            pdf.add_page() 
+
+        pdf.set_font("Poppins", size=10)
+        pdf.set_text_color(33, 31, 36)
+        increment = np.sum(post_treatment)- np.sum(post_counterfactual)
+        
+        pdf.multi_cell(0, 5, f"The permutation test below shows the results of the permutation test. "
+                            f"It compares the treatment group with the control group over time and demonstrates the cumulative effect of the treatment." 
+                            f"In this case, the metric observed in the graph, called Observed difference, represents the value of the difference (increase "
+                            f"or decrease) observed in the previous table. This value is {round(increment,2):,.2f}, and the graph visually indicates whether it falls"
+                            f" within the significance zone, allowing us to conclude whether the result is statistically significant.")
+            
+        pdf.image(temp_image_path_permutation, x=10, y=pdf.get_y(), w=180, h=100)  
+        
+        pdf.set_y(pdf.get_y() + 105)  
+        os.remove(temp_image_path_permutation)
+        
+        pdf.ln(5)
+        if pdf.get_y() > 250:
+            pdf.add_page() 
+
+        pdf.set_font("Poppins", size=10)
+        pdf.set_text_color(33, 31, 36)
+        pdf.multi_cell(0, 5, "The impact graph below shows the causal effects observed in the study. "
+                            "It compares the treatment group with the control group over time and demonstrates the cumulative effect of the treatment.")
+
+        pdf.ln(5)
+        if pdf.get_y() > 250:
+            pdf.add_page() 
+
+        pdf.image(temp_image_path_impact, x=10, y=pdf.get_y(), w=180, h=100)  
+        os.remove(temp_image_path_impact)
+        
+        
+        pdf.set_y(pdf.get_y() + 105) 
+        pdf.add_page()
 
         pdf.set_font("Poppins", style='B', size=12)
         pdf.set_text_color(27, 0, 67)
-        pdf.cell(200, 10, "Permutation Test", ln=True)
+        pdf.cell(200, 10, "Incremental Performance Evaluation", ln=True)
         pdf.set_font("Poppins", size=10)
         pdf.set_text_color(33, 31, 36)
+        pdf.multi_cell(0, 5, f"The {mmm_option} is a important value to evaluate the performance of the treatment which calculate the {mmm_option} based on the spend and the incremental. "
+                            f"However, it can support calibration of MMM, value is the following")
 
-        pdf.multi_cell(0, 5, "The permutation test below shows the results of the permutation test. "
-                            "It compares the treatment group with the control group over time and demonstrates the cumulative effect of the treatment.")
+
+        pdf.ln(1.5)
         
-        pdf.ln(5)
-        pdf.image(temp_image_path_permutation, x=10, y=pdf.get_y(), w=180, h=100)  
-        os.remove(temp_image_path_permutation)
+        col_widths = [60, 60, 60]
+        row_height = 8
 
+        header_texts = ["Spend", "Incremental", mmm_option]
+        
+        x_start = pdf.get_x()
+        y_start = pdf.get_y() + 5  
 
+        pdf.set_fill_color(*header_bg)
+        pdf.set_text_color(255, 255, 255)
+        pdf.set_font("Poppins", "B", 10)
 
+        for i, txt in enumerate(header_texts):
+            pdf.cell(col_widths[i], row_height, txt, border=1, ln=0, align='C', fill=True)
+        pdf.ln(row_height)
+
+        pdf.set_text_color(*text_color)
+        pdf.set_font("Poppins", "", 10)
+        pdf.set_fill_color(*white_row_bg)
+        
+        pdf.cell(col_widths[0], row_height, f"${spend:,.2f}", border=1, ln=0, align='C', fill=True)
+        pdf.cell(col_widths[1], row_height, f"${incremental:,.2f}", border=1, ln=0, align='C', fill=True)
+        pdf.cell(col_widths[2], row_height, f"${round(metric_mmm, 2):,.2f}", border=1, ln=1, align='C', fill=True)
+
+        pdf.ln(5)  
 
 
 
@@ -286,6 +426,28 @@ if "iCAC" not in st.session_state:
         st.session_state.iCAC = None
 if 'lift_total' not in st.session_state:
      st.session_state.lift_total = None
+if 'pre_treatment' not in st.session_state:
+        st.session_state.pre_treatment = None
+if 'pre_counterfactual' not in st.session_state:
+        st.session_state.pre_counterfactual = None
+if 'post_treatment' not in st.session_state:
+        st.session_state.post_treatment = None
+if 'post_counterfactual' not in st.session_state:
+        st.session_state.post_counterfactual = None
+if 'att_report' not in st.session_state:
+        st.session_state.att_report = None
+if 'incremental_report' not in st.session_state:
+        st.session_state.incremental_report = None
+if 'last_day' not in st.session_state:
+        st.session_state.last_day = None
+if 'firt_day' not in st.session_state:
+        st.session_state.firt_day = None
+if 'firt_report_day' not in st.session_state:
+        st.session_state.firt_report_day = None
+if 'second_report_day' not in st.session_state:
+        st.session_state.second_report_day = None
+        
+
 
 
 
@@ -400,6 +562,7 @@ if file is not None:
             filtered_data = data1[data1['location'] == random_sate]
             firt_day = filtered_data['time'].min()
             last_day = filtered_data['time'].max()
+            
 
         
 
@@ -425,7 +588,7 @@ if file is not None:
 
 
 
-
+            
 
 
 
@@ -471,10 +634,10 @@ if file is not None:
                         st.session_state.percenge_lift = percenge_lift
                         control_group = results['control_group']
                         st.session_state.control_group = control_group
-                        observed_conformity = results['observed_conformity']
-                        st.session_state.observed_conformity = observed_conformity
-                        null_conformities = results['null_conformities']
-                        st.session_state.null_conformities = null_conformities
+                        observed_stat = results['observed_stat']
+                        st.session_state.observed_stat = observed_stat
+                        null_stats = results['null_stats']
+                        st.session_state.null_stats = null_stats
                         
                         
 
@@ -488,9 +651,15 @@ if file is not None:
                         st.session_state.holdout_percentage = round(((total_Y - treatment_Y) / total_Y) * 100, 2)
                         st.session_state.treatment_group = ", ".join(treatment_group)
                         st.session_state.control_group = ", ".join(st.session_state.control_group)
+
                         period = end_position_treatment - start_position_treatment+1
                         st.session_state.permutation_test_report = plot_permutation_test_report(results)
                         st.session_state.period = period
+                        second_report_day = last_day - pd.Timedelta(days=period)
+                        firt_report_day = last_day - pd.Timedelta(days=(period*2)-1)
+                        treatment_day = last_day - pd.Timedelta(days=period-1)
+                
+                        
                         
 
 
@@ -498,23 +667,31 @@ if file is not None:
                 
 
 
-
                         
-                        impact_graph,att,incremental = plot_impact_evaluation_streamlit(results,filtered_data)
+                        length_treatment = len(treatment_group)
+                        impact_graph,att,incremental = plot_impact_evaluation_streamlit(results,filtered_data,length_treatment)
                         st.session_state.incremental = incremental
                         
                         st.session_state.impact_graph = impact_graph
 
-                        impact_graph_report,att_report,incremental_report = plot_impact_evaluation_report(results)
+                        impact_graph_report,pre_treatment,pre_counterfactual,post_treatment,post_counterfactual,att_report,incremental_report = plot_impact_evaluation_report(results)
                         st.session_state.impact_graph_report = impact_graph_report
+                        st.session_state.pre_treatment = pre_treatment
+                        st.session_state.pre_counterfactual = pre_counterfactual
+                        st.session_state.post_treatment = post_treatment
+                        st.session_state.post_counterfactual = post_counterfactual
+                        st.session_state.att_report = att_report
+                        st.session_state.incremental_report = incremental_report
+
+                        
                         
                         
 
                 
                 if mmm_option == "iROAS":
-                    st.session_state.metric_mmm = st.session_state.incremental / spend
+                    st.session_state.metric_mmm = spend / st.session_state.incremental 
                 else:
-                    st.session_state.metric_mmm = st.session_state.incremental / spend
+                    st.session_state.metric_mmm = spend / st.session_state.incremental 
 
 
                 
@@ -523,16 +700,41 @@ if file is not None:
                 st.write(f"P-value: {st.session_state.p_value}")
                 st.write(f"Power: {st.session_state.power}")
                 st.write(f"Percentage Lift: {st.session_state.percenge_lift} %")
-                st.write(f"lift_total: {st.session_state.lift_total}")
+                st.write(f"Lift_total: {st.session_state.lift_total}")
                 st.write(f"Holdout percentage: {st.session_state.holdout_percentage} %")
                 st.write(f"Treatment group: {st.session_state.treatment_group}")
                 st.write(f"Control group: {st.session_state.control_group}")
-
+           
+                
+ 
+                
+                last_day = pd.to_datetime(last_day)
                 treatment_day = last_day - pd.Timedelta(days=end_position_treatment - start_position_treatment)
-                last_day = end_treatment.strftime('%Y-%m-%d')
+                second_report_day = last_day - pd.Timedelta(days=st.session_state.period)
+                firt_report_day = last_day - pd.Timedelta(days=(st.session_state.period*2)-1)
+                treatment_day = last_day - pd.Timedelta(days=st.session_state.period-1)
+                last_day = last_day.strftime('%Y-%m-%d')
                 firt_day = firt_day.strftime('%Y-%m-%d')
-                treatment_day = treatment_day.strftime('%Y-%m-%d')
+                firt_report_day = firt_report_day.strftime('%Y-%m-%d')
+                second_report_day = second_report_day.strftime('%Y-%m-%d')
 
+
+
+                 # Absolute values (comoarison)
+                pre_treatment = st.session_state.pre_treatment
+                pre_counterfactual = st.session_state.pre_counterfactual
+                post_treatment = st.session_state.post_treatment
+                post_counterfactual = st.session_state.post_counterfactual
+
+                df = pd.DataFrame(
+                                            {
+                                                "Group": ["Treatment", "Counterfactual (control)", "Absolute difference"],
+                                                "Pre-treatment": [np.sum(pre_treatment),np.sum(pre_counterfactual), np.abs(np.sum(pre_treatment)-np.sum(pre_counterfactual))],
+                                                "Post-treatment": [np.sum(post_treatment), np.sum(post_counterfactual),np.abs(np.sum(post_treatment)- np.sum(post_counterfactual))],
+                                                "Increment": [" " ," " ," " ]
+                                                
+                                            }
+                                        )
                 
 
 
@@ -575,7 +777,17 @@ if file is not None:
                         col_target,
                         st.session_state.metric_mmm,
                         st.session_state.mmm_option,
-                        st.session_state.lift_total
+                        st.session_state.lift_total,
+                        firt_report_day,
+                        second_report_day,
+                        st.session_state.pre_treatment,
+                        st.session_state.pre_counterfactual,
+                        st.session_state.post_treatment,
+                        st.session_state.post_counterfactual,
+                        st.session_state.att_report,
+                        st.session_state.incremental_report,
+                        df,
+                        spend
                     )
 
 
