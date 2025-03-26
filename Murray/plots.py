@@ -235,10 +235,9 @@ def plot_counterfactuals(geo_test):
 
 def plot_mde_results(results_by_size, sensitivity_results, periods):
     """
-    Generates an interactive heatmap for the MDE (Minimum Detectable Effect) values using Plotly.
-    Compatible with Streamlit.
+    Generates an interactive heatmap showing penalized MDE values that account for 
+    counterfactual quality and time period.
     """
-
     holdout_by_location = {
         size: data['Holdout Percentage']
         for size, data in results_by_size.items()
@@ -246,14 +245,62 @@ def plot_mde_results(results_by_size, sensitivity_results, periods):
 
     sorted_sizes = sorted(holdout_by_location.keys(), key=lambda x: holdout_by_location[x])
 
+    def calculate_penalty_score(mde, period_idx, total_periods, size, results_by_size):
+        """
+        Calculates a penalty score based on MDE, counterfactual quality, and time period.
+        Returns both the score and its components for hover information.
+        """
+        if pd.isna(mde):
+            return None, None, None, None
+            
+        # Quality metrics
+        mape = results_by_size[size].get('MAPE', 0)
+        smape = results_by_size[size].get('SMAPE', 0)
+        
+        # Normalize metrics
+        mape_factor = min(mape / 100, 1)
+        smape_factor = min(smape / 100, 1)
+        quality_score = (mape_factor + smape_factor) / 2
+        
+        # Time factor 
+        time_score = (period_idx + 1) / total_periods
+        
+        # MDE factor 
+        mde_factor = min(mde, 1)  
+        
+        # Calculate final score 
+        quality_weight = 0.85  
+        time_weight = 0.05    
+        mde_weight = 0.15     
+        
+        final_score = (quality_weight * quality_score + 
+                      time_weight * (1 - time_score) +
+                      mde_weight * mde_factor)
+        
+        return final_score, mde, mape, smape
+
+    
     heatmap_data = pd.DataFrame()
+    hover_data = []  
+    
     for size in sorted_sizes:
         row = []
+        hover_row = []
         period_results = sensitivity_results.get(size, {})
-        for period in periods:
+        
+        for period_idx, period in enumerate(periods):
             mde = period_results.get(period, {}).get('MDE', None)
-            row.append(mde if mde is not None else np.nan)
+            score, original_mde, mape, smape = calculate_penalty_score(
+                mde, period_idx, len(periods), size, results_by_size
+            )
+            row.append(score)
+            hover_row.append({
+                'Original MDE': f"{original_mde:.2%}" if original_mde is not None else "N/A",
+                'MAPE': f"{mape:.2f}%" if mape is not None else "N/A",
+                'SMAPE': f"{smape:.2f}%" if smape is not None else "N/A"
+            })
         heatmap_data[size] = row
+        hover_data.append(hover_row)
 
     total_values = heatmap_data.size
     nan_values = heatmap_data.isna().sum().sum()
@@ -267,36 +314,42 @@ def plot_mde_results(results_by_size, sensitivity_results, periods):
     heatmap_data = heatmap_data.T
     heatmap_data.columns = [f"Day-{i}" for i in periods]
     heatmap_data.index = [f"{holdout_by_location.get(size, 0):.2f}%" for size in sorted_sizes]
-    
     heatmap_data.index.name = "Treatment percentage (%)"
 
     y_labels = heatmap_data.index.tolist()
     x_labels = heatmap_data.columns.tolist()
     y_axis = [f"{100 - float(value.strip('%')):.2f}%" for value in y_labels]
     z_values = heatmap_data.values.tolist()
-    annotations = [[f"{val:.2%}" if not np.isnan(val) else "" for val in row] for row in z_values]
+
+    
+    annotations = [[f"{val:.2%}" if not pd.isna(val) else "" for val in row] for row in z_values]
 
     fig = go.Figure()
     custom_colorscale = [[0, heatmap_green], [1, heatmap_red]]
 
-    
     fig.add_trace(go.Heatmap(
         z=z_values,
         x=x_labels,
         y=y_labels,
         colorscale=custom_colorscale,
-        colorbar=dict(title="MDE (%)"),
+        colorbar=dict(title="Quality Score"),
         colorbar_tickfont=dict(size=12, color='black'),
         hoverongaps=True,
         text=annotations,
         texttemplate="%{text}",
         textfont={"size": 12, "color": "black"},
-        hoverinfo="text",
+        hovertemplate=(
+            "Treatment size: %{customdata}<br>" +
+            "Penalty Score: %{text}<br>" +
+            "Original MDE: %{customdata:Original MDE}<br>" +
+            "MAPE: %{customdata:MAPE}<br>" +
+            "SMAPE: %{customdata:SMAPE}<br>" +
+            "<extra></extra>"
+        ),
         showscale=True,
         xgap=1,
         ygap=1
     ))
-
 
     scatter_x, scatter_y = np.meshgrid(range(len(x_labels)), range(len(y_labels)))
     scatter_x = scatter_x.flatten()
