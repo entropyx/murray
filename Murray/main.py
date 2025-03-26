@@ -382,7 +382,35 @@ def BetterGroups(similarity_matrix, excluded_locations, data, correlation_matrix
                 'Holdout Percentage': holdout_percentage,
             }
 
-    return results_by_size
+
+        total_Y = data['Y'].sum()
+
+        for size in range(min_elements_in_treatment, max_group_size + 1):
+            best_results = [result for result in results if result is not None and len(result[0]) == size]
+
+            if best_results:
+                best_result = min(best_results, key=lambda x: (x[2], -x[3]))
+                best_treatment_group, best_control_group, best_MAPE, best_SMAPE, y, predictions, weights= best_result
+
+                treatment_Y = data[data['location'].isin(best_treatment_group)]['Y'].sum()
+                holdout_percentage = ((total_Y - treatment_Y) / total_Y) * 100
+
+                results_by_size[size] = {
+                    'Best Treatment Group': best_treatment_group,
+                    'Control Group': best_control_group,
+                    'MAPE': best_MAPE,
+                    'SMAPE': best_SMAPE,
+                    'Actual Target Metric (y)': y,
+                    'Predictions': predictions,
+                    'Weights': weights,
+                    'Holdout Percentage': holdout_percentage,
+                    
+                }
+
+
+        return results_by_size
+    else:
+        return None
 
 
 

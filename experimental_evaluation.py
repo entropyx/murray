@@ -351,8 +351,8 @@ def generate_pdf(treatment_group, control_group, holdout_percentage,
         pdf.set_fill_color(*white_row_bg)
         
         pdf.cell(col_widths[0], row_height, f"${spend:,.2f}", border=1, ln=0, align='C', fill=True)
-        pdf.cell(col_widths[1], row_height, f"{incremental:,.2f}", border=1, ln=0, align='C', fill=True)
-        pdf.cell(col_widths[2], row_height, f"{round(metric_mmm, 2)}", border=1, ln=1, align='C', fill=True)
+        pdf.cell(col_widths[1], row_height, f"${incremental:,.2f}", border=1, ln=0, align='C', fill=True)
+        pdf.cell(col_widths[2], row_height, f"${round(metric_mmm, 2):,.2f}", border=1, ln=1, align='C', fill=True)
 
         pdf.ln(5)  
 

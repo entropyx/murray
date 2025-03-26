@@ -499,12 +499,12 @@ def plot_impact_streamlit_app(geo_test, period, holdout_percentage):
         
         resultados_size = results_by_size[target_size_key]
         y_real = resultados_size['Predictions'].flatten()
-        serie_tratamiento = series_lifts[comb]
+        treatment_series = series_lifts[comb]
 
         
-        point_difference = serie_tratamiento - y_real
-        cumulative_effect = ([0] * (len(serie_tratamiento) - period) + 
-                              np.cumsum(point_difference[len(serie_tratamiento)-period:]).tolist())
+        point_difference = treatment_series - y_real
+        cumulative_effect = ([0] * (len(treatment_series) - period) + 
+                              np.cumsum(point_difference[len(treatment_series)-period:]).tolist())
         
 
         star_treatment = len(y_real) - period
@@ -518,8 +518,8 @@ def plot_impact_streamlit_app(geo_test, period, holdout_percentage):
         lower_bound_ce, upper_bound_ce = calculate_confidence_bands(cumulative_effect[star_treatment:])
 
 
-        att = np.mean(serie_tratamiento[star_treatment:] - y_real[star_treatment:])
-        incremental = np.sum(serie_tratamiento[star_treatment:] - y_real[star_treatment:])
+        att = np.mean(treatment_series[star_treatment:] - y_real[star_treatment:])
+        incremental = np.sum(treatment_series[star_treatment:] - y_real[star_treatment:])
 
 
         
@@ -543,7 +543,7 @@ def plot_impact_streamlit_app(geo_test, period, holdout_percentage):
         ), row=1, col=1)
 
         fig.add_trace(go.Scatter(
-            y=serie_tratamiento,
+            y=treatment_series,
             mode='lines',
             name='Treatment Group',
             line=dict(color=green,width=1),
@@ -1339,10 +1339,10 @@ def plot_impact_report(geo_test, period, holdout_percentage,length_treatment):
 
     resultados_size = results_by_size[target_size_key]
     y_real = resultados_size['Predictions'].flatten()
-    serie_tratamiento = series_lifts[comb]
-    point_difference = serie_tratamiento - y_real
-    cumulative_effect = ([0] * (len(serie_tratamiento) - period) + 
-                         np.cumsum(point_difference[len(serie_tratamiento)-period:]).tolist())
+    treatment_series = series_lifts[comb]
+    point_difference = treatment_series - y_real
+    cumulative_effect = ([0] * (len(treatment_series) - period) + 
+                         np.cumsum(point_difference[len(treatment_series)-period:]).tolist())
     
     star_treatment = len(y_real) - period
     y_treatment = y_real[star_treatment:]
@@ -1351,13 +1351,13 @@ def plot_impact_report(geo_test, period, holdout_percentage,length_treatment):
     lower_bound_pd, upper_bound_pd = calculate_confidence_bands(point_difference[star_treatment:])
     lower_bound_ce, upper_bound_ce = calculate_confidence_bands(cumulative_effect[star_treatment:])
 
-    att = np.mean(serie_tratamiento[star_treatment:] - y_real[star_treatment:])
+    att = np.mean(treatment_series[star_treatment:] - y_real[star_treatment:])
     att = att / length_treatment
-    incremental = np.sum(serie_tratamiento[star_treatment:] - y_real[star_treatment:])
+    incremental = np.sum(treatment_series[star_treatment:] - y_real[star_treatment:])
     pre_treatment = y_real[star_treatment-period:star_treatment]
-    pre_counterfactual = serie_tratamiento[star_treatment-period:star_treatment]
+    pre_counterfactual = treatment_series[star_treatment-period:star_treatment]
     post_treatment = y_real[star_treatment:]
-    post_counterfactual = serie_tratamiento[star_treatment:]
+    post_counterfactual = treatment_series[star_treatment:]
    
 
     fig, axes = plt.subplots(3, 1, figsize=(15, 9.5), sharex=True)
@@ -1369,11 +1369,11 @@ def plot_impact_report(geo_test, period, holdout_percentage,length_treatment):
 
     # Panel 1: Data vs Counterfactual Prediction
     axes[0].plot(y_real, label='Control Group', linestyle='--', color=black_secondary, linewidth=1)
-    axes[0].plot(serie_tratamiento, label='Treatment Group', linestyle='-', color=green, linewidth=1)
+    axes[0].plot(treatment_series, label='Treatment Group', linestyle='-', color=green, linewidth=1)
     axes[0].axvline(x=star_treatment, color='black', linestyle='--', linewidth=1.5)
     axes[0].fill_between(range(len(y_real)-period, len(y_real)), lower_bound, upper_bound, color='gray', alpha=0.2)
     axes[0].set_title(f'Holdout: {holdout_percentage:.2f}% - MDE: {target_mde:.2f}')
-    format_ticks(axes[0], np.concatenate([y_real, serie_tratamiento]))
+    format_ticks(axes[0], np.concatenate([y_real, treatment_series]))
     axes[0].yaxis.set_label_position('right')
     axes[0].set_ylabel('Original')
     axes[0].legend()
