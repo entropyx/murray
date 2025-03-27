@@ -58,4 +58,4 @@ results = run_geo_evaluation(
 
 
 # Documentation
-You can check the documentation [here](https://entropy.tech/murray/docs/Welcome%20to%20Murray)
+You can check the documentation [here](https://docs-murray.entropy.tech/)
