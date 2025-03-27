@@ -6,8 +6,8 @@ const config = {
   tagline: ' ',
   favicon: 'img/logo.ico',
 
-  url: 'https://entropyx.github.io',
-  baseUrl: '/murray/',
+  url: 'https://docs-murray.entropy.tech/',
+  baseUrl: '/',
 
   organizationName: 'entropyx',
   projectName: 'murray',

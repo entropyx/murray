@@ -42,7 +42,7 @@ export default function Home() {
   return (
     <Layout
       title={siteConfig.title}
-      description="A tool for experimental geospatial design">
+      description="A tool for geographic incrementality testing">
       <HomepageHeader />
       <main>
         <div className={styles.features}>
