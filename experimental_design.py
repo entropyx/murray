@@ -29,7 +29,7 @@ st.sidebar.markdown(
         color: #3e7cb1 !important;  
     }
     </style>
-    <a class='custom-link' href="https://entropy.tech/murray/" target="_blank">Murray Documentation</a>
+    <a class='custom-link' href="https://docs-murray.entropy.tech/" target="_blank">Murray Documentation</a>
     """,
     unsafe_allow_html=True
 )
