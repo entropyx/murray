@@ -24,9 +24,9 @@ Now, it's time to design the experiment which requires entering configuration pa
 
 ![Locale Dropdown](./img/3_app_ed.jpeg)
 
-At the end of the simulation, a heatmap is displayed according to the entered configurations, showing the behavior of different treatment groups over the specified periods. The chart is interactive, so when clicking on a cell, the holdout percentage, treatment group, and selected control group are displayed.
+At the end of the simulation, a heatmap is displayed according to the entered configurations, showing the behavior of different treatment groups over the specified periods. The chart is interactive, so when clicking on a cell, treatment group,selected control group and minimum detectable effect are displayed.
 
-![Locale Dropdown](./img/4_app_ed.jpeg)
+![Locale Dropdown](./img/heatmap.png)
 
 ### 4. Generate report of results
 

@@ -82,10 +82,11 @@ geo_test = run_geo_analysis(
 ```
 
 
-The results of the test provide us a visualization about the sensitivity in all periods admitted and different holdouts. The holdouts depend on the data and locations. By default, the number of treatment locations ranges from 20% to 50% of the total locations. For example, if you have 32 locations, the range of size of treatment groups is 6-16 locations.
-Whe the simulation finish, you can see the heatmap of the results like this:
+The results are shown in a heatmap where the Quality Score is displayed, which is a measure of the quality of the experiment based on the number of treatments, periods and lift. By default, the number of treatment locations ranges from 20% to 50% of the total locations. For example, if you have 32 locations, the range of size of treatment groups is 6-16 locations.
+When the simulation finishes, you can see the heatmap of the results like this:
 
 ![Locale Dropdown](/img/heatmap.png)
+
 
 
 

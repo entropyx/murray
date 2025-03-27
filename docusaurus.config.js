@@ -6,7 +6,7 @@ const config = {
   tagline: ' ',
   favicon: 'img/logo.ico',
 
-  url: 'https://entropyx.github.io',
+  url: 'http://entropy.tech',
   baseUrl: '/murray/',
 
   organizationName: 'entropyx',
@@ -20,7 +20,7 @@ const config = {
     defaultLocale: 'en',
     locales: ['en'],
   },
-
+ 
   presets: [
     [
       'classic',
@@ -54,8 +54,9 @@ const config = {
     navbar: {
       title: 'Murray',
       logo: {
-        alt: 'My Site Logo',
+        alt: 'Entropy Logo',
         src: 'img/logo.svg',
+        srcDark: 'img/logo.svg',
       },
       items: [
         {
@@ -79,7 +80,7 @@ const config = {
           items: [
             {
               label: 'Documentation',
-              to: '/docs/Welcome to Murray',
+              to: '/docs/Welcome%20to%20Murray',
             },
           ],
         },
@@ -88,7 +89,7 @@ const config = {
           items: [
             {
               label: 'Official Page',
-              href: 'https://entropy.tech/',
+              href: 'https://entropyx.github.io',
             },
             {
               label: 'Facebook',
@@ -96,12 +97,8 @@ const config = {
             },
             {
               label: 'LinkedIn',
-              href: 'https://www.linkedin.com/company/entropyhq/',
-            },
-            {
-              label: 'Instagram',
-              href: 'https://www.instagram.com/entropy.tech/',
-            },
+              href: 'https://www.linkedin.com/company/entropyhq/s',
+            }
           ],
         },
         {

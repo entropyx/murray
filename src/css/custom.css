@@ -6,36 +6,95 @@
 
 /* You can override the default Infima variables here. */
 :root {
-  --ifm-color-primary: #3e7cb1;
-  --ifm-color-primary-dark: #38709f;
-  --ifm-color-primary-darker: #356996;
-  --ifm-color-primary-darkest: #2b577c;
-  --ifm-color-primary-light: #4888bf;
-  --ifm-color-primary-lighter: #518ec2;
-  --ifm-color-primary-lightest: #6b9fcb;
+  /* Paleta principal inspirada en Entropy */
+  --ifm-color-primary: #0066cc; /* Azul principal */
+  --ifm-color-primary-dark: #0052a3;
+  --ifm-color-primary-darker: #004d99;
+  --ifm-color-primary-darkest: #003d7a;
+  --ifm-color-primary-light: #1a75d1;
+  --ifm-color-primary-lighter: #3385d6;
+  --ifm-color-primary-lightest: #4d94db;
+  
+  /* Colores del footer y otros elementos */
+  --ifm-footer-background-color: #111827; /* Gris oscuro/azulado */
+  --ifm-footer-color: #ffffff;
+  --ifm-footer-link-color: #ffffff;
+  --ifm-footer-title-color: #ffffff;
+  
+  /* Colores de fondo y texto */
+  --ifm-background-color: #ffffff;
+  --ifm-font-color-base: #1f2937;
 }
 
 /* For readability concerns, you should choose a lighter palette in dark mode. */
 [data-theme='dark'] {
-  --ifm-color-primary: #6596c1;
-  --ifm-color-primary-dark: #5088b9;
-  --ifm-color-primary-darker: #4880b2;
-  --ifm-color-primary-darkest: #3b6a93;
-  --ifm-color-primary-light: #7aa4c9;
-  --ifm-color-primary-lighter: #84abce;
-  --ifm-color-primary-lightest: #a4c1da;
+  --ifm-color-primary: #4d94db;
+  --ifm-color-primary-dark: #3385d6;
+  --ifm-color-primary-darker: #1a75d1;
+  --ifm-color-primary-darkest: #0066cc;
+  --ifm-color-primary-light: #66a3e0;
+  --ifm-color-primary-lighter: #80b3e6;
+  --ifm-color-primary-lightest: #99c2eb;
+  --ifm-background-color: #1f2937;
+  --ifm-font-color-base: #ffffff;
 }
-
 
 /* 🎨 Modo Claro */
 .hero.hero--primary {
-  background-color: transparent !important; /* Color para modo claro */
-  color: #000000 !important;
+  background: linear-gradient(135deg, #0066cc 0%, #004d99 100%);
+  color: white !important;
 }
 
 /* 🌙 Modo Oscuro */
 [data-theme='dark'] .hero.hero--primary {
   background-color: transparent !important; /* Color para modo oscuro */
   color: #ffffff !important;
+}
+
+/* Si prefieres usar una clase específica */
+.footer {
+  background-color: #211f24
+  ; /* O el color que prefieras */
+}
+
+/* Footer personalizado */
+footer.footer {
+  background-color: #111827 !important;
+}
+
+.footer__link-item {
+  color: #ffffff !important;
+}
+
+.footer__title {
+  color: #ffffff !important;
+}
+
+/* Estilos para el footer */
+.footer {
+  padding: 1.5rem 0;  /* Reducimos el padding vertical */
+}
+
+.footer__links {
+  margin-bottom: 1rem;  /* Reducimos el espacio entre links y copyright */
+}
+
+.footer__col {
+  margin-bottom: 0;  /* Quitamos el margen inferior de las columnas */
+}
+
+.footer__title {
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.footer__link-item {
+  font-size: 0.9rem;
+  line-height: 1.5;  /* Reducimos el espacio entre líneas */
+}
+
+.footer__copyright {
+  font-size: 0.8rem;
+  margin-top: 0.5rem;  /* Reducimos el espacio antes del copyright */
 }
 
