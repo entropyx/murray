@@ -6,7 +6,7 @@ const config = {
   tagline: ' ',
   favicon: 'img/logo.ico',
 
-  url: 'http://entropy.tech',
+  url: 'https://entropyx.github.io',
   baseUrl: '/murray/',
 
   organizationName: 'entropyx',
