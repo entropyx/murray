@@ -30,7 +30,7 @@ st.sidebar.markdown(
         color: #3e7cb1 !important;  
     }
     </style>
-    <a class='custom-link' href="https://entropy.tech/murray/" target="_blank">Murray Documentation</a>
+    <a class='custom-link' href="https://docs-murray.entropy.tech/" target="_blank">Murray Documentation</a>
     """,
     unsafe_allow_html=True
 )
@@ -351,8 +351,8 @@ def generate_pdf(treatment_group, control_group, holdout_percentage,
         pdf.set_fill_color(*white_row_bg)
         
         pdf.cell(col_widths[0], row_height, f"${spend:,.2f}", border=1, ln=0, align='C', fill=True)
-        pdf.cell(col_widths[1], row_height, f"{incremental:,.2f}", border=1, ln=0, align='C', fill=True)
-        pdf.cell(col_widths[2], row_height, f"{round(metric_mmm, 2)}", border=1, ln=1, align='C', fill=True)
+        pdf.cell(col_widths[1], row_height, f"${incremental:,.2f}", border=1, ln=0, align='C', fill=True)
+        pdf.cell(col_widths[2], row_height, f"${round(metric_mmm, 2):,.2f}", border=1, ln=1, align='C', fill=True)
 
         pdf.ln(5)  
 
@@ -667,9 +667,9 @@ if file is not None:
                 
 
 
-
                         
-                        impact_graph,att,incremental = plot_impact_evaluation_streamlit(results,filtered_data)
+                        length_treatment = len(treatment_group)
+                        impact_graph,att,incremental = plot_impact_evaluation_streamlit(results,filtered_data,length_treatment)
                         st.session_state.incremental = incremental
                         
                         st.session_state.impact_graph = impact_graph

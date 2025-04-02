@@ -7,7 +7,7 @@ import pandas as pd
 def run_geo_evaluation(data_input, start_treatment,end_treatment,treatment_group,spend,n_permutations=500000,inference_type='iid',significance_level=0.1):
         
         random_sate = data_input['location'].unique()[0]
-        filtered_data = data_input[data_input['location'] == random_sate]
+        filtered_data = data_input[data_input['location'] == random_sate].copy()
         start_treatment = pd.to_datetime(start_treatment, dayfirst=True)
         end_treatment = pd.to_datetime(end_treatment,dayfirst=True)
         filtered_data['time'] = pd.to_datetime(filtered_data['time'])
@@ -58,16 +58,17 @@ def run_geo_evaluation(data_input, start_treatment,end_treatment,treatment_group
     )
         model.fit(X_train, y_train, time_train=time_train)
 
-        counterfactual_test = model.predict(X_test, time_index=time_test)
-        counterfactual_full = model.predict(X_scaled, time_index=time_index).reshape(-1,1)
-        counterfactual_full_original = scaler_y.inverse_transform(counterfactual_full)
+        predictions_test, _ = model.predict(X_test, time_index=time_test)
+        predictions_full, weights = model.predict(X_scaled, time_index=time_index)
+        
+        counterfactual_full = predictions_full.reshape(-1, 1)
+        counterfactual_full = scaler_y.inverse_transform(counterfactual_full)
+        y = y.reshape(-1, 1)
+
+        predictions = counterfactual_full.flatten()
         y_original = scaler_y.inverse_transform(y_scaled)
-        counterfactual_full_original = counterfactual_full_original.flatten()
         y_original = y_original.flatten()
 
-        predictions = counterfactual_full_original
-        weights = model.w_
-        
         MAPE = np.mean(np.abs((y_original - predictions) / (y_original + 1e-10))) * 100
         SMAPE = smape(y_original, predictions)
 
@@ -99,7 +100,7 @@ def run_geo_evaluation(data_input, start_treatment,end_treatment,treatment_group
         p_value = np.mean(abs(null_stats) >= abs(observed_stat))
         power = np.mean(p_value < significance_level)
 
-        
+        length_treatment = len(treatment_group)
         results_evaluation = {
             'MAPE': MAPE,
             'SMAPE': SMAPE,
@@ -114,6 +115,8 @@ def run_geo_evaluation(data_input, start_treatment,end_treatment,treatment_group
             'weights': weights,
             'period': period,
             'spend': spend,
+            'length_treatment': length_treatment,
+            
         }
 
 

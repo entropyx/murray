@@ -219,9 +219,10 @@ class SyntheticControl(BaseEstimator, RegressorMixin):
             time_index (optional): Time vector for the test data
 
         Returns:
-            numpy.ndarray: Final prediction
+            tuple: (predictions, weights)
+                - predictions: numpy.ndarray with the final predictions
+                - weights: numpy.ndarray with the fitted weights
         """
-
         if not self.is_fitted_:
             raise ValueError("The model has not been fitted yet. Call 'fit' first.")
         
@@ -233,9 +234,9 @@ class SyntheticControl(BaseEstimator, RegressorMixin):
                 raise ValueError("The time vector is required to predict with the Ridge adjustment.")
             time_index = np.array(time_index).reshape(-1, 1)
             ridge_adjustment = self.ridge_model_.predict(time_index)
-            return base_prediction + ridge_adjustment
+            return base_prediction + ridge_adjustment, self.w_
         
-        return base_prediction
+        return base_prediction, self.w_
 
 
 def smape(A, F):
@@ -260,7 +261,7 @@ def evaluate_group(treatment_group, data, total_Y, correlation_matrix, min_holdo
     )
 
     if not control_group:
-        return (treatment_group, [], float('inf'), float('inf'), None, None, None)
+        return (treatment_group, [], float('inf'), float('inf'), None, None, None, None)
 
    
     X = df_pivot[control_group].values  
@@ -288,8 +289,9 @@ def evaluate_group(treatment_group, data, total_Y, correlation_matrix, min_holdo
     )
     model.fit(X_train, y_train, time_train=time_train)
 
-    counterfactual_test = model.predict(X_test, time_index=time_test)
-    counterfactual_full = model.predict(X_scaled, time_index=time_index).reshape(-1,1)
+    counterfactual_test, weights = model.predict(X_test, time_index=time_test)
+    counterfactual_full, weights = model.predict(X_scaled, time_index=time_index)
+    counterfactual_full = counterfactual_full.reshape(-1,1)
     counterfactual_full_original = scaler_y.inverse_transform(counterfactual_full)
     y_original = scaler_y.inverse_transform(y_scaled)
     counterfactual_full_original = counterfactual_full_original.flatten()
@@ -300,7 +302,10 @@ def evaluate_group(treatment_group, data, total_Y, correlation_matrix, min_holdo
     MAPE = np.mean(np.abs((y_original[split_index:] - counterfactual_full_original[split_index:]) / (y_original[split_index:] + 1e-10))) * 100
     SMAPE_value = smape(y_original[split_index:], counterfactual_full_original[split_index:])
 
-    return (treatment_group, control_group, MAPE, SMAPE_value, y_original, counterfactual_full_original, weights)
+    # Calculate observed conformity
+    observed_conformity = np.mean(y_original - counterfactual_full_original)
+
+    return (treatment_group, control_group, MAPE, SMAPE_value, y_original, counterfactual_full_original, weights, observed_conformity)
 
 def BetterGroups(similarity_matrix, excluded_locations, data, correlation_matrix, maximum_treatment_percentage=0.50, progress_updater=None, status_updater=None):
     """
@@ -328,6 +333,8 @@ def BetterGroups(similarity_matrix, excluded_locations, data, correlation_matrix
     min_holdout = 100 - (maximum_treatment_percentage * 100)
     total_Y = data['Y'].sum()
     
+    if total_Y == 0:
+        return None
     
     df_pivot = data.pivot(index='time', columns='location', values='Y')
     
@@ -367,9 +374,15 @@ def BetterGroups(similarity_matrix, excluded_locations, data, correlation_matrix
         best_results = [result for result in results if result is not None and len(result[0]) == size]
         if best_results:
             best_result = min(best_results, key=lambda x: (x[2], -x[3]))
-            best_treatment_group, best_control_group, best_MAPE, best_SMAPE, y, predictions, weights = best_result
+            best_treatment_group, best_control_group, best_MAPE, best_SMAPE, y, predictions, weights, observed_conformity = best_result
+            
             treatment_Y = data[data['location'].isin(best_treatment_group)]['Y'].sum()
-            holdout_percentage = ((total_Y - treatment_Y) / total_Y) * 100
+            
+            # Add validation to prevent division by zero
+            if total_Y > 0:
+                holdout_percentage = ((total_Y - treatment_Y) / total_Y) * 100
+            else:
+                holdout_percentage = 0.0
 
             results_by_size[size] = {
                 'Best Treatment Group': best_treatment_group,
@@ -380,9 +393,13 @@ def BetterGroups(similarity_matrix, excluded_locations, data, correlation_matrix
                 'Predictions': predictions,
                 'Weights': weights,
                 'Holdout Percentage': holdout_percentage,
+                'observed_conformity': observed_conformity
             }
 
-    return results_by_size
+    if not results or all(result is None for result in results):
+        return None
+        
+    return results_by_size if results_by_size else None
 
 
 
@@ -400,9 +417,8 @@ def apply_lift(y, delta, start_treatment, end_treatment):
         np.array: Time series with lift applied
     """
     
-    y_with_lift = np.array(y).copy()
-    
-    
+    y = np.array(y).flatten()
+    y_with_lift = y.copy()
     
     start_idx = max(0, int(start_treatment))
     end_idx = min(len(y_with_lift), int(end_treatment))
@@ -433,6 +449,12 @@ def calculate_conformity(y_real, y_control, start_treatment, end_treatment):
     return conformity
 
 def compute_residuals(y_treatment, y_control):
+    """
+    Compute residuals between treatment and control series
+    """
+
+    y_treatment = np.array(y_treatment).flatten()
+    y_control = np.array(y_control).flatten()
     return y_treatment - y_control
 
 
@@ -453,28 +475,27 @@ def simulate_power(y_real, y_control, delta, period, n_permutations=1000, signif
         tuple: Delta, statistical power, and the adjusted series with the applied effect.
     """
     
+    y_real = np.array(y_real).flatten()
+    y_control = np.array(y_control).flatten()
+    
     start_treatment = len(y_real) - period
     end_treatment = start_treatment + period
     
     y_with_lift = apply_lift(y_real, delta, start_treatment, end_treatment)
-    residuals = compute_residuals(y_with_lift,y_control)
+    residuals = compute_residuals(y_with_lift, y_control)
     treatment_residuals = residuals[start_treatment:]
     
-
     def stat_func(x):
         return np.sum(x)
     
     observed_stat = stat_func(treatment_residuals)
     
-    
     null_stats = []
-
     for _ in range(n_permutations):
         permuted_residuals = np.random.permutation(residuals)
         permuted = permuted_residuals[start_treatment:]
         null_stats.append(stat_func(permuted))
     null_stats = np.array(null_stats)
-    
     
     p_value = np.mean(null_stats >= observed_stat)
     power = np.mean(p_value < significance_level)
@@ -484,20 +505,11 @@ def simulate_power(y_real, y_control, delta, period, n_permutations=1000, signif
 def run_simulation(delta, y_real, y_control, period, n_permutations, significance_level, inference_type="iid", size_block=None):
     """
     Wrapper function to run a single simulation of statistical power.
-
-    Args:
-        delta (float): Effect size.
-        y_real (numpy.ndarray): Actual target metrics.
-        y_control (numpy.ndarray): Control metrics.
-        period (int): Treatment period duration.
-        n_permutations (int): Number of permutations.
-        significance_level (float): Significance level.
-        inference_type (str): Type of conformal inference ("iid" or "block").
-        size_block (int, optional): Size of blocks for block shuffling. Defaults to None.
-
-    Returns:
-        tuple: Simulation results including delta, power, and adjusted series.
     """
+    # Asegurarse de que y_real y y_control son arrays de numpy
+    y_real = np.array(y_real).flatten()
+    y_control = np.array(y_control).flatten()
+    
     return simulate_power(
         y_real=y_real,
         y_control=y_control,
@@ -506,7 +518,6 @@ def run_simulation(delta, y_real, y_control, period, n_permutations, significanc
         n_permutations=n_permutations,
         significance_level=significance_level,
         inference_type=inference_type,
-        
     )
 
 def evaluate_sensitivity(results_by_size, deltas, periods, n_permutations, significance_level=0.05, inference_type="iid",  size_block=None, progress_bar=None, status_text=None):

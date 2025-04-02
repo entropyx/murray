@@ -29,7 +29,7 @@ st.sidebar.markdown(
         color: #3e7cb1 !important;  
     }
     </style>
-    <a class='custom-link' href="https://entropy.tech/murray/" target="_blank">Murray Documentation</a>
+    <a class='custom-link' href="https://docs-murray.entropy.tech/" target="_blank">Murray Documentation</a>
     """,
     unsafe_allow_html=True
 )
@@ -587,7 +587,7 @@ if file is not None:
             with col1:
                 delta_min = st.number_input("Lift Min:", min_value=0.00, max_value=0.9, value=0.01, step=0.01)
             with col2:
-                delta_max = st.number_input("Lift Max:", min_value=0.02, max_value=1.0, value=0.3, step=0.01)
+                delta_max = st.number_input("Lift Max:", min_value=0.02, max_value=1.0, value=0.15, step=0.01)
             with col3:
                 delta_step = st.number_input("Lift Step:", min_value=0.00, max_value=1.0, value=0.01, step=0.01)
             if delta_min > delta_max:
@@ -609,7 +609,7 @@ if file is not None:
             with col1:
                 period_min = st.number_input("Period Min:", min_value=1, max_value=100, value=5, step=1)
             with col2:    
-                period_max = st.number_input("Period Max:", min_value=5, max_value=100, value=40, step=1)
+                period_max = st.number_input("Period Max:", min_value=5, max_value=100, value=30, step=1)
             with col3:    
                 period_step = st.number_input("Period Step:", min_value=1, max_value=100, value=5, step=1)
             if period_min > period_max:
@@ -835,6 +835,35 @@ if file is not None:
                                 if matching_size is not None:
                                     mde = st.session_state.sensitivity_results[matching_size][period_idx]['MDE']
                             st.write(f"- **Minimum Detectable Effect (MDE):** {round(mde*100)}%")
+                            random_sate = data1['location'].unique()[0]
+                            filtered_data = data1[data1['location'] == random_sate]
+                            firt_day = filtered_data['time'].min()
+                            last_day = filtered_data['time'].max()
+                            second_report_day = last_day - pd.Timedelta(days=period_idx)
+                            firt_report_day = last_day - pd.Timedelta(days=(period_idx*2)-1)
+                            treatment_day = last_day - pd.Timedelta(days=period_idx-1)
+                            last_day = last_day.strftime('%Y-%m-%d')
+                            firt_day = firt_day.strftime('%Y-%m-%d')
+                            firt_report_day = firt_report_day.strftime('%Y-%m-%d')
+                            second_report_day = second_report_day.strftime('%Y-%m-%d')
+
+                            treatment_day = treatment_day.strftime('%Y-%m-%d')
+                           
+                            mde = 'N/A'
+                            if period_idx is not None and y_value is not None:
+                                y_value_float = float(y_value.strip('%')) if isinstance(y_value, str) else float(y_value)
+
+                                
+                                matching_size = None
+                                for size, data in st.session_state.simulation_results.items():
+
+                                    if abs(float(data['Holdout Percentage']) - y_value_float) < 0.01:
+                                        matching_size = size
+                                        break
+                                
+                                if matching_size is not None:
+                                    mde = st.session_state.sensitivity_results[matching_size][period_idx]['MDE']
+                            st.write(f"- **Minimum Detectable Effect (MDE):** {round(mde*100)}%")
                             #st.plotly_chart(plot_metrics(st.session_state.results),use_container_width=True)
                             random_sate = data1['location'].unique()[0]
                             filtered_data = data1[data1['location'] == random_sate]
@@ -854,7 +883,10 @@ if file is not None:
                             
 
                             
-                            
+                            holdout_percentage = st.session_state.simulation_results[location]['Holdout Percentage']
+        
+                            treatment_states = treatment_group.split(',') 
+                            length_treatment = len(treatment_states)
                            
                             
                                     
@@ -889,8 +921,8 @@ if file is not None:
                                     else:
                                         treatment_group = st.session_state.simulation_results[location]['Best Treatment Group']
                                         control_group = st.session_state.simulation_results[location]['Control Group']
-                                        holdout_percentage = st.session_state.simulation_results[location]['Holdout Percentage']
-                                        pre_treatment, pre_counterfactual, post_treatment, post_counterfactual,impact_graph,att,incremental = plot_impact_report(st.session_state.results, period_idx, holdout_percentage)
+                                        
+                                        pre_treatment, pre_counterfactual, post_treatment, post_counterfactual,impact_graph,att,incremental = plot_impact_report(st.session_state.results, period_idx, holdout_percentage,length_treatment)
                                         weights = print_weights(st.session_state.results, treatment_percentage)
                                         df = pd.DataFrame(
                                             {
