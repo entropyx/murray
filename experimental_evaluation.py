@@ -7,6 +7,7 @@ from fpdf import FPDF
 import os
 import base64
 from streamlit_js_eval import streamlit_js_eval
+from Murray.metrics import update_metrics, load_metrics
 
 
 
@@ -619,9 +620,12 @@ if file is not None:
             if st.button("Evaluate") or st.session_state.evaluation_button_clicked:
                 if not st.session_state.evaluation_button_clicked:
                     st.session_state.evaluation_button_clicked = True
+                    
+                    metrics = update_metrics("experimental_evaluation")
+                    
                     with st.spinner('Running analysis... Please wait.'):
                         
-                        results = run_geo_evaluation(data1, start_treatment, end_treatment, treatment_group,spend)
+                        results = run_geo_evaluation(data1, start_treatment, end_treatment, treatment_group, spend)
                         treatment = results['treatment']
                         st.session_state.treatment = treatment
                         counterfactual = results['predictions']
@@ -809,6 +813,26 @@ if file is not None:
 
                 
             
+
+
+
+
+
+
+
+
+
+st.sidebar.markdown("### Traffic Metrics")
+try:
+    metrics = load_metrics()
+    st.sidebar.metric(
+        "Total Evaluations",
+        metrics["experimental_evaluation"]["runs"]
+    )
+    if metrics["experimental_evaluation"]["last_run"]:
+        st.sidebar.caption(f"Last run: {metrics['experimental_evaluation']['last_run']}")
+except Exception as e:
+    st.sidebar.error("Could not load metrics")
 
 
 
