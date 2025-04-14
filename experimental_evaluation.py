@@ -688,10 +688,10 @@ if file is not None:
                         
 
                 
-                if mmm_option == "iROAS":
+                if mmm_option == "iCPA":
                     st.session_state.metric_mmm = spend / st.session_state.incremental 
                 else:
-                    st.session_state.metric_mmm = spend / st.session_state.incremental 
+                    st.session_state.metric_mmm = st.session_state.incremental / spend 
 
 
                 
