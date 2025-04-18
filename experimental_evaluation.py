@@ -94,7 +94,7 @@ def generate_pdf(treatment_group, control_group, holdout_percentage,
         pdf.set_font("Poppins", size=10)
         pdf.set_text_color(33, 31, 36)
         pdf.multi_cell(0,5 , f"This report provides information about the the results of the analysis of a treatment on the variable '{col_target}' with a duration of {period} days. "
-                       f"The data included in the design have a period of {first_day} to {last_day} where the treatment started on {first_day} until {last_day}."
+                       f"The data included in the design have a period of {first_day} to {last_day} where the treatment started on {treatment_day} until {last_day}."
                        f"It includes information about the treatment group, control group, and the statistics results of the analysis.")
         
 
@@ -188,7 +188,7 @@ def generate_pdf(treatment_group, control_group, holdout_percentage,
         header_texts = [
             "Group",
             f"Pre-treatment\n({first_report_day} to {second_report_day})",
-            f"Post-treatment\n({first_day} to {last_day})",
+            f"Post-treatment\n({treatment_day} to {last_day})",
             "Increment"
         ]
 
@@ -713,6 +713,7 @@ if file is not None:
                 second_report_day = last_day - pd.Timedelta(days=st.session_state.period)
                 first_report_day = last_day - pd.Timedelta(days=(st.session_state.period*2)-1)
                 treatment_day = last_day - pd.Timedelta(days=st.session_state.period-1)
+                treatment_day = treatment_day.strftime('%Y-%m-%d')
                 last_day = last_day.strftime('%Y-%m-%d')
                 first_day = first_day.strftime('%Y-%m-%d')
                 first_report_day = first_report_day.strftime('%Y-%m-%d')
@@ -721,6 +722,7 @@ if file is not None:
                 st.write(f"First day: {first_day}")
                 st.write(f"First report day: {first_report_day}")
                 st.write(f"Second report day: {second_report_day}")
+                st.write(f"Treatment day: {treatment_day}")
 
 
 
