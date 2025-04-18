@@ -32,7 +32,8 @@ def check_file_size():
             metrics = {
                 "experimental_design": {"runs": 0, "last_run": metrics["experimental_design"]["last_run"]},
                 "experimental_evaluation": {"runs": 0, "last_run": metrics["experimental_evaluation"]["last_run"]},
-                "total_runs": 0
+                "total_runs": 0,
+                "history": []  # Mantener el historial
             }
             save_metrics(metrics)
             logger.info("Metrics file rotated due to size limit")
@@ -56,7 +57,8 @@ def load_metrics():
     return {
         "experimental_design": {"runs": 0, "last_run": None},
         "experimental_evaluation": {"runs": 0, "last_run": None},
-        "total_runs": 0
+        "total_runs": 0,
+        "history": []  # Inicializar historial vacío
     }
 
 def save_metrics(metrics):
@@ -78,11 +80,85 @@ def update_metrics(section):
     """Actualiza las métricas para una sección específica"""
     try:
         metrics = load_metrics()
+        current_time = datetime.now()
+        
+        # Log para depuración
+        logger.info(f"Updating metrics for section: {section}")
+        logger.info(f"Current metrics: {metrics}")
+        
+        # Actualizar contadores
         metrics[section]["runs"] += 1
-        metrics[section]["last_run"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        metrics[section]["last_run"] = current_time.strftime("%Y-%m-%d %H:%M:%S")
         metrics["total_runs"] += 1
+        
+        # Agregar nuevo registro al historial
+        new_record = {
+            "timestamp": current_time.strftime("%Y-%m-%d %H:%M:%S"),
+            "section": section,
+            "date": current_time.strftime("%Y-%m-%d"),
+            "day_of_week": current_time.strftime("%A"),
+            "hour": current_time.hour
+        }
+        
+        # Asegurar que existe la lista de historial
+        if "history" not in metrics:
+            metrics["history"] = []
+            logger.info("Initializing history list")
+            
+        metrics["history"].append(new_record)
+        logger.info(f"Added new record: {new_record}")
+        
         save_metrics(metrics)
+        logger.info("Metrics saved successfully")
         return metrics
     except Exception as e:
         logger.error(f"Error updating metrics: {e}")
-        return None 
+        return None    
+def get_daily_stats():
+    """Obtiene estadísticas de uso por día"""
+    metrics = load_metrics()
+    if "history" not in metrics:
+        return {}
+        
+    daily_stats = {}
+    for record in metrics["history"]:
+        date = record["date"]
+        if date not in daily_stats:
+            daily_stats[date] = {
+                "total": 0,
+                "experimental_design": 0,
+                "experimental_evaluation": 0
+            }
+        daily_stats[date]["total"] += 1
+        daily_stats[date][record["section"]] += 1
+        
+    return daily_stats
+
+def get_weekly_stats():
+    """Obtiene estadísticas de uso por día de la semana"""
+    metrics = load_metrics()
+    if "history" not in metrics:
+        return {}
+        
+    weekly_stats = {
+        "Monday": 0, "Tuesday": 0, "Wednesday": 0,
+        "Thursday": 0, "Friday": 0, "Saturday": 0, "Sunday": 0
+    }
+    
+    for record in metrics["history"]:
+        weekly_stats[record["day_of_week"]] += 1
+        
+    return weekly_stats
+
+def get_hourly_stats():
+    """Obtiene estadísticas de uso por hora del día"""
+    metrics = load_metrics()
+    if "history" not in metrics:
+        return {}
+        
+    hourly_stats = {hour: 0 for hour in range(24)}
+    
+    for record in metrics["history"]:
+        hourly_stats[record["hour"]] += 1
+        
+    return hourly_stats

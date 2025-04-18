@@ -672,11 +672,15 @@ if file is not None:
                 st.session_state.simulation_button_clicked = False
 
 
+            # ... existing code ...
+
             if st.button("Run Simulation") or st.session_state.simulation_button_clicked:
                 if not st.session_state.simulation_button_clicked:
                     st.session_state.simulation_button_clicked = True
                     # Actualizar métricas
                     metrics = update_metrics("experimental_design")
+                    if metrics is None:
+                        st.error("Error updating metrics")
                     
                     with st.spinner('Running simulation... Please wait.'):
                         results = run_geo_analysis_streamlit_app(
@@ -687,7 +691,27 @@ if file is not None:
                             deltas_range=deltas_range,
                             periods_range=periods_range,
                         )
+
+            # En la barra lateral
+            with st.sidebar:
+                st.markdown("### Usage Metrics")
+                try:
+                    metrics = load_metrics()
+                    st.metric(
+                        "Total Simulations Run",
+                        metrics["experimental_design"]["runs"]
+                    )
+                    if metrics["experimental_design"]["last_run"]:
+                        st.caption(f"Last run: {metrics['experimental_design']['last_run']}")
                         
+                    # Mostrar historial
+                    if "history" in metrics and metrics["history"]:
+                        st.markdown("#### Recent Activity")
+                        for record in reversed(metrics["history"][-5:]):  # Mostrar últimos 5 registros
+                            st.write(f"{record['timestamp']} - {record['section']}")
+                except Exception as e:
+                    st.error(f"Could not load metrics: {str(e)}")
+                                    
 
                         
 
@@ -959,3 +983,33 @@ except Exception as e:
 
 
 
+from metrics import update_metrics, load_metrics, get_daily_stats, get_weekly_stats, get_hourly_stats
+
+# ... existing code ...
+
+# En la barra lateral
+with st.sidebar:
+    st.markdown("### Usage Metrics")
+    try:
+        metrics = load_metrics()
+        st.metric(
+            "Total Simulations Run",
+            metrics["experimental_design"]["runs"]
+        )
+        if metrics["experimental_design"]["last_run"]:
+            st.caption(f"Last run: {metrics['experimental_design']['last_run']}")
+            
+        # Mostrar estadísticas diarias
+        st.markdown("#### Daily Usage")
+        daily_stats = get_daily_stats()
+        for date, stats in daily_stats.items():
+            st.write(f"{date}: {stats['total']} runs")
+            
+        # Mostrar estadísticas semanales
+        st.markdown("#### Weekly Distribution")
+        weekly_stats = get_weekly_stats()
+        for day, count in weekly_stats.items():
+            st.write(f"{day}: {count} runs")
+            
+    except Exception as e:
+        st.error("Could not load metrics")
