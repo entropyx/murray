@@ -686,11 +686,26 @@ def print_incremental_results(geo_test, period, treatment_percentage):
     holdout_percentage = 100 - treatment_percentage
     title = "Incremental Results"
     att, incremental, fig = plot_impact_streamlit_app(geo_test, period, holdout_percentage)
+    
+    # Get the MDE from the sensitivity_results
+    sensitivity_results = geo_test['sensitivity_results']
+    results_by_size = geo_test['simulation_results']
+    
+    target_size_key = None
+    target_mde = None
+    for size_key, result in results_by_size.items():
+        current_holdout = result['Holdout Percentage']
+        if abs(current_holdout - holdout_percentage) < 0.01:
+            target_size_key = size_key
+            target_mde = sensitivity_results[size_key][period].get('MDE', None)
+            break
+    
     print("=" * 30)
     print(title.center(30))
     print("=" * 30)
     print(f"ATT: {round(att,2)}")
     print(f"Lift total: {round(incremental,2)}")
+    print(f"MDE: {round(target_mde*100,2)}%")
     print("=" * 30)
 
 
