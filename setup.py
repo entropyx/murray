@@ -17,7 +17,9 @@ setup(
         "tqdm",
         "matplotlib",
         "seaborn",
-        "plotly"
+        "plotly",
+        "millify",
+        "statsmodels",
     ],
     author="Entropy Team",
     author_email="dev@entropy.tech",
