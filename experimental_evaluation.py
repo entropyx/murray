@@ -718,11 +718,11 @@ if file is not None:
                 first_day = first_day.strftime('%Y-%m-%d')
                 first_report_day = first_report_day.strftime('%Y-%m-%d')
                 second_report_day = second_report_day.strftime('%Y-%m-%d')
-                st.write(f"Last day: {last_day}")
-                st.write(f"First day: {first_day}")
-                st.write(f"First report day: {first_report_day}")
-                st.write(f"Second report day: {second_report_day}")
-                st.write(f"Treatment day: {treatment_day}")
+                # st.write(f"Last day: {last_day}")
+                # st.write(f"First day: {first_day}")
+                # st.write(f"First report day: {first_report_day}")
+                # st.write(f"Second report day: {second_report_day}")
+                # st.write(f"Treatment day: {treatment_day}")
 
 
 
