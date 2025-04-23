@@ -388,10 +388,19 @@ def plot_mde_results(results_by_size, sensitivity_results, periods):
 
     custom_data = []
     for s in sorted_sizes:
-        custom_data.append([s] * len(periods))
+        # Get the MDE for each size and period
+        mde_data = []
+        for period in periods:
+            mde = sensitivity_results[s][period].get('MDE', None)
+            mde_data.append(f"{mde:.2%}" if mde is not None else "N/A")
+        custom_data.append(mde_data)
 
     fig.data[0].customdata = custom_data
-    fig.data[0].hovertemplate = "Treatment size: %{customdata}<br><extra></extra>"
+    fig.data[0].hovertemplate = (
+        "Treatment size: %{customdata}<br>" +
+        "MDE: %{customdata}<br>" +
+        "<extra></extra>"
+    )
     fig.data[0].hoverinfo = "skip"
 
     return fig
