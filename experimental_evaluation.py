@@ -621,7 +621,7 @@ if file is not None:
                 if not st.session_state.evaluation_button_clicked:
                     st.session_state.evaluation_button_clicked = True
                     
-                    metrics = update_metrics("experimental_evaluation")
+                    update_metrics("experimental_evaluation")
                     
                     with st.spinner('Running analysis... Please wait.'):
                         
@@ -819,20 +819,6 @@ if file is not None:
 
 
 
-
-
-
-st.sidebar.markdown("### Traffic Metrics")
-try:
-    metrics = load_metrics()
-    st.sidebar.metric(
-        "Total Evaluations",
-        metrics["experimental_evaluation"]["runs"]
-    )
-    if metrics["experimental_evaluation"]["last_run"]:
-        st.sidebar.caption(f"Last run: {metrics['experimental_evaluation']['last_run']}")
-except Exception as e:
-    st.sidebar.error("Could not load metrics")
 
 
 
