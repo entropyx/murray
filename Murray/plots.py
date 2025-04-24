@@ -409,6 +409,39 @@ def plot_mde_results(results_by_size, sensitivity_results, periods):
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 def print_weights(geo_test, treatment_percentage=None, num_locations=None):
     """
     Extracts control group weights based on holdout percentage or number of locations.
@@ -937,11 +970,18 @@ def plot_impact_evaluation(results_evaluation):
         treatment (array): Treatment group values
         period (int): Treatment period length
     """
+    
 
     counterfactual = results_evaluation['predictions']
     treatment = results_evaluation['treatment']
     period = results_evaluation['period']
     length_treatment = results_evaluation['length_treatment']
+
+    if len(treatment.shape) > 1:
+        treatment = treatment.squeeze()
+
+    if len(counterfactual.shape) > 1:
+        counterfactual = counterfactual.squeeze()
 
     point_difference = treatment - counterfactual
     cumulative_effect = ([0] * (len(treatment) - period)) + (np.cumsum(point_difference[len(treatment)-period:])).tolist()
@@ -1574,4 +1614,4 @@ def calculate_confidence_bands(data, alpha=0.05):
     lower_bound = data - margin
     upper_bound = data + margin
     
-    return lower_bound, upper_bound 
+    return lower_bound, upper_bound  
