@@ -18,4 +18,4 @@ changelog:
         - documentation
     - title: Maintenance 🔧
       labels:
-        - "*"
+      - "*"
