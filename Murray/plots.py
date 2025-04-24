@@ -1183,36 +1183,28 @@ def plot_permutation_test(results_evaluation, Significance_level=0.1):
     Returns:
         fig: Plotly figure.
     """
-
     null_stats = results_evaluation['null_stats']
     observed_stat = results_evaluation['observed_stat']
     
-
     upper_bound = np.percentile(null_stats, 100 * (1 - (Significance_level / 2)))
     lower_bound = np.percentile(null_stats, 100 * (Significance_level / 2))
     
-
-
-    kde = stats.gaussian_kde(null_stats)
-    x_kde = np.linspace(min(null_stats), max(null_stats), 300)
+    kde = stats.gaussian_kde(null_stats, bw_method='scott')  
+    x_kde = np.linspace(min(null_stats), max(null_stats), 100)  
     y_kde = kde(x_kde)
 
-
-    max_hist_y = max(kde(null_stats))  
-
+    max_hist_y = np.max(y_kde) * 1.1  
 
     fig = go.Figure()
 
-
     fig.add_trace(go.Histogram(
         x=null_stats,
-        nbinsx=30,
+        nbinsx=20,  
         histnorm='probability density',
         name="Null Stats",
-        marker=dict(color=blue,line=dict(color="black",width=1)),
+        marker=dict(color=blue, line=dict(color="black", width=1)),
         opacity=0.6
     ))
-
 
     fig.add_trace(go.Scatter(
         x=x_kde,
@@ -1220,44 +1212,34 @@ def plot_permutation_test(results_evaluation, Significance_level=0.1):
         mode="lines",
         name="KDE Density",
         showlegend=False,
-
         line=dict(color="darkblue", width=2)
     ))
 
-
-
     fig.add_trace(go.Scatter(
         x=[observed_stat, observed_stat],
-        y=[0, max_hist_y],  
+        y=[0, max_hist_y],
         mode="lines",
         name="Observed Stat",
         line=dict(color="black", dash="dash", width=1.5)
     ))
 
-    def hex_to_rgba(hex_color, alpha=0.4):
-      """Convierte un color HEX a RGBA con transparencia controlada."""
-      hex_color = hex_color.lstrip("#")
-      r, g, b = tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
-      return f"rgba({r},{g},{b},{alpha})"
-
-
+    significance_color = f"rgba(187,178,199,0.3)"  
 
     fig.add_trace(go.Scatter(
         x=[upper_bound, max(null_stats), max(null_stats), upper_bound],
-
-        y=[0, 0, max_hist_y, max_hist_y],  
+        y=[0, 0, max_hist_y, max_hist_y],
         fill="toself",
-        fillcolor=hex_to_rgba(purple_light, 0.3),  
-        line=dict(color="rgba(255,0,0,0)"),
+        fillcolor=significance_color,
+        line=dict(width=0),
         name="Upper Significance Zone"
     ))
 
     fig.add_trace(go.Scatter(
-        x=[min(null_stats), lower_bound, lower_bound, min(null_stats), min(null_stats)],
-        y=[0, 0, max_hist_y, max_hist_y, 0],  
+        x=[min(null_stats), lower_bound, lower_bound, min(null_stats)],
+        y=[0, 0, max_hist_y, max_hist_y],
         fill="toself",
-        fillcolor=hex_to_rgba(purple_light, 0.3),  
-        line=dict(color="rgba(255,0,0,0)"),
+        fillcolor=significance_color,
+        line=dict(width=0),
         name="Lower Significance Zone"
     ))
 
@@ -1266,9 +1248,7 @@ def plot_permutation_test(results_evaluation, Significance_level=0.1):
         xaxis_title="Conformity Score",
         yaxis_title="Density",
         template="plotly_white",
-
         bargap=0
-
     )
 
     return fig
