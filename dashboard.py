@@ -15,8 +15,10 @@ def check_password():
 
     def password_entered():
         """Checks whether a password entered by the user is correct."""
-        # Try to get the password from st.secrets, if it doesn't exist, use the environment variable
-        secret_password = st.secrets["password"] if "password" in st.secrets else os.environ.get("PASSWORD")
+        try:
+            secret_password = st.secrets["password"]
+        except Exception:
+            secret_password = os.environ.get("PASSWORD")
         if hmac.compare_digest(st.session_state["password"], secret_password):
             st.session_state["password_correct"] = True
             del st.session_state["password"]  
