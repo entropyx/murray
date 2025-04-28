@@ -6,6 +6,7 @@ from pathlib import Path
 from datetime import datetime
 import time
 import hmac
+import os
 
 
 
@@ -14,7 +15,9 @@ def check_password():
 
     def password_entered():
         """Checks whether a password entered by the user is correct."""
-        if hmac.compare_digest(st.session_state["password"], st.secrets["password"]):
+        # Try to get the password from st.secrets, if it doesn't exist, use the environment variable
+        secret_password = st.secrets["password"] if "password" in st.secrets else os.environ.get("PASSWORD")
+        if hmac.compare_digest(st.session_state["password"], secret_password):
             st.session_state["password_correct"] = True
             del st.session_state["password"]  
         else:

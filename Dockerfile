@@ -16,10 +16,10 @@ RUN pip install -r requirements.txt
 # Copy the rest of the application
 COPY . .
 
-# Crear directorio para métricas
+# create directory for metrics
 RUN mkdir -p /app/traffic_metrics
 
-# Definir el volumen
+# Define the volume
 VOLUME ["/app/traffic_metrics"]
 
 EXPOSE 8501
