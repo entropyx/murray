@@ -140,10 +140,15 @@ if check_password():
                 )
                 st.plotly_chart(fig_hours, use_container_width=True)
             
-            visits_over_time = df_filtered.groupby('timestamp').size().reset_index(name='visits')
+            visits_over_time = df_filtered.groupby('date').size().reset_index(name='visits')
+            visits_over_time['date'] = pd.to_datetime(visits_over_time['date'])
+            all_dates = pd.date_range(visits_over_time['date'].min(), visits_over_time['date'].max())
+            all_dates_df = pd.DataFrame({'date': all_dates})
+            visits_filled = all_dates_df.merge(visits_over_time, on='date', how='left').fillna(0)
+            visits_filled['visits'] = visits_filled['visits'].astype(int)
             fig_timeline = px.line(
-                visits_over_time,
-                x='timestamp',
+                visits_filled,
+                x='date',
                 y='visits',
                 title="Visits over time"
             )

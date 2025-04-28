@@ -6,6 +6,20 @@
       "date": "2025-04-22",
       "day_of_week": "Tuesday",
       "hour": 0
+    },
+    {
+      "timestamp": "2025-04-28 00:14:20",
+      "section": "experimental_evaluation",
+      "date": "2025-04-28",
+      "day_of_week": "Monday",
+      "hour": 0
+    },
+    {
+      "timestamp": "2025-04-28 00:18:00",
+      "section": "experimental_evaluation",
+      "date": "2025-04-28",
+      "day_of_week": "Monday",
+      "hour": 0
     }
   ]
 }
