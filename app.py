@@ -15,7 +15,8 @@ st.set_page_config(
 Pages = {
     "Murray": [
         st.Page("experimental_design.py", title="Experimental design"),
-        st.Page("experimental_evaluation.py", title="Experimental evaluation")
+        st.Page("experimental_evaluation.py", title="Experimental evaluation"),
+        st.Page("dashboard.py", title="Dashboard")
     ]
 }
 
@@ -63,3 +64,27 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
+
+# Ocultar elementos específicos de Streamlit
+hide_streamlit_style = """
+            <style>
+            /* Ocultar específicamente el enlace 'dashboard' */
+            [data-testid="stSidebarNav"] div:has(> a:contains("dashboard")) {display: none !important;}
+            [data-testid="stSidebarNav"] div:has(> a[href*="dashboard"]) {display: none !important;}
+            [data-testid="stSidebarNav"] a[href*="dashboard"] {display: none !important;}
+            [data-testid="stSidebarNav"] div:has(> a:contains("dashborad")) {display: none !important;}
+            [data-testid="stSidebarNav"] div:has(> a[href*="dashborad"]) {display: none !important;}
+            [data-testid="stSidebarNav"] a[href*="dashborad"] {display: none !important;}
+            
+            div.stButton > button:first-child {
+                background-color: #3e7cb1;
+                color: white;
+                border-radius: 5px;
+            }
+            div.stButton > button:hover {
+                background-color: #2c5a8f;
+                color: white;
+            }
+            </style>
+            """
+st.markdown(hide_streamlit_style, unsafe_allow_html=True)

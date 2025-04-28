@@ -4,7 +4,8 @@ from Murray.main import select_controls,SyntheticControl
 from Murray.auxiliary import market_correlations
 import pandas as pd
 
-def run_geo_evaluation(data_input, start_treatment,end_treatment,treatment_group,spend,n_permutations=500000,inference_type='iid',significance_level=0.1):
+def run_geo_evaluation(data_input, start_treatment,end_treatment,treatment_group,spend,
+                       n_permutations=500000,inference_type='iid',significance_level=0.1):
         
         random_sate = data_input['location'].unique()[0]
         filtered_data = data_input[data_input['location'] == random_sate].copy()

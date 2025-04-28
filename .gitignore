@@ -12,3 +12,4 @@ node_modules/
 *.pkl
 build/
 *.egg-info
+.streamlit/secrets.toml

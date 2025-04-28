@@ -16,9 +16,11 @@ RUN pip install -r requirements.txt
 # Copy the rest of the application
 COPY . .
 
-# Crear directorio para métricas y dar permisos apropiados
-RUN mkdir -p /app/data/metrics && \
-    chmod 777 /app/data/metrics
+# Crear directorio para métricas
+RUN mkdir -p /app/traffic_metrics
+
+# Definir el volumen
+VOLUME ["/app/traffic_metrics"]
 
 EXPOSE 8501
 
