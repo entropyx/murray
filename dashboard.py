@@ -160,7 +160,7 @@ if check_password():
             try:
                 csv = df_filtered.to_csv(index=False).encode('utf-8')
                 st.download_button(
-                    label="Descargar datos completos (CSV)",
+                    label="Download all data (CSV)",
                     data=csv,
                     file_name="traffic_metrics.csv",
                     mime="text/csv",
