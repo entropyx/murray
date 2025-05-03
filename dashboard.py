@@ -111,7 +111,7 @@ if check_password():
             st.header("Main Metrics")
             col1, col2, col3 = st.columns(3)
             with col1:
-                st.metric("Total of Visits", len(df_filtered))
+                st.metric("Total of events", len(df_filtered))
             with col2:
                 st.metric("Unique Sections", df_filtered['section'].nunique())
             with col3:
@@ -156,6 +156,15 @@ if check_password():
             
             st.header("Detailed Data")
             st.dataframe(df_filtered.tail(5))
+            
+            
+            csv = df_filtered.to_csv(index=False)
+            st.download_button(
+                label="Download all data (CSV)",
+                data=csv,
+                file_name="traffic_metrics.csv",
+                mime="text/csv"
+            )
         else:
             st.warning(f"No JSON files found in the directory '{data_dir}'")
     except Exception as e:
