@@ -157,14 +157,17 @@ if check_password():
             st.header("Detailed Data")
             st.dataframe(df_filtered.tail(5))
             
-            
-            csv = df_filtered.to_csv(index=False)
-            st.download_button(
-                label="Download all data (CSV)",
-                data=csv,
-                file_name="traffic_metrics.csv",
-                mime="text/csv"
-            )
+            try:
+                csv = df_filtered.to_csv(index=False).encode('utf-8')
+                st.download_button(
+                    label="Descargar datos completos (CSV)",
+                    data=csv,
+                    file_name="traffic_metrics.csv",
+                    mime="text/csv",
+                    key="download_csv"
+                )
+            except Exception as e:
+                st.error(f"Error to download the data: {str(e)}")
         else:
             st.warning(f"No JSON files found in the directory '{data_dir}'")
     except Exception as e:
