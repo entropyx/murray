@@ -125,8 +125,8 @@ if check_password():
                 fig_sections = px.bar(
                     x=section_counts.index,
                     y=section_counts.values,
-                    labels={'x': 'Section', 'y': 'Number of Visits'},
-                    title="Distribution of Visits by Section"
+                    labels={'x': 'Section', 'y': 'Number of events'},
+                    title="Distribution of events by Section"
                 )
                 st.plotly_chart(fig_sections, use_container_width=True)
             
@@ -135,8 +135,8 @@ if check_password():
                 fig_hours = px.bar(
                     x=hour_counts.index,
                     y=hour_counts.values,
-                    labels={'x': 'Day of Week', 'y': 'Number of Visits'},
-                    title="Distribution of Visits by Day of Week"
+                    labels={'x': 'Day of Week', 'y': 'Number of events'},
+                    title="Distribution of events by Day of Week"
                 )
                 st.plotly_chart(fig_hours, use_container_width=True)
             
@@ -150,7 +150,7 @@ if check_password():
                 visits_filled,
                 x='date',
                 y='visits',
-                title="Visits over time"
+                title="Events over time"
             )
             st.plotly_chart(fig_timeline, use_container_width=True)
             
