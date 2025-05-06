@@ -1167,7 +1167,10 @@ def print_incremental_results_evaluation(results_evaluation,metric):
     print("=" * 30)
     print(f"ATT: {round(att,2)}")
     print(f"Lift total: {round(incremental,2)}")
-    print(f"{metric}: {round(incremental/spend,2)}")
+    if metric == 'iROAS':
+        print(f"{metric}: {round(incremental/spend,2)}")
+    else:
+        print(f"{metric}: {round(spend/incremental,2)}")
 
     print("=" * 30)
 
