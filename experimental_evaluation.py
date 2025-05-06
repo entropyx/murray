@@ -95,7 +95,7 @@ def generate_pdf(treatment_group, control_group, holdout_percentage,
         pdf.set_font("Poppins", size=10)
         pdf.set_text_color(33, 31, 36)
         pdf.multi_cell(0,5 , f"This report provides information about the the results of the analysis of a treatment on the variable '{col_target}' with a duration of {period} days. "
-                       f"The data included in the design have a period of {firt_day} to {last_day} where the treatment started on {firt_day} until {last_day}."
+                       f"The data included in the design have a period of {firt_day} to {last_day} where the treatment started on {treatment_day} until {last_day}."
                        f"It includes information about the treatment group, control group, and the statistics results of the analysis.")
         
 
@@ -189,7 +189,7 @@ def generate_pdf(treatment_group, control_group, holdout_percentage,
         header_texts = [
             "Group",
             f"Pre-treatment\n({firt_report_day} to {second_report_day})",
-            f"Post-treatment\n({firt_day} to {last_day})",
+            f"Post-treatment\n({treatment_day} to {last_day})",
             "Increment"
         ]
 
@@ -717,6 +717,7 @@ if file is not None:
                 second_report_day = last_day - pd.Timedelta(days=st.session_state.period)
                 firt_report_day = last_day - pd.Timedelta(days=(st.session_state.period*2)-1)
                 treatment_day = last_day - pd.Timedelta(days=st.session_state.period-1)
+                treatment_day = treatment_day.strftime('%Y-%m-%d')
                 last_day = last_day.strftime('%Y-%m-%d')
                 firt_day = firt_day.strftime('%Y-%m-%d')
                 firt_report_day = firt_report_day.strftime('%Y-%m-%d')

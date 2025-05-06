@@ -20,6 +20,48 @@
       "date": "2025-04-28",
       "day_of_week": "Monday",
       "hour": 0
+    },
+    {
+      "timestamp": "2025-05-06 09:54:06",
+      "section": "experimental_design",
+      "date": "2025-05-06",
+      "day_of_week": "Tuesday",
+      "hour": 9
+    },
+    {
+      "timestamp": "2025-05-06 09:54:48",
+      "section": "experimental_design",
+      "date": "2025-05-06",
+      "day_of_week": "Tuesday",
+      "hour": 9
+    },
+    {
+      "timestamp": "2025-05-06 09:58:40",
+      "section": "experimental_design",
+      "date": "2025-05-06",
+      "day_of_week": "Tuesday",
+      "hour": 9
+    },
+    {
+      "timestamp": "2025-05-06 10:05:03",
+      "section": "experimental_design",
+      "date": "2025-05-06",
+      "day_of_week": "Tuesday",
+      "hour": 10
+    },
+    {
+      "timestamp": "2025-05-06 10:07:24",
+      "section": "experimental_design",
+      "date": "2025-05-06",
+      "day_of_week": "Tuesday",
+      "hour": 10
+    },
+    {
+      "timestamp": "2025-05-06 10:14:57",
+      "section": "experimental_evaluation",
+      "date": "2025-05-06",
+      "day_of_week": "Tuesday",
+      "hour": 10
     }
   ]
 }
