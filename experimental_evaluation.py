@@ -649,8 +649,7 @@ if file is not None:
                         
                         total_Y = data1['Y'].sum()
                         treatment_Y = data1[data1['location'].isin(treatment_group)]['Y'].sum()
-                        lift_total_pre = results["treatment"] - results["predictions"]
-                        lift_total = np.sum(lift_total_pre[start_position_treatment:])
+                        lift_total = (results["treatment"][start_position_treatment:].sum() - results["predictions"][start_position_treatment:]).sum()
                         st.session_state.lift_total = round(lift_total,2)
                         st.session_state.holdout_percentage = round(((total_Y - treatment_Y) / total_Y) * 100, 2)
                         st.session_state.treatment_group = ", ".join(treatment_group)

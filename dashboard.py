@@ -10,39 +10,65 @@ import os
 
 
 
-def check_password():
-    """Returns `True` if the user had the correct password."""
+# def check_password():
+    # """Returns `True` if the user had the correct password."""
 
-    def password_entered():
-        """Checks whether a password entered by the user is correct."""
-        try:
-            secret_password = st.secrets["password"]
-        except Exception:
-            secret_password = os.environ.get("PASSWORD")
-        if hmac.compare_digest(st.session_state["password"], secret_password):
-            st.session_state["password_correct"] = True
-            del st.session_state["password"]  
-        else:
-            st.session_state["password_correct"] = False
+    # def password_entered():
+    #     """Checks whether a password entered by the user is correct."""
+    #     try:
+    #         # Intentar obtener la contraseña de secrets.toml
+    #         secret_password = st.secrets.get("password")
+            
+    #         # Si no está en secrets.toml, intentar con variable de entorno
+    #         if not secret_password:
+    #             secret_password = os.environ.get("PASSWORD")
+            
+    #         # Verificar que tenemos una contraseña para comparar
+    #         if not secret_password:
+    #             st.error("No se encontró la contraseña de configuración")
+    #             st.session_state["password_correct"] = False
+    #             return
+            
+    #         # Verificar que el usuario ingresó una contraseña
+    #         if "password" not in st.session_state or not st.session_state["password"]:
+    #             st.error("Por favor ingrese una contraseña")
+    #             st.session_state["password_correct"] = False
+    #             return
+            
+    #         # Comparar las contraseñas
+    #         if hmac.compare_digest(str(st.session_state["password"]), str(secret_password)):
+    #             st.session_state["password_correct"] = True
+    #             del st.session_state["password"]  # Limpiar la contraseña de la sesión
+    #         else:
+    #             st.error("Contraseña incorrecta")
+    #             st.session_state["password_correct"] = False
+                
+    #     except Exception as e:
+    #         st.error(f"Error al verificar la contraseña: {str(e)}")
+    #         st.session_state["password_correct"] = False
 
+    # # Inicializar el estado de la contraseña
+    # if "password_correct" not in st.session_state:
+    #     st.session_state["password_correct"] = False
+
+    # # Mostrar el formulario de contraseña si no está autenticado
+    # if not st.session_state["password_correct"]:
+    #     st.text_input(
+    #         "Password", 
+    #         type="password", 
+    #         on_change=password_entered, 
+    #         key="password"
+    #     )
+    #     return False
     
-    if "password_correct" not in st.session_state:
-        st.session_state["password_correct"] = False
-
-    
-    if not st.session_state["password_correct"]:
-        st.text_input(
-            "Password", type="password", on_change=password_entered, key="password"
-        )
-        return False
-    
-    return True
+    # return True
 
 
 
 
 
-if check_password():
+# if check_password(True):
+if True:
     if 'last_refresh' not in st.session_state:
         st.session_state.last_refresh = time.time()
 
