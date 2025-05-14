@@ -12,7 +12,7 @@ import matplotlib.colors as mcolors
 import matplotlib.ticker as ticker 
 from millify import millify
 from statsmodels.stats.diagnostic import acorr_ljungbox
-
+import matplotlib.ticker as mticker
 
 #Color palette
 blue = "#3e7cb1"           
@@ -495,18 +495,14 @@ def plot_impact_streamlit_app(geo_test, period, holdout_percentage):
         delta_specific = target_mde
         closest_delta = min(available_deltas, key=lambda x: abs(x - delta_specific))
         comb = (target_size_key, closest_delta, period)
-
         
         resultados_size = results_by_size[target_size_key]
         y_real = resultados_size['Predictions'].flatten()
         treatment_series = series_lifts[comb]
 
-        
         point_difference = treatment_series - y_real
         cumulative_effect = ([0] * (len(treatment_series) - period) + 
                               np.cumsum(point_difference[len(treatment_series)-period:]).tolist())
-        
-
         star_treatment = len(y_real) - period
         
         
@@ -520,11 +516,6 @@ def plot_impact_streamlit_app(geo_test, period, holdout_percentage):
 
         att = np.mean(treatment_series[star_treatment:] - y_real[star_treatment:])
         incremental = np.sum(treatment_series[star_treatment:] - y_real[star_treatment:])
-
-
-        
-
-
         
         fig = make_subplots(rows=3, cols=1, shared_xaxes=True, 
                             subplot_titles=[
@@ -887,7 +878,7 @@ def plot_impact_evaluation_streamlit(results_evaluation, df, length_treatment):
         legend=dict(
             x=0.02,
             y=0.98,
-            bgcolor="rgba(255,255,255,0.6)",
+            bgcolor="rgba(0,0,0,0)",
         )
     )
 
@@ -895,9 +886,36 @@ def plot_impact_evaluation_streamlit(results_evaluation, df, length_treatment):
     fig.update_xaxes(color= '#0d0808',linecolor= '#0d0808',showgrid=True,row=2, col=1)
     fig.update_xaxes(title_text="Days",title_font=dict(size=16, color='black'),tickfont=dict(size=12, color='black'),linecolor= '#0d0808',color= '#0d0808',showgrid=True,row=3, col=1)
     
-    fig.update_yaxes(title_text="Original",title_font=dict(size=16, color='black'),tickfont=dict(size=12, color='black'),color= '#0d0808',linecolor= '#0d0808',showgrid=True, row=1, col=1)
-    fig.update_yaxes(title_text="Point Difference",title_font=dict(size=16, color='black'),tickfont=dict(size=12, color='black'),color= '#0d0808',linecolor= '#0d0808',showgrid=True, row=2, col=1)
-    fig.update_yaxes(title_text="Cumulative Effect",title_font=dict(size=16, color='black'),tickfont=dict(size=12, color='black'),color= '#0d0808',linecolor= '#0d0808',showgrid=True, row=3, col=1)
+    fig.update_yaxes(
+        title_text="Original",
+        title_font=dict(size=16, color='black'),
+        tickfont=dict(size=12, color='black'),
+        color= '#0d0808',
+        linecolor= '#0d0808',
+        showgrid=True,
+        tickformat="~s",
+        row=1, col=1
+    )
+    fig.update_yaxes(
+        title_text="Point Difference",
+        title_font=dict(size=16, color='black'),
+        tickfont=dict(size=12, color='black'),
+        color= '#0d0808',
+        linecolor= '#0d0808',
+        showgrid=True,
+        tickformat="~s",
+        row=2, col=1
+    )
+    fig.update_yaxes(
+        title_text="Cumulative Effect",
+        title_font=dict(size=16, color='black'),
+        tickfont=dict(size=12, color='black'),
+        color= '#0d0808',
+        linecolor= '#0d0808',
+        showgrid=True,
+        tickformat="~s",
+        row=3, col=1
+    )
 
   
 
@@ -1078,9 +1096,36 @@ def plot_impact_evaluation(results_evaluation):
     fig.update_xaxes(color= '#0d0808',linecolor= '#0d0808',showgrid=True,row=2, col=1)
     fig.update_xaxes(title_text="Days",title_font=dict(size=16, color='black'),tickfont=dict(size=12, color='black'),linecolor= '#0d0808',color= '#0d0808',showgrid=True,row=3, col=1)
     
-    fig.update_yaxes(title_text="Original",title_font=dict(size=16, color='black'),tickfont=dict(size=12, color='black'),color= '#0d0808',linecolor= '#0d0808',showgrid=True, row=1, col=1)
-    fig.update_yaxes(title_text="Point Difference",title_font=dict(size=16, color='black'),tickfont=dict(size=12, color='black'),color= '#0d0808',linecolor= '#0d0808',showgrid=True, row=2, col=1)
-    fig.update_yaxes(title_text="Cumulative Effect",title_font=dict(size=16, color='black'),tickfont=dict(size=12, color='black'),color= '#0d0808',linecolor= '#0d0808',showgrid=True, row=3, col=1)
+    fig.update_yaxes(
+        title_text="Original",
+        title_font=dict(size=16, color='black'),
+        tickfont=dict(size=12, color='black'),
+        color= '#0d0808',
+        linecolor= '#0d0808',
+        showgrid=True,
+        tickformat="~s",
+        row=1, col=1
+    )
+    fig.update_yaxes(
+        title_text="Point Difference",
+        title_font=dict(size=16, color='black'),
+        tickfont=dict(size=12, color='black'),
+        color= '#0d0808',
+        linecolor= '#0d0808',
+        showgrid=True,
+        tickformat="~s",
+        row=2, col=1
+    )
+    fig.update_yaxes(
+        title_text="Cumulative Effect",
+        title_font=dict(size=16, color='black'),
+        tickfont=dict(size=12, color='black'),
+        color= '#0d0808',
+        linecolor= '#0d0808',
+        showgrid=True,
+        tickformat="~s",
+        row=3, col=1
+    )
 
   
 
@@ -1241,6 +1286,8 @@ def plot_geodata_report(merged_data,custom_colors=custom_colors):
     plt.xticks(rotation=45)
     ax.legend([], frameon=False)
 
+    import matplotlib.ticker as mticker
+    ax.yaxis.set_major_formatter(mticker.FuncFormatter(lambda x, _: millify(x, precision=1)))
 
     return fig
 
@@ -1286,8 +1333,10 @@ def plot_metrics_report(geo_test):
     ax2.set_xlabel('Group Size')
     ax2.set_ylabel('SMAPE')
 
-    plt.tight_layout()
+    ax1.yaxis.set_major_formatter(mticker.FuncFormatter(lambda x, _: millify(x, precision=1)))
+    ax2.yaxis.set_major_formatter(mticker.FuncFormatter(lambda x, _: millify(x, precision=1)))
 
+    plt.tight_layout()
     return fig
 
 
@@ -1403,7 +1452,10 @@ def plot_impact_report(geo_test, period, holdout_percentage,length_treatment):
 
     plt.tight_layout()
     
-    return pre_treatment, pre_counterfactual, post_treatment, post_counterfactual,fig,round(att,2),round(incremental,2)
+    for ax in axes:
+        ax.yaxis.set_major_formatter(mticker.FuncFormatter(lambda x, _: millify(x, precision=1)))
+
+    return pre_treatment, pre_counterfactual, post_treatment, post_counterfactual, fig, round(att,2), round(incremental,2)
 
 
 
@@ -1485,7 +1537,9 @@ def plot_impact_evaluation_report(results_evaluation):
         axes[2].grid(True)
 
         plt.tight_layout()
-        return fig,pre_treatment,pre_counterfactual,post_treatment,post_counterfactual,round(att,2), round(incremental,2)
+        for ax in axes:
+            ax.yaxis.set_major_formatter(mticker.FuncFormatter(lambda x, _: millify(x, precision=1)))
+        return fig, pre_treatment, pre_counterfactual, post_treatment, post_counterfactual, round(att,2), round(incremental,2)
 
 def plot_permutation_test_report(results_evaluation, Significance_level=0.1):
     
@@ -1513,6 +1567,9 @@ def plot_permutation_test_report(results_evaluation, Significance_level=0.1):
     ax.set_xlabel("Difference", fontsize=12)
     ax.set_ylabel("Frequency", fontsize=12)
     ax.legend()
+
+    # Formatear el eje Y con millify
+    ax.yaxis.set_major_formatter(ticker.FuncFormatter(lambda x, _: millify(x, precision=1)))
 
     return fig 
 

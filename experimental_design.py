@@ -8,6 +8,8 @@ from fpdf import FPDF
 import base64
 import os
 from Murray.metrics import update_metrics, load_metrics
+import unicodedata
+
 
 
 ENTROPY_LOGO = "utils/Logo Entropy Dark Gray.png" 
@@ -50,7 +52,7 @@ def generate_pdf(treatment_group, control_group, holdout_percentage, impact_grap
         
         
         temp_image_path = "temp_impact_graph.png"
-        impact_graph.savefig(temp_image_path, bbox_inches='tight', dpi=300)
+        impact_graph.savefig(temp_image_path, bbox_inches='tight', dpi=100)
         
 
         pdf = FPDF()
@@ -455,27 +457,50 @@ if file is not None:
 
         
 
+        def normalize_text(text):
+            """Remove accents and convert to lowercase"""
+            if not isinstance(text, str):
+                return str(text).lower()
+            return ''.join(c for c in unicodedata.normalize('NFD', text)
+                          if unicodedata.category(c) != 'Mn').lower()
+
         def reset_states():
             st.session_state.graph_generated = False
             st.session_state.current_fig = None
             st.session_state.simulation_button_clicked = False
 
+        # Palabras clave originales
+        contains_date = ["date", "day", "time", "fecha", "dia", "tiempo"]
+        contains_locations = ["location", "region", "state", "ubicacion", "region", "estado"]
+
+        # Palabras clave normalizadas
+        contains_date_norm = [normalize_text(x) for x in contains_date]
+        contains_locations_norm = [normalize_text(x) for x in contains_locations]
+
         with col1:
-            contains_date = ["date", "day", "time"]
-            matching_column1 = next((col for col in data.columns if any(p in col.lower() for p in contains_date)), None)
-            col_dates = st.text_input("Dates", matching_column1 if matching_column1 else "", 
+            matching_column1 = next(
+                (col for col in data.columns if any(p in normalize_text(col) for p in contains_date_norm)), None
+            )
+            col_dates = st.text_input("Date", matching_column1 if matching_column1 else "", 
                                     on_change=reset_states, key="dates")
         with col2:
-            contains_locations = ["location", "region", "state"]
-            matching_column2 = next((col for col in data.columns if any(q in col.lower() for q in contains_locations)), None)
+            matching_column2 = next(
+                (col for col in data.columns if any(q in normalize_text(col) for q in contains_locations_norm)), None
+            )
             if matching_column2:
                 data[matching_column2] = data[matching_column2].astype(str)
             col_locations = st.text_input("Locations", matching_column2 if matching_column2 else "", 
                                         on_change=reset_states, key="locations")
         with col3:
-            target_columns = [col for col in data.columns 
-                            if not any(d in col.lower() for d in contains_date) 
-                            and not any(l in col.lower() for l in contains_locations)]
+            target_columns = [
+                col for col in data.columns
+                if not any(
+                    d in normalize_text(col) for d in contains_date_norm
+                )
+                and not any(
+                    l in normalize_text(col) for l in contains_locations_norm
+                )
+            ]
             col_target = st.selectbox("Target", target_columns, on_change=reset_states, key="target")
         
         if col_dates == "" or col_locations == "" or col_target == "":

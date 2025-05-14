@@ -8,6 +8,7 @@ import os
 import base64
 from streamlit_js_eval import streamlit_js_eval
 from Murray.metrics import update_metrics, load_metrics
+import unicodedata
 
 
 
@@ -54,14 +55,14 @@ def generate_pdf(treatment_group, control_group, holdout_percentage,
         
         impact_graph.set_size_inches(10, 6)   
         temp_image_path_impact = "temp_impact_graph.png"
-        impact_graph.savefig(temp_image_path_impact, bbox_inches='tight', dpi=300)  
+        impact_graph.savefig(temp_image_path_impact, bbox_inches='tight', dpi=100)  
 
 
 
 
         permutation_test.set_size_inches(10, 6)   
         temp_image_path_permutation = "temp_permutation_test.png"
-        permutation_test.savefig(temp_image_path_permutation, bbox_inches='tight', dpi=300)  
+        permutation_test.savefig(temp_image_path_permutation, bbox_inches='tight', dpi=100)  
         
 
         header_bg = (103, 85, 130)  
@@ -511,20 +512,50 @@ if file is not None:
             st.session_state.current_fig = None
             st.session_state.simulation_button_clicked = False
 
+        def normalize_text(text):
+            """Remove accents and convert to lowercase"""
+            if not isinstance(text, str):
+                return str(text).lower()
+            return ''.join(c for c in unicodedata.normalize('NFD', text)
+                          if unicodedata.category(c) != 'Mn').lower()
+
+        def reset_states():
+            st.session_state.graph_generated = False
+            st.session_state.current_fig = None
+            st.session_state.simulation_button_clicked = False
+
+        # Palabras clave originales
+        contains_date = ["date", "day", "time", "fecha", "dia", "tiempo"]
+        contains_locations = ["location", "region", "state", "ubicacion", "region", "estado"]
+
+        # Palabras clave normalizadas
+        contains_date_norm = [normalize_text(x) for x in contains_date]
+        contains_locations_norm = [normalize_text(x) for x in contains_locations]
+
         with col1:
-            contains_date = ["date", "day", "time"]
-            matching_column1 = next((col for col in data.columns if any(p in col.lower() for p in contains_date)), None)
-            col_dates = st.text_input("Dates", matching_column1 if matching_column1 else "", 
+            matching_column1 = next(
+                (col for col in data.columns if any(p in normalize_text(col) for p in contains_date_norm)), None
+            )
+            col_dates = st.text_input("Date", matching_column1 if matching_column1 else "", 
                                     on_change=reset_states, key="dates")
         with col2:
-            contains_locations = ["location", "region", "state"]
-            matching_column2 = next((col for col in data.columns if any(q in col.lower() for q in contains_locations)), None)
+            matching_column2 = next(
+                (col for col in data.columns if any(q in normalize_text(col) for q in contains_locations_norm)), None
+            )
+            if matching_column2:
+                data[matching_column2] = data[matching_column2].astype(str)
             col_locations = st.text_input("Locations", matching_column2 if matching_column2 else "", 
                                         on_change=reset_states, key="locations")
         with col3:
-            target_columns = [col for col in data.columns 
-                            if not any(d in col.lower() for d in contains_date) 
-                            and not any(l in col.lower() for l in contains_locations)]
+            target_columns = [
+                col for col in data.columns
+                if not any(
+                    d in normalize_text(col) for d in contains_date_norm
+                )
+                and not any(
+                    l in normalize_text(col) for l in contains_locations_norm
+                )
+            ]
             col_target = st.selectbox("Target", target_columns, on_change=reset_states, key="target")
         
         if col_dates == "" or col_locations == "" or col_target == "":
@@ -649,7 +680,7 @@ if file is not None:
                         
                         total_Y = data1['Y'].sum()
                         treatment_Y = data1[data1['location'].isin(treatment_group)]['Y'].sum()
-                        lift_total = (results["treatment"][start_position_treatment:].sum() - results["predictions"][start_position_treatment:]).sum()
+                        lift_total = (results["treatment"][start_position_treatment:].sum() - results["predictions"][start_position_treatment:].sum())
                         st.session_state.lift_total = round(lift_total,2)
                         st.session_state.holdout_percentage = round(((total_Y - treatment_Y) / total_Y) * 100, 2)
                         st.session_state.treatment_group = ", ".join(treatment_group)
@@ -703,7 +734,7 @@ if file is not None:
                 st.write(f"P-value: {st.session_state.p_value}")
                 st.write(f"Power: {st.session_state.power}")
                 st.write(f"Percentage Lift: {st.session_state.percenge_lift} %")
-                st.write(f"Lift_total: {st.session_state.lift_total}")
+                st.write(f"Lift total: {st.session_state.lift_total}")
                 st.write(f"Holdout percentage: {st.session_state.holdout_percentage} %")
                 st.write(f"Treatment group: {st.session_state.treatment_group}")
                 st.write(f"Control group: {st.session_state.control_group}")
