@@ -13,4 +13,4 @@ node_modules/
 build/
 *.egg-info
 .streamlit/secrets.toml
-traffic_metrics/app_metrics.json
+traffic_metrics/
