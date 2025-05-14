@@ -2,5 +2,9 @@
     "admin": {
         "password": "27329c21fdfb5bc83ffa30a1ddb5ca7d3de7c7392ed6ceb19c1246c156b7bc68",
         "role": "admin"
+    },
+    "luisa": {
+        "password": "8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92",
+        "role": "user"
     }
 }

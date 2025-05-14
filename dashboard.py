@@ -28,15 +28,13 @@ def display_registration_links():
         with st.form("create_link_form"):
             role = st.selectbox("Role", ["user", "admin"])
             max_uses = st.number_input("Maximum Uses", min_value=1, value=1)
-            submit = st.form_submit_button("Generate Link")
+            submit = st.form_submit_button("Generate token")
             
             if submit:
                 token = create_registration_link(role=role, max_uses=max_uses)
                 if token:
-                    base_url = st.query_params.get("base_url", ["https://murray.entropy.tech/"])[0]
-                    registration_url = f"{base_url}/?token={token}"
-                    st.success("Registration link created successfully!")
-                    st.code(registration_url, language="text")
+                    st.success("Registration token created successfully!")
+                    st.code(token, language="text")
 
 
         

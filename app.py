@@ -127,7 +127,7 @@ if not st.session_state.authenticated:
             if register:
                 is_entropy_email = reg_input.strip().endswith("@entropy.tech")
                 if not is_entropy_email and not reg_input:
-                    st.error("You must enter a valid Registration Token or a valid @entropy.tech email in the second field.")
+                    st.error("You must enter a valid Registration Token or a valid email in the second field.")
                 elif new_password != confirm_password:
                     st.error("The passwords do not match")
                 elif len(new_password) < 6:
