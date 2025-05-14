@@ -29,14 +29,14 @@ def create_registration_link(role, max_uses=1):
     try:
         # Generate a unique token
         token = hashlib.sha256(os.urandom(32)).hexdigest()[:16]
-        
+
         # Load or create registration links
         if os.path.exists('traffic_metrics/registration_links.json'):
             with open('traffic_metrics/registration_links.json', 'r') as f:
                 links = json.load(f)
         else:
             links = {}
-        
+
         # Store the link information
         links[token] = {
             'role': role,
@@ -44,11 +44,11 @@ def create_registration_link(role, max_uses=1):
             'used_count': 0,
             'created_at': str(datetime.datetime.now())
         }
-        
+
         # Save the links
         with open('traffic_metrics/registration_links.json', 'w') as f:
             json.dump(links, f, indent=4)
-            
+
         return token
     except Exception as e:
         return None, f"Error creating registration link: {str(e)}"
@@ -58,28 +58,21 @@ def validate_registration_link(token):
     try:
         if not os.path.exists('traffic_metrics/registration_links.json'):
             return False, None
-            
+
         with open('traffic_metrics/registration_links.json', 'r') as f:
             links = json.load(f)
-            
+
         if token not in links:
             return False, None
-            
+
         link_info = links[token]
         if link_info['used_count'] >= link_info['max_uses']:
             return False, None
-            
+
         return True, link_info['role']
     except Exception as e:
         return False, None
 
-def admin_exists():
-    try:
-        with open('traffic_metrics/users.json', 'r') as f:
-            users = json.load(f)
-        return any(u.get('role') == 'admin' for u in users.values())
-    except Exception:
-        return False
 
 # Initialize session state for login
 if 'authenticated' not in st.session_state:
@@ -123,9 +116,9 @@ if not st.session_state.authenticated:
 
     with tab2:
         with st.form("register_form"):
-            username = st.text_input("Username (será tu usuario)")
+            username = st.text_input("Username")
             reg_input = st.text_input(
-                "Registration Token o correo @entropy.tech",
+                "Registration token or valid email",
                 key="registration_token"
             )
             new_password = st.text_input("New password", type="password")
@@ -133,14 +126,7 @@ if not st.session_state.authenticated:
             register = st.form_submit_button("Register")
             if register:
                 is_entropy_email = reg_input.strip().endswith("@entropy.tech")
-                if not admin_exists():
-                    # El primer usuario registrado será admin
-                    success, message = add_user(username.strip(), new_password, role="admin")
-                    if success:
-                        st.success("¡Primer usuario creado como admin!")
-                    else:
-                        st.error(message)
-                elif not is_entropy_email and not reg_input:
+                if not is_entropy_email and not reg_input:
                     st.error("You must enter a valid Registration Token or a valid @entropy.tech email in the second field.")
                 elif new_password != confirm_password:
                     st.error("The passwords do not match")
@@ -150,8 +136,10 @@ if not st.session_state.authenticated:
                     st.error("You must enter a username.")
                 else:
                     if is_entropy_email:
+                        # El usuario se registra con el username elegido y acceso por correo @entropy.tech
                         success, message = add_user(username.strip(), new_password, role="user")
                     else:
+                        # El usuario se registra con el username y el token
                         success, message = add_user(username.strip(), new_password, registration_token=reg_input.strip())
                         if success and reg_input:
                             mark_link_as_used(reg_input.strip())
@@ -234,7 +222,7 @@ st.markdown(
 #             [data-testid="stSidebarNav"] div:has(> a:contains("dashborad")) {display: none !important;}
 #             [data-testid="stSidebarNav"] div:has(> a[href*="dashborad"]) {display: none !important;}
 #             [data-testid="stSidebarNav"] a[href*="dashborad"] {display: none !important;}
-            
+
 #             div.stButton > button:first-child {
 #                 background-color: #3e7cb1;
 #                 color: white;
@@ -246,4 +234,3 @@ st.markdown(
 #             }
 #             </style>
 #             """
-# st.markdown(hide_streamlit_style, unsafe_allow_html=True)
