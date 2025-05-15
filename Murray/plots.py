@@ -1424,6 +1424,7 @@ def plot_impact_report(geo_test, period, holdout_percentage,length_treatment):
     axes[0].fill_between(range(len(y_real)-period, len(y_real)), lower_bound, upper_bound, color='gray', alpha=0.2)
     axes[0].set_title(f'Holdout: {holdout_percentage:.2f}% - MDE: {target_mde:.2f}')
     format_ticks(axes[0], np.concatenate([y_real, treatment_series]))
+    axes[0].set_ylabel('Original')
     axes[0].yaxis.set_label_position('right')
     axes[0].legend()
     axes[0].grid(True)
