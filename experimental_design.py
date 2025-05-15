@@ -703,7 +703,7 @@ if file is not None:
                     
                     update_metrics("experimental_design")
                     
-                    with st.spinner('Running simulation... Please wait.'):
+                    with st.spinner('Running simulation...'):
                         results = run_geo_analysis_streamlit_app(
                             data=data1,
                             excluded_locations=excluded_locations,
@@ -861,69 +861,70 @@ if file is not None:
                                 st.subheader("4. Generate report of results")
                                 st.write("Click on the button to generate and download the PDF report.")
                                 if st.button("Generate and Download PDF"):
-                                    if "selected_point" in st.session_state and st.session_state.selected_point:
+                                    with st.spinner("Generating report..."):
+                                        if "selected_point" in st.session_state and st.session_state.selected_point:
 
-                                        point = st.session_state.selected_point
-                                        y_value = point["y"]
-                                        y_value_str = f"{y_value:.2f}%" if isinstance(y_value, (int, float)) else str(y_value)
+                                            point = st.session_state.selected_point
+                                            y_value = point["y"]
+                                            y_value_str = f"{y_value:.2f}%" if isinstance(y_value, (int, float)) else str(y_value)
 
-                                        if st.session_state.results is None:
-                                            st.error("Please run the simulation first before generating a PDF.")
-                                            st.stop()
+                                            if st.session_state.results is None:
+                                                st.error("Please run the simulation first before generating a PDF.")
+                                                st.stop()
 
-                                            
+                                                
 
-                                        location = None
-                                        for loc, data in st.session_state.simulation_results.items():
-                                            holdout_str = f"{data['Holdout Percentage']:.2f}%"
-                                            if holdout_str == y_value_str:
-                                                location = loc
-                                                break
+                                            location = None
+                                            for loc, data in st.session_state.simulation_results.items():
+                                                holdout_str = f"{data['Holdout Percentage']:.2f}%"
+                                                if holdout_str == y_value_str:
+                                                    location = loc
+                                                    break
 
-                                        if location is None:
-                                            st.write(f"Location not found for the holdout percentage: {y_value_str}")
-                                        else:
-                                            treatment_group = st.session_state.simulation_results[location]['Best Treatment Group']
-                                            control_group = st.session_state.simulation_results[location]['Control Group']
-                                            
-                                            pre_treatment, pre_counterfactual, post_treatment, post_counterfactual,impact_graph,att,incremental = plot_impact_report(st.session_state.results, period_idx, holdout_percentage,length_treatment)
-                                            weights = print_weights(st.session_state.results, treatment_percentage)
-                                            df = pd.DataFrame(
-                                                {
-                                                    "Group": ["Treatment", "Counterfactual (control)", "Absolute difference"],
-                                                    "Pre-treatment": [np.sum(pre_treatment),np.sum(pre_counterfactual), np.abs(np.sum(pre_treatment)-np.sum(pre_counterfactual))],
-                                                    "Post-treatment": [np.sum(post_treatment), np.sum(post_counterfactual),np.abs(np.sum(post_treatment)- np.sum(post_counterfactual))]
-                                                    
-                                                }
-                                            )
-                                            
-
-
-
-
-                                            
-                                            
+                                            if location is None:
+                                                st.write(f"Location not found for the holdout percentage: {y_value_str}")
+                                            else:
+                                                treatment_group = st.session_state.simulation_results[location]['Best Treatment Group']
+                                                control_group = st.session_state.simulation_results[location]['Control Group']
+                                                
+                                                pre_treatment, pre_counterfactual, post_treatment, post_counterfactual,impact_graph,att,incremental = plot_impact_report(st.session_state.results, period_idx, holdout_percentage,length_treatment)
+                                                weights = print_weights(st.session_state.results, treatment_percentage)
+                                                df = pd.DataFrame(
+                                                    {
+                                                        "Group": ["Treatment", "Counterfactual (control)", "Absolute difference"],
+                                                        "Pre-treatment": [np.sum(pre_treatment),np.sum(pre_counterfactual), np.abs(np.sum(pre_treatment)-np.sum(pre_counterfactual))],
+                                                        "Post-treatment": [np.sum(post_treatment), np.sum(post_counterfactual),np.abs(np.sum(post_treatment)- np.sum(post_counterfactual))]
+                                                        
+                                                    }
+                                                )
+                                                
 
 
-                                            pdf_file = generate_pdf(treatment_group, control_group, holdout_percentage, impact_graph,weights,period_idx,mde,att,incremental,col_target,firt_day,last_day,treatment_day,df,firt_report_day,second_report_day)
-                                            
-                                            
 
 
-                                            with open(pdf_file, "rb") as file:
-                                                b64_pdf = base64.b64encode(file.read()).decode()
-                                            
-                                            js = f"""
-                                                var link = document.createElement('a');
-                                                link.href = 'data:application/pdf;base64,{b64_pdf}';
-                                                link.download = 'experimental_design_report.pdf';
-                                                document.body.appendChild(link);
-                                                link.click();
+                                                
+                                                
 
 
-                                                document.body.removeChild(link);
-                                            """
-                                            streamlit_js_eval(js_expressions=js)
+                                                pdf_file = generate_pdf(treatment_group, control_group, holdout_percentage, impact_graph,weights,period_idx,mde,att,incremental,col_target,firt_day,last_day,treatment_day,df,firt_report_day,second_report_day)
+                                                
+                                                
+
+
+                                                with open(pdf_file, "rb") as file:
+                                                    b64_pdf = base64.b64encode(file.read()).decode()
+                                                
+                                                js = f"""
+                                                    var link = document.createElement('a');
+                                                    link.href = 'data:application/pdf;base64,{b64_pdf}';
+                                                    link.download = 'experimental_design_report.pdf';
+                                                    document.body.appendChild(link);
+                                                    link.click();
+
+
+                                                    document.body.removeChild(link);
+                                                """
+                                                streamlit_js_eval(js_expressions=js)
 
 
                         except Exception as e:

@@ -654,7 +654,7 @@ if file is not None:
                     
                     update_metrics("experimental_evaluation")
                     
-                    with st.spinner('Running analysis... Please wait.'):
+                    with st.spinner('Running analysis...'):
                         
                         results = run_geo_evaluation(data1, start_treatment, end_treatment, treatment_group, spend)
                         treatment = results['treatment']
@@ -794,53 +794,53 @@ if file is not None:
                 
 
                 st.write("##### Generate report of results")   
-
                 if st.button("Generate and Download PDF", key="pdf_button"):
-                    st.session_state.pdf_output = generate_pdf(
-                        st.session_state.treatment_group,
-                        st.session_state.control_group,
-                        st.session_state.holdout_percentage,
-                        st.session_state.impact_graph_report,
-                        st.session_state.percenge_lift,
-                        st.session_state.p_value,
-                        st.session_state.power,
-                        st.session_state.period,
-                        st.session_state.permutation_test_report,
-                        treatment_day,
-                        firt_day,
-                        last_day,
-                        col_target,
-                        st.session_state.metric_mmm,
-                        st.session_state.mmm_option,
-                        st.session_state.lift_total,
-                        firt_report_day,
-                        second_report_day,
-                        st.session_state.pre_treatment,
-                        st.session_state.pre_counterfactual,
-                        st.session_state.post_treatment,
-                        st.session_state.post_counterfactual,
-                        st.session_state.att_report,
-                        st.session_state.incremental_report,
-                        df,
-                        spend
-                    )
+                    with st.spinner("Generating report..."):
+                        st.session_state.pdf_output = generate_pdf(
+                            st.session_state.treatment_group,
+                            st.session_state.control_group,
+                            st.session_state.holdout_percentage,
+                            st.session_state.impact_graph_report,
+                            st.session_state.percenge_lift,
+                            st.session_state.p_value,
+                            st.session_state.power,
+                            st.session_state.period,
+                            st.session_state.permutation_test_report,
+                            treatment_day,
+                            firt_day,
+                            last_day,
+                            col_target,
+                            st.session_state.metric_mmm,
+                            st.session_state.mmm_option,
+                            st.session_state.lift_total,
+                            firt_report_day,
+                            second_report_day,
+                            st.session_state.pre_treatment,
+                            st.session_state.pre_counterfactual,
+                            st.session_state.post_treatment,
+                            st.session_state.post_counterfactual,
+                            st.session_state.att_report,
+                            st.session_state.incremental_report,
+                            df,
+                            spend
+                        )
 
 
 
 
-                    with open(st.session_state.pdf_output, "rb") as file:
-                        b64_pdf = base64.b64encode(file.read()).decode()
-                        download_button = f"""
-                            var link = document.createElement('a');
-                            link.href = 'data:application/pdf;base64,{b64_pdf}';
-                            link.download = 'experimental_evaluation_report.pdf';
-                            link.click();
-                        """
-                        streamlit_js_eval(js_expressions=download_button)
-                    
-                    
-                    if os.path.exists(st.session_state.pdf_output):
-                        os.remove(st.session_state.pdf_output)
+                        with open(st.session_state.pdf_output, "rb") as file:
+                            b64_pdf = base64.b64encode(file.read()).decode()
+                            download_button = f"""
+                                var link = document.createElement('a');
+                                link.href = 'data:application/pdf;base64,{b64_pdf}';
+                                link.download = 'experimental_evaluation_report.pdf';
+                                link.click();
+                            """
+                            streamlit_js_eval(js_expressions=download_button)
+                        
+                        
+                        if os.path.exists(st.session_state.pdf_output):
+                            os.remove(st.session_state.pdf_output)
 
                 
             
