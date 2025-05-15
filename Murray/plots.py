@@ -1088,7 +1088,8 @@ def plot_impact_evaluation(results_evaluation):
             x=0.02,
             y=0.98,
             bgcolor="rgba(255,255,255,0.6)",
-        )
+        ),
+        dragmode=False,
     )
 
     
@@ -1420,36 +1421,36 @@ def plot_impact_report(geo_test, period, holdout_percentage,length_treatment):
     # Panel 1: Data vs Counterfactual Prediction
     axes[0].plot(y_real, label='Control Group', linestyle='--', color=black_secondary, linewidth=1)
     axes[0].plot(treatment_series, label='Treatment Group', linestyle='-', color=green, linewidth=1)
-    axes[0].axvline(x=star_treatment, color='black', linestyle='--', linewidth=1.5)
+    axes[0].axvline(x=star_treatment, color='black', linestyle='--', linewidth=1)
     axes[0].fill_between(range(len(y_real)-period, len(y_real)), lower_bound, upper_bound, color='gray', alpha=0.2)
     axes[0].set_title(f'Holdout: {holdout_percentage:.2f}% - MDE: {target_mde:.2f}')
     format_ticks(axes[0], np.concatenate([y_real, treatment_series]))
     axes[0].set_ylabel('Original')
     axes[0].yaxis.set_label_position('right')
     axes[0].legend()
-    axes[0].grid(True)
+    axes[0].grid(True, alpha=0.2, linestyle='-', linewidth=0.5)
 
     # Panel 2: Point Difference
     axes[1].plot(point_difference, label='Point Difference (Causal Effect)', color=green, linewidth=1)
     axes[1].fill_between(range(len(y_real)-period, len(y_real)), lower_bound_pd, upper_bound_pd, color='gray', alpha=0.2)
     axes[1].plot([0, len(y_real)], [0, 0], color='gray', linestyle='--', linewidth=2)
-    axes[1].axvline(x=star_treatment, color='black', linestyle='--', linewidth=1.5)
+    axes[1].axvline(x=star_treatment, color='black', linestyle='--', linewidth=1)
     format_ticks(axes[1], point_difference)
     axes[1].set_ylabel('Point Difference')
     axes[1].yaxis.set_label_position('right')
     axes[1].legend()
-    axes[1].grid(True)
+    axes[1].grid(True, alpha=0.2, linestyle='-', linewidth=0.5)
 
     # Panel 3: Cumulative Effect
     axes[2].plot(cumulative_effect, label='Cumulative Effect', color=green, linewidth=1)
     axes[2].fill_between(range(len(y_real)-period, len(y_real)), lower_bound_ce, upper_bound_ce, color='gray', alpha=0.2)
-    axes[2].axvline(x=star_treatment, color='black', linestyle='--', linewidth=1.5)
+    axes[2].axvline(x=star_treatment, color='black', linestyle='--', linewidth=1)
     format_ticks(axes[2], cumulative_effect)
     axes[2].set_xlabel('Days')
     axes[2].yaxis.set_label_position('right')
     axes[2].set_ylabel('Cumulative Effect')
     axes[2].legend()
-    axes[2].grid(True)
+    axes[2].grid(True, alpha=0.2, linestyle='-', linewidth=0.5)
 
     plt.tight_layout()
     
@@ -1503,39 +1504,46 @@ def plot_impact_evaluation_report(results_evaluation):
 
 
         fig, axes = plt.subplots(3, 1, figsize=(15, 9.5), sharex=True)
-
+        def format_ticks(ax, data):
+            locator = ticker.MaxNLocator(nbins=6)
+            ax.yaxis.set_major_locator(locator)
+            ax.yaxis.set_major_formatter(ticker.FuncFormatter(lambda x, p: millify(x, precision=1)))
+    
 
         # Panel 1: Observed data vs counterfactual prediction
         axes[0].plot(counterfactual, label='Control Group', linestyle='--', color=black_secondary,linewidth=1)
         axes[0].plot(treatment, label='Treatment Group', linestyle='-', color=green,linewidth=1)
         axes[0].axvline(x=star_treatment, color='black', linestyle='--', linewidth=1)
         axes[0].fill_between(range((star_treatment), len(counterfactual)),  lower_bound, upper_bound, color='gray', alpha=0.2)
+        format_ticks(axes[0], np.concatenate([counterfactual, treatment]))
         axes[0].yaxis.set_label_position('right')
         axes[0].set_ylabel('Original')
         axes[0].legend()
-        axes[0].grid(True)
+        axes[0].grid(True, alpha=0.2, linestyle='-', linewidth=0.5)
 
         # Panel 2: Point difference
         axes[1].plot(point_difference, label='Point Difference (Causal Effect)', color=green, linewidth=1)
         axes[1].fill_between(range((star_treatment), len(counterfactual)), lower_bound_pd, upper_bound_pd, color='gray', alpha=0.2)
         axes[1].plot([0, len(counterfactual)], [0, 0], color='gray', linestyle='--', linewidth=2)
         axes[1].axvline(x=star_treatment, color='black', linestyle='--', linewidth=1)
+        format_ticks(axes[1], point_difference)
         axes[1].set_ylabel('Point Difference')
         axes[1].yaxis.set_label_position('right')
         axes[1].legend()
 
-        axes[1].grid(True)
+        axes[1].grid(True, alpha=0.2, linestyle='-', linewidth=0.5)
 
 
         # Panel 3: Cumulative effect
         axes[2].plot(cumulative_effect, label='Cumulative Effect', color=green, linewidth=1)
         axes[2].fill_between(range((star_treatment), len(counterfactual)), lower_bound_ce, upper_bound_ce, color='gray', alpha=0.2)
         axes[2].axvline(x=star_treatment, color='black', linestyle='--', linewidth=1)
+        format_ticks(axes[2], cumulative_effect)
         axes[2].set_xlabel('Days')
         axes[2].yaxis.set_label_position('right')
         axes[2].set_ylabel('Cumulative Effect')
         axes[2].legend()
-        axes[2].grid(True)
+        axes[2].grid(True, alpha=0.2, linestyle='-', linewidth=0.5)
 
         plt.tight_layout()
         for ax in axes:
@@ -1565,12 +1573,14 @@ def plot_permutation_test_report(results_evaluation, Significance_level=0.1):
     upper_bound = np.percentile(null_stats, 100 * (1 - (Significance_level / 2)))
     ax.axvspan(min(null_stats), lower_bound, color=purple_light, alpha=0.2, label='Significance Zone (Lower)')
     ax.axvspan(upper_bound, max(null_stats), color=purple_light, alpha=0.2, label='Significance Zone (Upper)')
-    ax.set_xlabel("Difference", fontsize=12)
-    ax.set_ylabel("Frequency", fontsize=12)
+    ax.set_xlabel("Difference", fontsize=10)
+    ax.set_ylabel("Frequency", fontsize=10)
+    ax.grid(True, alpha=0.2, linestyle='-', linewidth=0.5)
     ax.legend()
 
     # Formatear el eje Y con millify
     ax.yaxis.set_major_formatter(ticker.FuncFormatter(lambda x, _: millify(x, precision=1)))
+    ax.xaxis.set_major_formatter(ticker.FuncFormatter(lambda x, _: millify(x, precision=1)))
 
     return fig 
 
