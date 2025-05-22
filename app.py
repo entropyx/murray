@@ -156,16 +156,20 @@ if st.session_state.authenticated:
     # Navigation setup
     pages = []
     if st.session_state.role == "admin":
-        pages = [
+        pages = {
+         "Hello " + st.session_state.username: [
             st.Page("experimental_design.py", title="Experimental design"),
             st.Page("experimental_evaluation.py", title="Experimental evaluation"),
             st.Page("dashboard.py", title="Dashboard"),
         ]
+        }
     else:
-        pages = [
+        pages = {
+            "Hello " + st.session_state.username: [
             st.Page("experimental_design.py", title="Experimental design"),
             st.Page("experimental_evaluation.py", title="Experimental evaluation"),
         ]
+        }
 
     pg = st.navigation(pages)
     pg.run()
