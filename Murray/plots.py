@@ -1550,71 +1550,79 @@ def plot_impact_evaluation_report(results_evaluation):
             ax.yaxis.set_major_formatter(mticker.FuncFormatter(lambda x, _: millify(x, precision=1)))
         return fig, pre_treatment, pre_counterfactual, post_treatment, post_counterfactual, round(att,2), round(incremental,2)
 
-def plot_permutation_test_report(results_evaluation, Significance_level=0.1):
-    
+def calculate_confidence_bands(predicted, n_bootstrap=1000, ci=95, seed=42, noise_scale=None):
     """
-    Plot the permutation test results
+    Calculates confidence bands using bootstrap for a prediction series.
+    Uses a more robust approach with studentized residuals.
+
+    Args:
+        predicted: array-like, base prediction (e.g., counterfactual)
+        n_bootstrap: number of bootstrap samples
+        ci: confidence level (95 = 95% CI)
+        seed: seed for reproducibility
+        noise_scale: relative noise scale (if None, will be calculated from residuals)
+
+    Returns:
+        tuple: (lower_band, upper_band), both np.arrays
+    """
+    np.random.seed(seed)
+    predicted = np.array(predicted)
+    n = len(predicted)
+    
+    # If noise_scale is not provided, use a default based on the data
+    if noise_scale is None:
+        # Use a more robust estimate of variation
+        noise_scale = np.std(predicted) * 0.1  # 10% of standard deviation as default
+    
+    samples = np.empty((n_bootstrap, n))
+    
+    for i in range(n_bootstrap):
+        # Use studentized residuals for more robust bootstrapping
+        noise = np.random.standard_t(df=3, size=n) * noise_scale
+        samples[i] = predicted + noise
+    
+    # Calculate confidence intervals using percentile method
+    lower = np.percentile(samples, (100 - ci) / 2, axis=0)
+    upper = np.percentile(samples, 100 - (100 - ci) / 2, axis=0)
+    
+    # Apply smoothing to reduce noise in the bands
+    window_size = min(5, n // 10)  # Adaptive window size
+    if window_size > 1:
+        lower = np.convolve(lower, np.ones(window_size)/window_size, mode='same')
+        upper = np.convolve(upper, np.ones(window_size)/window_size, mode='same')
+    
+    return lower, upper
+
+def calculate_optimal_noise_scale(predictions, actual_values):
+    """
+    Calculates the optimal noise scale using a more robust approach.
     
     Args:
-        results_evaluation (dict): Dictionary with results including predictions, treatment, period, and stats scores
-        Significance_level (float): Significance level for the permutation test
-    """
-
-    null_stats = results_evaluation['null_stats']
-    observed_stat = results_evaluation['observed_stat']
-
-
-    sns.set_theme(style="whitegrid")
-
-    fig, ax = plt.subplots(figsize=(10, 6))
-    sns.histplot(null_stats, bins=30, kde=True, color=blue, alpha=0.6, label='Difference', ax=ax)
-    ax.axvline(observed_stat, color='black', linestyle='--', linewidth=1.5, label='Observed Difference')
-    lower_bound = np.percentile(null_stats, 100 * (Significance_level / 2))
-    upper_bound = np.percentile(null_stats, 100 * (1 - (Significance_level / 2)))
-    ax.axvspan(min(null_stats), lower_bound, color=purple_light, alpha=0.2, label='Significance Zone (Lower)')
-    ax.axvspan(upper_bound, max(null_stats), color=purple_light, alpha=0.2, label='Significance Zone (Upper)')
-    ax.set_xlabel("Difference", fontsize=10)
-    ax.set_ylabel("Frequency", fontsize=10)
-    ax.grid(True, alpha=0.2, linestyle='-', linewidth=0.5)
-    ax.legend()
-
-    # Formatear el eje Y con millify
-    ax.yaxis.set_major_formatter(ticker.FuncFormatter(lambda x, _: millify(x, precision=1)))
-    ax.xaxis.set_major_formatter(ticker.FuncFormatter(lambda x, _: millify(x, precision=1)))
-
-    return fig 
-
-def calculate_confidence_bands(data, alpha=0.05):
-    """
-    Calculate confidence bands considering autocorrelation
-    
-    Args:
-        data: array-like, the time series data
-        alpha: significance level (default 0.05 for 95% confidence)
+        predictions: array of predictions
+        actual_values: array of actual values
     
     Returns:
-        tuple: (lower_bound, upper_bound)
+        float: optimal noise scale
     """
-    # Calculate mean and standard error
-    mean = np.mean(data)
-    std_error = np.std(data, ddof=1) / np.sqrt(len(data))
+    # Checkiing both arrays have the same lenght
+    min_length = min(len(predictions), len(actual_values))
+    predictions = predictions[:min_length]
+    actual_values = actual_values[:min_length]
     
-    # Test for autocorrelation
-    lags = min(10, len(data) // 5)  # Rule of thumb for number of lags
-    lb_test = acorr_ljungbox(data, lags=[lags])
-    has_autocorr = lb_test['lb_pvalue'].iloc[0] < 0.05
+    # Calculate residuals
+    residuals = predictions - actual_values
     
-    if has_autocorr:
-        # If there's autocorrelation, increase the standard error
-        # This is a simplified approach that accounts for autocorrelation
-        std_error = std_error * np.sqrt(2)
+    # Used a more robust approach
+    # Method 1: MAD (Median Absolute Deviation)
+    mad = np.median(np.abs(residuals - np.median(residuals)))
+    scale_mad = mad * 1.4826  # Correction factor for normal distribution
     
-    # Critical value from t-distribution
-    t_crit = stats.t.ppf(1 - alpha/2, len(data)-1)
+    # Method 2: Robust relative error
+    mask = (actual_values != 0)
+    relative_errors = np.abs(residuals[mask] / actual_values[mask])
+    relative_scale = np.median(relative_errors)
     
-    # Calculate bounds
-    margin = t_crit * std_error
-    lower_bound = data - margin
-    upper_bound = data + margin
+    # Combine both methods
+    final_scale = np.mean([scale_mad, relative_scale * np.median(np.abs(actual_values))])
     
-    return lower_bound, upper_bound 
+    return max(final_scale, 0.01)  # Ensure a minimum of variability
