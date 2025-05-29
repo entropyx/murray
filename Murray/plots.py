@@ -509,9 +509,10 @@ def plot_impact_streamlit_app(geo_test, period, holdout_percentage):
         x_treatment = list(range(star_treatment, len(y_real)))
         y_treatment = y_real[star_treatment:]
 
-        lower_bound, upper_bound = calculate_confidence_bands(y_treatment)
-        lower_bound_pd, upper_bound_pd = calculate_confidence_bands(point_difference[star_treatment:])
-        lower_bound_ce, upper_bound_ce = calculate_confidence_bands(cumulative_effect[star_treatment:])
+        noise_scale = calculate_optimal_noise_scale(y_treatment, y_real)    
+        lower_bound, upper_bound = calculate_confidence_bands(y_treatment,noise_scale=noise_scale)
+        lower_bound_pd, upper_bound_pd = calculate_confidence_bands(point_difference[star_treatment:],)
+        lower_bound_ce, upper_bound_ce = calculate_confidence_bands(cumulative_effect[star_treatment:],)
 
 
         att = np.mean(treatment_series[star_treatment:] - y_real[star_treatment:])
@@ -740,10 +741,10 @@ def plot_impact_evaluation_streamlit(results_evaluation, df, length_treatment):
     point_difference_treatment = point_difference[start_treatment:]
     cumulative_effect_treatment = cumulative_effect[start_treatment:]
 
-    
-    lower_bound, upper_bound = calculate_confidence_bands(y_treatment)
-    lower_bound_pd, upper_bound_pd = calculate_confidence_bands(point_difference[start_treatment:])
-    lower_bound_ce, upper_bound_ce = calculate_confidence_bands(cumulative_effect[start_treatment:])
+    noise_scale = calculate_optimal_noise_scale(y_treatment, counterfactual)
+    lower_bound, upper_bound = calculate_confidence_bands(y_treatment,noise_scale=noise_scale)
+    lower_bound_pd, upper_bound_pd = calculate_confidence_bands(point_difference[start_treatment:],)
+    lower_bound_ce, upper_bound_ce = calculate_confidence_bands(cumulative_effect[start_treatment:],)
 
     att = np.mean(treatment[start_treatment:] - counterfactual[start_treatment:])
     att = att / length_treatment
@@ -944,9 +945,10 @@ def plot_impact_evaluation(results_evaluation):
     star_treatment = len(counterfactual) - period
     y_treatment = counterfactual[star_treatment:]
 
-    lower_bound, upper_bound = calculate_confidence_bands(y_treatment)
-    lower_bound_pd, upper_bound_pd = calculate_confidence_bands(point_difference[star_treatment:])
-    lower_bound_ce, upper_bound_ce = calculate_confidence_bands(cumulative_effect[star_treatment:])
+    noise_scale = calculate_optimal_noise_scale(y_treatment, counterfactual)
+    lower_bound, upper_bound = calculate_confidence_bands(y_treatment,noise_scale=noise_scale)
+    lower_bound_pd, upper_bound_pd = calculate_confidence_bands(point_difference[star_treatment:],)
+    lower_bound_ce, upper_bound_ce = calculate_confidence_bands(cumulative_effect[star_treatment:],)
 
 
 
@@ -1398,9 +1400,10 @@ def plot_impact_report(geo_test, period, holdout_percentage,length_treatment):
     star_treatment = len(y_real) - period
     y_treatment = y_real[star_treatment:]
     
-    lower_bound, upper_bound = calculate_confidence_bands(y_treatment)
-    lower_bound_pd, upper_bound_pd = calculate_confidence_bands(point_difference[star_treatment:])
-    lower_bound_ce, upper_bound_ce = calculate_confidence_bands(cumulative_effect[star_treatment:])
+    noise_scale = calculate_optimal_noise_scale(y_treatment, y_real)
+    lower_bound, upper_bound = calculate_confidence_bands(y_treatment,noise_scale=noise_scale)
+    lower_bound_pd, upper_bound_pd = calculate_confidence_bands(point_difference[star_treatment:],)
+    lower_bound_ce, upper_bound_ce = calculate_confidence_bands(cumulative_effect[star_treatment:],)
 
     att = np.mean(treatment_series[star_treatment:] - y_real[star_treatment:])
     att = att / length_treatment
@@ -1487,9 +1490,10 @@ def plot_impact_evaluation_report(results_evaluation):
 
         y_treatment = counterfactual[star_treatment:]
         
-        lower_bound, upper_bound = calculate_confidence_bands(y_treatment)
-        lower_bound_pd, upper_bound_pd = calculate_confidence_bands(point_difference[star_treatment:])
-        lower_bound_ce, upper_bound_ce = calculate_confidence_bands(cumulative_effect[star_treatment:])
+        noise_scale = calculate_optimal_noise_scale(y_treatment, counterfactual)
+        lower_bound, upper_bound = calculate_confidence_bands(y_treatment,noise_scale=noise_scale)
+        lower_bound_pd, upper_bound_pd = calculate_confidence_bands(point_difference[star_treatment:],)
+        lower_bound_ce, upper_bound_ce = calculate_confidence_bands(cumulative_effect[star_treatment:],)
 
 
         # Absolute values (comparison)
@@ -1550,79 +1554,97 @@ def plot_impact_evaluation_report(results_evaluation):
             ax.yaxis.set_major_formatter(mticker.FuncFormatter(lambda x, _: millify(x, precision=1)))
         return fig, pre_treatment, pre_counterfactual, post_treatment, post_counterfactual, round(att,2), round(incremental,2)
 
-def calculate_confidence_bands(predicted, n_bootstrap=1000, ci=95, seed=42, noise_scale=None):
+def plot_permutation_test_report(results_evaluation, Significance_level=0.1):
+    
     """
-    Calculates confidence bands using bootstrap for a prediction series.
-    Uses a more robust approach with studentized residuals.
-
+    Plot the permutation test results
+    
     Args:
-        predicted: array-like, base prediction (e.g., counterfactual)
-        n_bootstrap: number of bootstrap samples
-        ci: confidence level (95 = 95% CI)
-        seed: seed for reproducibility
-        noise_scale: relative noise scale (if None, will be calculated from residuals)
-
-    Returns:
-        tuple: (lower_band, upper_band), both np.arrays
+        results_evaluation (dict): Dictionary with results including predictions, treatment, period, and stats scores
+        Significance_level (float): Significance level for the permutation test
     """
+
+    null_stats = results_evaluation['null_stats']
+    observed_stat = results_evaluation['observed_stat']
+
+
+    sns.set_theme(style="whitegrid")
+
+    fig, ax = plt.subplots(figsize=(10, 6))
+    sns.histplot(null_stats, bins=30, kde=True, color=blue, alpha=0.6, label='Difference', ax=ax)
+    ax.axvline(observed_stat, color='black', linestyle='--', linewidth=1.5, label='Observed Difference')
+    lower_bound = np.percentile(null_stats, 100 * (Significance_level / 2))
+    upper_bound = np.percentile(null_stats, 100 * (1 - (Significance_level / 2)))
+    ax.axvspan(min(null_stats), lower_bound, color=purple_light, alpha=0.2, label='Significance Zone (Lower)')
+    ax.axvspan(upper_bound, max(null_stats), color=purple_light, alpha=0.2, label='Significance Zone (Upper)')
+    ax.set_xlabel("Difference", fontsize=12)
+    ax.set_ylabel("Frequency", fontsize=12)
+    ax.legend()
+
+    return fig 
+
+
+def calculate_confidence_bands(predicted, n_bootstrap=1000, ci=95, seed=42,
+                                noise_scale=None, adaptive_noise=True, use_student_t=True):
+    import numpy as np
+
     np.random.seed(seed)
     predicted = np.array(predicted)
     n = len(predicted)
-    
-    # If noise_scale is not provided, use a default based on the data
+
     if noise_scale is None:
-        # Use a more robust estimate of variation
-        noise_scale = np.std(predicted) * 0.1  # 10% of standard deviation as default
-    
+        noise_scale = np.std(predicted) * 0.1
+
     samples = np.empty((n_bootstrap, n))
-    
+    threshold = 0.05 * np.std(predicted)
+
     for i in range(n_bootstrap):
-        # Use studentized residuals for more robust bootstrapping
-        noise = np.random.standard_t(df=3, size=n) * noise_scale
+        if adaptive_noise and noise_scale < threshold:
+            noise = np.random.normal(loc=0, scale=noise_scale, size=n)
+        else:
+            if use_student_t:
+                noise = np.random.standard_t(df=3, size=n) * noise_scale
+            else:
+                noise = np.random.normal(loc=0, scale=noise_scale, size=n)
         samples[i] = predicted + noise
-    
-    # Calculate confidence intervals using percentile method
+
     lower = np.percentile(samples, (100 - ci) / 2, axis=0)
     upper = np.percentile(samples, 100 - (100 - ci) / 2, axis=0)
-    
-    # Apply smoothing to reduce noise in the bands
-    window_size = min(5, n // 10)  # Adaptive window size
+
+    window_size = min(5, n // 10)
     if window_size > 1:
-        lower = np.convolve(lower, np.ones(window_size)/window_size, mode='same')
-        upper = np.convolve(upper, np.ones(window_size)/window_size, mode='same')
-    
+        lower = np.convolve(lower, np.ones(window_size) / window_size, mode='same')
+        upper = np.convolve(upper, np.ones(window_size) / window_size, mode='same')
+
+    # ✅ Banda centrada en la predicción (garantiza que la cubra)
+    max_band_width = np.std(predicted) * 2
+    band_width = np.clip(upper - lower, 0, max_band_width)
+    lower = predicted - band_width / 2
+    upper = predicted + band_width / 2
+
     return lower, upper
 
-def calculate_optimal_noise_scale(predictions, actual_values):
-    """
-    Calculates the optimal noise scale using a more robust approach.
-    
-    Args:
-        predictions: array of predictions
-        actual_values: array of actual values
-    
-    Returns:
-        float: optimal noise scale
-    """
-    # Checkiing both arrays have the same lenght
+
+
+def calculate_optimal_noise_scale(predictions, actual_values, min_relative_scale=0.005):
     min_length = min(len(predictions), len(actual_values))
     predictions = predictions[:min_length]
     actual_values = actual_values[:min_length]
-    
-    # Calculate residuals
     residuals = predictions - actual_values
-    
-    # Used a more robust approach
-    # Method 1: MAD (Median Absolute Deviation)
+
+    cutoff = int(0.8 * len(residuals))
+    residuals = residuals[:cutoff]
+    actual_values = actual_values[:cutoff]
+
+    # Escala absoluta robusta
     mad = np.median(np.abs(residuals - np.median(residuals)))
-    scale_mad = mad * 1.4826  # Correction factor for normal distribution
-    
-    # Method 2: Robust relative error
+    scale_mad = mad * 1.4826
+
+    # Escala relativa
     mask = (actual_values != 0)
     relative_errors = np.abs(residuals[mask] / actual_values[mask])
-    relative_scale = np.median(relative_errors)
-    
-    # Combine both methods
-    final_scale = np.mean([scale_mad, relative_scale * np.median(np.abs(actual_values))])
-    
-    return max(final_scale, 0.01)  # Ensure a minimum of variability
+    relative_scale = max(np.median(relative_errors), min_relative_scale)
+
+    # Escala final, más conservadora cuando hay poco error
+    final_scale = max(scale_mad, relative_scale * np.median(np.abs(actual_values)))
+    return final_scale
