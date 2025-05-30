@@ -45,7 +45,7 @@ st.logo(sidebar_logo,size="large", icon_image=main_body_logo)
 
 def generate_pdf(treatment_group, control_group, holdout_percentage, impact_graph, 
                  weights,period_idx,mde,att,incremental,tarjet_variable,firt_day,
-                 last_day,treatment_day,df,firt_report_day,second_report_day):
+                 last_day,treatment_day,df,firt_report_day,second_report_day,prediction_value,lower_bound_value,upper_bound_value):
         """
         Generates a PDF report with explanations for each aspect.
         """
@@ -217,12 +217,44 @@ def generate_pdf(treatment_group, control_group, holdout_percentage, impact_grap
         if pdf.get_y() > 250:
             pdf.add_page() 
         
-        pdf.set_font("Poppins", style='B', size=10)
-        pdf.set_text_color(33, 31, 36)
-        pdf.cell(200, 5, f"ATT: {att:,.2f}", ln=True)
-        pdf.cell(200, 5, f"Lift total: {incremental:,.2f}", ln=True)
-        pdf.cell(200, 5, f"Percentage Lift: {round(mde * 100)}%", ln=True)
+        pdf.ln(2)
+        header_bg = (103, 85, 130)  # Color de fondo del encabezado
+        row_bg = (246, 246, 246)    # Color de fondo de las filas
+        text_color = (33, 31, 36)   # Color del texto
 
+        # Crear tabla simple
+        pdf.set_font("Poppins", "B", 10)
+        pdf.set_text_color(*text_color)
+        
+        # Primera columna de métricas
+        metrics_col1 = [
+            ("Prediction value", f"{prediction_value:,.2f}"),
+            ("Lower value", f"{lower_bound_value:,.2f}"),
+            ("Upper value", f"{upper_bound_value:,.2f}")
+        ]
+        
+        # Segunda columna de métricas
+        metrics_col2 = [
+            ("ATT", f"{att:,.2f}"),
+            ("Lift total", f"{incremental:,.2f}"),
+            ("Percentage Lift", f"{round(mde * 100)}%")
+        ]
+
+        
+        for i in range(max(len(metrics_col1), len(metrics_col2))):
+            # First column
+            if i < len(metrics_col1):
+                metric, value = metrics_col1[i]
+                pdf.multi_cell(95, 6, f"{metric}: {value}")
+            else:
+                pdf.multi_cell(95, 6, "")
+            
+            # Second column
+            if i < len(metrics_col2):
+                metric, value = metrics_col2[i]
+                pdf.set_xy(pdf.get_x() + 95, pdf.get_y() - 8)
+                pdf.multi_cell(95, 6, f"{metric}: {value}")
+            pdf.ln(2)  
 
         pdf.ln(4)
         if pdf.get_y() > 250:
@@ -887,7 +919,7 @@ if file is not None:
                                                 treatment_group = st.session_state.simulation_results[location]['Best Treatment Group']
                                                 control_group = st.session_state.simulation_results[location]['Control Group']
                                                 
-                                                pre_treatment, pre_counterfactual, post_treatment, post_counterfactual,impact_graph,att,incremental = plot_impact_report(st.session_state.results, period_idx, holdout_percentage,length_treatment)
+                                                pre_treatment, pre_counterfactual, post_treatment, post_counterfactual,impact_graph,att,incremental,lower_bound_value,upper_bound_value,prediction_value = plot_impact_report(st.session_state.results, period_idx, holdout_percentage,length_treatment)
                                                 weights = print_weights(st.session_state.results, treatment_percentage)
                                                 df = pd.DataFrame(
                                                     {
@@ -906,7 +938,7 @@ if file is not None:
                                                 
 
 
-                                                pdf_file = generate_pdf(treatment_group, control_group, holdout_percentage, impact_graph,weights,period_idx,mde,att,incremental,col_target,firt_day,last_day,treatment_day,df,firt_report_day,second_report_day)
+                                                pdf_file = generate_pdf(treatment_group, control_group, holdout_percentage, impact_graph,weights,period_idx,mde,att,incremental,col_target,firt_day,last_day,treatment_day,df,firt_report_day,second_report_day,prediction_value,lower_bound_value,upper_bound_value)
                                                 
                                                 
 

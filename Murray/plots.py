@@ -513,7 +513,8 @@ def plot_impact_streamlit_app(geo_test, period, holdout_percentage):
         lower_bound, upper_bound = calculate_confidence_bands(y_treatment,noise_scale=noise_scale)
         lower_bound_pd, upper_bound_pd = calculate_confidence_bands(point_difference[star_treatment:],)
         lower_bound_ce, upper_bound_ce = calculate_confidence_bands(cumulative_effect[star_treatment:],)
-
+        lower_bound_value = lower_bound.sum()
+        upper_bound_value = upper_bound.sum()
 
         att = np.mean(treatment_series[star_treatment:] - y_real[star_treatment:])
         incremental = np.sum(treatment_series[star_treatment:] - y_real[star_treatment:])
@@ -666,18 +667,18 @@ def plot_impact_streamlit_app(geo_test, period, holdout_percentage):
 
 
 
-        return att, incremental,fig
+        return att, incremental,fig,lower_bound_value,upper_bound_value
 
 
 def plot_impact_graphs(geo_test, period, treatment_percentage):
   holdout_percentage = 100 - treatment_percentage
-  att, incremental, fig = plot_impact_streamlit_app(geo_test, period, holdout_percentage)
+  att, incremental, fig,lower_bound_value,upper_bound_value,prediction_value = plot_impact_streamlit_app(geo_test, period, holdout_percentage)
   return fig
 
 def print_incremental_results(geo_test, period, treatment_percentage):
     holdout_percentage = 100 - treatment_percentage
     title = "Incremental Results"
-    att, incremental, fig = plot_impact_streamlit_app(geo_test, period, holdout_percentage)
+    att, incremental, fig,lower_bound_value,upper_bound_value,prediction_value = plot_impact_streamlit_app(geo_test, period, holdout_percentage)
     print("=" * 30)
     print(title.center(30))
     print("=" * 30)
@@ -745,6 +746,9 @@ def plot_impact_evaluation_streamlit(results_evaluation, df, length_treatment):
     lower_bound, upper_bound = calculate_confidence_bands(y_treatment,noise_scale=noise_scale)
     lower_bound_pd, upper_bound_pd = calculate_confidence_bands(point_difference[start_treatment:],)
     lower_bound_ce, upper_bound_ce = calculate_confidence_bands(cumulative_effect[start_treatment:],)
+    lower_bound_value = lower_bound.sum()
+    upper_bound_value = upper_bound.sum()
+    prediction_value = treatment[start_treatment:].sum()
 
     att = np.mean(treatment[start_treatment:] - counterfactual[start_treatment:])
     att = att / length_treatment
@@ -920,7 +924,7 @@ def plot_impact_evaluation_streamlit(results_evaluation, df, length_treatment):
 
   
 
-    return fig, round(att, 2), round(incremental, 2)
+    return fig, round(att, 2), round(incremental, 2), round(lower_bound_value, 2), round(upper_bound_value, 2), round(prediction_value, 2)
 
 
 def plot_impact_evaluation(results_evaluation):
@@ -949,7 +953,9 @@ def plot_impact_evaluation(results_evaluation):
     lower_bound, upper_bound = calculate_confidence_bands(y_treatment,noise_scale=noise_scale)
     lower_bound_pd, upper_bound_pd = calculate_confidence_bands(point_difference[star_treatment:],)
     lower_bound_ce, upper_bound_ce = calculate_confidence_bands(cumulative_effect[star_treatment:],)
-
+    lower_bound_value = lower_bound.sum()
+    upper_bound_value = upper_bound.sum()
+    prediction_value = treatment[star_treatment:].sum()
 
 
     att = np.mean(treatment[star_treatment:] - counterfactual[star_treatment:])
@@ -1132,18 +1138,18 @@ def plot_impact_evaluation(results_evaluation):
 
   
 
-    return fig, round(att,2), round(incremental,2)
+    return fig, round(att,2), round(incremental,2), round(lower_bound_value,2), round(upper_bound_value,2), round(prediction_value,2)
 
 
 
 def plot_impact_graphs_evaluation(results_evaluation):
-    fig, att, incremental = plot_impact_evaluation(results_evaluation)
+    fig, att, incremental, lower_bound_value, upper_bound_value = plot_impact_evaluation(results_evaluation)
     return fig
 
 def print_incremental_results_evaluation(results_evaluation,metric):
     spend = results_evaluation['spend']
     
-    fig, att, incremental = plot_impact_evaluation(results_evaluation)
+    fig, att, incremental, lower_bound_value, upper_bound_value = plot_impact_evaluation(results_evaluation)
     title = "Incremental Results"
     print("=" * 30)
     print(title.center(30))
@@ -1151,7 +1157,6 @@ def print_incremental_results_evaluation(results_evaluation,metric):
     print(f"ATT: {round(att,2)}")
     print(f"Lift total: {round(incremental,2)}")
     print(f"{metric}: {round(incremental/spend,2)}")
-
     print("=" * 30)
 
 def plot_permutation_test(results_evaluation, Significance_level=0.1):
@@ -1404,6 +1409,9 @@ def plot_impact_report(geo_test, period, holdout_percentage,length_treatment):
     lower_bound, upper_bound = calculate_confidence_bands(y_treatment,noise_scale=noise_scale)
     lower_bound_pd, upper_bound_pd = calculate_confidence_bands(point_difference[star_treatment:],)
     lower_bound_ce, upper_bound_ce = calculate_confidence_bands(cumulative_effect[star_treatment:],)
+    lower_bound_value = lower_bound.sum()
+    upper_bound_value = upper_bound.sum()
+    prediction_value = y_real[star_treatment:].sum()
 
     att = np.mean(treatment_series[star_treatment:] - y_real[star_treatment:])
     att = att / length_treatment
@@ -1460,7 +1468,7 @@ def plot_impact_report(geo_test, period, holdout_percentage,length_treatment):
     for ax in axes:
         ax.yaxis.set_major_formatter(mticker.FuncFormatter(lambda x, _: millify(x, precision=1)))
 
-    return pre_treatment, pre_counterfactual, post_treatment, post_counterfactual, fig, round(att,2), round(incremental,2)
+    return pre_treatment, pre_counterfactual, post_treatment, post_counterfactual, fig, round(att,2), round(incremental,2), round(lower_bound_value,2), round(upper_bound_value,2), round(prediction_value,2)
 
 
 
@@ -1494,7 +1502,9 @@ def plot_impact_evaluation_report(results_evaluation):
         lower_bound, upper_bound = calculate_confidence_bands(y_treatment,noise_scale=noise_scale)
         lower_bound_pd, upper_bound_pd = calculate_confidence_bands(point_difference[star_treatment:],)
         lower_bound_ce, upper_bound_ce = calculate_confidence_bands(cumulative_effect[star_treatment:],)
-
+        lower_bound_value = lower_bound.sum()
+        upper_bound_value = upper_bound.sum()
+        prediction_value = counterfactual[star_treatment:].sum()
 
         # Absolute values (comparison)
         pre_treatment = treatment[star_treatment-period:star_treatment]
@@ -1552,7 +1562,7 @@ def plot_impact_evaluation_report(results_evaluation):
         plt.tight_layout()
         for ax in axes:
             ax.yaxis.set_major_formatter(mticker.FuncFormatter(lambda x, _: millify(x, precision=1)))
-        return fig, pre_treatment, pre_counterfactual, post_treatment, post_counterfactual, round(att,2), round(incremental,2)
+        return fig, pre_treatment, pre_counterfactual, post_treatment, post_counterfactual, round(att,2), round(incremental,2), round(lower_bound_value,2), round(upper_bound_value,2), round(prediction_value,2)
 
 def plot_permutation_test_report(results_evaluation, Significance_level=0.1):
     

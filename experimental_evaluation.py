@@ -46,7 +46,7 @@ def generate_pdf(treatment_group, control_group, holdout_percentage,
                  impact_graph,percenge_lift,p_value,power,period,
                  permutation_test,treatment_day,firt_day,last_day,
                  col_target,metric_mmm,mmm_option,lift_total,firt_report_day,second_report_day,
-                 pre_treatment,pre_counterfactual,post_treatment,post_counterfactual,att,incremental,df,spend):
+                 pre_treatment,pre_counterfactual,post_treatment,post_counterfactual,att,incremental,df,spend,lower_value,upper_value,prediction_value):
         """
         Generates a PDF report with explanations for each aspect.
         """
@@ -162,12 +162,46 @@ def generate_pdf(treatment_group, control_group, holdout_percentage,
         pdf.multi_cell(0, 5, f"Based on the analysis of the injected data and configured parameters, "
                         f"it can be observed that the treatment has the followings results:")
 
-        pdf.set_font("Poppins",style='B', size=10)
-        pdf.set_text_color(33, 31, 36)
-        pdf.multi_cell(0, 5, f"Percentage Lift: {percenge_lift}%")
-        pdf.multi_cell(0, 5, f"Lift total: {lift_total}")
-        pdf.multi_cell(0, 5, f"P-value: {p_value}")
-        pdf.multi_cell(0, 5, f"Power: {power}")
+
+        pdf.ln(2)
+        header_bg = (103, 85, 130)  # Color de fondo del encabezado
+        row_bg = (246, 246, 246)    # Color de fondo de las filas
+        text_color = (33, 31, 36)   # Color del texto
+
+        # Crear tabla simple
+        pdf.set_font("Poppins", "B", 10)
+        pdf.set_text_color(*text_color)
+        
+        # Primera columna de métricas
+        metrics_col1 = [
+            ("Prediction value", f"{prediction_value:,.2f}"),
+            ("Lower value", f"{lower_value:,.2f}"),
+            ("Upper value", f"{upper_value:,.2f}")
+        ]
+        
+        # Segunda columna de métricas
+        metrics_col2 = [
+            ("Percentage Lift", f"{percenge_lift}%"),
+            ("Lift total", f"{lift_total:,.2f}"),
+            ("P-value", f"{p_value}"),
+            ("Power", f"{power}")
+        ]
+
+        
+        for i in range(max(len(metrics_col1), len(metrics_col2))):
+            # First column
+            if i < len(metrics_col1):
+                metric, value = metrics_col1[i]
+                pdf.multi_cell(95, 6, f"{metric}: {value}")
+            else:
+                pdf.multi_cell(95, 6, "")
+            
+            # Second column
+            if i < len(metrics_col2):
+                metric, value = metrics_col2[i]
+                pdf.set_xy(pdf.get_x() + 95, pdf.get_y() - 8)
+                pdf.multi_cell(95, 6, f"{metric}: {value}")
+            pdf.ln(2)  
 
         pdf.ln(4)
         
@@ -448,7 +482,12 @@ if 'firt_report_day' not in st.session_state:
         st.session_state.firt_report_day = None
 if 'second_report_day' not in st.session_state:
         st.session_state.second_report_day = None
-        
+if 'lower_bound_value' not in st.session_state:
+        st.session_state.lower_bound_value = None
+if 'upper_bound_value' not in st.session_state:
+        st.session_state.upper_bound_value = None
+if 'prediction_value' not in st.session_state:
+        st.session_state.prediction_value = None
 
 
 
@@ -703,12 +742,15 @@ if file is not None:
 
                         
                         length_treatment = len(treatment_group)
-                        impact_graph,att,incremental = plot_impact_evaluation_streamlit(results,filtered_data,length_treatment)
+                        impact_graph,att,incremental,lower_bound_value,upper_bound_value,prediction_value = plot_impact_evaluation_streamlit(results,filtered_data,length_treatment)
+                        st.session_state.lower_bound_value = lower_bound_value
+                        st.session_state.upper_bound_value = upper_bound_value
                         st.session_state.incremental = incremental
+                        st.session_state.prediction_value = prediction_value
                         
                         st.session_state.impact_graph = impact_graph
 
-                        impact_graph_report,pre_treatment,pre_counterfactual,post_treatment,post_counterfactual,att_report,incremental_report = plot_impact_evaluation_report(results)
+                        impact_graph_report,pre_treatment,pre_counterfactual,post_treatment,post_counterfactual,att_report,incremental_report,lower_bound_value,upper_bound_value = plot_impact_evaluation_report(results)
                         st.session_state.impact_graph_report = impact_graph_report
                         st.session_state.pre_treatment = pre_treatment
                         st.session_state.pre_counterfactual = pre_counterfactual
@@ -738,7 +780,9 @@ if file is not None:
                 st.write(f"Holdout percentage: {st.session_state.holdout_percentage} %")
                 st.write(f"Treatment group: {st.session_state.treatment_group}")
                 st.write(f"Control group: {st.session_state.control_group}")
-           
+                # st.write(f"Lower bound value: {st.session_state.lower_bound_value}")
+                # st.write(f"Upper bound value: {st.session_state.upper_bound_value}")
+                # st.write(f"Prediction value: {st.session_state.prediction_value}")
                 
  
                 
@@ -822,7 +866,10 @@ if file is not None:
                             st.session_state.att_report,
                             st.session_state.incremental_report,
                             df,
-                            spend
+                            spend,
+                            st.session_state.lower_bound_value,
+                            st.session_state.upper_bound_value,
+                            st.session_state.prediction_value
                         )
 
 
