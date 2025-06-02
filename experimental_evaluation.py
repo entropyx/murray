@@ -750,7 +750,7 @@ if file is not None:
                         
                         st.session_state.impact_graph = impact_graph
 
-                        impact_graph_report,pre_treatment,pre_counterfactual,post_treatment,post_counterfactual,att_report,incremental_report,lower_bound_value,upper_bound_value = plot_impact_evaluation_report(results)
+                        impact_graph_report,pre_treatment,pre_counterfactual,post_treatment,post_counterfactual,att_report,incremental_report,lower_bound_value,upper_bound_value,prediction_value = plot_impact_evaluation_report(results)
                         st.session_state.impact_graph_report = impact_graph_report
                         st.session_state.pre_treatment = pre_treatment
                         st.session_state.pre_counterfactual = pre_counterfactual
