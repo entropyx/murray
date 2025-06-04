@@ -11,7 +11,10 @@ node_modules/
 *.pdf
 *.pkl
 build/
+.env
+env/
 *.egg-info
 .streamlit/secrets.toml
 traffic_metrics
+
 

@@ -299,11 +299,13 @@ def evaluate_group(treatment_group, data, total_Y, correlation_matrix, min_holdo
 
     weights = model.w_
 
-    MAPE = np.mean(np.abs((y_original[split_index:] - counterfactual_full_original[split_index:]) / (y_original[split_index:] + 1e-10))) * 100
-    SMAPE_value = smape(y_original[split_index:], counterfactual_full_original[split_index:])
-
-    # Calculate observed conformity
-    observed_conformity = np.mean(y_original - counterfactual_full_original)
+    MAPE = round(np.mean(np.abs((y_original[split_index:] - counterfactual_full_original[split_index:]) / (y_original[split_index:] + 1e-10))) * 100, 2)
+    SMAPE_value = round(smape(y_original[split_index:], counterfactual_full_original[split_index:]), 2)
+    observed_conformity = round(np.mean(y_original - counterfactual_full_original), 2)
+    
+    y_original = np.round(y_original, 2)
+    counterfactual_full_original = np.round(counterfactual_full_original, 2)
+    weights = np.round(weights, 2)
 
     return (treatment_group, control_group, MAPE, SMAPE_value, y_original, counterfactual_full_original, weights, observed_conformity)
 
@@ -351,7 +353,7 @@ def BetterGroups(similarity_matrix, excluded_locations, data, correlation_matrix
     results = []
     
     
-    with concurrent.futures.ProcessPoolExecutor(max_workers=5) as executor:
+    with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
         futures = executor.map(
             evaluate_group,
             possible_groups,
@@ -360,7 +362,6 @@ def BetterGroups(similarity_matrix, excluded_locations, data, correlation_matrix
             [correlation_matrix] * total_groups,
             [min_holdout] * total_groups,
             [df_pivot] * total_groups,
-            chunksize=10
         )
         for idx, result in enumerate(futures):
             results.append(result)
@@ -378,22 +379,21 @@ def BetterGroups(similarity_matrix, excluded_locations, data, correlation_matrix
             
             treatment_Y = data[data['location'].isin(best_treatment_group)]['Y'].sum()
             
-            # Add validation to prevent division by zero
             if total_Y > 0:
-                holdout_percentage = ((total_Y - treatment_Y) / total_Y) * 100
+                holdout_percentage = round(((total_Y - treatment_Y) / total_Y) * 100, 2)
             else:
                 holdout_percentage = 0.0
 
             results_by_size[size] = {
                 'Best Treatment Group': best_treatment_group,
                 'Control Group': best_control_group,
-                'MAPE': best_MAPE,
-                'SMAPE': best_SMAPE,
-                'Actual Target Metric (y)': y,
-                'Predictions': predictions,
-                'Weights': weights,
+                'MAPE': round(best_MAPE, 2),
+                'SMAPE': round(best_SMAPE, 2),
+                'Actual Target Metric (y)': np.round(y, 2),
+                'Predictions': np.round(predictions, 2),
+                'Weights': np.round(weights, 2),
                 'Holdout Percentage': holdout_percentage,
-                'observed_conformity': observed_conformity
+                'observed_conformity': round(observed_conformity, 2)
             }
 
     if not results or all(result is None for result in results):
@@ -506,21 +506,21 @@ def run_simulation(delta, y_real, y_control, period, n_permutations, significanc
     """
     Wrapper function to run a single simulation of statistical power.
     """
-    # Asegurarse de que y_real y y_control son arrays de numpy
-    y_real = np.array(y_real).flatten()
-    y_control = np.array(y_control).flatten()
+    # Convert to numpy arrays and round using np.round
+    y_real = np.round(np.array(y_real).flatten(), 2)
+    y_control = np.round(np.array(y_control).flatten(), 2)
     
     return simulate_power(
         y_real=y_real,
         y_control=y_control,
-        delta=delta,
+        delta=round(delta, 2),
         period=period,
         n_permutations=n_permutations,
         significance_level=significance_level,
         inference_type=inference_type,
     )
 
-def evaluate_sensitivity(results_by_size, deltas, periods, n_permutations, significance_level=0.05, inference_type="iid",  size_block=None, progress_bar=None, status_text=None):
+def evaluate_sensitivity(results_by_size, deltas, periods, n_permutations, significance_level=0.05, inference_type="iid", size_block=None, progress_bar=None, status_text=None):
     """
     Evaluates sensitivity of results to different treatment periods and deltas using permutations.
 
@@ -563,7 +563,9 @@ def evaluate_sensitivity(results_by_size, deltas, periods, n_permutations, signi
             
             for delta in deltas:
                 res = run_simulation(delta, y_real, y_control, period, n_permutations, significance_level, inference_type, size_block)
-                results.append(res)
+                # Round the results
+                delta, power, adjusted_series = res
+                results.append((round(delta, 2), round(power, 2), np.round(adjusted_series, 2)))
 
                 
                 step += 1
@@ -575,12 +577,14 @@ def evaluate_sensitivity(results_by_size, deltas, periods, n_permutations, signi
             
             statistical_power = [(res[0], res[1]) for res in results]
             mde = next((delta for delta, power in statistical_power if power >= 0.85), None)
+            if mde is not None:
+                mde = round(mde, 2)
 
             for delta, _, adjusted_series in results:
-                lift_series[(size, delta, period)] = adjusted_series
+                lift_series[(size, delta, period)] = np.round(adjusted_series, 2)
 
             results_by_period[period] = {
-                'Statistical Power': statistical_power,
+                'Statistical Power': [(round(delta, 2), round(power, 2)) for delta, power in statistical_power],
                 'MDE': mde
             }
 
@@ -597,12 +601,12 @@ def transform_results_data(results_by_size):
         transformed_data[size] = {
             'Best Treatment Group': ', '.join(data['Best Treatment Group']),
             'Control Group': ', '.join(data['Control Group']),
-            'MAPE': float(data['MAPE']),
-            'SMAPE': float(data['SMAPE']),
-            'Actual Target Metric (y)': data['Actual Target Metric (y)'].tolist(),
-            'Predictions': data['Predictions'].tolist(),
-            'Weights': data['Weights'].tolist(),
-            'Holdout Percentage': float(data['Holdout Percentage'])
+            'MAPE': round(float(data['MAPE']), 2),
+            'SMAPE': round(float(data['SMAPE']), 2),
+            'Actual Target Metric (y)': [round(x, 2) for x in data['Actual Target Metric (y)']],
+            'Predictions': [round(x, 2) for x in data['Predictions']],
+            'Weights': [round(x, 2) for x in data['Weights']],
+            'Holdout Percentage': round(float(data['Holdout Percentage']), 2)
         }
     return transformed_data
 

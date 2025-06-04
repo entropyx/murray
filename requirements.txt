@@ -15,3 +15,12 @@ millify
 statsmodels
 protobuf==3.20.*
 filelock==3.13.1
+uvicorn
+fastapi
+python-dotenv
+pydantic
+python-multipart
+celery
+redis
+flower
+requests

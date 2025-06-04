@@ -1,0 +1,96 @@
+services:
+  redis:
+    image: redis:latest
+    ports:
+      - "6382:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 10s
+      retries: 3
+    volumes:
+      - redis_data:/data
+
+  web:
+    build: .
+    ports:
+      - "8002:8000"
+    volumes:
+      - .:/app
+      - temp_updates:/app/temp_updates
+    environment:
+      - PYTHONUNBUFFERED=1
+      - REDIS_DB=${REDIS_DB}
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - CELERY_BROKER_URL=redis://redis:6379/${REDIS_DB}
+      - CELERY_RESULT_BACKEND=redis://redis:6379/${REDIS_DB}
+    depends_on:
+      redis:
+        condition: service_healthy
+    command: ["uvicorn", "api:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "2"]
+
+  streamlit:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8501:8501"
+    volumes:
+      - .:/app
+      - temp_updates:/app/temp_updates
+    environment:
+      - PYTHONUNBUFFERED=1
+      # Eliminamos cualquier conexión a Redis o Celery
+    command: ["streamlit", "run", "app.py", "--server.port=8501", "--server.address=0.0.0.0"]
+    # Ya no depende de otros servicios
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:8501/_stcore/health"]
+      interval: 10s
+      timeout: 10s
+      retries: 3
+
+
+  celery_worker:
+    build: .
+    volumes:
+      - .:/app
+      - temp_updates:/app/temp_updates
+    environment:
+      - PYTHONUNBUFFERED=1
+      - REDIS_DB=${REDIS_DB}
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - CELERY_BROKER_URL=redis://redis:6379/${REDIS_DB}
+      - CELERY_RESULT_BACKEND=redis://redis:6379/${REDIS_DB}
+    depends_on:
+      redis:
+        condition: service_healthy
+    command: ["celery", "-A", "tasks", "worker", "--loglevel=info", "--concurrency=2"]
+    shm_size: '512m'
+
+  flower:
+    build: .
+    ports:
+      - "5558:5555"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - REDIS_DB=${REDIS_DB}
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - CELERY_BROKER_URL=redis://redis:6379/${REDIS_DB}
+      - CELERY_RESULT_BACKEND=redis://redis:6379/${REDIS_DB}
+      - CELERY_EVENT_BACKEND=redis://redis:6379/${REDIS_DB}
+      - FLOWER_USER=${FLOWER_USER}
+      - FLOWER_PASSWORD=${FLOWER_PASSWORD}
+    depends_on:
+      - celery_worker
+    command: ["celery", "-A", "tasks", "flower", "--basic_auth=${FLOWER_USER}:${FLOWER_PASSWORD}"]
+
+volumes:
+  redis_data:    # Definición del volumen
+  temp_updates:  # Definición del volumen
+
+
+
+      
