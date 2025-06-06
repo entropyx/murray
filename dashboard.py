@@ -49,23 +49,23 @@ def display_registration_links():
     #         # Intentar obtener la contraseña de secrets.toml
     #         secret_password = st.secrets.get("password")
             
-    #         # Si no está en secrets.toml, intentar con variable de entorno
+    #         # If not in secrets.toml, try with environment variable
     #         if not secret_password:
     #             secret_password = os.environ.get("PASSWORD")
             
-    #         # Verificar que tenemos una contraseña para comparar
+    #         # Verify that we have a password to compare
     #         if not secret_password:
     #             st.error("No se encontró la contraseña de configuración")
     #             st.session_state["password_correct"] = False
     #             return
             
-    #         # Verificar que el usuario ingresó una contraseña
+    #         # Verify that the user entered a password
     #         if "password" not in st.session_state or not st.session_state["password"]:
     #             st.error("Por favor ingrese una contraseña")
     #             st.session_state["password_correct"] = False
     #             return
             
-    #         # Comparar las contraseñas
+    #         # Compare passwords
     #         if hmac.compare_digest(str(st.session_state["password"]), str(secret_password)):
     #             st.session_state["password_correct"] = True
     #             del st.session_state["password"]  # Limpiar la contraseña de la sesión
@@ -77,11 +77,11 @@ def display_registration_links():
     #         st.error(f"Error al verificar la contraseña: {str(e)}")
     #         st.session_state["password_correct"] = False
 
-    # # Inicializar el estado de la contraseña
+    # # Initialize the password state
     # if "password_correct" not in st.session_state:
     #     st.session_state["password_correct"] = False
 
-    # # Mostrar el formulario de contraseña si no está autenticado
+    # # Show the password form if not authenticated
     # if not st.session_state["password_correct"]:
     #     st.text_input(
     #         "Password", 
@@ -243,7 +243,7 @@ if True:
         time.sleep(1)  
         st.rerun()  
 
-# Eliminar estas funciones y llamadas que están al final del archivo
+# Remove these functions and calls at the end of the file
 # def main():
 #     if st.session_state.get('role') != 'admin':
 #         st.error("Access denied. Admin privileges required.")

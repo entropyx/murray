@@ -15,6 +15,7 @@ from typing import Optional, Dict, Any
 from pydantic import BaseModel
 from celery.signals import task_prerun, task_postrun, task_failure
 import requests
+import httpx
 
 logger = logging.getLogger("murray_tasks")
 
@@ -96,8 +97,9 @@ def cleanup_temp_data(task_id: str, prefix: str = ""):
     except Exception as e:
         logger.error(f"[{task_id}] Error cleaning up temporary data: {str(e)}", exc_info=True)
 
-@celery_app.task(name="analyze_design_task", track_started=True)
+@celery_app.task(name="analyze_design_task", track_started=True, bind=True)
 def analyze_design_task(
+    self,
     file_content: bytes,
     date_column: str,
     location_column: str,
@@ -107,23 +109,31 @@ def analyze_design_task(
     significance_level: float,
     deltas_range: tuple,
     periods_range: tuple,
-    webhook_url: str = None
+    webhook: dict = None
 ):
-    task_id = current_task.request.id
-    logger.info(f"[{task_id}] Starting design analysis task")
+    task_id = self.request.id
     
+    # Notify start
+    if webhook:
+        try:
+            httpx.post(webhook["url"], json={
+                "status": "started",
+                "job_id": task_id,
+                "message": "Design analysis task started",
+                "timestamp": datetime.now().isoformat()
+            })
+        except Exception as e:
+            logger.error(f"[{task_id}] Error sending start webhook: {str(e)}")
+
     try:
-        # Read the CSV file
         df = pd.read_csv(io.BytesIO(file_content))
         logger.info(f"[{task_id}] CSV file read successfully. Shape: {df.shape}")
-        
+
         save_temp_data(task_id, df, "data_design_input")
-        
-        # Clean data
+
         data = cleaned_data(df, col_target=target_column, col_locations=location_column, col_dates=date_column)
         logger.info(f"[{task_id}] Data cleaned successfully")
-        
-        # Run analysis
+
         logger.info(f"[{task_id}] Starting geo analysis")
         results = run_geo_analysis_streamlit_app(
             data=data,
@@ -134,28 +144,51 @@ def analyze_design_task(
             periods_range=periods_range
         )
         logger.info(f"[{task_id}] Geo analysis completed")
-        
-        # Converted results to native Python types
+
         serializable_results = convert_ndarrays(results)
-        
-        # Verify if there are numpy objects that were not converted
         numpy_locations = find_numpy_objects(serializable_results)
+
         if numpy_locations:
             logger.warning(f"[{task_id}] Numpy objects found in results: {numpy_locations}")
         else:
             logger.info(f"[{task_id}] All numpy objects converted successfully")
-            # Clean up temp files only if everything went well
             cleanup_temp_data(task_id, "design_input")
             cleanup_temp_data(task_id, "design_results")
-        
+
+        # Notify success
+        if webhook:
+            try:
+                httpx.post(webhook["url"], json={
+                    "status": "completed",
+                    "job_id": task_id,
+                    "result": serializable_results,
+                    "timestamp": datetime.now().isoformat()
+                })
+            except Exception as e:
+                logger.error(f"[{task_id}] Error sending success webhook: {str(e)}")
+
         return serializable_results
-        
+
     except Exception as e:
         logger.error(f"[{task_id}] Error in design analysis task: {str(e)}", exc_info=True)
+        
+        # Notify failure
+        if webhook:
+            try:
+                httpx.post(webhook["url"], json={
+                    "status": "failed",
+                    "job_id": task_id,
+                    "error": str(e),
+                    "timestamp": datetime.now().isoformat()
+                })
+            except Exception as webhook_error:
+                logger.error(f"[{task_id}] Error sending failure webhook: {str(webhook_error)}")
+        
         raise
 
-@celery_app.task(name="analyze_evaluation_task", track_started=True)
+@celery_app.task(name="analyze_evaluation_task", track_started=True, bind=True)
 def analyze_evaluation_task(
+    self,
     file_content: bytes,
     date_column: str,
     location_column: str,
@@ -165,29 +198,34 @@ def analyze_evaluation_task(
     treatment_group: list,
     spend: float,
     mmm_option: str,
-    webhook_url: str = None
+    webhook: dict = None
 ):
-    task_id = current_task.request.id
-    logger.info(f"[{task_id}] Starting evaluation analysis task")
+    task_id = self.request.id
     
-    # Agregar el registro del webhook URL
-    if webhook_url:
-        redis_client.set(f"webhook:{task_id}", webhook_url)
-    
+    # Notify start
+    if webhook:
+        try:
+            httpx.post(webhook["url"], json={
+                "status": "started",
+                "job_id": task_id,
+                "message": "Evaluation analysis task started",
+                "timestamp": datetime.now().isoformat()
+            })
+        except Exception as e:
+            logger.error(f"[{task_id}] Error sending start webhook: {str(e)}")
+
     try:
         df = pd.read_csv(io.BytesIO(file_content))
         logger.info(f"[{task_id}] CSV file read successfully. Shape: {df.shape}")
-        
+
         save_temp_data(task_id, df, "data_evaluation_input")
-        
-        
+
         df = cleaned_data(df, col_target=target_column, col_locations=location_column, col_dates=date_column)
         logger.info(f"[{task_id}] Data cleaned successfully")
-        
-        
+
         treatment_start_date = pd.to_datetime(treatment_start_date, dayfirst=True)
         treatment_end_date = pd.to_datetime(treatment_end_date, dayfirst=True)
-        
+
         logger.info(f"[{task_id}] Starting geo evaluation")
         results = run_geo_evaluation(
             data_input=df,
@@ -197,56 +235,49 @@ def analyze_evaluation_task(
             spend=spend,
         )
         logger.info(f"[{task_id}] Geo evaluation completed")
-        
-        # Converted results to native Python types
+
         serializable_results = convert_ndarrays(results)
-        
-        
         numpy_locations = find_numpy_objects(serializable_results)
+
         if numpy_locations:
             logger.warning(f"[{task_id}] Numpy objects found in results: {numpy_locations}")
         else:
             logger.info(f"[{task_id}] All numpy objects converted successfully")
-            # Clean up temp files only if everything went well
             cleanup_temp_data(task_id, "evaluation_input")
             cleanup_temp_data(task_id, "evaluation_results")
-        
+
+        # Notify success
+        if webhook:
+            try:
+                httpx.post(webhook["url"], json={
+                    "status": "completed",
+                    "job_id": task_id,
+                    "result": serializable_results,
+                    "timestamp": datetime.now().isoformat()
+                })
+            except Exception as e:
+                logger.error(f"[{task_id}] Error sending success webhook: {str(e)}")
+
         return serializable_results
-        
+
     except Exception as e:
         logger.error(f"[{task_id}] Error in evaluation analysis task: {str(e)}", exc_info=True)
-        raise 
+        
+        # Notify failure
+        if webhook:
+            try:
+                httpx.post(webhook["url"], json={
+                    "status": "failed",
+                    "job_id": task_id,
+                    "error": str(e),
+                    "timestamp": datetime.now().isoformat()
+                })
+            except Exception as webhook_error:
+                logger.error(f"[{task_id}] Error sending failure webhook: {str(webhook_error)}")
+        
+        raise
 
 class TaskResponse(BaseModel):
     task_id: str
-    status: str  # PENDING, STARTED, SUCCESS, FAILURE, RETRY, REVOKED
-    results: Optional[Dict[str, Any]] = None  
-
-def notify_webhook(task_id, status, results=None, error=None):
-    webhook_url = redis_client.get(f"webhook:{task_id}")
-    if webhook_url:
-        try:
-            payload = {
-                "task_id": task_id,
-                "status": status,
-                "results": results,
-                "error": error,
-            }
-            requests.post(webhook_url.decode(), json=payload, timeout=5)
-        except Exception as ex:
-            logger.error(f"[{task_id}] Error sending webhook: {ex}")
-
-@task_prerun.connect
-def task_started_handler(sender=None, task_id=None, **kwargs):
-    notify_webhook(task_id, "STARTED")
-
-@task_postrun.connect
-def task_completed_handler(sender=None, task_id=None, retval=None, state=None, **kwargs):
-    if state == "SUCCESS":
-        notify_webhook(task_id, "SUCCESS", results=retval)
-    elif state == "FAILURE":
-        notify_webhook(task_id, "FAILURE", error=str(retval))
-
-@task_failure.connect
-def task_failed_handler(sender=None, task_id=None, exception=None, **kwargs):
-    notify_webhook(task_id, "FAILURE", error=str(exception))
+    status: str
+    results: Optional[Dict[str, Any]] = None

@@ -41,9 +41,9 @@ services:
       - temp_updates:/app/temp_updates
     environment:
       - PYTHONUNBUFFERED=1
-      # Eliminamos cualquier conexión a Redis o Celery
+      # Remove any connection to Redis or Celery
     command: ["streamlit", "run", "app.py", "--server.port=8501", "--server.address=0.0.0.0"]
-    # Ya no depende de otros servicios
+    # No longer depends on other services
     healthcheck:
       test: ["CMD", "curl", "--fail", "http://localhost:8501/_stcore/health"]
       interval: 10s
@@ -88,8 +88,8 @@ services:
     command: ["celery", "-A", "tasks", "flower", "--basic_auth=${FLOWER_USER}:${FLOWER_PASSWORD}"]
 
 volumes:
-  redis_data:    # Definición del volumen
-  temp_updates:  # Definición del volumen
+  redis_data:    # Volume definition
+  temp_updates:  # Volume definition
 
 
 

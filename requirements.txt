@@ -24,3 +24,4 @@ celery
 redis
 flower
 requests
+httpx

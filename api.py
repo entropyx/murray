@@ -16,6 +16,7 @@ from celery.result import AsyncResult
 import requests
 import redis
 from celery import current_task
+import httpx
 
 load_dotenv()
 
@@ -113,9 +114,9 @@ async def analyze_design(
     excluded_locations: str = Form(...),
     maximum_treatment_percentage: float = Form(0.3),
     significance_level: float = Form(0.1),
-    deltas_range: str = Form(...),
-    periods_range: str = Form(...),
-    webhook_url: str = Form(None)
+    deltas_range: str = Form(0.01,0.1,0.01),
+    periods_range: str = Form(5,15,5),
+    webhook: str = Form(None)
 ):
     """
     Submit design analysis task
@@ -131,6 +132,9 @@ async def analyze_design(
         periods_range = tuple(map(int, periods_range.split(',')))
         excluded_locations = tuple(map(str, excluded_locations.split(',')))
         
+        # Prepare webhook dict if URL is provided
+        webhook_dict = {"url": webhook} if webhook else None
+        
         # Submit task to Celery
         task = analyze_design_task.delay(
             file_content=contents,
@@ -142,22 +146,23 @@ async def analyze_design(
             significance_level=significance_level,
             deltas_range=deltas_range,
             periods_range=periods_range,
-            webhook_url=webhook_url
+            webhook=webhook_dict
         )
         
         logger.info(f"[{request_id}] Task submitted with ID: {task.id}")
-        if webhook_url:
-            redis_client.set(f"webhook:{task.id}", webhook_url, ex=60*60*24)
-            # Notifica PENDING
+
+        # Notify PENDING state immediately
+        if webhook_dict:
             try:
-                requests.post(webhook_url, json={
-                    "task_id": task.id,
-                    "status": "PENDING",
-                    "results": None,
-                    "error": None
-                }, timeout=5)
+                httpx.post(webhook_dict["url"], json={
+                    "status": "pending",
+                    "job_id": task.id,
+                    "message": "Task queued for processing",
+                    "timestamp": datetime.now().isoformat()
+                })
             except Exception as ex:
-                logger.error(f"[{task.id}] Error sending webhook: {ex}")
+                logger.error(f"[{task.id}] Error sending pending webhook: {str(ex)}")
+
         return TaskResponse(task_id=task.id, status="PENDING", results={"message": "Task submitted"})
         
     except Exception as e:
@@ -175,7 +180,7 @@ async def analyze_evaluation(
     treatment_group: str = Form(...),
     spend: float = Form(...),
     mmm_option: str = Form(...),
-    webhook_url: str = Form(None)
+    webhook: str = Form(None)
 ):
     """
     Submit evaluation analysis task
@@ -186,6 +191,9 @@ async def analyze_evaluation(
     try:
         contents = await file.read()
         treatment_group = list(map(str, treatment_group.split(',')))
+        
+        # Prepare webhook dict if URL is provided
+        webhook_dict = {"url": webhook} if webhook else None
         
         # Submit task to Celery
         task = analyze_evaluation_task.delay(
@@ -198,22 +206,23 @@ async def analyze_evaluation(
             treatment_group=treatment_group,
             spend=spend,
             mmm_option=mmm_option,
-            webhook_url=webhook_url
+            webhook=webhook_dict
         )
         
         logger.info(f"[{request_id}] Task submitted with ID: {task.id}")
-        if webhook_url:
-            redis_client.set(f"webhook:{task.id}", webhook_url, ex=60*60*24)
-            # Notifica PENDING inmediatamente
+
+        # Notify PENDING state immediately
+        if webhook_dict:
             try:
-                requests.post(webhook_url, json={
-                    "task_id": task.id,
-                    "status": "PENDING",
-                    "results": None,
-                    "error": None
-                }, timeout=5)
+                httpx.post(webhook_dict["url"], json={
+                    "status": "pending",
+                    "job_id": task.id,
+                    "message": "Task queued for processing",
+                    "timestamp": datetime.now().isoformat()
+                })
             except Exception as ex:
-                logger.error(f"[{task.id}] Error sending webhook: {ex}")
+                logger.error(f"[{task.id}] Error sending pending webhook: {str(ex)}")
+
         return TaskResponse(task_id=task.id, status="PENDING", results={"message": "Task submitted"})
         
     except Exception as e:
