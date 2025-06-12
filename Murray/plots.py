@@ -443,7 +443,7 @@ def print_weights(geo_test, treatment_percentage=None, num_locations=None):
 
 
 
-def plot_impact_streamlit_app(geo_test, period, holdout_percentage):
+def plot_impact_streamlit_app(geo_test, period, holdout_percentage,significance_level=0.05):
         """
         Generates graphs for a specific holdout percentage in a specific period.
 
@@ -457,7 +457,7 @@ def plot_impact_streamlit_app(geo_test, period, holdout_percentage):
         """
 
 
-        
+        ci = 1 - significance_level
         sensitivity_results = geo_test['sensitivity_results']
         results_by_size = geo_test['simulation_results']
         series_lifts = geo_test['series_lifts']
@@ -510,9 +510,9 @@ def plot_impact_streamlit_app(geo_test, period, holdout_percentage):
         y_treatment = y_real[star_treatment:]
 
         noise_scale = calculate_optimal_noise_scale(y_treatment, y_real)    
-        lower_bound, upper_bound = calculate_confidence_bands(y_treatment,noise_scale=noise_scale)
-        lower_bound_pd, upper_bound_pd = calculate_confidence_bands(point_difference[star_treatment:],)
-        lower_bound_ce, upper_bound_ce = calculate_confidence_bands(cumulative_effect[star_treatment:],)
+        lower_bound, upper_bound = calculate_confidence_bands(y_treatment,noise_scale=noise_scale, ci=ci)
+        lower_bound_pd, upper_bound_pd = calculate_confidence_bands(point_difference[star_treatment:], ci=ci)
+        lower_bound_ce, upper_bound_ce = calculate_confidence_bands(cumulative_effect[star_treatment:], ci=ci)
         lower_bound_value = lower_bound.sum()
         upper_bound_value = upper_bound.sum()
 
@@ -722,11 +722,11 @@ def print_locations(geo_test, treatment_percentage=None, num_locations=None):
     print(f"Control Locations: {control_locations}")
 
 
-def plot_impact_evaluation_streamlit(results_evaluation, df, length_treatment):
+def plot_impact_evaluation_streamlit(results_evaluation, df, length_treatment, significance_level=0.05):
     """
     Plot the impact evaluation results using Plotly with hover text for dates.
     """
-    
+    ci = 1 - significance_level
     dates = df['time'].dt.date.astype(str).tolist()
     counterfactual = results_evaluation['predictions']
     treatment = results_evaluation['treatment']
@@ -743,9 +743,9 @@ def plot_impact_evaluation_streamlit(results_evaluation, df, length_treatment):
     cumulative_effect_treatment = cumulative_effect[start_treatment:]
 
     noise_scale = calculate_optimal_noise_scale(y_treatment, counterfactual)
-    lower_bound, upper_bound = calculate_confidence_bands(y_treatment,noise_scale=noise_scale)
-    lower_bound_pd, upper_bound_pd = calculate_confidence_bands(point_difference[start_treatment:],)
-    lower_bound_ce, upper_bound_ce = calculate_confidence_bands(cumulative_effect[start_treatment:],)
+    lower_bound, upper_bound = calculate_confidence_bands(y_treatment,noise_scale=noise_scale, ci=ci)
+    lower_bound_pd, upper_bound_pd = calculate_confidence_bands(point_difference[start_treatment:], ci=ci)
+    lower_bound_ce, upper_bound_ce = calculate_confidence_bands(cumulative_effect[start_treatment:], ci=ci)
     lower_bound_value = lower_bound.sum()
     upper_bound_value = upper_bound.sum()
     prediction_value = treatment[start_treatment:].sum()
@@ -927,7 +927,7 @@ def plot_impact_evaluation_streamlit(results_evaluation, df, length_treatment):
     return fig, round(att, 2), round(incremental, 2), round(lower_bound_value, 2), round(upper_bound_value, 2), round(prediction_value, 2)
 
 
-def plot_impact_evaluation(results_evaluation):
+def plot_impact_evaluation(results_evaluation, significance_level=0.05):
     """
     Plot the impact evaluation results using Plotly
     
@@ -936,7 +936,7 @@ def plot_impact_evaluation(results_evaluation):
         treatment (array): Treatment group values
         period (int): Treatment period length
     """
-
+    ci = 1 - significance_level
     counterfactual = results_evaluation['predictions']
     treatment = results_evaluation['treatment']
     period = results_evaluation['period']
@@ -950,9 +950,9 @@ def plot_impact_evaluation(results_evaluation):
     y_treatment = counterfactual[star_treatment:]
 
     noise_scale = calculate_optimal_noise_scale(y_treatment, counterfactual)
-    lower_bound, upper_bound = calculate_confidence_bands(y_treatment,noise_scale=noise_scale)
-    lower_bound_pd, upper_bound_pd = calculate_confidence_bands(point_difference[star_treatment:],)
-    lower_bound_ce, upper_bound_ce = calculate_confidence_bands(cumulative_effect[star_treatment:],)
+    lower_bound, upper_bound = calculate_confidence_bands(y_treatment,noise_scale=noise_scale, ci=ci)
+    lower_bound_pd, upper_bound_pd = calculate_confidence_bands(point_difference[star_treatment:], ci=ci)
+    lower_bound_ce, upper_bound_ce = calculate_confidence_bands(cumulative_effect[star_treatment:], ci=ci)
     lower_bound_value = lower_bound.sum()
     upper_bound_value = upper_bound.sum()
     prediction_value = treatment[star_treatment:].sum()
@@ -1351,7 +1351,7 @@ def plot_metrics_report(geo_test):
 
 
 
-def plot_impact_report(geo_test, period, holdout_percentage,length_treatment):
+def plot_impact_report(geo_test, period, holdout_percentage,length_treatment, significance_level=0.05):
     """
     Generates graphs for a specific holdout percentage in a specific period.
 
@@ -1363,6 +1363,7 @@ def plot_impact_report(geo_test, period, holdout_percentage,length_treatment):
     Returns:
         fig: matplotlib figure object with the plots
     """
+    ci = 1 - significance_level
     sensitivity_results = geo_test['sensitivity_results']
     results_by_size = geo_test['simulation_results']
     series_lifts = geo_test['series_lifts']
@@ -1406,9 +1407,9 @@ def plot_impact_report(geo_test, period, holdout_percentage,length_treatment):
     y_treatment = y_real[star_treatment:]
     
     noise_scale = calculate_optimal_noise_scale(y_treatment, y_real)
-    lower_bound, upper_bound = calculate_confidence_bands(y_treatment,noise_scale=noise_scale)
-    lower_bound_pd, upper_bound_pd = calculate_confidence_bands(point_difference[star_treatment:],)
-    lower_bound_ce, upper_bound_ce = calculate_confidence_bands(cumulative_effect[star_treatment:],)
+    lower_bound, upper_bound = calculate_confidence_bands(y_treatment,noise_scale=noise_scale, ci=ci)
+    lower_bound_pd, upper_bound_pd = calculate_confidence_bands(point_difference[star_treatment:], ci=ci)
+    lower_bound_ce, upper_bound_ce = calculate_confidence_bands(cumulative_effect[star_treatment:], ci=ci)
     lower_bound_value = lower_bound.sum()
     upper_bound_value = upper_bound.sum()
     prediction_value = y_real[star_treatment:].sum()
@@ -1473,7 +1474,7 @@ def plot_impact_report(geo_test, period, holdout_percentage,length_treatment):
 
 
 
-def plot_impact_evaluation_report(results_evaluation):
+def plot_impact_evaluation_report(results_evaluation, significance_level=0.05):
         """
         Plot the impact evaluation results
         
@@ -1489,7 +1490,7 @@ def plot_impact_evaluation_report(results_evaluation):
         length_treatment = results_evaluation['length_treatment']
         counterfactual = np.asarray(counterfactual).flatten()
         treatment = np.asarray(treatment).flatten()
-
+        ci = 1 - significance_level
 
         point_difference = treatment - counterfactual
         cumulative_effect = ([0] * (len(treatment) - period)) + (np.cumsum(point_difference[len(treatment)-period:])).tolist()
@@ -1499,9 +1500,9 @@ def plot_impact_evaluation_report(results_evaluation):
         y_treatment = counterfactual[star_treatment:]
         
         noise_scale = calculate_optimal_noise_scale(y_treatment, counterfactual)
-        lower_bound, upper_bound = calculate_confidence_bands(y_treatment,noise_scale=noise_scale)
-        lower_bound_pd, upper_bound_pd = calculate_confidence_bands(point_difference[star_treatment:],)
-        lower_bound_ce, upper_bound_ce = calculate_confidence_bands(cumulative_effect[star_treatment:],)
+        lower_bound, upper_bound = calculate_confidence_bands(y_treatment,noise_scale=noise_scale, ci=ci)
+        lower_bound_pd, upper_bound_pd = calculate_confidence_bands(point_difference[star_treatment:], ci=ci)
+        lower_bound_ce, upper_bound_ce = calculate_confidence_bands(cumulative_effect[star_treatment:], ci=ci)
         lower_bound_value = lower_bound.sum()
         upper_bound_value = upper_bound.sum()
         prediction_value = counterfactual[star_treatment:].sum()
@@ -1597,7 +1598,8 @@ def plot_permutation_test_report(results_evaluation, Significance_level=0.1):
 def calculate_confidence_bands(predicted, n_bootstrap=1000, ci=95, seed=42,
                                 noise_scale=None, adaptive_noise=True, use_student_t=True):
     import numpy as np
-
+    ci = ci *100
+    print(ci)
     np.random.seed(seed)
     predicted = np.array(predicted)
     n = len(predicted)
