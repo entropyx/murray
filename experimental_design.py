@@ -228,9 +228,9 @@ def generate_pdf(treatment_group, control_group, holdout_percentage, impact_grap
         
         # Primera columna de métricas
         metrics_col1 = [
-            ("Prediction value", f"{prediction_value:.2f}%"),
-            ("Lower bound", f"{lower_bound_value:.2f}%"),
-            ("Upper bound", f"{upper_bound_value:.2f}%")
+            ("Prediction value", f"{prediction_value:,.2f}"),
+            ("Lower bound", f"{lower_bound_value:,.2f}"),
+            ("Upper bound", f"{upper_bound_value:,.2f}")
         ]
         
         # Segunda columna de métricas
