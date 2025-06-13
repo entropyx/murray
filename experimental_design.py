@@ -228,9 +228,9 @@ def generate_pdf(treatment_group, control_group, holdout_percentage, impact_grap
         
         # Primera columna de métricas
         metrics_col1 = [
-            ("Prediction value", f"{prediction_value:,.2f}"),
-            ("Lower value", f"{lower_bound_value:,.2f}"),
-            ("Upper value", f"{upper_bound_value:,.2f}")
+            ("Prediction value", f"{prediction_value:.2f}%"),
+            ("Lower bound", f"{lower_bound_value:.2f}%"),
+            ("Upper bound", f"{upper_bound_value:.2f}%")
         ]
         
         # Segunda columna de métricas
@@ -523,6 +523,7 @@ if file is not None:
                 data[matching_column2] = data[matching_column2].astype(str)
             col_locations = st.text_input("Locations", matching_column2 if matching_column2 else "", 
                                         on_change=reset_states, key="locations")
+            
         with col3:
             target_columns = [
                 col for col in data.columns
@@ -547,6 +548,8 @@ if file is not None:
                 st.session_state.current_fig = None
             if col_dates and col_locations and col_target:
                 try:
+                    if col_locations in data.columns:
+                        data[col_locations] = data[col_locations].astype(str)
                     data1 = cleaned_data(data, col_target=col_target, col_locations=col_locations, col_dates=col_dates)
                 except TypeError as e:
                     st.error(str(e))
@@ -938,7 +941,26 @@ if file is not None:
                                                 
 
 
-                                                pdf_file = generate_pdf(treatment_group, control_group, holdout_percentage, impact_graph,weights,period_idx,mde,att,incremental,col_target,firt_day,last_day,treatment_day,df,firt_report_day,second_report_day,prediction_value,lower_bound_value,upper_bound_value)
+                                                pdf_file = generate_pdf(
+                                                    treatment_group, 
+                                                    control_group, 
+                                                    holdout_percentage, 
+                                                    impact_graph,
+                                                    weights,
+                                                    period_idx,
+                                                    mde,
+                                                    att,
+                                                    incremental,
+                                                    col_target,
+                                                    firt_day,
+                                                    last_day,
+                                                    treatment_day,
+                                                    df,
+                                                    firt_report_day,
+                                                    second_report_day,
+                                                    prediction_value,
+                                                    lower_bound_value,
+                                                    upper_bound_value)
                                                 
                                                 
 
