@@ -8,7 +8,10 @@ from Murray.plots import plot_mde_results
 from Murray.auxiliary import market_correlations
 import concurrent.futures
 from sklearn.linear_model import Ridge
+from logger_config import get_logger
 
+# Inicializar logger para este módulo
+logger = get_logger("main")
 
 def select_treatments(similarity_matrix, treatment_size, excluded_locations):
     """
@@ -549,7 +552,7 @@ def evaluate_sensitivity(results_by_size, deltas, periods, n_permutations, signi
             'Predictions' not in result or
             result['Actual Target Metric (y)'] is None or 
             result['Predictions'] is None):
-            print(f"Skipping size {size} due to missing or null values")
+            logger.warning(f"Skipping size {size} due to missing or null values")
             continue
 
         y_real = np.array(result['Actual Target Metric (y)']).flatten()
@@ -629,7 +632,7 @@ def run_geo_analysis_streamlit_app(data, maximum_treatment_percentage, significa
             - "series_lifts": Adjusted series for each delta and period.
     """
     if progress_bar_1 or progress_bar_2 or status_text_1 or status_text_2 is None:
-      print("Simulation in progress........")
+      logger.info("Simulation in progress........")
     
     periods = list(np.arange(*periods_range))
     deltas = np.arange(*deltas_range)
@@ -655,7 +658,7 @@ def run_geo_analysis_streamlit_app(data, maximum_treatment_percentage, significa
         simulation_results, deltas, periods, n_permutations, significance_level,progress_bar=progress_bar_2, status_text=status_text_2
     )
     if sensitivity_results is not None:
-      print("Complete.")
+      logger.info("Complete.")
       
     
     
@@ -691,7 +694,7 @@ def run_geo_analysis(data, maximum_treatment_percentage, significance_level, del
             - "series_lifts": Adjusted series for each delta and period.
     """
     if progress_bar_1 or progress_bar_2 or status_text_1 or status_text_2 is None:
-      print("Simulation in progress........")
+      logger.info("Simulation in progress........")
     
     periods = list(np.arange(*periods_range))
     deltas = np.arange(*deltas_range)
@@ -716,7 +719,7 @@ def run_geo_analysis(data, maximum_treatment_percentage, significance_level, del
         simulation_results, deltas, periods, n_permutations, significance_level,progress_bar=progress_bar_2, status_text=status_text_2
     )
     if sensitivity_results is not None:
-      print("Complete.")
+      logger.info("Complete.")
       
     # Step 4: Generate MDE visualizations
     fig = plot_mde_results(simulation_results, sensitivity_results, periods)

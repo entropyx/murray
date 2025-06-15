@@ -2,6 +2,10 @@ import hashlib
 import json
 import os
 import datetime
+from logger_config import get_logger
+
+# Inicializar logger para este módulo
+logger = get_logger("auth")
 
 def check_credentials(username, password):
     try:
@@ -15,7 +19,7 @@ def check_credentials(username, password):
         input_hash = hashlib.sha256(password.encode()).hexdigest()
         return stored_hash == input_hash
     except Exception as e:
-        print(f"Error verifying credentials: {str(e)}")
+        logger.error(f"Error verifying credentials: {str(e)}")
         return False
 
 def add_user(username, password, role="user", registration_token=None):
