@@ -175,8 +175,8 @@ def generate_pdf(treatment_group, control_group, holdout_percentage,
         # Primera columna de métricas
         metrics_col1 = [
             ("Prediction value", f"{prediction_value:,.2f}"),
-            ("Lower value", f"{lower_value:,.2f}"),
-            ("Upper value", f"{upper_value:,.2f}")
+            ("Lower value", f"{lower_value:.2f}%"),
+            ("Upper value", f"{upper_value:.2f}%")
         ]
         
         # Segunda columna de métricas
@@ -719,7 +719,7 @@ if file is not None:
                         
                         total_Y = data1['Y'].sum()
                         treatment_Y = data1[data1['location'].isin(treatment_group)]['Y'].sum()
-                        lift_total = (results["treatment"][start_position_treatment:].sum() - results["predictions"][start_position_treatment:].sum())
+                        lift_total = (results["treatment"][start_position_treatment:].sum() - results["counterfactual"][start_position_treatment:].sum())
                         st.session_state.lift_total = round(lift_total,2)
                         st.session_state.holdout_percentage = round(((total_Y - treatment_Y) / total_Y) * 100, 2)
                         st.session_state.treatment_group = ", ".join(treatment_group)
@@ -751,6 +751,8 @@ if file is not None:
                         st.session_state.impact_graph = impact_graph
 
                         impact_graph_report,pre_treatment,pre_counterfactual,post_treatment,post_counterfactual,att_report,incremental_report,lower_bound_value,upper_bound_value,prediction_value = plot_impact_evaluation_report(results)
+                        st.session_state.lower_bound_value = lower_bound_value
+                        st.session_state.upper_bound_value = upper_bound_value
                         st.session_state.impact_graph_report = impact_graph_report
                         st.session_state.pre_treatment = pre_treatment
                         st.session_state.pre_counterfactual = pre_counterfactual
