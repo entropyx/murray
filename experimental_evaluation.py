@@ -698,7 +698,7 @@ if file is not None:
                         results = run_geo_evaluation(data1, start_treatment, end_treatment, treatment_group, spend)
                         treatment = results['treatment']
                         st.session_state.treatment = treatment
-                        counterfactual = results['predictions']
+                        counterfactual = results['counterfactual']
                         st.session_state.counterfactual = counterfactual
                         p_value = results['p_value']
                         st.session_state.p_value = p_value

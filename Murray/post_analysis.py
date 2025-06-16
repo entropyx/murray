@@ -64,21 +64,21 @@ def run_geo_evaluation(data_input, start_treatment,end_treatment,treatment_group
         
         counterfactual_full = predictions_full.reshape(-1, 1)
         counterfactual_full = scaler_y.inverse_transform(counterfactual_full)
-        y = y.reshape(-1, 1)
+        treatment = y.reshape(-1, 1)
 
-        predictions = counterfactual_full.flatten()
+        counterfactual = counterfactual_full.flatten()
         y_original = scaler_y.inverse_transform(y_scaled)
         y_original = y_original.flatten()
 
-        MAPE = np.mean(np.abs((y_original - predictions) / (y_original + 1e-10))) * 100
-        SMAPE = smape(y_original, predictions)
+        MAPE = np.mean(np.abs((y_original - counterfactual) / (y_original + 1e-10))) * 100
+        SMAPE = smape(y_original, counterfactual)
 
-        percenge_lift = ((np.sum(y[start_position_treatment:]) - np.sum(predictions[start_position_treatment:])) / np.abs(np.sum(predictions[start_position_treatment:]))) * 100
+        percenge_lift = ((np.sum(treatment[start_position_treatment:]) - np.sum(counterfactual[start_position_treatment:])) / np.abs(np.sum(counterfactual[start_position_treatment:]))) * 100
 
         def compute_residuals(y_treatment, y_control):
             return y_treatment - y_control
 
-        residuals = compute_residuals(y,predictions)
+        residuals = compute_residuals(treatment,counterfactual)
         treatment_residuals = residuals[start_position_treatment:]
 
         def stat_func(x):
@@ -105,8 +105,8 @@ def run_geo_evaluation(data_input, start_treatment,end_treatment,treatment_group
         results_evaluation = {
             'MAPE': MAPE,
             'SMAPE': SMAPE,
-            'predictions': predictions,
-            'treatment': y,
+            'counterfactual': counterfactual,
+            'treatment': treatment,
             'p_value': p_value,
             'power': power,
             'percenge_lift': percenge_lift,
