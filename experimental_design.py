@@ -921,7 +921,6 @@ if file is not None:
                                             else:
                                                 treatment_group = st.session_state.simulation_results[location]['Best Treatment Group']
                                                 control_group = st.session_state.simulation_results[location]['Control Group']
-                                                print(significance_level)
                                                 pre_treatment, pre_counterfactual, post_treatment, post_counterfactual,impact_graph,att,incremental,lower_bound_value,upper_bound_value,prediction_value = plot_impact_report(st.session_state.results, period_idx, holdout_percentage,length_treatment,significance_level)
                                                 weights = print_weights(st.session_state.results, treatment_percentage)
                                                 df = pd.DataFrame(
