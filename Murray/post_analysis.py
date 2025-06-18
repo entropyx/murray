@@ -3,10 +3,13 @@ from sklearn.preprocessing import MinMaxScaler
 from Murray.main import select_controls,SyntheticControl
 from Murray.auxiliary import market_correlations
 import pandas as pd
+from logger_config import get_logger
+
+logger = get_logger("post_analysis")
 
 def run_geo_evaluation(data_input, start_treatment,end_treatment,treatment_group,spend,
                        n_permutations=50000,inference_type='iid',significance_level=0.1):
-        
+        logger.info("Evaluation in progress........")
         random_sate = data_input['location'].unique()[0]
         filtered_data = data_input[data_input['location'] == random_sate].copy()
         start_treatment = pd.to_datetime(start_treatment, dayfirst=True)
