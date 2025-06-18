@@ -755,7 +755,7 @@ def plot_impact_evaluation_streamlit(results_evaluation, df, length_treatment, s
     lower_bound_ce, upper_bound_ce = calculate_confidence_bands(cumulative_effect[start_treatment:], ci=ci)
     lower_bound_value = (np.sum(lower_bound) - np.sum(counterfactual[start_treatment:])) / np.abs(np.sum(counterfactual[start_treatment:])) * 100
     upper_bound_value = (np.sum(upper_bound) - np.sum(counterfactual[start_treatment:])) / np.abs(np.sum(counterfactual[start_treatment:])) * 100
-    prediction_value = (np.sum(treatment[start_treatment:]) - np.sum(counterfactual[start_treatment:])) / np.abs(np.sum(counterfactual[start_treatment:])) * 100
+    prediction_value = treatment[start_treatment:].sum()
 
     att = np.mean(treatment[start_treatment:] - counterfactual[start_treatment:])
     att = att / length_treatment
@@ -962,7 +962,7 @@ def plot_impact_evaluation(results_evaluation, significance_level=0.05):
     lower_bound_ce, upper_bound_ce = calculate_confidence_bands(cumulative_effect[start_treatment:], ci=ci)
     lower_bound_value = (np.sum(lower_bound) - np.sum(counterfactual[start_treatment:])) / np.abs(np.sum(counterfactual[start_treatment:])) * 100
     upper_bound_value = (np.sum(upper_bound) - np.sum(counterfactual[start_treatment:])) / np.abs(np.sum(counterfactual[start_treatment:])) * 100
-    prediction_value = (np.sum(treatment[start_treatment:]) - np.sum(counterfactual[start_treatment:])) / np.abs(np.sum(counterfactual[start_treatment:])) * 100
+    prediction_value = treatment[start_treatment:].sum()
 
 
     att = np.mean(treatment[start_treatment:] - counterfactual[start_treatment:])
@@ -1420,7 +1420,7 @@ def plot_impact_report(geo_test, period, holdout_percentage,length_treatment, si
     lower_bound_ce, upper_bound_ce = calculate_confidence_bands(cumulative_effect[start_treatment:], ci=ci)
     lower_bound_value = (np.sum(lower_bound) - np.sum(counterfactual[start_treatment:])) / np.abs(np.sum(counterfactual[start_treatment:])) * 100
     upper_bound_value = (np.sum(upper_bound) - np.sum(counterfactual[start_treatment:])) / np.abs(np.sum(counterfactual[start_treatment:])) * 100
-    prediction_value = (np.sum(treatment[start_treatment:]) - np.sum(counterfactual[start_treatment:])) / np.abs(np.sum(counterfactual[start_treatment:])) * 100
+    prediction_value = treatment[start_treatment:].sum()
 
     att = np.mean(treatment[start_treatment:] - counterfactual[start_treatment:])
     att = att / length_treatment
@@ -1515,7 +1515,7 @@ def plot_impact_evaluation_report(results_evaluation, significance_level=0.05):
         lower_bound_ce, upper_bound_ce = calculate_confidence_bands(cumulative_effect[start_treatment:], ci=ci)
         lower_bound_value = (np.sum(lower_bound) - np.sum(counterfactual[start_treatment:])) / np.abs(np.sum(counterfactual[start_treatment:])) * 100
         upper_bound_value = (np.sum(upper_bound) - np.sum(counterfactual[start_treatment:])) / np.abs(np.sum(counterfactual[start_treatment:])) * 100
-        prediction_value = (np.sum(treatment[start_treatment:]) - np.sum(counterfactual[start_treatment:])) / np.abs(np.sum(counterfactual[start_treatment:])) * 100
+        prediction_value = treatment[start_treatment:].sum()
 
         # Absolute values (comparison)
         pre_treatment = treatment[start_treatment-period:start_treatment]
