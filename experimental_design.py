@@ -550,7 +550,7 @@ if file is not None:
                 try:
                     if col_locations in data.columns:
                         data[col_locations] = data[col_locations].astype(str)
-                    data1 = cleaned_data(data, col_target=col_target, col_locations=col_locations, col_dates=col_dates)
+                    cleaned = cleaned_data(data, col_target=col_target, col_locations=col_locations, col_dates=col_dates)
                 except TypeError as e:
                     st.error(str(e))
                     st.stop()
@@ -573,7 +573,7 @@ if file is not None:
                 st.session_state.graph_button_clicked = True  
 
             if st.session_state.graph_button_clicked:
-                fig = plot_geodata(data1)
+                fig = plot_geodata(cleaned)
                 st.session_state.fig = fig
                 st.markdown(
                     """
@@ -610,7 +610,7 @@ if file is not None:
                 }
 
             """, unsafe_allow_html=True)
-            excluded_locations = st.multiselect("Select excluded locations", data1['location'].unique())
+            excluded_locations = st.multiselect("Select excluded locations", cleaned['location'].unique())
             
             st.markdown(
                 """
@@ -740,7 +740,7 @@ if file is not None:
                     
                     with st.spinner('Running simulation...'):
                         results = run_geo_analysis_streamlit_app(
-                            data=data1,
+                            data=cleaned,
                             excluded_locations=excluded_locations,
                             maximum_treatment_percentage=maximum_treatment_percentage,
                             significance_level=significance_level,
@@ -864,8 +864,8 @@ if file is not None:
                                         mde = st.session_state.sensitivity_results[matching_size][period_idx]['MDE']
                                 st.write(f"- **Minimum Detectable Effect (MDE):** {round(mde*100)}%")
                                 #st.plotly_chart(plot_metrics(st.session_state.results),use_container_width=True)
-                                random_sate = data1['location'].unique()[0]
-                                filtered_data = data1[data1['location'] == random_sate]
+                                random_sate = cleaned['location'].unique()[0]
+                                filtered_data = cleaned[cleaned['location'] == random_sate]
                                 firt_day = filtered_data['time'].min()
                                 last_day = filtered_data['time'].max()
                                 second_report_day = last_day - pd.Timedelta(days=period_idx)

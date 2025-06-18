@@ -1,5 +1,7 @@
 import pandas as pd
+from logger_config import get_logger
 
+logger = get_logger("auxiliary")
 
     
 def cleaned_data(data, col_target, col_locations, col_dates, fill_value=0):
@@ -85,8 +87,10 @@ def cleaned_data(data, col_target, col_locations, col_dates, fill_value=0):
         return merged_data
 
     except (TypeError, ValueError) as e:
+        logger.error(f"Data Cleaning Error: {str(e)}")
         raise ValueError(f"Data Cleaning Error: {str(e)}") from e
     except Exception as e:
+        logger.error(f"An unexpected error occurred: {str(e)}")
         raise Exception(f"An unexpected error occurred: {str(e)}") from e
 
         
