@@ -3,15 +3,13 @@ import os
 from datetime import datetime
 import logging
 from filelock import FileLock
-
+from logger_config import get_logger
 
 METRICS_DIR = "traffic_metrics"
 METRICS_FILE = os.path.join(METRICS_DIR, "app_metrics.json")
 LOCK_FILE = os.path.join(METRICS_DIR, "metrics.lock")
 
-# Configurate logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+logger = get_logger("metrics")
 
 # Ensure the directory exists
 os.makedirs(METRICS_DIR, exist_ok=True)
