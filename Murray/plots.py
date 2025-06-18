@@ -1411,24 +1411,24 @@ def plot_impact_report(geo_test, period, holdout_percentage,length_treatment, si
     cumulative_effect = ([0] * (len(treatment) - period) + 
                          np.cumsum(point_difference[len(treatment)-period:]).tolist())
     
-    star_treatment = len(treatment) - period
-    treatment_serie = treatment[star_treatment:]
+    start_treatment = len(treatment) - period
+    treatment_serie = treatment[start_treatment:]
     
     noise_scale = calculate_optimal_noise_scale(treatment_serie, counterfactual)
     lower_bound, upper_bound = calculate_confidence_bands(treatment_serie,noise_scale=noise_scale, ci=ci)
-    lower_bound_pd, upper_bound_pd = calculate_confidence_bands(point_difference[star_treatment:], ci=ci)
-    lower_bound_ce, upper_bound_ce = calculate_confidence_bands(cumulative_effect[star_treatment:], ci=ci)
-    lower_bound_value = lower_bound.sum()
-    upper_bound_value = upper_bound.sum()
-    prediction_value = counterfactual[star_treatment:].sum()
+    lower_bound_pd, upper_bound_pd = calculate_confidence_bands(point_difference[start_treatment:], ci=ci)
+    lower_bound_ce, upper_bound_ce = calculate_confidence_bands(cumulative_effect[start_treatment:], ci=ci)
+    lower_bound_value = (np.sum(lower_bound) - np.sum(counterfactual[start_treatment:])) / np.abs(np.sum(counterfactual[start_treatment:])) * 100
+    upper_bound_value = (np.sum(upper_bound) - np.sum(counterfactual[start_treatment:])) / np.abs(np.sum(counterfactual[start_treatment:])) * 100
+    prediction_value = (np.sum(treatment_serie[start_treatment:]) - np.sum(counterfactual[start_treatment:])) / np.abs(np.sum(counterfactual[start_treatment:])) * 100
 
-    att = np.mean(treatment[star_treatment:] - counterfactual[star_treatment:])
+    att = np.mean(treatment_serie[start_treatment:] - counterfactual[start_treatment:])
     att = att / length_treatment
-    incremental = np.sum(treatment[star_treatment:] - counterfactual[star_treatment:])
-    pre_treatment = treatment[star_treatment-period:star_treatment]
-    pre_counterfactual = counterfactual[star_treatment-period:star_treatment]
-    post_treatment = treatment[star_treatment:]
-    post_counterfactual = counterfactual[star_treatment:]
+    incremental = np.sum(treatment_serie[start_treatment:] - counterfactual[start_treatment:])
+    pre_treatment = treatment[start_treatment-period:start_treatment]
+    pre_counterfactual = counterfactual[start_treatment-period:start_treatment]
+    post_treatment = treatment[start_treatment:]
+    post_counterfactual = counterfactual[start_treatment:]
    
 
     fig, axes = plt.subplots(3, 1, figsize=(15, 9.5), sharex=True)
@@ -1441,7 +1441,7 @@ def plot_impact_report(geo_test, period, holdout_percentage,length_treatment, si
     # Panel 1: Data vs Counterfactual Prediction
     axes[0].plot(counterfactual, label='Control Group', linestyle='--', color=black_secondary, linewidth=1)
     axes[0].plot(treatment, label='Treatment Group', linestyle='-', color=green, linewidth=1)
-    axes[0].axvline(x=star_treatment, color='black', linestyle='--', linewidth=1)
+    axes[0].axvline(x=start_treatment, color='black', linestyle='--', linewidth=1)
     axes[0].fill_between(range(len(counterfactual)-period, len(counterfactual)), lower_bound, upper_bound, color='gray', alpha=0.2)
     axes[0].set_title(f'Holdout: {holdout_percentage:.2f}% - MDE: {target_mde:.2f}')
     format_ticks(axes[0], np.concatenate([counterfactual, treatment]))
@@ -1455,7 +1455,7 @@ def plot_impact_report(geo_test, period, holdout_percentage,length_treatment, si
     axes[1].plot(point_difference, label='Point Difference (Causal Effect)', color=green, linewidth=1)
     axes[1].fill_between(range(len(counterfactual)-period, len(counterfactual)), lower_bound_pd, upper_bound_pd, color='gray', alpha=0.2)
     axes[1].plot([0, len(counterfactual)], [0, 0], color='gray', linestyle='--', linewidth=2)
-    axes[1].axvline(x=star_treatment, color='black', linestyle='--', linewidth=1)
+    axes[1].axvline(x=start_treatment, color='black', linestyle='--', linewidth=1)
     format_ticks(axes[1], point_difference)
     axes[1].set_ylabel('Point Difference')
     axes[1].yaxis.set_label_position('right')
@@ -1467,7 +1467,7 @@ def plot_impact_report(geo_test, period, holdout_percentage,length_treatment, si
     # Panel 3: Cumulative Effect
     axes[2].plot(cumulative_effect, label='Cumulative Effect', color=green, linewidth=1)
     axes[2].fill_between(range(len(counterfactual)-period, len(counterfactual)), lower_bound_ce, upper_bound_ce, color='gray', alpha=0.2)
-    axes[2].axvline(x=star_treatment, color='black', linestyle='--', linewidth=1)
+    axes[2].axvline(x=start_treatment, color='black', linestyle='--', linewidth=1)
     format_ticks(axes[2], cumulative_effect)
     axes[2].set_xlabel('Days')
     axes[2].yaxis.set_label_position('right')
@@ -1513,9 +1513,9 @@ def plot_impact_evaluation_report(results_evaluation, significance_level=0.05):
         lower_bound, upper_bound = calculate_confidence_bands(treatment_serie,noise_scale=noise_scale, ci=ci)
         lower_bound_pd, upper_bound_pd = calculate_confidence_bands(point_difference[start_treatment:], ci=ci)
         lower_bound_ce, upper_bound_ce = calculate_confidence_bands(cumulative_effect[start_treatment:], ci=ci)
-        lower_bound_value = lower_bound.sum()
-        upper_bound_value = upper_bound.sum()
-        prediction_value = counterfactual[start_treatment:].sum()
+        lower_bound_value = (np.sum(lower_bound) - np.sum(counterfactual[start_treatment:])) / np.abs(np.sum(counterfactual[start_treatment:])) * 100
+        upper_bound_value = (np.sum(upper_bound) - np.sum(counterfactual[start_treatment:])) / np.abs(np.sum(counterfactual[start_treatment:])) * 100
+        prediction_value = (np.sum(treatment[start_treatment:]) - np.sum(counterfactual[start_treatment:])) / np.abs(np.sum(counterfactual[start_treatment:])) * 100
 
         # Absolute values (comparison)
         pre_treatment = treatment[start_treatment-period:start_treatment]
