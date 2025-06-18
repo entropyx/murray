@@ -10,7 +10,7 @@ import concurrent.futures
 from sklearn.linear_model import Ridge
 from logger_config import get_logger
 
-# Inicializar logger para este módulo
+
 logger = get_logger("main")
 
 def select_treatments(similarity_matrix, treatment_size, excluded_locations):

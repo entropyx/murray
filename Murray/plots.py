@@ -15,7 +15,7 @@ from statsmodels.stats.diagnostic import acorr_ljungbox
 import matplotlib.ticker as mticker
 from logger_config import get_logger
 
-# Inicializar logger para este módulo
+
 logger = get_logger("plots")
 
 #Color palette
