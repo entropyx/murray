@@ -1,7 +1,7 @@
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler
 from Murray.main import select_controls,SyntheticControl
-from Murray.auxiliary import market_correlations
+from Murray.auxiliary import market_correlations, handle_duplicates
 import pandas as pd
 from logger_config import get_logger
 
@@ -36,6 +36,10 @@ def run_geo_evaluation(data_input, start_treatment,end_treatment,treatment_group
         )
 
         period = end_position_treatment - start_position_treatment
+        
+        # Check for duplicate entries and handle them
+        data_input = handle_duplicates(data_input, subset=['time', 'location'], agg_method='mean')
+        
         df_pivot = data_input.pivot(index='time', columns='location', values='Y')
         X = df_pivot[control_group].values  
         y = df_pivot[treatment_group].sum(axis=1).values  

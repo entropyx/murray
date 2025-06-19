@@ -45,7 +45,10 @@ st.logo(sidebar_logo,size="large", icon_image=main_body_logo)
 
 def generate_pdf(treatment_group, control_group, holdout_percentage, impact_graph, 
                  weights,period_idx,mde,att,incremental,tarjet_variable,firt_day,
-                 last_day,treatment_day,df,firt_report_day,second_report_day,prediction_value,lower_bound_value,upper_bound_value):
+                 last_day,treatment_day,df,firt_report_day,second_report_day,
+                 prediction_value_absolute,prediction_value_percentage,
+                 lower_bound_value_absolute,lower_bound_value_percentage,
+                 upper_bound_value_absolute,upper_bound_value_percentage):
         """
         Generates a PDF report with explanations for each aspect.
         """
@@ -222,41 +225,48 @@ def generate_pdf(treatment_group, control_group, holdout_percentage, impact_grap
         row_bg = (246, 246, 246)    # Color de fondo de las filas
         text_color = (33, 31, 36)   # Color del texto
 
-        # Crear tabla simple
-        pdf.set_font("Poppins", "B", 10)
-        pdf.set_text_color(*text_color)
-        
-        # Primera columna de métricas
-        metrics_col1 = [
-            ("Prediction value", f"{prediction_value:,.2f}"),
-            ("Lower bound", f"{lower_bound_value:,.2f}%"),
-            ("Upper bound", f"{upper_bound_value:,.2f}%")
-        ]
-        
-        # Segunda columna de métricas
-        metrics_col2 = [
-            ("ATT", f"{att:,.2f}"),
-            ("Lift total", f"{incremental:,.2f}"),
-            ("Percentage Lift", f"{round(mde * 100)}%")
-        ]
+        # Crear tabla de métricas con título
+        col_widths = [63, 63, 64]  # Tres columnas: métrica, valor absoluto, porcentaje
+        row_height = 8
+        title_height = 10
 
+        # Título de la tabla
+        pdf.set_fill_color(*header_bg)
+        pdf.set_text_color(255, 255, 255)
+        pdf.set_font("Poppins", "B", 12)
+        pdf.cell(190, title_height, "Impact Metrics", border=1, ln=1, align='C', fill=True)
+
+        # Datos de la tabla
+        pdf.set_text_color(*text_color)
+        pdf.set_font("Poppins", "", 10)
+
+        # Primera fila
+        pdf.set_fill_color(*row_bg)
+        pdf.set_font("Poppins", "B", 10)  # Set bold font
+        pdf.cell(col_widths[0], row_height, "Median Prediction", border=1, ln=0, align='C', fill=True)
+        pdf.cell(col_widths[1], row_height, f"{prediction_value_absolute:,.2f}", border=1, ln=0, align='C', fill=True)
+        pdf.cell(col_widths[2], row_height, f"{prediction_value_percentage:,.2f}%", border=1, ln=1, align='C', fill=True)
         
-        for i in range(max(len(metrics_col1), len(metrics_col2))):
-            # First column
-            if i < len(metrics_col1):
-                metric, value = metrics_col1[i]
-                pdf.multi_cell(95, 6, f"{metric}: {value}")
-            else:
-                pdf.multi_cell(95, 6, "")
-            
-            # Second column
-            if i < len(metrics_col2):
-                metric, value = metrics_col2[i]
-                pdf.set_xy(pdf.get_x() + 95, pdf.get_y() - 8)
-                pdf.multi_cell(95, 6, f"{metric}: {value}")
-            pdf.ln(2)  
+        # Segunda fila
+        pdf.set_fill_color(*row_bg)
+        pdf.set_font("Poppins", size=10)  # Set bold font
+        pdf.cell(col_widths[0], row_height, "Lower Bound", border=1, ln=0, align='C', fill=True)
+        pdf.cell(col_widths[1], row_height, f"{lower_bound_value_absolute:,.2f}", border=1, ln=0, align='C', fill=True)
+        pdf.cell(col_widths[2], row_height, f"{lower_bound_value_percentage:,.2f}%", border=1, ln=1, align='C', fill=True)
+
+        # Tercera fila
+        pdf.set_fill_color(*row_bg)
+        pdf.set_font("Poppins", size=10)  # Set bold font
+        pdf.cell(col_widths[0], row_height, "Upper Bound", border=1, ln=0, align='C', fill=True)
+        pdf.cell(col_widths[1], row_height, f"{upper_bound_value_absolute:,.2f}", border=1, ln=0, align='C', fill=True)
+        pdf.cell(col_widths[2], row_height, f"{upper_bound_value_percentage:,.2f}%", border=1, ln=1, align='C', fill=True)
 
         pdf.ln(4)
+        pdf.set_font("Poppins", size=11)
+        pdf.set_text_color(33, 31, 36)
+        pdf.multi_cell(0, 5, f"MDE: {mde * 100}%")
+        pdf.ln(5)
+
         if pdf.get_y() > 250:
             pdf.add_page() 
         
@@ -922,6 +932,12 @@ if file is not None:
                                                 treatment_group = st.session_state.simulation_results[location]['Best Treatment Group']
                                                 control_group = st.session_state.simulation_results[location]['Control Group']
                                                 pre_treatment, pre_counterfactual, post_treatment, post_counterfactual,impact_graph,att,incremental,lower_bound_value,upper_bound_value,prediction_value = plot_impact_report(st.session_state.results, period_idx, holdout_percentage,length_treatment,significance_level)
+                                                prediction_value_absolute = prediction_value
+                                                prediction_value_percentage = (prediction_value - np.sum(post_counterfactual)) / np.abs(np.sum(post_counterfactual)) * 100
+                                                lower_bound_value_absolute = lower_bound_value
+                                                lower_bound_value_percentage = (lower_bound_value - np.sum(post_counterfactual)) / np.abs(np.sum(post_counterfactual)) * 100
+                                                upper_bound_value_absolute = upper_bound_value
+                                                upper_bound_value_percentage = (upper_bound_value - np.sum(post_counterfactual)) / np.abs(np.sum(post_counterfactual)) * 100
                                                 weights = print_weights(st.session_state.results, treatment_percentage)
                                                 df = pd.DataFrame(
                                                     {
@@ -957,9 +973,12 @@ if file is not None:
                                                     df,
                                                     firt_report_day,
                                                     second_report_day,
-                                                    prediction_value,
-                                                    lower_bound_value,
-                                                    upper_bound_value)
+                                                    prediction_value_absolute,
+                                                    prediction_value_percentage,
+                                                    lower_bound_value_absolute,
+                                                    lower_bound_value_percentage,
+                                                    upper_bound_value_absolute,
+                                                    upper_bound_value_percentage)
                                                 
                                                 
 

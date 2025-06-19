@@ -3,7 +3,42 @@ from logger_config import get_logger
 
 logger = get_logger("auxiliary")
 
+def handle_duplicates(data, subset=['time', 'location'], agg_method='mean'):
+    """
+    Handle duplicate entries in a DataFrame by aggregating them.
     
+    Args:
+        data (pd.DataFrame): The DataFrame to check for duplicates
+        subset (list): Columns to check for duplicates
+        agg_method (str): Aggregation method ('mean', 'sum', 'first', 'last')
+    
+    Returns:
+        pd.DataFrame: DataFrame with duplicates handled
+    """
+    if data.empty:
+        logger.warning("DataFrame is empty, returning as is")
+        return data
+    
+    # Check if required columns exist
+    missing_cols = [col for col in subset if col not in data.columns]
+    if missing_cols:
+        raise ValueError(f"Missing columns for duplicate check: {missing_cols}")
+    
+    duplicates = data.duplicated(subset=subset, keep=False)
+    if duplicates.any():
+        logger.warning(f"Found {duplicates.sum()} duplicate entries in the data. Aggregating by {agg_method}.")
+        # Group by subset columns and aggregate Y values
+        data = data.groupby(subset)['Y'].agg(agg_method).reset_index()
+        logger.info(f"Data shape after deduplication: {data.shape}")
+    else:
+        logger.debug("No duplicate entries found")
+    
+    # Verify no duplicates remain
+    if data.duplicated(subset=subset).any():
+        raise ValueError(f"Duplicate entries still exist after aggregation in columns {subset}. Please check your data.")
+    
+    return data
+
 def cleaned_data(data, col_target, col_locations, col_dates, fill_value=0):
     """
     Cleans and processes input data to prepare it for analysis and visualization.
@@ -71,6 +106,9 @@ def cleaned_data(data, col_target, col_locations, col_dates, fill_value=0):
             raise ValueError("No valid locations found after cleaning. Please check your data.")
 
         
+        # Check for duplicate entries in data_input before merge and handle them
+        data_input = handle_duplicates(data_input, subset=['time', 'location'], agg_method='mean')
+        
         full_index = pd.MultiIndex.from_product([all_dates, all_locations], names=['time', 'location'])
         full_data = pd.DataFrame(index=full_index).reset_index()
         full_data['time'] = pd.to_datetime(full_data['time'])
@@ -116,6 +154,8 @@ def market_correlations(data):
     if not required_columns.issubset(data.columns):
         raise ValueError(f"The DataFrame must contain the columns: {required_columns}")
 
+    # Check for duplicate entries and handle them
+    data = handle_duplicates(data, subset=['time', 'location'], agg_method='mean')
     
     pivoted_data = data.pivot(index='time', columns='location', values='Y')
     correlation_matrix = pivoted_data.corr(method='pearson')

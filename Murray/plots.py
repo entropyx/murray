@@ -520,8 +520,8 @@ def plot_impact_streamlit_app(geo_test, period, holdout_percentage,significance_
         lower_bound, upper_bound = calculate_confidence_bands(y_treatment,noise_scale=noise_scale, ci=ci)
         lower_bound_pd, upper_bound_pd = calculate_confidence_bands(point_difference[start_treatment:], ci=ci)
         lower_bound_ce, upper_bound_ce = calculate_confidence_bands(cumulative_effect[start_treatment:], ci=ci)
-        lower_bound_value = (np.sum(lower_bound) - np.sum(counterfactual[start_treatment:])) / np.abs(np.sum(counterfactual[start_treatment:])) * 100
-        upper_bound_value = (np.sum(upper_bound) - np.sum(counterfactual[start_treatment:])) / np.abs(np.sum(counterfactual[start_treatment:])) * 100
+        lower_bound_value = np.sum(lower_bound)
+        upper_bound_value = np.sum(upper_bound)
 
         att = np.mean(treatment[start_treatment:] - counterfactual[start_treatment:])
         incremental = np.sum(treatment[start_treatment:] - counterfactual[start_treatment:])
@@ -753,9 +753,9 @@ def plot_impact_evaluation_streamlit(results_evaluation, df, length_treatment, s
     lower_bound, upper_bound = calculate_confidence_bands(y_treatment,noise_scale=noise_scale, ci=ci)
     lower_bound_pd, upper_bound_pd = calculate_confidence_bands(point_difference[start_treatment:], ci=ci)
     lower_bound_ce, upper_bound_ce = calculate_confidence_bands(cumulative_effect[start_treatment:], ci=ci)
-    lower_bound_value = (np.sum(lower_bound) - np.sum(counterfactual[start_treatment:])) / np.abs(np.sum(counterfactual[start_treatment:])) * 100
-    upper_bound_value = (np.sum(upper_bound) - np.sum(counterfactual[start_treatment:])) / np.abs(np.sum(counterfactual[start_treatment:])) * 100
-    prediction_value = treatment[start_treatment:].sum()
+    lower_bound_value = np.sum(lower_bound)
+    upper_bound_value = np.sum(upper_bound)
+    prediction_value = np.sum(treatment[start_treatment:])
 
     att = np.mean(treatment[start_treatment:] - counterfactual[start_treatment:])
     att = att / length_treatment
@@ -960,9 +960,9 @@ def plot_impact_evaluation(results_evaluation, significance_level=0.05):
     lower_bound, upper_bound = calculate_confidence_bands(y_treatment,noise_scale=noise_scale, ci=ci)
     lower_bound_pd, upper_bound_pd = calculate_confidence_bands(point_difference[start_treatment:], ci=ci)
     lower_bound_ce, upper_bound_ce = calculate_confidence_bands(cumulative_effect[start_treatment:], ci=ci)
-    lower_bound_value = (np.sum(lower_bound) - np.sum(counterfactual[start_treatment:])) / np.abs(np.sum(counterfactual[start_treatment:])) * 100
-    upper_bound_value = (np.sum(upper_bound) - np.sum(counterfactual[start_treatment:])) / np.abs(np.sum(counterfactual[start_treatment:])) * 100
-    prediction_value = treatment[start_treatment:].sum()
+    lower_bound_value = np.sum(lower_bound)
+    upper_bound_value = np.sum(upper_bound)
+    prediction_value = np.sum(treatment[start_treatment:])
 
 
     att = np.mean(treatment[start_treatment:] - counterfactual[start_treatment:])
@@ -1418,9 +1418,9 @@ def plot_impact_report(geo_test, period, holdout_percentage,length_treatment, si
     lower_bound, upper_bound = calculate_confidence_bands(treatment_serie,noise_scale=noise_scale, ci=ci)
     lower_bound_pd, upper_bound_pd = calculate_confidence_bands(point_difference[start_treatment:], ci=ci)
     lower_bound_ce, upper_bound_ce = calculate_confidence_bands(cumulative_effect[start_treatment:], ci=ci)
-    lower_bound_value = (np.sum(lower_bound) - np.sum(counterfactual[start_treatment:])) / np.abs(np.sum(counterfactual[start_treatment:])) * 100
-    upper_bound_value = (np.sum(upper_bound) - np.sum(counterfactual[start_treatment:])) / np.abs(np.sum(counterfactual[start_treatment:])) * 100
-    prediction_value = treatment[start_treatment:].sum()
+    lower_bound_value = np.sum(lower_bound)
+    upper_bound_value = np.sum(upper_bound)
+    prediction_value = np.sum(treatment[start_treatment:])
 
     att = np.mean(treatment[start_treatment:] - counterfactual[start_treatment:])
     att = att / length_treatment
@@ -1513,9 +1513,9 @@ def plot_impact_evaluation_report(results_evaluation, significance_level=0.05):
         lower_bound, upper_bound = calculate_confidence_bands(treatment_serie,noise_scale=noise_scale, ci=ci)
         lower_bound_pd, upper_bound_pd = calculate_confidence_bands(point_difference[start_treatment:], ci=ci)
         lower_bound_ce, upper_bound_ce = calculate_confidence_bands(cumulative_effect[start_treatment:], ci=ci)
-        lower_bound_value = (np.sum(lower_bound) - np.sum(counterfactual[start_treatment:])) / np.abs(np.sum(counterfactual[start_treatment:])) * 100
-        upper_bound_value = (np.sum(upper_bound) - np.sum(counterfactual[start_treatment:])) / np.abs(np.sum(counterfactual[start_treatment:])) * 100
-        prediction_value = treatment[start_treatment:].sum()
+        lower_bound_value = np.sum(lower_bound)
+        upper_bound_value = np.sum(upper_bound)
+        prediction_value = np.sum(treatment[start_treatment:])
 
         # Absolute values (comparison)
         pre_treatment = treatment[start_treatment-period:start_treatment]
