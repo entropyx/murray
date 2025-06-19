@@ -1,10 +1,16 @@
 import sys
 from pathlib import Path
 from loguru import logger
+from datetime import datetime
+import os
 
 
 log_dir = Path("logs")
 log_dir.mkdir(exist_ok=True)
+
+# Generate unique filename with timestamp
+timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+log_filename = f"murray_{timestamp}.log"
 
 
 log_format = (
@@ -36,14 +42,11 @@ logger.add(
 )
 
 
-# File handler
+# File handler - one file per execution
 logger.add(
-    log_dir / "murray.log",
+    log_dir / log_filename,
     format=file_format,
-    level="DEBUG",
-    rotation="50 MB",
-    retention="30 days",
-    compression="zip",
+    level="INFO",
     backtrace=True,
     diagnose=True
 )
