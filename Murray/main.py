@@ -263,6 +263,41 @@ class SyntheticControl(BaseEstimator, RegressorMixin):
         
         return base_prediction, self.w_
 
+    def filter_controls_by_weights(self, control_group, min_weight_threshold=0.001):
+        """
+        Filters control locations based on their weights, removing those with very small contributions.
+        
+        Args:
+            control_group (list): List of control location names
+            min_weight_threshold (float): Minimum weight threshold to keep a control location
+            
+        Returns:
+            tuple: (filtered_control_group, filtered_weights)
+                - filtered_control_group: List of control locations with significant weights
+                - filtered_weights: Array of weights for the filtered control locations
+        """
+        if not self.is_fitted_:
+            raise ValueError("The model has not been fitted yet. Call 'fit' first.")
+        
+        if len(control_group) != len(self.w_):
+            raise ValueError("The number of control locations must match the number of weights.")
+        
+        # Find indices where weights are above the threshold
+        significant_indices = np.where(self.w_ >= min_weight_threshold)[0]
+        
+        if len(significant_indices) == 0:
+            # If no weights meet the threshold, keep the one with the highest weight
+            significant_indices = [np.argmax(self.w_)]
+        
+        filtered_control_group = [control_group[i] for i in significant_indices]
+        filtered_weights = self.w_[significant_indices]
+        
+        # Renormalize weights to sum to 1
+        if np.sum(filtered_weights) > 0:
+            filtered_weights = filtered_weights / np.sum(filtered_weights)
+        
+        return filtered_control_group, filtered_weights
+
 
 def smape(A, F):
     denominator = np.abs(A) + np.abs(F)
@@ -334,17 +369,18 @@ def evaluate_group(treatment_group, data, total_Y, correlation_matrix, min_holdo
     counterfactual_full_original = counterfactual_full_original.flatten()
     y_original = y_original.flatten()
 
-    weights = model.w_
+    # Filter control group based on weights
+    filtered_control_group, filtered_weights = model.filter_controls_by_weights(
+        control_group, min_weight_threshold=0.001
+    )
 
-    logger.debug("Calculating metrics")
     MAPE = np.mean(np.abs((y_original[split_index:] - counterfactual_full_original[split_index:]) / (y_original[split_index:] + 1e-10))) * 100
     SMAPE_value = smape(y_original[split_index:], counterfactual_full_original[split_index:])
 
     # Calculate observed conformity
     observed_conformity = np.mean(y_original - counterfactual_full_original)
 
-    logger.debug(f"Evaluation completed - MAPE: {MAPE:.4f}, SMAPE: {SMAPE_value:.4f}")
-    return (treatment_group, control_group, MAPE, SMAPE_value, y_original, counterfactual_full_original, weights, observed_conformity)
+    return (treatment_group, filtered_control_group, MAPE, SMAPE_value, y_original, counterfactual_full_original, filtered_weights, observed_conformity)
 
 def BetterGroups(similarity_matrix, excluded_locations, data, correlation_matrix, maximum_treatment_percentage=0.50, progress_updater=None, status_updater=None):
     """
@@ -368,7 +404,7 @@ def BetterGroups(similarity_matrix, excluded_locations, data, correlation_matrix
     
     unique_locations = data['location'].unique()
     no_locations = len(unique_locations)
-    max_group_size = round(no_locations * 0.2)
+    max_group_size = round(no_locations * 0.45)
     min_elements_in_treatment = round(no_locations * 0.15)
     min_holdout = 100 - (maximum_treatment_percentage * 100)
     total_Y = data['Y'].sum()

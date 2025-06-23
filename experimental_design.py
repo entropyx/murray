@@ -48,7 +48,8 @@ def generate_pdf(treatment_group, control_group, holdout_percentage, impact_grap
                  last_day,treatment_day,df,firt_report_day,second_report_day,
                  prediction_value_absolute,prediction_value_percentage,
                  lower_bound_value_absolute,lower_bound_value_percentage,
-                 upper_bound_value_absolute,upper_bound_value_percentage):
+                 upper_bound_value_absolute,upper_bound_value_percentage,
+                 confidence_level):
         """
         Generates a PDF report with explanations for each aspect.
         """
@@ -234,7 +235,7 @@ def generate_pdf(treatment_group, control_group, holdout_percentage, impact_grap
         pdf.set_fill_color(*header_bg)
         pdf.set_text_color(255, 255, 255)
         pdf.set_font("Poppins", "B", 12)
-        pdf.cell(190, title_height, "Impact Metrics", border=1, ln=1, align='C', fill=True)
+        pdf.cell(190, title_height, f"Confidence Level {confidence_level * 100}%", border=1, ln=1, align='C', fill=True)
 
         # Datos de la tabla
         pdf.set_text_color(*text_color)
@@ -939,6 +940,7 @@ if file is not None:
                                                 upper_bound_value_absolute = upper_bound_value
                                                 upper_bound_value_percentage = (upper_bound_value - np.sum(post_counterfactual)) / np.abs(np.sum(post_counterfactual)) * 100
                                                 weights = print_weights(st.session_state.results, treatment_percentage)
+                                                confidence_level = 1 - significance_level
                                                 df = pd.DataFrame(
                                                     {
                                                         "Group": ["Treatment", "Counterfactual (control)", "Absolute difference"],
@@ -978,7 +980,8 @@ if file is not None:
                                                     lower_bound_value_absolute,
                                                     lower_bound_value_percentage,
                                                     upper_bound_value_absolute,
-                                                    upper_bound_value_percentage)
+                                                    upper_bound_value_percentage,
+                                                    confidence_level)
                                                 
                                                 
 
