@@ -9,9 +9,17 @@ from Murray.auxiliary import market_correlations, handle_duplicates
 import concurrent.futures
 from sklearn.linear_model import Ridge
 from logger_config import get_logger
+import os
+import warnings
 
+# Suppress Streamlit ScriptRunContext warnings
+warnings.filterwarnings("ignore", message=".*ScriptRunContext.*", category=UserWarning)
 
 logger = get_logger("main")
+
+def is_streamlit_context():
+    """Check if we're running in a Streamlit context."""
+    return 'STREAMLIT_SERVER_PORT' in os.environ or 'STREAMLIT_SERVER_ADDRESS' in os.environ
 
 def select_treatments(similarity_matrix, treatment_size, excluded_locations):
     """
@@ -29,11 +37,13 @@ def select_treatments(similarity_matrix, treatment_size, excluded_locations):
     Returns:
         list: A list of unique combinations, each combination being a list of states.
     """
+    logger.debug(f"select_treatments called: treatment_size={treatment_size}, excluded_locations={excluded_locations}")
 
     missing_locations = [location for location in excluded_locations if location not in similarity_matrix.index or location not in similarity_matrix.columns]
     
 
     if missing_locations:
+        logger.error(f"The following locations are not present in the similarity matrix: {missing_locations}")
         raise KeyError(f"The following locations are not present in the similarity matrix: {missing_locations}")
     
     
@@ -42,9 +52,12 @@ def select_treatments(similarity_matrix, treatment_size, excluded_locations):
         ~similarity_matrix.index.isin(excluded_locations),
         ~similarity_matrix.columns.isin(excluded_locations)
     ]
+    
+    logger.debug(f"Filtered similarity matrix shape: {similarity_matrix_filtered.shape}")
 
     
     if treatment_size > similarity_matrix_filtered.shape[1]:
+        logger.error(f"The treatment size ({treatment_size}) exceeds the available number of columns ({similarity_matrix_filtered.shape[1]}).")
         raise ValueError(
             f"The treatment size ({treatment_size}) exceeds the available number of columns "
             f"({similarity_matrix_filtered.shape[1]})."
@@ -58,7 +71,9 @@ def select_treatments(similarity_matrix, treatment_size, excluded_locations):
     n_combinations = max_combinations
     if n_combinations > 5000:
         n_combinations = 5000
+        logger.info(f"Limiting combinations from {max_combinations} to {n_combinations}")
 
+    logger.debug(f"Generating {n_combinations} combinations")
 
     combinations = set()
 
@@ -71,6 +86,7 @@ def select_treatments(similarity_matrix, treatment_size, excluded_locations):
         sample_group = tuple(sorted(sample_columns))
         combinations.add(sample_group)
 
+    logger.debug(f"Generated {len(combinations)} unique combinations")
     return [list(comb) for comb in combinations]
 
 
@@ -89,10 +105,13 @@ def select_controls(correlation_matrix, treatment_group, min_correlation=0.8, fa
     Returns:
         list: List of states selected as the control group.
     """
+    logger.debug(f"select_controls called: treatment_group={treatment_group}, min_correlation={min_correlation}")
+    
     control_group = set()
     
     for treatment_location in treatment_group:
         if treatment_location not in correlation_matrix.index:
+            logger.warning(f"Treatment location {treatment_location} not found in correlation matrix")
             continue
         treatment_row = correlation_matrix.loc[treatment_location]
 
@@ -102,6 +121,7 @@ def select_controls(correlation_matrix, treatment_group, min_correlation=0.8, fa
         ].sort_values(ascending=False).index.tolist()
 
         if not similar_states:
+            logger.debug(f"No states meet min_correlation {min_correlation} for {treatment_location}, using fallback")
             similar_states = (
                 treatment_row[~treatment_row.index.isin(treatment_group)]
                 .sort_values(ascending=False)
@@ -111,7 +131,9 @@ def select_controls(correlation_matrix, treatment_group, min_correlation=0.8, fa
             
 
         control_group.update(similar_states)
+        logger.debug(f"Added {len(similar_states)} control states for {treatment_location}")
 
+    logger.debug(f"Final control group: {list(control_group)}")
     return list(control_group)
 
 
@@ -241,6 +263,41 @@ class SyntheticControl(BaseEstimator, RegressorMixin):
         
         return base_prediction, self.w_
 
+    def filter_controls_by_weights(self, control_group, min_weight_threshold=0.001):
+        """
+        Filters control locations based on their weights, removing those with very small contributions.
+        
+        Args:
+            control_group (list): List of control location names
+            min_weight_threshold (float): Minimum weight threshold to keep a control location
+            
+        Returns:
+            tuple: (filtered_control_group, filtered_weights)
+                - filtered_control_group: List of control locations with significant weights
+                - filtered_weights: Array of weights for the filtered control locations
+        """
+        if not self.is_fitted_:
+            raise ValueError("The model has not been fitted yet. Call 'fit' first.")
+        
+        if len(control_group) != len(self.w_):
+            raise ValueError("The number of control locations must match the number of weights.")
+        
+        # Find indices where weights are above the threshold
+        significant_indices = np.where(self.w_ >= min_weight_threshold)[0]
+        
+        if len(significant_indices) == 0:
+            # If no weights meet the threshold, keep the one with the highest weight
+            significant_indices = [np.argmax(self.w_)]
+        
+        filtered_control_group = [control_group[i] for i in significant_indices]
+        filtered_weights = self.w_[significant_indices]
+        
+        # Renormalize weights to sum to 1
+        if np.sum(filtered_weights) > 0:
+            filtered_weights = filtered_weights / np.sum(filtered_weights)
+        
+        return filtered_control_group, filtered_weights
+
 
 def smape(A, F):
     denominator = np.abs(A) + np.abs(F)
@@ -312,7 +369,10 @@ def evaluate_group(treatment_group, data, total_Y, correlation_matrix, min_holdo
     counterfactual_full_original = counterfactual_full_original.flatten()
     y_original = y_original.flatten()
 
-    weights = model.w_
+    # Filter control group based on weights
+    filtered_control_group, filtered_weights = model.filter_controls_by_weights(
+        control_group, min_weight_threshold=0.001
+    )
 
     logger.debug("Calculating metrics")
     MAPE = np.mean(np.abs((y_original[split_index:] - counterfactual_full_original[split_index:]) / (y_original[split_index:] + 1e-10))) * 100
@@ -321,8 +381,7 @@ def evaluate_group(treatment_group, data, total_Y, correlation_matrix, min_holdo
     # Calculate observed conformity
     observed_conformity = np.mean(y_original - counterfactual_full_original)
 
-    logger.debug(f"Evaluation completed - MAPE: {MAPE:.4f}, SMAPE: {SMAPE_value:.4f}")
-    return (treatment_group, control_group, MAPE, SMAPE_value, y_original, counterfactual_full_original, weights, observed_conformity)
+    return (treatment_group, filtered_control_group, MAPE, SMAPE_value, y_original, counterfactual_full_original, filtered_weights, observed_conformity)
 
 def BetterGroups(similarity_matrix, excluded_locations, data, correlation_matrix, maximum_treatment_percentage=0.50, progress_updater=None, status_updater=None):
     """
@@ -359,15 +418,18 @@ def BetterGroups(similarity_matrix, excluded_locations, data, correlation_matrix
     logger.info(f"Total Y value: {total_Y}")
     logger.info(f"Minimum holdout percentage: {min_holdout}%")
     
+    logger.info(f"Parameters: no_locations={no_locations}, max_group_size={max_group_size}, min_elements_in_treatment={min_elements_in_treatment}")
+    logger.info(f"min_holdout={min_holdout}, total_Y={total_Y}")
+    
     if total_Y == 0:
         logger.warning("Total Y is zero, returning None")
         return None
     
+    logger.info("Creating pivot table")
+    
     # Check for duplicate entries and handle them
-    logger.info("Checking for duplicates before pivot...")
     data = handle_duplicates(data, subset=['time', 'location'], agg_method='mean')
     
-    logger.info("Creating pivot table...")
     df_pivot = data.pivot(index='time', columns='location', values='Y')
     logger.info(f"Pivot table created with shape: {df_pivot.shape}")
     
@@ -390,6 +452,7 @@ def BetterGroups(similarity_matrix, excluded_locations, data, correlation_matrix
     results = []
     logger.info(f"Starting evaluation of {total_groups} groups using ProcessPoolExecutor")
     
+    logger.info(f"Starting evaluation of {total_groups} groups using ThreadPoolExecutor")
     
     with concurrent.futures.ProcessPoolExecutor(max_workers=2) as executor:
         logger.info("ProcessPoolExecutor created, submitting tasks...")
@@ -406,11 +469,24 @@ def BetterGroups(similarity_matrix, excluded_locations, data, correlation_matrix
         logger.info("Tasks submitted, starting to collect results...")
         
         for idx, result in enumerate(futures):
+            logger.debug(f"Processing result {idx + 1}/{total_groups}")
             results.append(result)
-            if progress_updater:
-                progress_updater.progress((idx + 1) / total_groups)
-            if status_updater:
-                status_updater.text(f"Finding the best groups: {int((idx + 1) / total_groups * 100)}% complete ⏳")
+            
+            if is_streamlit_context() and progress_updater:
+                try:
+                    progress_updater.progress((idx + 1) / total_groups)
+                except Exception as e:
+                    logger.debug(f"Progress update failed: {e}")
+            if is_streamlit_context() and status_updater:
+                try:
+                    status_updater.text(f"Finding the best groups: {int((idx + 1) / total_groups * 100)}% complete ⏳")
+                except Exception as e:
+                    logger.debug(f"Status update failed: {e}")
+            
+            if (idx + 1) % 10 == 0:
+                logger.info(f"Processed {idx + 1}/{total_groups} groups")
+    
+    logger.info(f"All groups processed. Results count: {len(results)}")
     
     results_by_size = {}
     logger.info("Organizing results by size...")
@@ -524,12 +600,15 @@ def simulate_power(y_real, y_control, delta, period, n_permutations=1000, signif
     Returns:
         tuple: Delta, statistical power, and the adjusted series with the applied effect.
     """
+    logger.debug(f"Starting simulate_power: delta={delta}, period={period}, n_permutations={n_permutations}")
     
     y_real = np.array(y_real).flatten()
     y_control = np.array(y_control).flatten()
     
     start_treatment = len(y_real) - period
     end_treatment = start_treatment + period
+    
+    logger.debug(f"Treatment period: {start_treatment} to {end_treatment}")
     
     y_with_lift = apply_lift(y_real, delta, start_treatment, end_treatment)
     residuals = compute_residuals(y_with_lift, y_control)
@@ -539,36 +618,51 @@ def simulate_power(y_real, y_control, delta, period, n_permutations=1000, signif
         return np.sum(x)
     
     observed_stat = stat_func(treatment_residuals)
+    logger.debug(f"Observed statistic: {observed_stat}")
     
+    logger.debug("Starting permutation test")
     null_stats = []
-    for _ in range(n_permutations):
+    for i in range(n_permutations):
+        if i % 1000 == 0 and i > 0:
+            logger.debug(f"Completed {i}/{n_permutations} permutations")
         permuted_residuals = np.random.permutation(residuals)
         permuted = permuted_residuals[start_treatment:]
         null_stats.append(stat_func(permuted))
+    
     null_stats = np.array(null_stats)
     
     p_value = np.mean(null_stats >= observed_stat)
     power = np.mean(p_value < significance_level)
+    
+    logger.debug(f"Permutation test completed: p_value={p_value:.4f}, power={power:.4f}")
 
-    return delta, power, y_with_lift
+    return delta, power, y_with_lift,p_value
 
 def run_simulation(delta, y_real, y_control, period, n_permutations, significance_level, inference_type="iid", size_block=None):
     """
     Wrapper function to run a single simulation of statistical power.
     """
+    logger.debug(f"Starting simulation: delta={delta}, period={period}, n_permutations={n_permutations}")
+    
     # Asegurarse de que y_real y y_control son arrays de numpy
     y_real = np.array(y_real).flatten()
     y_control = np.array(y_control).flatten()
     
-    return simulate_power(
-        y_real=y_real,
-        y_control=y_control,
-        delta=delta,
-        period=period,
-        n_permutations=n_permutations,
-        significance_level=significance_level,
-        inference_type=inference_type,
-    )
+    try:
+        result = simulate_power(
+            y_real=y_real,
+            y_control=y_control,
+            delta=delta,
+            period=period,
+            n_permutations=n_permutations,
+            significance_level=significance_level,
+            inference_type=inference_type,
+        )
+        logger.debug(f"Simulation completed successfully: delta={delta}, power={result[1]:.4f}")
+        return result
+    except Exception as e:
+        logger.error(f"Simulation failed for delta={delta}, period={period}: {str(e)}")
+        raise
 
 def evaluate_sensitivity(results_by_size, deltas, periods, n_permutations, significance_level=0.05, inference_type="iid",  size_block=None, progress_bar=None, status_text=None):
     """
@@ -587,14 +681,21 @@ def evaluate_sensitivity(results_by_size, deltas, periods, n_permutations, signi
         dict: Sensitivity results by size and period.
         dict: Adjusted series for each delta and period.
     """
+    logger.info("Starting evaluate_sensitivity function")
+    logger.info(f"Parameters: deltas={len(deltas)}, periods={len(periods)}, n_permutations={n_permutations}")
+    
     sensitivity_results = {}
     lift_series = {}
     
 
     total_steps = sum(len(periods) * len(deltas)  for _ in results_by_size)
     step =  0
+    
+    logger.info(f"Total steps to process: {total_steps}")
 
     for size, result in results_by_size.items():
+        logger.info(f"Processing size {size}")
+        
         if ('Actual Target Metric (y)' not in result or 
             'Predictions' not in result or
             result['Actual Target Metric (y)'] is None or 
@@ -604,38 +705,65 @@ def evaluate_sensitivity(results_by_size, deltas, periods, n_permutations, signi
 
         y_real = np.array(result['Actual Target Metric (y)']).flatten()
         y_control = np.array(result['Predictions']).flatten()
+        
+        logger.info(f"Data prepared for size {size}: y_real shape={y_real.shape}, y_control shape={y_control.shape}")
 
         results_by_period = {}
 
         for period in periods:
+            logger.info(f"Processing period {period} for size {size}")
             results = []  
 
             
             for delta in deltas:
+                logger.debug(f"Running simulation for size={size}, period={period}, delta={delta}")
                 res = run_simulation(delta, y_real, y_control, period, n_permutations, significance_level, inference_type, size_block)
                 results.append(res)
 
                 
                 step += 1
-                if progress_bar:
-                    progress_bar.progress(min(step / total_steps,1.0))
-                if status_text:
-                    status_text.text(f"Evaluating groups: {int((step / total_steps) * 100)}% complete ⏳")
+                # Only update progress if we're in a Streamlit context and have valid updaters
+                if is_streamlit_context() and progress_bar:
+                    try:
+                        progress_bar.progress(min(step / total_steps,1.0))
+                    except Exception as e:
+                        logger.debug(f"Progress update failed: {e}")
+                if is_streamlit_context() and status_text:
+                    try:
+                        status_text.text(f"Evaluating groups: {int((step / total_steps) * 100)}% complete ⏳")
+                    except Exception as e:
+                        logger.debug(f"Status update failed: {e}")
+                
+                if step % 10 == 0:
+                    logger.info(f"Completed {step}/{total_steps} simulations")
 
             
-            statistical_power = [(res[0], res[1]) for res in results]
-            mde = next((delta for delta, power in statistical_power if power >= 0.85), None)
+            statistical_power = [(res[0], res[1], res[3]) for res in results]
+            mde = next((delta for delta, power, p_value in statistical_power if power >= 0.85), None)
+            
+            
+            mde_p_value = None
+            if mde is not None:
+                for delta, power, p_value in statistical_power:
+                    if delta == mde:
+                        mde_p_value = p_value
+                        break
+            
+            logger.info(f"Period {period} completed for size {size}. MDE found: {mde} with p-value: {mde_p_value}")
 
-            for delta, _, adjusted_series in results:
+            for delta, _, adjusted_series,p_value in results:
                 lift_series[(size, delta, period)] = adjusted_series
 
             results_by_period[period] = {
                 'Statistical Power': statistical_power,
-                'MDE': mde
+                'MDE': mde,
+                'P-Value': mde_p_value
             }
 
         sensitivity_results[size] = results_by_period
+        logger.info(f"Size {size} completed. Results for {len(results_by_period)} periods")
 
+    logger.info("evaluate_sensitivity completed successfully")
     return sensitivity_results, lift_series
 
 def transform_results_data(results_by_size):

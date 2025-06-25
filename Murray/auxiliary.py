@@ -27,7 +27,6 @@ def handle_duplicates(data, subset=['time', 'location'], agg_method='mean'):
     if missing_cols:
         raise ValueError(f"Missing columns for duplicate check: {missing_cols}")
     
-
     duplicates = data.duplicated(subset=subset, keep=False)
     if duplicates.any():
         logger.warning(f"Found {duplicates.sum()} duplicate entries in the data. Aggregating by {agg_method}.")
@@ -110,8 +109,9 @@ def cleaned_data(data, col_target, col_locations, col_dates, fill_value=0):
         if len(all_locations) == 0:
             raise ValueError("No valid locations found after cleaning. Please check your data.")
 
-        # Check for duplicate entries in data_input before merge and handle them
+        
         data_input = handle_duplicates(data_input, subset=['time', 'location'], agg_method='mean')
+        
         
         full_index = pd.MultiIndex.from_product([all_dates, all_locations], names=['time', 'location'])
         full_data = pd.DataFrame(index=full_index).reset_index()

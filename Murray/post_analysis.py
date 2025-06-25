@@ -45,10 +45,8 @@ def run_geo_evaluation(data_input, start_treatment,end_treatment,treatment_group
         period = end_position_treatment - start_position_treatment
         
         # Check for duplicate entries and handle them
-        logger.info("Checking for duplicates before pivot...")
         data_input = handle_duplicates(data_input, subset=['time', 'location'], agg_method='mean')
         
-        logger.info("Creating pivot table...")
         df_pivot = data_input.pivot(index='time', columns='location', values='Y')
         logger.info(f"Pivot table shape: {df_pivot.shape}")
         
@@ -83,6 +81,11 @@ def run_geo_evaluation(data_input, start_treatment,end_treatment,treatment_group
         logger.info("Making predictions...")
         predictions_test, _ = model.predict(X_test, time_index=time_test)
         predictions_full, weights = model.predict(X_scaled, time_index=time_index)
+        
+        # Filter control group based on weights
+        filtered_control_group, filtered_weights = model.filter_controls_by_weights(
+            control_group, min_weight_threshold=0.001
+        )
         
         counterfactual_full = predictions_full.reshape(-1, 1)
         counterfactual_full = scaler_y.inverse_transform(counterfactual_full)
@@ -144,10 +147,10 @@ def run_geo_evaluation(data_input, start_treatment,end_treatment,treatment_group
             'p_value': p_value,
             'power': power,
             'percenge_lift': percenge_lift,
-            'control_group': control_group,
+            'control_group': filtered_control_group,
             'observed_stat': observed_stat,
             'null_stats': null_stats,
-            'weights': weights,
+            'weights': filtered_weights,
             'period': period,
             'spend': spend,
             'length_treatment': length_treatment,
