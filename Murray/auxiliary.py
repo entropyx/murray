@@ -15,14 +15,13 @@ def handle_duplicates(data, subset=['time', 'location'], agg_method='mean'):
     Returns:
         pd.DataFrame: DataFrame with duplicates handled
     """
-    logger.info(f"Starting duplicate handling for {len(data)} rows")
-
+    
     
     if data.empty:
         logger.warning("DataFrame is empty, returning as is")
         return data
     
-    # Check if required columns exist
+    
     missing_cols = [col for col in subset if col not in data.columns]
     if missing_cols:
         raise ValueError(f"Missing columns for duplicate check: {missing_cols}")
@@ -30,17 +29,15 @@ def handle_duplicates(data, subset=['time', 'location'], agg_method='mean'):
     duplicates = data.duplicated(subset=subset, keep=False)
     if duplicates.any():
         logger.warning(f"Found {duplicates.sum()} duplicate entries in the data. Aggregating by {agg_method}.")
-        # Group by subset columns and aggregate Y values
+        
         data = data.groupby(subset)['Y'].agg(agg_method).reset_index()
-        logger.info(f"Data shape after deduplication: {data.shape}")
     else:
-        logger.info("No duplicate entries found")
+        logger.debug("No duplicate entries found")
     
-    # Verify no duplicates remain
+    
     if data.duplicated(subset=subset).any():
         raise ValueError(f"Duplicate entries still exist after aggregation in columns {subset}. Please check your data.")
     
-    logger.info("Duplicate handling completed successfully")
     return data
 
 def cleaned_data(data, col_target, col_locations, col_dates, fill_value=0):
@@ -135,11 +132,6 @@ def cleaned_data(data, col_target, col_locations, col_dates, fill_value=0):
         logger.error(f"An unexpected error occurred: {str(e)}")
         raise Exception(f"An unexpected error occurred: {str(e)}") from e
 
-        
-
-        
-    
-
 
 
 
@@ -154,32 +146,12 @@ def market_correlations(data):
     Returns:
         correlation_matrix (pd.DataFrame): DataFrame containing correlations between locations in a standard matrix format.
     """
-    logger.info("Starting market correlations calculation")
-    logger.info(f"Input data shape: {data.shape}")
     
     required_columns = {'time', 'location', 'Y'}
     if not required_columns.issubset(data.columns):
         raise ValueError(f"The DataFrame must contain the columns: {required_columns}")
-
-    # Check for duplicate entries and handle them
-    logger.info("Checking for duplicates before pivot...")
-    data = handle_duplicates(data, subset=['time', 'location'], agg_method='mean')
     
-    logger.info("Creating pivot table for correlation calculation...")
     pivoted_data = data.pivot(index='time', columns='location', values='Y')
-    logger.info(f"Pivot table shape: {pivoted_data.shape}")
-    logger.info(f"Number of locations: {pivoted_data.shape[1]}")
-    logger.info(f"Number of time periods: {pivoted_data.shape[0]}")
     
-    logger.info("Calculating correlation matrix...")
     correlation_matrix = pivoted_data.corr(method='pearson')
-    logger.info(f"Correlation matrix shape: {correlation_matrix.shape}")
-    
-    # Log some correlation statistics
-    logger.info(f"Correlation statistics:")
-    logger.info(f"  Min correlation: {correlation_matrix.values[correlation_matrix.values != 1.0].min():.4f}")
-    logger.info(f"  Max correlation: {correlation_matrix.values[correlation_matrix.values != 1.0].max():.4f}")
-    logger.info(f"  Mean correlation: {correlation_matrix.values[correlation_matrix.values != 1.0].mean():.4f}")
-    
-    logger.info("Market correlations calculation completed successfully")
     return correlation_matrix

@@ -71,7 +71,7 @@ def select_treatments(similarity_matrix, treatment_size, excluded_locations):
     n_combinations = max_combinations
     if n_combinations > 5000:
         n_combinations = 5000
-        logger.info(f"Limiting combinations from {max_combinations} to {n_combinations}")
+        
 
     logger.debug(f"Generating {n_combinations} combinations")
 
@@ -401,43 +401,33 @@ def BetterGroups(similarity_matrix, excluded_locations, data, correlation_matrix
             Each entry contains the best treatment group, control group, MAPE,
             SMAPE, actual target metric, predictions, weights, and the holdout percentage.
     """
-    logger.info("Starting BetterGroups function")
-    logger.info(f"Input data shape: {data.shape}")
-    logger.info(f"Excluded locations: {excluded_locations}")
-    logger.info(f"Maximum treatment percentage: {maximum_treatment_percentage}")
+
 
     unique_locations = data['location'].unique()
     no_locations = len(unique_locations)
     logger.info(f"Number of locations: {no_locations}")
     max_group_size = round(no_locations * 0.45)
-    logger.info(f"Maximum group size: {max_group_size}")
+    logger.info(f"Maximum treatment group size: {max_group_size}")
     min_elements_in_treatment = round(no_locations * 0.15)
-    logger.info(f"Minimum elements in treatment: {min_elements_in_treatment}")
+    logger.info(f"Minimum treatment group size: {min_elements_in_treatment}")
     min_holdout = 100 - (maximum_treatment_percentage * 100)
     total_Y = data['Y'].sum()
-    logger.info(f"Total Y value: {total_Y}")
-    logger.info(f"Minimum holdout percentage: {min_holdout}%")
     
-    logger.info(f"Parameters: no_locations={no_locations}, max_group_size={max_group_size}, min_elements_in_treatment={min_elements_in_treatment}")
-    logger.info(f"min_holdout={min_holdout}, total_Y={total_Y}")
     
     if total_Y == 0:
         logger.warning("Total Y is zero, returning None")
         return None
     
-    logger.info("Creating pivot table")
     
     # Check for duplicate entries and handle them
     data = handle_duplicates(data, subset=['time', 'location'], agg_method='mean')
     
     df_pivot = data.pivot(index='time', columns='location', values='Y')
-    logger.info(f"Pivot table created with shape: {df_pivot.shape}")
     
     
     possible_groups = []
     logger.info("Generating possible treatment groups...")
     for size in range(min_elements_in_treatment, max_group_size + 1):
-        logger.info(f"Generating groups for size {size}...")
         groups = select_treatments(similarity_matrix, size, excluded_locations)
         possible_groups.extend(groups)
         logger.info(f"Generated {len(groups)} groups for size {size}")
@@ -445,17 +435,13 @@ def BetterGroups(similarity_matrix, excluded_locations, data, correlation_matrix
     logger.info(f"Total possible groups generated: {len(possible_groups)}")
     
     if not possible_groups:
-        logger.warning("No possible groups generated, returning None")
+        logger.warning("No possible groups generated, returSning None")
         return None
 
     total_groups = len(possible_groups)
     results = []
-    logger.info(f"Starting evaluation of {total_groups} groups using ProcessPoolExecutor")
-    
-    logger.info(f"Starting evaluation of {total_groups} groups using ThreadPoolExecutor")
     
     with concurrent.futures.ProcessPoolExecutor(max_workers=2) as executor:
-        logger.info("ProcessPoolExecutor created, submitting tasks...")
         futures = executor.map(
             evaluate_group,
             possible_groups,
@@ -467,6 +453,9 @@ def BetterGroups(similarity_matrix, excluded_locations, data, correlation_matrix
             chunksize=5
         )
         logger.info("Tasks submitted, starting to collect results...")
+        
+        # Calculate log intervals to show exactly 10 progress points
+        log_interval = max(1, total_groups // 10)
         
         for idx, result in enumerate(futures):
             logger.debug(f"Processing result {idx + 1}/{total_groups}")
@@ -483,7 +472,8 @@ def BetterGroups(similarity_matrix, excluded_locations, data, correlation_matrix
                 except Exception as e:
                     logger.debug(f"Status update failed: {e}")
             
-            if (idx + 1) % 10 == 0:
+            # Show progress log at calculated intervals (10 total logs)
+            if (idx + 1) % log_interval == 0 or idx == 0 or idx == total_groups - 1:
                 logger.info(f"Processed {idx + 1}/{total_groups} groups")
     
     logger.info(f"All groups processed. Results count: {len(results)}")
@@ -491,9 +481,7 @@ def BetterGroups(similarity_matrix, excluded_locations, data, correlation_matrix
     results_by_size = {}
     logger.info("Organizing results by size...")
     for size in range(min_elements_in_treatment, max_group_size + 1):
-        logger.info(f"Processing results for size {size}...")
         best_results = [result for result in results if result is not None and len(result[0]) == size]
-        logger.info(f"Found {len(best_results)} valid results for size {size}")
         
         if best_results:
             best_result = min(best_results, key=lambda x: (x[2], -x[3]))
@@ -524,7 +512,6 @@ def BetterGroups(similarity_matrix, excluded_locations, data, correlation_matrix
         logger.warning("No valid results found, returning None")
         return None
     
-    logger.info(f"BetterGroups completed successfully. Returning results for {len(results_by_size)} sizes")
     return results_by_size if results_by_size else None
 
 
@@ -681,8 +668,6 @@ def evaluate_sensitivity(results_by_size, deltas, periods, n_permutations, signi
         dict: Sensitivity results by size and period.
         dict: Adjusted series for each delta and period.
     """
-    logger.info("Starting evaluate_sensitivity function")
-    logger.info(f"Parameters: deltas={len(deltas)}, periods={len(periods)}, n_permutations={n_permutations}")
     
     sensitivity_results = {}
     lift_series = {}
@@ -691,10 +676,8 @@ def evaluate_sensitivity(results_by_size, deltas, periods, n_permutations, signi
     total_steps = sum(len(periods) * len(deltas)  for _ in results_by_size)
     step =  0
     
-    logger.info(f"Total steps to process: {total_steps}")
 
     for size, result in results_by_size.items():
-        logger.info(f"Processing size {size}")
         
         if ('Actual Target Metric (y)' not in result or 
             'Predictions' not in result or
@@ -706,12 +689,11 @@ def evaluate_sensitivity(results_by_size, deltas, periods, n_permutations, signi
         y_real = np.array(result['Actual Target Metric (y)']).flatten()
         y_control = np.array(result['Predictions']).flatten()
         
-        logger.info(f"Data prepared for size {size}: y_real shape={y_real.shape}, y_control shape={y_control.shape}")
+
 
         results_by_period = {}
 
         for period in periods:
-            logger.info(f"Processing period {period} for size {size}")
             results = []  
 
             
@@ -733,9 +715,6 @@ def evaluate_sensitivity(results_by_size, deltas, periods, n_permutations, signi
                         status_text.text(f"Evaluating groups: {int((step / total_steps) * 100)}% complete ⏳")
                     except Exception as e:
                         logger.debug(f"Status update failed: {e}")
-                
-                if step % 10 == 0:
-                    logger.info(f"Completed {step}/{total_steps} simulations")
 
             
             statistical_power = [(res[0], res[1], res[3]) for res in results]
@@ -761,9 +740,8 @@ def evaluate_sensitivity(results_by_size, deltas, periods, n_permutations, signi
             }
 
         sensitivity_results[size] = results_by_period
-        logger.info(f"Size {size} completed. Results for {len(results_by_period)} periods")
 
-    logger.info("evaluate_sensitivity completed successfully")
+    logger.info("evaluate_sensitivity completed successfully.")
     return sensitivity_results, lift_series
 
 def transform_results_data(results_by_size):
@@ -806,30 +784,26 @@ def run_geo_analysis_streamlit_app(data, maximum_treatment_percentage, significa
             - "sensitivity_results": Sensitivity results for evaluated deltas and periods.
             - "series_lifts": Adjusted series for each delta and period.
     """
-    logger.info("Starting run_geo_analysis_streamlit_app")
-    logger.info(f"Input data shape: {data.shape}")
-    logger.info(f"Parameters: max_treatment_pct={maximum_treatment_percentage}, significance_level={significance_level}")
-    logger.info(f"deltas_range={deltas_range}, periods_range={periods_range}, n_permutations={n_permutations}")
-    logger.info(f"excluded_locations={excluded_locations}")
+    logger.info("Starting run_geo_analysis_streamlit_app............")
+    
     
     if progress_bar_1 or progress_bar_2 or status_text_1 or status_text_2 is None:
-      logger.info("Simulation in progress........")
+      print("Simulation in progress........")
     
     periods = list(np.arange(*periods_range))
     deltas = np.arange(*deltas_range)
     
-    logger.info(f"Generated periods: {periods}")
-    logger.info(f"Generated deltas: {deltas}")
 
     # Step 1: Generate market correlations
-    logger.info("Step 1: Generating market correlations")
+    logger.info("Step 1: Generating market correlations.....")
     correlation_matrix = market_correlations(data)
-    logger.info(f"Correlation matrix created with shape: {correlation_matrix.shape}")
+    logger.info(f'Market correlations generated successfully.')
+
 
     
 
     # Step 2: Find the best groups for control and treatment
-    logger.info("Step 2: Finding best groups for control and treatment")
+    logger.info("Step 2: Finding best groups for control and treatment.....")
     simulation_results = BetterGroups(
         similarity_matrix=correlation_matrix,
         maximum_treatment_percentage=maximum_treatment_percentage,
@@ -844,16 +818,16 @@ def run_geo_analysis_streamlit_app(data, maximum_treatment_percentage, significa
         logger.error("BetterGroups returned None, stopping execution")
         return None
     
-    logger.info(f"BetterGroups completed. Results for {len(simulation_results)} sizes")
+    logger.info(f"BetterGroups completed successfully. Results for {len(simulation_results)} sizes")
 
     # Step 3: Evaluate sensitivity for different deltas and periods
-    logger.info("Step 3: Evaluating sensitivity for different deltas and periods")
+    logger.info("Step 3: Evaluating sensitivity for different deltas and periods.....")
     sensitivity_results, series_lifts = evaluate_sensitivity(
         simulation_results, deltas, periods, n_permutations, significance_level,progress_bar=progress_bar_2, status_text=status_text_2
     )
     
     if sensitivity_results is not None:
-      logger.info("Sensitivity evaluation completed successfully")
+      logger.info("Sensitivity evaluation completed successfully.")
     else:
       logger.warning("Sensitivity evaluation returned None")
       
