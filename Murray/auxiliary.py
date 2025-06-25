@@ -15,6 +15,9 @@ def handle_duplicates(data, subset=['time', 'location'], agg_method='mean'):
     Returns:
         pd.DataFrame: DataFrame with duplicates handled
     """
+    logger.info(f"Starting duplicate handling for {len(data)} rows")
+
+    
     if data.empty:
         logger.warning("DataFrame is empty, returning as is")
         return data
@@ -31,12 +34,13 @@ def handle_duplicates(data, subset=['time', 'location'], agg_method='mean'):
         data = data.groupby(subset)['Y'].agg(agg_method).reset_index()
         logger.info(f"Data shape after deduplication: {data.shape}")
     else:
-        logger.debug("No duplicate entries found")
+        logger.info("No duplicate entries found")
     
     # Verify no duplicates remain
     if data.duplicated(subset=subset).any():
         raise ValueError(f"Duplicate entries still exist after aggregation in columns {subset}. Please check your data.")
     
+    logger.info("Duplicate handling completed successfully")
     return data
 
 def cleaned_data(data, col_target, col_locations, col_dates, fill_value=0):
@@ -105,6 +109,8 @@ def cleaned_data(data, col_target, col_locations, col_dates, fill_value=0):
         if len(all_locations) == 0:
             raise ValueError("No valid locations found after cleaning. Please check your data.")
 
+        # Check for duplicate entries in data_input before merge and handle them
+        data_input = handle_duplicates(data_input, subset=['time', 'location'], agg_method='mean')
         
         # Check for duplicate entries in data_input before merge and handle them
         data_input = handle_duplicates(data_input, subset=['time', 'location'], agg_method='mean')
@@ -150,40 +156,32 @@ def market_correlations(data):
     Returns:
         correlation_matrix (pd.DataFrame): DataFrame containing correlations between locations in a standard matrix format.
     """
+    logger.info("Starting market correlations calculation")
+    logger.info(f"Input data shape: {data.shape}")
+    
     required_columns = {'time', 'location', 'Y'}
     if not required_columns.issubset(data.columns):
         raise ValueError(f"The DataFrame must contain the columns: {required_columns}")
 
     # Check for duplicate entries and handle them
+    logger.info("Checking for duplicates before pivot...")
     data = handle_duplicates(data, subset=['time', 'location'], agg_method='mean')
     
+    logger.info("Creating pivot table for correlation calculation...")
     pivoted_data = data.pivot(index='time', columns='location', values='Y')
-    correlation_matrix = pivoted_data.corr(method='pearson')
-
-        
-    correlation_df = correlation_matrix.reset_index().melt(
-        id_vars='location',
-        var_name='var2',
-        value_name='correlation'
-    )
-
-
-    sorted_correlation_df = (
-        correlation_df
-        .sort_values(by=['location', 'correlation'], ascending=[True, False])
-        .query("location != var2")
-    )
-
-
-    sorted_correlation_df['rank'] = sorted_correlation_df.groupby('location').cumcount() + 2
+    logger.info(f"Pivot table shape: {pivoted_data.shape}")
+    logger.info(f"Number of locations: {pivoted_data.shape[1]}")
+    logger.info(f"Number of time periods: {pivoted_data.shape[0]}")
     
-
-    wide_correlation_df = (
-        sorted_correlation_df
-        .pivot(index='location', columns='rank', values='var2')
-        .reset_index()
-    )
-
-    wide_correlation_df.columns = ['location'] + [f"location_{i}" for i in range(2, len(wide_correlation_df.columns) + 1)]
-
+    logger.info("Calculating correlation matrix...")
+    correlation_matrix = pivoted_data.corr(method='pearson')
+    logger.info(f"Correlation matrix shape: {correlation_matrix.shape}")
+    
+    # Log some correlation statistics
+    logger.info(f"Correlation statistics:")
+    logger.info(f"  Min correlation: {correlation_matrix.values[correlation_matrix.values != 1.0].min():.4f}")
+    logger.info(f"  Max correlation: {correlation_matrix.values[correlation_matrix.values != 1.0].max():.4f}")
+    logger.info(f"  Mean correlation: {correlation_matrix.values[correlation_matrix.values != 1.0].mean():.4f}")
+    
+    logger.info("Market correlations calculation completed successfully")
     return correlation_matrix

@@ -9,7 +9,12 @@ logger = get_logger("post_analysis")
 
 def run_geo_evaluation(data_input, start_treatment,end_treatment,treatment_group,spend,
                        n_permutations=50000,inference_type='iid',significance_level=0.1):
-        logger.info("Evaluation in progress........")
+        logger.info("Starting run_geo_evaluation")
+        logger.info(f"Input data shape: {data_input.shape}")
+        logger.info(f"Treatment group: {treatment_group}")
+        logger.info(f"Start treatment: {start_treatment}, End treatment: {end_treatment}")
+        logger.info(f"n_permutations: {n_permutations}, significance_level: {significance_level}")
+        
         random_sate = data_input['location'].unique()[0]
         filtered_data = data_input[data_input['location'] == random_sate].copy()
         start_treatment = pd.to_datetime(start_treatment, dayfirst=True)
@@ -21,19 +26,21 @@ def run_geo_evaluation(data_input, start_treatment,end_treatment,treatment_group
         end_position = filtered_data.index.get_loc(end_idx)
         end_position_treatment = end_position + 1 
         
-        
+        logger.info(f"Treatment period positions: {start_position_treatment} to {end_position_treatment}")
 
         def smape(A, F):
           return 100/len(A) * np.sum(2 * np.abs(F - A) / (np.abs(A) + np.abs(F+1e-10)))
 
-        correlation_matrix = market_correlations(data_input
-                                                 )
+        logger.info("Generating correlation matrix...")
+        correlation_matrix = market_correlations(data_input)
 
+        logger.info("Selecting control group...")
         control_group = select_controls(
             correlation_matrix=correlation_matrix,
             treatment_group=treatment_group,
             min_correlation=0.8
         )
+        logger.info(f"Control group selected: {control_group}")
 
         period = end_position_treatment - start_position_treatment
         
@@ -41,11 +48,14 @@ def run_geo_evaluation(data_input, start_treatment,end_treatment,treatment_group
         data_input = handle_duplicates(data_input, subset=['time', 'location'], agg_method='mean')
         
         df_pivot = data_input.pivot(index='time', columns='location', values='Y')
+        logger.info(f"Pivot table shape: {df_pivot.shape}")
+        
         X = df_pivot[control_group].values  
         y = df_pivot[treatment_group].sum(axis=1).values  
 
         time_index = np.arange(len(df_pivot))
 
+        logger.info("Scaling data...")
         scaler_x = MinMaxScaler()
         scaler_y = MinMaxScaler()
 
@@ -60,12 +70,15 @@ def run_geo_evaluation(data_input, start_treatment,end_treatment,treatment_group
         time_train = time_index[:start_position_treatment]
         time_test  = time_index[start_position_treatment:]
 
+        logger.info("Fitting synthetic control model...")
         model = SyntheticControl(
         use_ridge_adjustment=True,  
         ridge_alpha=1.0             
     )
         model.fit(X_train, y_train, time_train=time_train)
+        logger.info("Model fitted successfully")
 
+        logger.info("Making predictions...")
         predictions_test, _ = model.predict(X_test, time_index=time_test)
         predictions_full, weights = model.predict(X_scaled, time_index=time_index)
         
@@ -82,6 +95,7 @@ def run_geo_evaluation(data_input, start_treatment,end_treatment,treatment_group
         y_original = scaler_y.inverse_transform(y_scaled)
         y_original = y_original.flatten()
 
+        logger.info("Calculating metrics...")
         MAPE = np.mean(np.abs((y_original - counterfactual) / (y_original + 1e-10))) * 100
         SMAPE = smape(y_original, counterfactual)
 
@@ -99,21 +113,32 @@ def run_geo_evaluation(data_input, start_treatment,end_treatment,treatment_group
 
     
         observed_stat = stat_func(treatment_residuals)
+        logger.info(f"Observed statistic: {observed_stat}")
         
-        
+        logger.info(f"Starting permutation test with {n_permutations} permutations...")
         null_stats = []
 
-        for _ in range(n_permutations):
+        for i in range(n_permutations):
+            if i % 10000 == 0 and i > 0:
+                logger.info(f"Completed {i}/{n_permutations} permutations")
             permuted_residuals = np.random.permutation(residuals)
             permuted = permuted_residuals[start_position_treatment:]
             null_stats.append(stat_func(permuted))
         null_stats = np.array(null_stats)
         
-        
+        logger.info("Permutation test completed, calculating p-value and power...")
         p_value = np.mean(abs(null_stats) >= abs(observed_stat))
         power = np.mean(p_value < significance_level)
 
         length_treatment = len(treatment_group)
+        
+        logger.info(f"Final results:")
+        logger.info(f"  MAPE: {MAPE:.4f}")
+        logger.info(f"  SMAPE: {SMAPE:.4f}")
+        logger.info(f"  Percentage lift: {percenge_lift:.4f}%")
+        logger.info(f"  P-value: {p_value:.6f}")
+        logger.info(f"  Power: {power:.4f}")
+        
         results_evaluation = {
             'MAPE': MAPE,
             'SMAPE': SMAPE,
@@ -132,5 +157,5 @@ def run_geo_evaluation(data_input, start_treatment,end_treatment,treatment_group
             
         }
 
-
+        logger.info("run_geo_evaluation completed successfully")
         return results_evaluation

@@ -374,6 +374,7 @@ def evaluate_group(treatment_group, data, total_Y, correlation_matrix, min_holdo
         control_group, min_weight_threshold=0.001
     )
 
+    logger.debug("Calculating metrics")
     MAPE = np.mean(np.abs((y_original[split_index:] - counterfactual_full_original[split_index:]) / (y_original[split_index:] + 1e-10))) * 100
     SMAPE_value = smape(y_original[split_index:], counterfactual_full_original[split_index:])
 
@@ -401,13 +402,21 @@ def BetterGroups(similarity_matrix, excluded_locations, data, correlation_matrix
             SMAPE, actual target metric, predictions, weights, and the holdout percentage.
     """
     logger.info("Starting BetterGroups function")
-    
+    logger.info(f"Input data shape: {data.shape}")
+    logger.info(f"Excluded locations: {excluded_locations}")
+    logger.info(f"Maximum treatment percentage: {maximum_treatment_percentage}")
+
     unique_locations = data['location'].unique()
     no_locations = len(unique_locations)
-    max_group_size = round(no_locations * 0.20)
+    logger.info(f"Number of locations: {no_locations}")
+    max_group_size = round(no_locations * 0.45)
+    logger.info(f"Maximum group size: {max_group_size}")
     min_elements_in_treatment = round(no_locations * 0.15)
+    logger.info(f"Minimum elements in treatment: {min_elements_in_treatment}")
     min_holdout = 100 - (maximum_treatment_percentage * 100)
     total_Y = data['Y'].sum()
+    logger.info(f"Total Y value: {total_Y}")
+    logger.info(f"Minimum holdout percentage: {min_holdout}%")
     
     logger.info(f"Parameters: no_locations={no_locations}, max_group_size={max_group_size}, min_elements_in_treatment={min_elements_in_treatment}")
     logger.info(f"min_holdout={min_holdout}, total_Y={total_Y}")
@@ -426,9 +435,9 @@ def BetterGroups(similarity_matrix, excluded_locations, data, correlation_matrix
     
     
     possible_groups = []
-    logger.info("Generating possible treatment groups")
+    logger.info("Generating possible treatment groups...")
     for size in range(min_elements_in_treatment, max_group_size + 1):
-        logger.info(f"Generating groups for size {size}")
+        logger.info(f"Generating groups for size {size}...")
         groups = select_treatments(similarity_matrix, size, excluded_locations)
         possible_groups.extend(groups)
         logger.info(f"Generated {len(groups)} groups for size {size}")
@@ -441,11 +450,12 @@ def BetterGroups(similarity_matrix, excluded_locations, data, correlation_matrix
 
     total_groups = len(possible_groups)
     results = []
+    logger.info(f"Starting evaluation of {total_groups} groups using ProcessPoolExecutor")
     
     logger.info(f"Starting evaluation of {total_groups} groups using ThreadPoolExecutor")
     
-    with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
-        logger.info("ThreadPoolExecutor created, submitting tasks")
+    with concurrent.futures.ProcessPoolExecutor(max_workers=2) as executor:
+        logger.info("ProcessPoolExecutor created, submitting tasks...")
         futures = executor.map(
             evaluate_group,
             possible_groups,
@@ -456,7 +466,7 @@ def BetterGroups(similarity_matrix, excluded_locations, data, correlation_matrix
             [df_pivot] * total_groups,
             chunksize=5
         )
-        logger.info("Tasks submitted, starting to collect results")
+        logger.info("Tasks submitted, starting to collect results...")
         
         for idx, result in enumerate(futures):
             logger.debug(f"Processing result {idx + 1}/{total_groups}")
@@ -479,9 +489,9 @@ def BetterGroups(similarity_matrix, excluded_locations, data, correlation_matrix
     logger.info(f"All groups processed. Results count: {len(results)}")
     
     results_by_size = {}
-    logger.info("Organizing results by size")
+    logger.info("Organizing results by size...")
     for size in range(min_elements_in_treatment, max_group_size + 1):
-        logger.info(f"Processing results for size {size}")
+        logger.info(f"Processing results for size {size}...")
         best_results = [result for result in results if result is not None and len(result[0]) == size]
         logger.info(f"Found {len(best_results)} valid results for size {size}")
         
@@ -508,7 +518,7 @@ def BetterGroups(similarity_matrix, excluded_locations, data, correlation_matrix
                 'Holdout Percentage': holdout_percentage,
                 'observed_conformity': observed_conformity
             }
-            logger.info(f"Best result for size {size}: MAPE={best_MAPE:.4f}, SMAPE={best_SMAPE:.4f}")
+            logger.info(f"Best result for size {size}: MAPE={best_MAPE:.4f}, SMAPE={best_SMAPE:.4f}, Holdout={holdout_percentage:.2f}%")
 
     if not results or all(result is None for result in results):
         logger.warning("No valid results found, returning None")
