@@ -404,7 +404,7 @@ def BetterGroups(similarity_matrix, excluded_locations, data, correlation_matrix
     
     unique_locations = data['location'].unique()
     no_locations = len(unique_locations)
-    max_group_size = round(no_locations * 0.45)
+    max_group_size = round(no_locations * 0.20)
     min_elements_in_treatment = round(no_locations * 0.15)
     min_holdout = 100 - (maximum_treatment_percentage * 100)
     total_Y = data['Y'].sum()
@@ -461,7 +461,7 @@ def BetterGroups(similarity_matrix, excluded_locations, data, correlation_matrix
         for idx, result in enumerate(futures):
             logger.debug(f"Processing result {idx + 1}/{total_groups}")
             results.append(result)
-            # Only update progress if we're in a Streamlit context and have valid updaters
+            
             if is_streamlit_context() and progress_updater:
                 try:
                     progress_updater.progress((idx + 1) / total_groups)
@@ -626,7 +626,7 @@ def simulate_power(y_real, y_control, delta, period, n_permutations=1000, signif
     
     logger.debug(f"Permutation test completed: p_value={p_value:.4f}, power={power:.4f}")
 
-    return delta, power, y_with_lift
+    return delta, power, y_with_lift,p_value
 
 def run_simulation(delta, y_real, y_control, period, n_permutations, significance_level, inference_type="iid", size_block=None):
     """
@@ -728,17 +728,26 @@ def evaluate_sensitivity(results_by_size, deltas, periods, n_permutations, signi
                     logger.info(f"Completed {step}/{total_steps} simulations")
 
             
-            statistical_power = [(res[0], res[1]) for res in results]
-            mde = next((delta for delta, power in statistical_power if power >= 0.85), None)
+            statistical_power = [(res[0], res[1], res[3]) for res in results]
+            mde = next((delta for delta, power, p_value in statistical_power if power >= 0.85), None)
             
-            logger.info(f"Period {period} completed for size {size}. MDE found: {mde}")
+            
+            mde_p_value = None
+            if mde is not None:
+                for delta, power, p_value in statistical_power:
+                    if delta == mde:
+                        mde_p_value = p_value
+                        break
+            
+            logger.info(f"Period {period} completed for size {size}. MDE found: {mde} with p-value: {mde_p_value}")
 
-            for delta, _, adjusted_series in results:
+            for delta, _, adjusted_series,p_value in results:
                 lift_series[(size, delta, period)] = adjusted_series
 
             results_by_period[period] = {
                 'Statistical Power': statistical_power,
-                'MDE': mde
+                'MDE': mde,
+                'P-Value': mde_p_value
             }
 
         sensitivity_results[size] = results_by_period
