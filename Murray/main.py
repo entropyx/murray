@@ -571,23 +571,29 @@ def compute_residuals(y_treatment, y_control):
     return y_treatment - y_control
 
 
-def simulate_power(y_real, y_control, delta, period, n_permutations=1000, significance_level=0.05, inference_type="iid", stat_func=None):
+def simulate_power(y_real, y_control, delta, period, n_permutations=1000, significance_level=0.05, inference_type="iid", stat_func=None, n_simulations=100):
     """
-    Simulates statistical power using conformal inference and returns the adjusted series.
+    Simulates statistical power using permutation tests and returns the adjusted series.
+    
+    This function implements a proper power analysis by:
+    1. Simulating multiple experiments with the same effect size
+    2. Running permutation tests for each simulation
+    3. Calculating power as the proportion of significant results
 
     Args:
         y_real (numpy array): Actual target metrics.
         y_control (numpy array): Control metrics.
         delta (float): Effect size applied.
         period (int): Duration of the treatment period.
-        n_permutations (int): Number of permutations.
+        n_permutations (int): Number of permutations per simulation.
         significance_level (float): Significance level.
         inference_type (str): Type of conformal inference ("iid" or "block").
+        n_simulations (int): Number of simulations to run for power calculation.
 
     Returns:
         tuple: Delta, statistical power, and the adjusted series with the applied effect.
     """
-    logger.debug(f"Starting simulate_power: delta={delta}, period={period}, n_permutations={n_permutations}")
+    logger.debug(f"Starting simulate_power: delta={delta}, period={period}, n_permutations={n_permutations}, n_simulations={n_simulations}")
     
     y_real = np.array(y_real).flatten()
     y_control = np.array(y_control).flatten()
@@ -597,39 +603,69 @@ def simulate_power(y_real, y_control, delta, period, n_permutations=1000, signif
     
     logger.debug(f"Treatment period: {start_treatment} to {end_treatment}")
     
+    # Apply the effect to the real data
     y_with_lift = apply_lift(y_real, delta, start_treatment, end_treatment)
-    residuals = compute_residuals(y_with_lift, y_control)
-    treatment_residuals = residuals[start_treatment:]
     
     def stat_func(x):
         return np.sum(x)
     
-    observed_stat = stat_func(treatment_residuals)
-    logger.debug(f"Observed statistic: {observed_stat}")
+    # Run multiple simulations to calculate power
+    significant_results = 0
     
-    logger.debug("Starting permutation test")
+    for sim in range(n_simulations):
+        # Add some noise to simulate real-world variability
+        noise = np.random.normal(0, 0.01 * np.std(y_with_lift), len(y_with_lift))
+        y_simulated = y_with_lift + noise
+        
+        # Calculate residuals
+        residuals = compute_residuals(y_simulated, y_control)
+        treatment_residuals = residuals[start_treatment:]
+        
+        observed_stat = stat_func(treatment_residuals)
+        
+        # Run permutation test
+        null_stats = []
+        for i in range(n_permutations):
+            permuted_residuals = np.random.permutation(residuals)
+            permuted = permuted_residuals[start_treatment:]
+            null_stats.append(stat_func(permuted))
+        
+        null_stats = np.array(null_stats)
+        
+        # Calculate p-value for this simulation
+        p_value = np.mean(null_stats >= observed_stat)
+        
+        # Count if this simulation was significant
+        if p_value < significance_level:
+            significant_results += 1
+    
+    # Calculate power as proportion of significant results
+    power = significant_results / n_simulations
+    
+    # For the final result, use the original data without noise
+    residuals = compute_residuals(y_with_lift, y_control)
+    treatment_residuals = residuals[start_treatment:]
+    observed_stat = stat_func(treatment_residuals)
+    
+    # Run one final permutation test for the p-value
     null_stats = []
     for i in range(n_permutations):
-        if i % 1000 == 0 and i > 0:
-            logger.debug(f"Completed {i}/{n_permutations} permutations")
         permuted_residuals = np.random.permutation(residuals)
         permuted = permuted_residuals[start_treatment:]
         null_stats.append(stat_func(permuted))
     
     null_stats = np.array(null_stats)
-    
     p_value = np.mean(null_stats >= observed_stat)
-    power = np.mean(p_value < significance_level)
     
-    logger.debug(f"Permutation test completed: p_value={p_value:.4f}, power={power:.4f}")
+    logger.debug(f"Power analysis completed: power={power:.4f}, p_value={p_value:.4f}")
 
-    return delta, power, y_with_lift,p_value
+    return delta, power, y_with_lift, p_value
 
-def run_simulation(delta, y_real, y_control, period, n_permutations, significance_level, inference_type="iid", size_block=None):
+def run_simulation(delta, y_real, y_control, period, n_permutations, significance_level, inference_type="iid", size_block=None, n_simulations=100):
     """
     Wrapper function to run a single simulation of statistical power.
     """
-    logger.debug(f"Starting simulation: delta={delta}, period={period}, n_permutations={n_permutations}")
+    logger.debug(f"Starting simulation: delta={delta}, period={period}, n_permutations={n_permutations}, n_simulations={n_simulations}")
     
     # Asegurarse de que y_real y y_control son arrays de numpy
     y_real = np.array(y_real).flatten()
@@ -644,6 +680,7 @@ def run_simulation(delta, y_real, y_control, period, n_permutations, significanc
             n_permutations=n_permutations,
             significance_level=significance_level,
             inference_type=inference_type,
+            n_simulations=n_simulations
         )
         logger.debug(f"Simulation completed successfully: delta={delta}, power={result[1]:.4f}")
         return result
@@ -651,7 +688,7 @@ def run_simulation(delta, y_real, y_control, period, n_permutations, significanc
         logger.error(f"Simulation failed for delta={delta}, period={period}: {str(e)}")
         raise
 
-def evaluate_sensitivity(results_by_size, deltas, periods, n_permutations, significance_level=0.05, inference_type="iid",  size_block=None, progress_bar=None, status_text=None):
+def evaluate_sensitivity(results_by_size, deltas, periods, n_permutations, significance_level=0.05, inference_type="iid",  size_block=None, progress_bar=None, status_text=None, n_simulations=100):
     """
     Evaluates sensitivity of results to different treatment periods and deltas using permutations.
 
@@ -663,6 +700,9 @@ def evaluate_sensitivity(results_by_size, deltas, periods, n_permutations, signi
         significance_level (float): Significance level.
         inference_type (str): Type of conformal inference ("iid" or "block").
         size_block (int): Size of blocks for block shuffling (if applicable).
+        progress_bar: Progress bar for UI updates.
+        status_text: Status text for UI updates.
+        n_simulations (int): Number of simulations for power calculation.
 
     Returns:
         dict: Sensitivity results by size and period.
@@ -699,7 +739,7 @@ def evaluate_sensitivity(results_by_size, deltas, periods, n_permutations, signi
             
             for delta in deltas:
                 logger.debug(f"Running simulation for size={size}, period={period}, delta={delta}")
-                res = run_simulation(delta, y_real, y_control, period, n_permutations, significance_level, inference_type, size_block)
+                res = run_simulation(delta, y_real, y_control, period, n_permutations, significance_level, inference_type, size_block, n_simulations)
                 results.append(res)
 
                 
@@ -722,13 +762,15 @@ def evaluate_sensitivity(results_by_size, deltas, periods, n_permutations, signi
             
             
             mde_p_value = None
+            mde_power = None
             if mde is not None:
                 for delta, power, p_value in statistical_power:
                     if delta == mde:
                         mde_p_value = p_value
+                        mde_power = power
                         break
             
-            logger.info(f"Period {period} completed for size {size}. MDE found: {mde} with p-value: {mde_p_value}")
+            logger.info(f"Period {period} completed for size {size}. MDE found: {mde} with p-value: {mde_p_value} and power: {mde_power}")
 
             for delta, _, adjusted_series,p_value in results:
                 lift_series[(size, delta, period)] = adjusted_series
@@ -762,7 +804,7 @@ def transform_results_data(results_by_size):
         }
     return transformed_data
 
-def run_geo_analysis_streamlit_app(data, maximum_treatment_percentage, significance_level, deltas_range, periods_range, excluded_locations, progress_bar_1=None, status_text_1=None, progress_bar_2=None, status_text_2=None ,n_permutations=10000):
+def run_geo_analysis_streamlit_app(data, maximum_treatment_percentage, significance_level, deltas_range, periods_range, excluded_locations, progress_bar_1=None, status_text_1=None, progress_bar_2=None, status_text_2=None ,n_permutations=5000):
     """
     Runs a complete geo analysis pipeline including market correlation, group optimization,
     sensitivity evaluation, and visualization of MDE results.
@@ -823,7 +865,7 @@ def run_geo_analysis_streamlit_app(data, maximum_treatment_percentage, significa
     # Step 3: Evaluate sensitivity for different deltas and periods
     logger.info("Step 3: Evaluating sensitivity for different deltas and periods.....")
     sensitivity_results, series_lifts = evaluate_sensitivity(
-        simulation_results, deltas, periods, n_permutations, significance_level,progress_bar=progress_bar_2, status_text=status_text_2
+        simulation_results, deltas, periods, n_permutations, significance_level, progress_bar=progress_bar_2, status_text=status_text_2, n_simulations=80
     )
     
     if sensitivity_results is not None:
@@ -845,7 +887,7 @@ def run_geo_analysis_streamlit_app(data, maximum_treatment_percentage, significa
     }
 
 
-def run_geo_analysis(data, maximum_treatment_percentage, significance_level, deltas_range, periods_range, excluded_locations, progress_bar_1=None, status_text_1=None, progress_bar_2=None, status_text_2=None ,n_permutations=10000):
+def run_geo_analysis(data, maximum_treatment_percentage, significance_level, deltas_range, periods_range, excluded_locations, progress_bar_1=None, status_text_1=None, progress_bar_2=None, status_text_2=None ,n_permutations=5000):
     """
     Runs a complete geo analysis pipeline including market correlation, group optimization,
     sensitivity evaluation, and visualization of MDE results.
@@ -888,7 +930,7 @@ def run_geo_analysis(data, maximum_treatment_percentage, significance_level, del
 
     # Step 3: Evaluate sensitivity for different deltas and periods
     sensitivity_results, series_lifts = evaluate_sensitivity(
-        simulation_results, deltas, periods, n_permutations, significance_level,progress_bar=progress_bar_2, status_text=status_text_2
+        simulation_results, deltas, periods, n_permutations, significance_level, progress_bar=progress_bar_2, status_text=status_text_2, n_simulations=80
     )
     if sensitivity_results is not None:
       logger.info("Complete.")

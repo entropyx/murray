@@ -166,10 +166,11 @@ def generate_pdf(treatment_group, control_group, holdout_percentage, impact_grap
                 p_value_str = f"{p_value:.4f} (p ≥ 0.1)"
                 significance = "Not Significant"
             
-            pdf.multi_cell(0, 5, f"The statistical significance of the minimum detectable effect is evaluated using permutation tests. "
-                                f"The p-value obtained is {p_value_str}, which indicates that the result is {significance.lower()}. "
-                                f"This p-value represents the probability of observing the observed effect size or larger under the null hypothesis "
-                                f"that there is no true treatment effect.")
+            pdf.multi_cell(0, 5, f"We use permutation tests to evaluate the statistical significance of the minimum detectable effect. "
+                            f"The p-value we obtained is {p_value_str}, which indicates the result is {significance.lower()}. "
+                            "Put simply, the p-value tells us how likely it is to see an effect this large (or larger) purely by chance "
+                            "if there were actually no treatment effect at all.")
+
             pdf.ln(5)
 
         pdf.set_font("Poppins", style='B', size=12)
