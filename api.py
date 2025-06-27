@@ -114,8 +114,8 @@ async def analyze_design(
     excluded_locations: str = Form(...),
     maximum_treatment_percentage: float = Form(0.3),
     significance_level: float = Form(0.1),
-    deltas_range: str = Form(0.01,0.1,0.01),
-    periods_range: str = Form(5,15,5),
+    deltas_range: str = Form("0.01,0.1,0.01"),
+    periods_range: str = Form("5,15,5"),
     webhook: str = Form(None)
 ):
     """
