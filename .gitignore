@@ -16,5 +16,5 @@ env/
 *.egg-info
 .streamlit/secrets.toml
 traffic_metrics
-
+logs/
 
