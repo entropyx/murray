@@ -41,6 +41,7 @@ services:
       - temp_updates:/app/temp_updates
     environment:
       - PYTHONUNBUFFERED=1
+      - MURRAY_PASSWORD=${MURRAY_PASSWORD:-}
       # Remove any connection to Redis or Celery
     command: ["streamlit", "run", "app.py", "--server.port=8501", "--server.address=0.0.0.0"]
     # No longer depends on other services
