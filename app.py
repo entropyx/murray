@@ -5,14 +5,14 @@ import os
 import datetime
 from utils_auth import check_credentials, add_user, mark_link_as_used
 
-
+# Check if authentication is required
+AUTH_REQUIRED = bool(os.getenv('MURRAY_PASSWORD'))
 
 st.set_page_config(
     page_title="Geo Murray",
     page_icon="utils/Group 105.png",
     layout="wide"
 )
-
 
 # Add this function after check_credentials and before add_user
 def get_user_role(username):
@@ -73,17 +73,16 @@ def validate_registration_link(token):
     except Exception as e:
         return False, None
 
-
 # Initialize session state for login
 if 'authenticated' not in st.session_state:
-    st.session_state.authenticated = False
+    st.session_state.authenticated = not AUTH_REQUIRED  # Auto-authenticate if no auth required
 if 'role' not in st.session_state:
     st.session_state.role = "user"
 if 'username' not in st.session_state:
-    st.session_state.username = ""
+    st.session_state.username = "Guest" if not AUTH_REQUIRED else ""
 
-# Login system
-if not st.session_state.authenticated:
+# Login system - only show if authentication is required
+if AUTH_REQUIRED and not st.session_state.authenticated:
     st.title("Welcome to Geo Murray")
     st.write("Login or register.")
 
@@ -149,9 +148,6 @@ if not st.session_state.authenticated:
                         st.error(message)
 
 
-
-
-# Only show the main content if authenticated
 if st.session_state.authenticated:
     # Navigation setup
     pages = []
