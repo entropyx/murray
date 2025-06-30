@@ -9,6 +9,8 @@ import base64
 import os
 from Murray.metrics import update_metrics, load_metrics
 import unicodedata
+import plotly.express as px
+import numpy as np
 
 
 
@@ -41,6 +43,60 @@ st.sidebar.markdown(
 
 st.logo(sidebar_logo,size="large", icon_image=main_body_logo)
 
+
+# ------------------------------------------------------------------
+# Placeholder stubs to ensure functions exist before first use.
+# They are overwritten by full definitions later in the file.
+
+if 'display_multicell_results' not in globals():
+    def display_multicell_results(*args, **kwargs):
+        """Placeholder; real implementation defined later."""
+        pass
+
+if 'display_single_cell_results' not in globals():
+    def display_single_cell_results(*args, **kwargs):
+        """Placeholder; real implementation defined later."""
+        pass
+
+# ------------------------------------------------------------------
+
+def display_single_cell_results(results, data):
+    """Display single-cell analysis results (original functionality)"""
+    st.subheader("📊 Analysis Results")
+    
+    if results:
+        # Create results DataFrame
+        results_data = []
+        for size, result in results.items():
+            results_data.append({
+                'Size': size,
+                'MAPE': result['MAPE'],
+                'SMAPE': result['SMAPE'],
+                'Holdout %': result['Holdout Percentage']
+            })
+        
+        df_results = pd.DataFrame(results_data)
+        
+        # Create heatmap
+        fig = px.imshow(
+            df_results.set_index('Size')[['MAPE', 'SMAPE']].T,
+            aspect="auto",
+            title="Best Group Performance by Size",
+            labels=dict(x="Group Size", y="Metric", color="Value"),
+            color_continuous_scale="RdYlGn_r"
+        )
+        fig.update_layout(height=400)
+        st.plotly_chart(fig, use_container_width=True)
+        
+        # Show results table
+        st.dataframe(df_results, use_container_width=True)
+        
+        # Find best overall group
+        best_size = min(results.keys(), key=lambda x: results[x]['MAPE'])
+        best_result = results[best_size]
+        
+        st.subheader(f"🏆 Best Overall Group (Size {best_size})")
+        
 
 
 def generate_pdf(treatment_group, control_group, holdout_percentage, impact_graph, 
@@ -750,7 +806,46 @@ if file is not None:
             
             st.text("Click on the button to start simulation")
 
-
+            # Multi-cell configuration
+            st.subheader("🔧 Multi-Cell Configuration")
+            enable_multicell = st.checkbox("Enable Multi-Cell Mode", value=False, help="Enable to select specific group sizes and get top N results per size", key="multicell_checkbox")
+            
+            multicell_config = None
+            if enable_multicell:
+                col1, col2 = st.columns(2)
+                
+                with col1:
+                    # Get available sizes based on data
+                    unique_locations = cleaned['location'].unique()
+                    no_locations = len(unique_locations)
+                    max_group_size = round(no_locations * 0.45)
+                    min_elements_in_treatment = round(no_locations * 0.15)
+                    
+                    available_sizes = list(range(min_elements_in_treatment, max_group_size + 1))
+                    selected_sizes = st.multiselect(
+                        "Select Group Sizes",
+                        options=available_sizes,
+                        default=available_sizes[:3] if len(available_sizes) >= 3 else available_sizes,
+                        help="Choose which group sizes to evaluate",
+                        key="multicell_sizes"
+                    )
+                
+                with col2:
+                    top_n_per_size = st.number_input(
+                        "Top N Results per Size",
+                        min_value=1,
+                        max_value=10,
+                        value=3,
+                        help="Number of best groups to keep for each size",
+                        key="multicell_top_n"
+                    )
+                
+                if selected_sizes:
+                    multicell_config = {
+                        'sizes': selected_sizes,
+                        'top_n': top_n_per_size
+                    }
+                    st.info(f"Multi-cell mode: Evaluating {len(selected_sizes)} sizes with top {top_n_per_size} results per size")
 
             if "simulation_results" not in st.session_state:
                 st.session_state.simulation_results = None
@@ -793,6 +888,9 @@ if file is not None:
                     update_metrics("experimental_design")
                     
                     with st.spinner('Running simulation...'):
+                        # Reset multicell mode at start of simulation
+                        st.session_state.is_multicell_mode = False
+                        
                         results = run_geo_analysis_streamlit_app(
                             data=cleaned,
                             excluded_locations=excluded_locations,
@@ -800,6 +898,7 @@ if file is not None:
                             significance_level=significance_level,
                             deltas_range=deltas_range,
                             periods_range=periods_range,
+                            multicell_config=multicell_config
                         )
 
                         
@@ -811,17 +910,152 @@ if file is not None:
                     st.session_state.results = results
                     st.session_state.simulation_results = results_by_size
                     st.session_state.sensitivity_results = results['sensitivity_results']
+                    # Store full results for multicell mode
+                    st.session_state.full_results = results
+                    st.session_state.multicell_config = multicell_config if enable_multicell else None
                     periods = list(np.arange(*periods_range))
 
-                    try:
+                    # Handle multi-cell results display
+                    if enable_multicell and multicell_config and results['simulation_results']:
+                        # Set multicell mode in session state
+                        st.session_state.is_multicell_mode = True
+                        st.subheader("📊 Multi-Cell Analysis Results")
                         
-                        st.session_state.fig2 = plot_mde_results(results_by_size, results['sensitivity_results'], periods)
-                    except ValueError as e:
-                        st.error(f"Error generating the heatmap: {e}")
-                        st.stop()
+                        if results['simulation_results']:
+                            # Show which sizes were processed vs skipped
+                            all_selected_sizes = multicell_config.get('selected_sizes', [])
+                            processed_sizes = list(results['simulation_results'].keys())
+                            skipped_sizes = [size for size in all_selected_sizes if size not in processed_sizes]
+                            
+                            st.success(f"✅ Found valid results for {len(processed_sizes)} group sizes")
+                            
+                            if skipped_sizes:
+                                st.warning(f"⚠️ The following sizes were skipped due to insufficient data: {skipped_sizes}")
+                            
+                            st.info(f"📊 Processed sizes: {processed_sizes}")
+                            
+                            # Create comprehensive results table
+                            st.subheader("📋 Complete Multi-Cell Results")
+                            
+                            # Get sensitivity results for MDE and p-value
+                            sensitivity_data = results.get('sensitivity_results', {})
+                            
+                            # Get all available periods
+                            available_periods = set()
+                            for size_data in sensitivity_data.values():
+                                available_periods.update(size_data.keys())
+                            available_periods = sorted(list(available_periods))
+                            
+                            # Period selector
+                            if available_periods:
+                                selected_period = st.selectbox(
+                                    "🕐 Select Period to Display:",
+                                    options=available_periods,
+                                    index=0,
+                                    help="Choose the treatment period to analyze. Different periods may show different MDE values.",
+                                    key="multicell_period_selector"
+                                )
+                                
+                                st.info(f"📊 Showing results for Period: **{selected_period} days**")
+                            else:
+                                selected_period = None
+                                st.warning("No sensitivity data available for period selection.")
+                            
+                            detailed_results = []
+                            
+                            for size, data in results['simulation_results'].items():
+                                if isinstance(data, list):
+                                    for idx, group in enumerate(data):
+                                        # Get MDE and p-value from sensitivity results for selected period
+                                        mde_info = {}
+                                        if size in sensitivity_data and selected_period is not None:
+                                            period_data = sensitivity_data[size].get(selected_period, {})
+                                            mde_value = period_data.get('MDE')
+                                            p_value = period_data.get('P-Value')
+                                            
+                                            mde_info = {
+                                                'MDE': f"{mde_value:.3f}" if mde_value is not None else "N/A",
+                                                'Period': selected_period,
+                                                'P-Value': f"{p_value:.4f}" if p_value is not None else "N/A"
+                                            }
+                                        else:
+                                            mde_info = {'MDE': "N/A", 'Period': "N/A", 'P-Value': "N/A"}
+                                        
+                                        detailed_results.append({
+                                            'Size': size,
+                                            'Rank': idx + 1,
+                                            'Treatment Group': ', '.join(group['Best Treatment Group']),
+                                            'Control Group': ', '.join(group['Control Group']),
+                                            'MAPE': f"{group['MAPE']:.4f}",
+                                            'SMAPE': f"{group['SMAPE']:.4f}",
+                                            'Holdout %': f"{group['Holdout Percentage']:.2f}%",
+                                            'MDE': mde_info['MDE'],
+                                            'Period': mde_info['Period'],
+                                            'P-Value': mde_info['P-Value']
+                                        })
+                            
+                            if detailed_results:
+                                df_detailed = pd.DataFrame(detailed_results)
+                                
+                                # Sort by Size and then by Rank
+                                df_detailed = df_detailed.sort_values(['Size', 'Rank'])
+                                
+                                # Add styling info
+                                if selected_period:
+                                    st.caption(f"💡 **Note:** MDE and P-Value shown for {selected_period}-day treatment period. Change the period selector above to see different results.")
+                                
+                                # Style the dataframe
+                                st.dataframe(
+                                    df_detailed, 
+                                    use_container_width=True,
+                                    height=min(600, len(detailed_results) * 35 + 50)  # Dynamic height
+                                )
+                                
+                                # Add download button for results
+                                csv = df_detailed.to_csv(index=False)
+                                st.download_button(
+                                    label="📥 Download Results as CSV",
+                                    data=csv,
+                                    file_name=f"multicell_results_{pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')}.csv",
+                                    mime="text/csv"
+                                )
+                                
+                                # Show summary statistics
+                                st.subheader("📈 Summary Statistics")
+                                col1, col2, col3, col4 = st.columns(4)
+                                
+                                with col1:
+                                    st.metric("Total Groups", len(detailed_results))
+                                with col2:
+                                    avg_mape = df_detailed[df_detailed['MAPE'] != 'N/A']['MAPE'].astype(float).mean()
+                                    st.metric("Avg MAPE", f"{avg_mape:.4f}")
+                                with col3:
+                                    avg_smape = df_detailed[df_detailed['SMAPE'] != 'N/A']['SMAPE'].astype(float).mean()
+                                    st.metric("Avg SMAPE", f"{avg_smape:.4f}")
+                                with col4:
+                                    valid_mdes = df_detailed[df_detailed['MDE'] != 'N/A']['MDE'].astype(float)
+                                    avg_mde = valid_mdes.mean() if len(valid_mdes) > 0 else 0
+                                    st.metric("Avg MDE", f"{avg_mde:.3f}")
+                                
+                            else:
+                                st.warning("No detailed results to display.")
+                        else:
+                            st.warning("⚠️ No multi-cell results available.")
+                        
+                        st.stop()  # Don't continue to single-cell heatmap logic
+                    else:
+                        # Single-cell mode - generate heatmap
+                        st.session_state.is_multicell_mode = False
+                        try:
+                            st.session_state.fig2 = plot_mde_results(results_by_size, results['sensitivity_results'], periods)
+                        except ValueError as e:
+                            st.error(f"Error generating the heatmap: {e}")
+                            st.stop()
                     
 
-                if st.session_state.simulation_results is not None:
+                # Only show single-cell results if not in multicell mode
+                if (st.session_state.simulation_results is not None and 
+                    not getattr(st.session_state, 'is_multicell_mode', False)):
 
 
                     st.markdown(
@@ -838,16 +1072,25 @@ if file is not None:
 
                     st.write('<h4 style="text-align: center;"> Geo Murray MDE Heatmap</h4>', unsafe_allow_html=True)
                     fig2 = st.session_state.fig2
-                    event = st.plotly_chart(fig2,key="heatmap",on_select="rerun",config={
-                        'modeBarButtonsToRemove': [
-                            'zoom2d',
-                            'pan2d',
-                            'select2d',
-                            'lasso2d',
-                            'resetScale2d',
-                        ],
-                        'displaylogo': False
-                    })
+                    if fig2 is None or not hasattr(fig2, 'to_dict'):
+                        st.error("⚠️ Heatmap could not be generated for these parameters.")
+                        event = st.empty()
+                    else:
+                        event = st.plotly_chart(
+                            fig2,
+                            key="heatmap",
+                            on_select="rerun",
+                            config={
+                                'modeBarButtonsToRemove': [
+                                    'zoom2d',
+                                    'pan2d',
+                                    'select2d',
+                                    'lasso2d',
+                                    'resetScale2d',
+                                ],
+                                'displaylogo': False
+                            }
+                        )
                     
 
 
@@ -958,110 +1201,325 @@ if file is not None:
                                             y_value_str = f"{y_value:.2f}%" if isinstance(y_value, (int, float)) else str(y_value)
 
                                             if st.session_state.results is None:
-                                                st.error("Please run the simulation first before generating a PDF.")
+                                                st.error("No results available for report generation.")
                                                 st.stop()
 
-                                                
-
-                                            location = None
-                                            for loc, data in st.session_state.simulation_results.items():
-                                                holdout_str = f"{data['Holdout Percentage']:.2f}%"
-                                                if holdout_str == y_value_str:
-                                                    location = loc
+                                            # Get the best group for the selected size
+                                            best_group = None
+                                            for size, data in st.session_state.simulation_results.items():
+                                                if abs(float(data['Holdout Percentage']) - float(y_value.strip('%'))) < 0.01:
+                                                    best_group = data
                                                     break
 
-                                            if location is None:
-                                                st.write(f"Location not found for the holdout percentage: {y_value_str}")
-                                            else:
-                                                treatment_group = st.session_state.simulation_results[location]['Best Treatment Group']
-                                                control_group = st.session_state.simulation_results[location]['Control Group']
-                                                pre_treatment, pre_counterfactual, post_treatment, post_counterfactual,impact_graph,att,incremental,lower_bound_value,upper_bound_value,prediction_value = plot_impact_report(st.session_state.results, period_idx, holdout_percentage,length_treatment,significance_level)
-                                                prediction_value_absolute = prediction_value
-                                                prediction_value_percentage = (prediction_value - np.sum(post_counterfactual)) / np.abs(np.sum(post_counterfactual)) * 100
-                                                lower_bound_value_absolute = lower_bound_value
-                                                lower_bound_value_percentage = (lower_bound_value - np.sum(post_counterfactual)) / np.abs(np.sum(post_counterfactual)) * 100
-                                                upper_bound_value_absolute = upper_bound_value
-                                                upper_bound_value_percentage = (upper_bound_value - np.sum(post_counterfactual)) / np.abs(np.sum(post_counterfactual)) * 100
-                                                weights = print_weights(st.session_state.results, treatment_percentage)
-                                                confidence_level = 1 - significance_level
-                                                
-                                                # Extract p-value from sensitivity results
-                                                p_value = None
-                                                if matching_size is not None and period_idx is not None:
-                                                    if matching_size in st.session_state.sensitivity_results:
-                                                        if period_idx in st.session_state.sensitivity_results[matching_size]:
-                                                            p_value = st.session_state.sensitivity_results[matching_size][period_idx].get('P-Value', None)
-                                                
-                                                df = pd.DataFrame(
-                                                    {
-                                                        "Group": ["Treatment", "Counterfactual (control)", "Absolute difference"],
-                                                        "Pre-treatment": [np.sum(pre_treatment),np.sum(pre_counterfactual), np.abs(np.sum(pre_treatment)-np.sum(pre_counterfactual))],
-                                                        "Post-treatment": [np.sum(post_treatment), np.sum(post_counterfactual),np.abs(np.sum(post_treatment)- np.sum(post_counterfactual))]
-                                                        
-                                                    }
-                                                )
-                                                
+                                            if best_group is None:
+                                                st.error("Could not find matching group for report generation.")
+                                                st.stop()
 
+                                            # Extract data for PDF generation
+                                            treatment_group = best_group['Best Treatment Group']
+                                            control_group = best_group['Control Group']
+                                            weights = best_group['Weights']
+                                            y_original = best_group['Actual Target Metric (y)']
+                                            predictions = best_group['Predictions']
 
+                                            # Create impact graph
+                                            impact_graph = plot_metrics(st.session_state.results)
 
+                                            # Generate PDF
+                                            pdf_bytes = generate_pdf(
+                                                treatment_group=treatment_group,
+                                                control_group=control_group,
+                                                holdout_percentage=holdout_percentage,
+                                                impact_graph=impact_graph,
+                                                weights=weights,
+                                                period_idx=period_idx,
+                                                mde=mde,
+                                                att=None,  # Not available in current implementation
+                                                incremental=None,  # Not available in current implementation
+                                                tarjet_variable=col_target,
+                                                firt_day=firt_day,
+                                                last_day=last_day,
+                                                treatment_day=treatment_day,
+                                                df=cleaned,
+                                                firt_report_day=firt_report_day,
+                                                second_report_day=second_report_day,
+                                                prediction_value_absolute=None,  # Not available in current implementation
+                                                prediction_value_percentage=None,  # Not available in current implementation
+                                                lower_bound_value_absolute=None,  # Not available in current implementation
+                                                lower_bound_value_percentage=None,  # Not available in current implementation
+                                                upper_bound_value_absolute=None,  # Not available in current implementation
+                                                upper_bound_value_percentage=None,  # Not available in current implementation
+                                                confidence_level=1-significance_level,
+                                                p_value=None  # Not available in current implementation
+                                            )
 
-                                                
-                                                
+                                            # Download button
+                                            st.download_button(
+                                                label="📥 Download PDF Report",
+                                                data=pdf_bytes,
+                                                file_name=f"murray_report_{pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')}.pdf",
+                                                mime="application/pdf"
+                                            )
 
+                                            st.success("✅ PDF report generated successfully!")
 
-                                                pdf_file = generate_pdf(
-                                                    treatment_group, 
-                                                    control_group, 
-                                                    holdout_percentage, 
-                                                    impact_graph,
-                                                    weights,
-                                                    period_idx,
-                                                    mde,
-                                                    att,
-                                                    incremental,
-                                                    col_target,
-                                                    firt_day,
-                                                    last_day,
-                                                    treatment_day,
-                                                    df,
-                                                    firt_report_day,
-                                                    second_report_day,
-                                                    prediction_value_absolute,
-                                                    prediction_value_percentage,
-                                                    lower_bound_value_absolute,
-                                                    lower_bound_value_percentage,
-                                                    upper_bound_value_absolute,
-                                                    upper_bound_value_percentage,
-                                                    confidence_level,
-                                                    p_value=p_value)
-                                                
-                                                
-
-
-                                                with open(pdf_file, "rb") as file:
-                                                    b64_pdf = base64.b64encode(file.read()).decode()
-                                                
-                                                js = f"""
-                                                    var link = document.createElement('a');
-                                                    link.href = 'data:application/pdf;base64,{b64_pdf}';
-                                                    link.download = 'experimental_design_report.pdf';
-                                                    document.body.appendChild(link);
-                                                    link.click();
-
-
-                                                    document.body.removeChild(link);
-                                                """
-                                                streamlit_js_eval(js_expressions=js)
-
+                                        else:
+                                            st.error("Please select a point on the heatmap first.")
 
                         except Exception as e:
-                            st.error(f"Error recovering information: {str(e)}")
-                            st.error(f"Error type: {type(e).__name__}")
+                            st.error(f"Error processing selected point: {str(e)}")
+                            st.exception(e)
+
+                    else:
+                        st.info("Please select a point on the heatmap to see detailed information.")
+
+                else:
+                    st.info("Please run the simulation first to see results.")
+
+            else:
+                st.info("Please configure parameters and click 'Run Simulation' to start the analysis.")
+        
+        # Handle multicell results display from session state (when changing period selector)
+        if (getattr(st.session_state, 'is_multicell_mode', False) and 
+            hasattr(st.session_state, 'full_results') and 
+            st.session_state.full_results is not None):
+            
+            results = st.session_state.full_results
+            multicell_config = getattr(st.session_state, 'multicell_config', None)
+            
+            if multicell_config and results.get('simulation_results'):
+                st.subheader("📊 Multi-Cell Analysis Results")
+                
+                # Show which sizes were processed vs skipped
+                all_selected_sizes = multicell_config.get('selected_sizes', [])
+                processed_sizes = list(results['simulation_results'].keys())
+                skipped_sizes = [size for size in all_selected_sizes if size not in processed_sizes]
+                
+                st.success(f"✅ Found valid results for {len(processed_sizes)} group sizes")
+                
+                if skipped_sizes:
+                    st.warning(f"⚠️ The following sizes were skipped due to insufficient data: {skipped_sizes}")
+                
+                st.info(f"📊 Processed sizes: {processed_sizes}")
+                
+                # Create comprehensive results table
+                st.subheader("📋 Complete Multi-Cell Results")
+                
+                # Get sensitivity results for MDE and p-value
+                sensitivity_data = results.get('sensitivity_results', {})
+                
+                # Get all available periods
+                available_periods = set()
+                for size_data in sensitivity_data.values():
+                    available_periods.update(size_data.keys())
+                available_periods = sorted(list(available_periods))
+                
+                # Period selector
+                if available_periods:
+                    selected_period = st.selectbox(
+                        "🕐 Select Period to Display:",
+                        options=available_periods,
+                        index=0,
+                        help="Choose the treatment period to analyze. Different periods may show different MDE values.",
+                        key="multicell_period_selector_persistent"
+                    )
+                    
+                    st.info(f"📊 Showing results for Period: **{selected_period} days**")
+                else:
+                    selected_period = None
+                    st.warning("No sensitivity data available for period selection.")
+                
+                detailed_results = []
+                
+                for size, data in results['simulation_results'].items():
+                    if isinstance(data, list):
+                        for idx, group in enumerate(data):
+                            # Get MDE and p-value from sensitivity results for selected period
+                            mde_info = {}
+                            if size in sensitivity_data and selected_period is not None:
+                                period_data = sensitivity_data[size].get(selected_period, {})
+                                mde_value = period_data.get('MDE')
+                                p_value = period_data.get('P-Value')
+                                
+                                mde_info = {
+                                    'MDE': f"{mde_value:.3f}" if mde_value is not None else "N/A",
+                                    'Period': selected_period,
+                                    'P-Value': f"{p_value:.4f}" if p_value is not None else "N/A"
+                                }
+                            else:
+                                mde_info = {'MDE': "N/A", 'Period': "N/A", 'P-Value': "N/A"}
                             
-                            import traceback
-                            st.error(f"Full error trace:\n{traceback.format_exc()}")  
-                            st.stop()
-                      
+                            detailed_results.append({
+                                'Size': size,
+                                'Rank': idx + 1,
+                                'Treatment Group': ', '.join(group['Best Treatment Group']),
+                                'Control Group': ', '.join(group['Control Group']),
+                                'MAPE': f"{group['MAPE']:.4f}",
+                                'SMAPE': f"{group['SMAPE']:.4f}",
+                                'Holdout %': f"{group['Holdout Percentage']:.2f}%",
+                                'MDE': mde_info['MDE'],
+                                'Period': mde_info['Period'],
+                                'P-Value': mde_info['P-Value']
+                            })
+                
+                if detailed_results:
+                    df_detailed = pd.DataFrame(detailed_results)
+                    
+                    # Sort by Size and then by Rank
+                    df_detailed = df_detailed.sort_values(['Size', 'Rank'])
+                    
+                    # Add styling info
+                    if selected_period:
+                        st.caption(f"💡 **Note:** MDE and P-Value shown for {selected_period}-day treatment period. Change the period selector above to see different results.")
+                    
+                    # Style the dataframe
+                    st.dataframe(
+                        df_detailed, 
+                        use_container_width=True,
+                        height=min(600, len(detailed_results) * 35 + 50)  # Dynamic height
+                    )
+                    
+                    # Add download button for results
+                    csv = df_detailed.to_csv(index=False)
+                    st.download_button(
+                        label="📥 Download Results as CSV",
+                        data=csv,
+                        file_name=f"multicell_results_{pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')}.csv",
+                        mime="text/csv"
+                    )
+                    
+                    # Show summary statistics
+                    st.subheader("📈 Summary Statistics")
+                    col1, col2, col3, col4 = st.columns(4)
+                    
+                    with col1:
+                        st.metric("Total Groups", len(detailed_results))
+                    with col2:
+                        avg_mape = df_detailed[df_detailed['MAPE'] != 'N/A']['MAPE'].astype(float).mean()
+                        st.metric("Avg MAPE", f"{avg_mape:.4f}")
+                    with col3:
+                        avg_smape = df_detailed[df_detailed['SMAPE'] != 'N/A']['SMAPE'].astype(float).mean()
+                        st.metric("Avg SMAPE", f"{avg_smape:.4f}")
+                    with col4:
+                        valid_mdes = df_detailed[df_detailed['MDE'] != 'N/A']['MDE'].astype(float)
+                        avg_mde = valid_mdes.mean() if len(valid_mdes) > 0 else 0
+                        st.metric("Avg MDE", f"{avg_mde:.3f}")
+                    
+                else:
+                    st.warning("No detailed results to display.")
+    else:
+        st.error("❌ Please upload data first!")
+
+def display_multicell_results(results, multicell_config):
+    """Display multi-cell analysis results"""
+    st.subheader("📊 Multi-Cell Analysis Results")
+    
+    if not results:
+        st.warning("⚠️ No multi-cell results available. This might be due to:")
+        st.write("- Not enough locations to form groups of the selected sizes")
+        st.write("- Data quality issues preventing group formation")
+        st.write("- All selected group sizes were skipped due to missing values")
+        return
+    
+    # Create heatmap of best group per size
+    if results:
+        sizes = list(results.keys())
+        best_groups_per_size = []
+        
+        for size in sizes:
+            if results[size]:  # Check if there are results for this size
+                best_group = results[size][0]  # First group is the best (lowest MAPE)
+                best_groups_per_size.append({
+                    'Size': size,
+                    'MAPE': best_group['MAPE'],
+                    'SMAPE': best_group['SMAPE'],
+                    'Holdout %': best_group['Holdout Percentage']
+                })
+        
+        if best_groups_per_size:
+            st.success(f"✅ Found valid results for {len(best_groups_per_size)} group sizes")
+            
+            # Show which sizes were processed vs skipped
+            all_selected_sizes = multicell_config.get('selected_sizes', [])
+            processed_sizes = list(results.keys())
+            skipped_sizes = [size for size in all_selected_sizes if size not in processed_sizes]
+            
+            if skipped_sizes:
+                st.warning(f"⚠️ The following sizes were skipped due to insufficient data: {skipped_sizes}")
+            
+            st.info(f"📊 Processed sizes: {processed_sizes}")
+            
+            # Create heatmap only if we have multiple sizes
+            df_heatmap = pd.DataFrame(best_groups_per_size)
+            
+            if len(best_groups_per_size) > 1:
+                fig = px.imshow(
+                    df_heatmap.set_index('Size')[['MAPE', 'SMAPE']].T,
+                    aspect="auto",
+                    title="Best Group Performance by Size",
+                    labels=dict(x="Group Size", y="Metric", color="Value"),
+                    color_continuous_scale="RdYlGn_r"
+                )
+                fig.update_layout(height=400)
+                st.plotly_chart(fig, use_container_width=True)
+            else:
+                st.info("Only one group size available, skipping heatmap.")
+            
+            # Show best group per size table
+            st.subheader("🏆 Best Group per Size")
+            st.dataframe(df_heatmap, use_container_width=True)
+            
+            # Allow user to select a size to see detailed results
+            selected_size = st.selectbox(
+                "Select size to view detailed results:",
+                options=sizes,
+                format_func=lambda x: f"Size {x} ({len(results[x])} groups)",
+                key="multicell_size_selector"
+            )
+            
+            if selected_size and results[selected_size]:
+                st.subheader(f"📋 Top {multicell_config['top_n']} Groups for Size {selected_size}")
+                
+                # Create detailed results table
+                detailed_results = []
+                for idx, group in enumerate(results[selected_size]):
+                    detailed_results.append({
+                        'Rank': idx + 1,
+                        'Treatment Group': ', '.join(group['Best Treatment Group']),
+                        'Control Group': ', '.join(group['Control Group']),
+                        'MAPE': f"{group['MAPE']:.4f}",
+                        'SMAPE': f"{group['SMAPE']:.4f}",
+                        'Holdout %': f"{group['Holdout Percentage']:.2f}%"
+                    })
+                
+                df_detailed = pd.DataFrame(detailed_results)
+                st.dataframe(df_detailed, use_container_width=True)
+                
+                # Show plots for the best group of selected size
+                if results[selected_size]:
+                    best_group = results[selected_size][0]
+                    st.subheader(f"📈 Best Group Analysis (Size {selected_size})")
+                    
+                    # Use existing plot functions
+                    try:
+                        # Use the existing plot_metrics function if we have the original results
+                        if hasattr(st.session_state, 'results') and st.session_state.results:
+                            fig_metrics = plot_metrics(st.session_state.results)
+                            st.pyplot(fig_metrics)
+                        else:
+                            # Fallback to simple data display
+                            st.write("**Treatment Group:**", ', '.join(best_group['Best Treatment Group']))
+                            st.write("**Control Group:**", ', '.join(best_group['Control Group']))
+                            st.write("**MAPE:**", f"{best_group['MAPE']:.4f}")
+                            st.write("**SMAPE:**", f"{best_group['SMAPE']:.4f}")
+                    except Exception as e:
+                        st.warning(f"Could not create plots: {str(e)}")
+                        # Fallback to simple data display
+                        st.write("**Treatment Group:**", ', '.join(best_group['Best Treatment Group']))
+                        st.write("**Control Group:**", ', '.join(best_group['Control Group']))
+                        st.write("**MAPE:**", f"{best_group['MAPE']:.4f}")
+                        st.write("**SMAPE:**", f"{best_group['SMAPE']:.4f}")
+
 
 
 

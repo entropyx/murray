@@ -383,59 +383,94 @@ def evaluate_group(treatment_group, data, total_Y, correlation_matrix, min_holdo
 
     return (treatment_group, filtered_control_group, MAPE, SMAPE_value, y_original, counterfactual_full_original, filtered_weights, observed_conformity)
 
-def BetterGroups(similarity_matrix, excluded_locations, data, correlation_matrix, maximum_treatment_percentage=0.50, progress_updater=None, status_updater=None):
+def BetterGroups(similarity_matrix, excluded_locations, data, correlation_matrix, maximum_treatment_percentage=0.50, 
+                 progress_updater=None, status_updater=None, multicell_config=None):
     """
-    Simulates possible treatment groups and evaluates their performance.
-
-    Parameters:
-        similarity_matrix (pd.DataFrame): Similarity matrix between locations.
-        excluded_locations (list): List of locations to exclude from treatment combinations.
-        data (pd.DataFrame): Dataset with columns 'time', 'location', and 'Y'.
-        correlation_matrix (pd.DataFrame): Correlation matrix between locations.
-        maximum_treatment_percentage (float): Maximum percentage of data to reserve as treatment.
-        progress_updater: Function or method to update progress.
-        status_updater: Function or method to update status.
-
-    Returns:
-        dict: Simulation results, organized by treatment group size.
-            Each entry contains the best treatment group, control group, MAPE,
-            SMAPE, actual target metric, predictions, weights, and the holdout percentage.
+    Simula posibles grupos de tratamiento y evalúa su desempeño.
+    Si multicell_config está presente, usa los sizes y top_n del usuario y guarda los mejores N grupos por size.
     """
-
-
     unique_locations = data['location'].unique()
     no_locations = len(unique_locations)
-    logger.info(f"Number of locations: {no_locations}")
     max_group_size = round(no_locations * 0.45)
-    logger.info(f"Maximum treatment group size: {max_group_size}")
     min_elements_in_treatment = round(no_locations * 0.15)
-    logger.info(f"Minimum treatment group size: {min_elements_in_treatment}")
     min_holdout = 100 - (maximum_treatment_percentage * 100)
     total_Y = data['Y'].sum()
     
-    
     if total_Y == 0:
-        logger.warning("Total Y is zero, returning None")
         return None
-    
-    
-    # Check for duplicate entries and handle them
-    data = handle_duplicates(data, subset=['time', 'location'], agg_method='mean')
     
     df_pivot = data.pivot(index='time', columns='location', values='Y')
     
-    
+    # --- Multi-cell flexible ---
+    if multicell_config is not None and multicell_config.get('sizes'):
+        logger.info(f"Starting multi-cell flexible")
+        sizes = multicell_config['sizes']
+        top_n = multicell_config.get('top_n', 1)
+        results_by_size = {}
+        
+        for size in sizes:
+            logger.info(f"Processing size: {size}")
+            groups = select_treatments(similarity_matrix, size, excluded_locations)
+            if not groups:
+                continue
+                
+            total_groups = len(groups)
+            logger.info(f"Total groups: {total_groups}")
+            results = []
+            
+            with concurrent.futures.ProcessPoolExecutor(max_workers=2) as executor:
+                futures = executor.map(
+                    evaluate_group,
+                    groups,
+                    [data] * total_groups,
+                    [total_Y] * total_groups,
+                    [correlation_matrix] * total_groups,
+                    [min_holdout] * total_groups,
+                    [df_pivot] * total_groups,
+                    chunksize=5
+                )
+                
+                for idx, result in enumerate(futures):
+                    results.append(result)
+                    if progress_updater:
+                        progress_updater.progress((idx + 1) / total_groups)
+                    if status_updater:
+                        status_updater.text(f"Evaluando grupos de size {size}: {int((idx + 1) / total_groups * 100)}% ⏳")
+            
+            # Filtrar y ordenar por MAPE
+            valid_results = [r for r in results if r is not None]
+            logger.info(f"Valid results: {valid_results}")
+            best_n = sorted(valid_results, key=lambda x: (x[2], -x[3]))[:top_n]
+            logger.info(f"Best n: {best_n}")
+            # Estructura: lista de dicts por size
+            results_by_size[size] = [
+                {
+                    'Best Treatment Group': r[0],
+                    'Control Group': r[1],
+                    'MAPE': r[2],
+                    'SMAPE': r[3],
+                    'Actual Target Metric (y)': r[4],
+                    'Predictions': r[5],
+                    'Weights': r[6],
+                    'Holdout Percentage': ((total_Y - data[data['location'].isin(r[0])]['Y'].sum()) / total_Y) * 100 if total_Y > 0 else 0.0,
+                    'observed_conformity': r[7]
+                }
+                for r in best_n
+            ]
+        
+        if not results_by_size:
+            return None
+        return results_by_size
+    # --- Fin multi-cell flexible ---
+
+    # --- Modo clásico (single-cell, mejor grupo por size) ---
+    logger.info(f"Starting single-cell mode")
     possible_groups = []
-    logger.info("Generating possible treatment groups...")
     for size in range(min_elements_in_treatment, max_group_size + 1):
         groups = select_treatments(similarity_matrix, size, excluded_locations)
         possible_groups.extend(groups)
-        logger.info(f"Generated {len(groups)} groups for size {size}")
-    
-    logger.info(f"Total possible groups generated: {len(possible_groups)}")
     
     if not possible_groups:
-        logger.warning("No possible groups generated, returSning None")
         return None
 
     total_groups = len(possible_groups)
@@ -452,44 +487,22 @@ def BetterGroups(similarity_matrix, excluded_locations, data, correlation_matrix
             [df_pivot] * total_groups,
             chunksize=5
         )
-        logger.info("Tasks submitted, starting to collect results...")
-        
-        # Calculate log intervals to show exactly 10 progress points
-        log_interval = max(1, total_groups // 10)
-        
         for idx, result in enumerate(futures):
-            logger.debug(f"Processing result {idx + 1}/{total_groups}")
             results.append(result)
-            
-            if is_streamlit_context() and progress_updater:
-                try:
-                    progress_updater.progress((idx + 1) / total_groups)
-                except Exception as e:
-                    logger.debug(f"Progress update failed: {e}")
-            if is_streamlit_context() and status_updater:
-                try:
-                    status_updater.text(f"Finding the best groups: {int((idx + 1) / total_groups * 100)}% complete ⏳")
-                except Exception as e:
-                    logger.debug(f"Status update failed: {e}")
-            
-            # Show progress log at calculated intervals (10 total logs)
-            if (idx + 1) % log_interval == 0 or idx == 0 or idx == total_groups - 1:
-                logger.info(f"Processed {idx + 1}/{total_groups} groups")
-    
-    logger.info(f"All groups processed. Results count: {len(results)}")
+            if progress_updater:
+                progress_updater.progress((idx + 1) / total_groups)
+            if status_updater:
+                status_updater.text(f"Finding the best groups: {int((idx + 1) / total_groups * 100)}% complete ⏳")
     
     results_by_size = {}
-    logger.info("Organizing results by size...")
     for size in range(min_elements_in_treatment, max_group_size + 1):
         best_results = [result for result in results if result is not None and len(result[0]) == size]
-        
         if best_results:
             best_result = min(best_results, key=lambda x: (x[2], -x[3]))
             best_treatment_group, best_control_group, best_MAPE, best_SMAPE, y, predictions, weights, observed_conformity = best_result
             
             treatment_Y = data[data['location'].isin(best_treatment_group)]['Y'].sum()
             
-            # Add validation to prevent division by zero
             if total_Y > 0:
                 holdout_percentage = ((total_Y - treatment_Y) / total_Y) * 100
             else:
@@ -506,13 +519,11 @@ def BetterGroups(similarity_matrix, excluded_locations, data, correlation_matrix
                 'Holdout Percentage': holdout_percentage,
                 'observed_conformity': observed_conformity
             }
-            logger.info(f"Best result for size {size}: MAPE={best_MAPE:.4f}, SMAPE={best_SMAPE:.4f}, Holdout={holdout_percentage:.2f}%")
 
     if not results or all(result is None for result in results):
-        logger.warning("No valid results found, returning None")
         return None
-    
-    return results_by_size if results_by_size else None
+        
+    return results_by_size 
 
 
 
@@ -679,15 +690,26 @@ def evaluate_sensitivity(results_by_size, deltas, periods, n_permutations, signi
 
     for size, result in results_by_size.items():
         
-        if ('Actual Target Metric (y)' not in result or 
-            'Predictions' not in result or
-            result['Actual Target Metric (y)'] is None or 
-            result['Predictions'] is None):
+        # Handle both single-cell (dict) and multi-cell (list) formats
+        if isinstance(result, list):
+            # Multi-cell format: use the best group (first in list)
+            if not result:  # Empty list
+                logger.warning(f"Skipping size {size} - no groups available")
+                continue
+            actual_result = result[0]  # Take the best group
+        else:
+            # Single-cell format: direct dict
+            actual_result = result
+        
+        if ('Actual Target Metric (y)' not in actual_result or 
+            'Predictions' not in actual_result or
+            actual_result['Actual Target Metric (y)'] is None or 
+            actual_result['Predictions'] is None):
             logger.warning(f"Skipping size {size} due to missing or null values")
             continue
 
-        y_real = np.array(result['Actual Target Metric (y)']).flatten()
-        y_control = np.array(result['Predictions']).flatten()
+        y_real = np.array(actual_result['Actual Target Metric (y)']).flatten()
+        y_control = np.array(actual_result['Predictions']).flatten()
         
 
 
@@ -747,22 +769,42 @@ def evaluate_sensitivity(results_by_size, deltas, periods, n_permutations, signi
 def transform_results_data(results_by_size):
     """
     Transforms the data to ensure compatibility with the heatmap.
+    Handles both single-cell (dict of dicts) and multi-cell (dict of lists) results.
     """
     transformed_data = {}
+    
     for size, data in results_by_size.items():
-        transformed_data[size] = {
-            'Best Treatment Group': ', '.join(data['Best Treatment Group']),
-            'Control Group': ', '.join(data['Control Group']),
-            'MAPE': float(data['MAPE']),
-            'SMAPE': float(data['SMAPE']),
-            'Actual Target Metric (y)': data['Actual Target Metric (y)'].tolist(),
-            'Predictions': data['Predictions'].tolist(),
-            'Weights': data['Weights'].tolist(),
-            'Holdout Percentage': float(data['Holdout Percentage'])
-        }
+        # Check if this is multi-cell format (list of dicts) or single-cell format (single dict)
+        if isinstance(data, list):
+            # Multi-cell format: take the best group (first in list)
+            if data:  # Check if list is not empty
+                group_data = data[0]
+                transformed_data[size] = {
+                    'Best Treatment Group': ', '.join(group_data['Best Treatment Group']),
+                    'Control Group': ', '.join(group_data['Control Group']),
+                    'MAPE': float(group_data['MAPE']),
+                    'SMAPE': float(group_data['SMAPE']),
+                    'Actual Target Metric (y)': group_data['Actual Target Metric (y)'].tolist() if hasattr(group_data['Actual Target Metric (y)'], 'tolist') else group_data['Actual Target Metric (y)'],
+                    'Predictions': group_data['Predictions'].tolist() if hasattr(group_data['Predictions'], 'tolist') else group_data['Predictions'],
+                    'Weights': group_data['Weights'].tolist() if hasattr(group_data['Weights'], 'tolist') else group_data['Weights'],
+                    'Holdout Percentage': float(group_data['Holdout Percentage'])
+                }
+        else:
+            # Single-cell format: direct dict
+            transformed_data[size] = {
+                'Best Treatment Group': ', '.join(data['Best Treatment Group']),
+                'Control Group': ', '.join(data['Control Group']),
+                'MAPE': float(data['MAPE']),
+                'SMAPE': float(data['SMAPE']),
+                'Actual Target Metric (y)': data['Actual Target Metric (y)'].tolist() if hasattr(data['Actual Target Metric (y)'], 'tolist') else data['Actual Target Metric (y)'],
+                'Predictions': data['Predictions'].tolist() if hasattr(data['Predictions'], 'tolist') else data['Predictions'],
+                'Weights': data['Weights'].tolist() if hasattr(data['Weights'], 'tolist') else data['Weights'],
+                'Holdout Percentage': float(data['Holdout Percentage'])
+            }
+    
     return transformed_data
 
-def run_geo_analysis_streamlit_app(data, maximum_treatment_percentage, significance_level, deltas_range, periods_range, excluded_locations, progress_bar_1=None, status_text_1=None, progress_bar_2=None, status_text_2=None ,n_permutations=10000):
+def run_geo_analysis_streamlit_app(data, maximum_treatment_percentage, significance_level, deltas_range, periods_range, excluded_locations, progress_bar_1=None, status_text_1=None, progress_bar_2=None, status_text_2=None ,n_permutations=10000, multicell_config=None):
     """
     Runs a complete geo analysis pipeline including market correlation, group optimization,
     sensitivity evaluation, and visualization of MDE results.
@@ -775,6 +817,7 @@ def run_geo_analysis_streamlit_app(data, maximum_treatment_percentage, significa
         deltas_range (tuple): Range of delta values to evaluate as (start, stop, step).
         periods_range (tuple): Range of treatment periods to evaluate as (start, stop, step).
         n_permutations (int, optional): Number of permutations for sensitivity evaluation. Default is 5000.
+        multicell_config (dict, optional): Configuration for multi-cell mode. Default is None.
 
     Returns:
         fig: MDE visualization figure.
@@ -811,7 +854,8 @@ def run_geo_analysis_streamlit_app(data, maximum_treatment_percentage, significa
         data=data,
         correlation_matrix=correlation_matrix,
         progress_updater=progress_bar_1,
-        status_updater=status_text_1
+        status_updater=status_text_1,
+        multicell_config=multicell_config
     )
     
     if simulation_results is None:
