@@ -804,12 +804,13 @@ if file is not None:
             
 
             
-            st.text("Click on the button to start simulation")
+            # st.text("Click on the button to start simulation")
 
             # Multi-cell configuration
-            st.subheader("🔧 Multi-Cell Configuration")
             enable_multicell = st.checkbox("Enable Multi-Cell Mode", value=False, help="Enable to select specific group sizes and get top N results per size", key="multicell_checkbox")
             
+        
+
             multicell_config = None
             if enable_multicell:
                 col1, col2 = st.columns(2)
@@ -819,7 +820,7 @@ if file is not None:
                     unique_locations = cleaned['location'].unique()
                     no_locations = len(unique_locations)
                     max_group_size = round(no_locations * 0.45)
-                    min_elements_in_treatment = round(no_locations * 0.15)
+                    min_elements_in_treatment = round(no_locations * 0.10)
                     
                     available_sizes = list(range(min_elements_in_treatment, max_group_size + 1))
                     selected_sizes = st.multiselect(
@@ -845,7 +846,7 @@ if file is not None:
                         'sizes': selected_sizes,
                         'top_n': top_n_per_size
                     }
-                    st.info(f"Multi-cell mode: Evaluating {len(selected_sizes)} sizes with top {top_n_per_size} results per size")
+                    
 
             if "simulation_results" not in st.session_state:
                 st.session_state.simulation_results = None
@@ -880,6 +881,7 @@ if file is not None:
             if "simulation_button_clicked" not in st.session_state:
                 st.session_state.simulation_button_clicked = False
 
+            st.text("Click on the button to start simulation")
 
             if st.button("Run Simulation") or st.session_state.simulation_button_clicked:
                 if not st.session_state.simulation_button_clicked:
@@ -1255,13 +1257,13 @@ if file is not None:
 
                                             # Download button
                                             st.download_button(
-                                                label="📥 Download PDF Report",
+                                                label="Download PDF Report",
                                                 data=pdf_bytes,
                                                 file_name=f"murray_report_{pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')}.pdf",
                                                 mime="application/pdf"
                                             )
 
-                                            st.success("✅ PDF report generated successfully!")
+                                            st.success("PDF report generated successfully!")
 
                                         else:
                                             st.error("Please select a point on the heatmap first.")
@@ -1274,10 +1276,12 @@ if file is not None:
                         st.info("Please select a point on the heatmap to see detailed information.")
 
                 else:
-                    st.info("Please run the simulation first to see results.")
+                    pass
+                    # st.info("Please run the simulation first to see results.")
 
             else:
-                st.info("Please configure parameters and click 'Run Simulation' to start the analysis.")
+                pass
+                # st.info("Please configure parameters and click 'Run Simulation' to start the analysis.")
         
         # Handle multicell results display from session state (when changing period selector)
         if (getattr(st.session_state, 'is_multicell_mode', False) and 
@@ -1288,22 +1292,20 @@ if file is not None:
             multicell_config = getattr(st.session_state, 'multicell_config', None)
             
             if multicell_config and results.get('simulation_results'):
-                st.subheader("📊 Multi-Cell Analysis Results")
-                
                 # Show which sizes were processed vs skipped
                 all_selected_sizes = multicell_config.get('selected_sizes', [])
                 processed_sizes = list(results['simulation_results'].keys())
                 skipped_sizes = [size for size in all_selected_sizes if size not in processed_sizes]
                 
-                st.success(f"✅ Found valid results for {len(processed_sizes)} group sizes")
+                # st.success(f"Found valid results for {len(processed_sizes)} group sizes")
                 
                 if skipped_sizes:
-                    st.warning(f"⚠️ The following sizes were skipped due to insufficient data: {skipped_sizes}")
+                    st.warning(f"The following sizes were skipped due to insufficient data: {skipped_sizes}")
                 
-                st.info(f"📊 Processed sizes: {processed_sizes}")
+                # st.info(f"Processed sizes: {processed_sizes}")
                 
                 # Create comprehensive results table
-                st.subheader("📋 Complete Multi-Cell Results")
+                st.subheader("Multi-Cell Results")
                 
                 # Get sensitivity results for MDE and p-value
                 sensitivity_data = results.get('sensitivity_results', {})
@@ -1317,14 +1319,14 @@ if file is not None:
                 # Period selector
                 if available_periods:
                     selected_period = st.selectbox(
-                        "🕐 Select Period to Display:",
+                        "Select Period to Display:",
                         options=available_periods,
                         index=0,
                         help="Choose the treatment period to analyze. Different periods may show different MDE values.",
                         key="multicell_period_selector_persistent"
                     )
                     
-                    st.info(f"📊 Showing results for Period: **{selected_period} days**")
+                    # st.info(f"Showing results for Period: **{selected_period} days**")
                 else:
                     selected_period = None
                     st.warning("No sensitivity data available for period selection.")
@@ -1369,8 +1371,8 @@ if file is not None:
                     df_detailed = df_detailed.sort_values(['Size', 'Rank'])
                     
                     # Add styling info
-                    if selected_period:
-                        st.caption(f"💡 **Note:** MDE and P-Value shown for {selected_period}-day treatment period. Change the period selector above to see different results.")
+                    # if selected_period:
+                        # st.caption(f"💡 **Note:** MDE and P-Value shown for {selected_period} days treatment period. Change the period selector above to see different results.")
                     
                     # Style the dataframe
                     st.dataframe(

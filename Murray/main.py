@@ -439,10 +439,8 @@ def BetterGroups(similarity_matrix, excluded_locations, data, correlation_matrix
             
             # Filtrar y ordenar por MAPE
             valid_results = [r for r in results if r is not None]
-            logger.info(f"Valid results: {valid_results}")
             best_n = sorted(valid_results, key=lambda x: (x[2], -x[3]))[:top_n]
-            logger.info(f"Best n: {best_n}")
-            # Estructura: lista de dicts por size
+            
             results_by_size[size] = [
                 {
                     'Best Treatment Group': r[0],
