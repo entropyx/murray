@@ -9,6 +9,8 @@ import base64
 import os
 from Murray.metrics import update_metrics, load_metrics
 import unicodedata
+import plotly.express as px
+import numpy as np
 
 
 
@@ -40,7 +42,7 @@ st.sidebar.markdown(
 
 
 st.logo(sidebar_logo,size="large", icon_image=main_body_logo)
-
+        
 
 
 def generate_pdf(treatment_group, control_group, holdout_percentage, impact_graph, 
@@ -191,7 +193,6 @@ def generate_pdf(treatment_group, control_group, holdout_percentage, impact_grap
 
         pdf.ln(5)
         
-
         pdf.set_font("Poppins", style='B', size=12)
         pdf.set_text_color(27, 0, 67)
         pdf.cell(200, 10, "Control Locations and Weights:", ln=True)
@@ -215,10 +216,6 @@ def generate_pdf(treatment_group, control_group, holdout_percentage, impact_grap
         pdf.set_font("Poppins", style='B', size=10)
         pdf.cell(col_width, row_height, "Location", 1, 0, 'C', True)
         pdf.cell(col_width, row_height, "Weight", 1, 1, 'C', True)
-        
-        
-
-
 
         for i, row in weights.iterrows():
             bg_color = alt_row_bg if i % 2 else white_row_bg
@@ -229,8 +226,6 @@ def generate_pdf(treatment_group, control_group, holdout_percentage, impact_grap
     
             pdf.cell(col_width, row_height, row['Control Location'], 1, 0, 'C', True)
             pdf.cell(col_width, row_height, f"{row['Weights']:.4f}", 1, 1, 'C', True)
-
-
 
         pdf.ln(5) 
         if pdf.get_y() > 250:
@@ -356,31 +351,18 @@ def generate_pdf(treatment_group, control_group, holdout_percentage, impact_grap
         for i, txt in enumerate(header_texts):
             
             pdf.cell(col_widths[i], max_header_height, "", border=1, ln=0, fill=True)
-            
-            
             current_x = pdf.get_x() - col_widths[i]
             pdf.set_xy(current_x, y_start)
             
-            
             if "\n" in txt:
                 lines = txt.split("\n")  
-                
-                
                 pdf.cell(col_widths[i], row_height, lines[0], border=0, ln=0, align='C')
-                
-                
                 pdf.ln(row_height)
                 pdf.set_x(current_x)  
-                
-                
                 current_font_size = pdf.font_size_pt
                 smaller_font = current_font_size * 0.7
                 pdf.set_font("Poppins", "B", smaller_font)
-                
-                
                 pdf.cell(col_widths[i], row_height, lines[1], border=0, ln=0, align='C')
-                
-                
                 pdf.set_font("Poppins", "B", current_font_size)
                 
             else:
@@ -390,9 +372,7 @@ def generate_pdf(treatment_group, control_group, holdout_percentage, impact_grap
             x += col_widths[i]
             pdf.set_xy(x, y_start)
 
-        
         pdf.set_xy(x_start, y_start + max_header_height)
-
         pdf.set_text_color(*text_color)
         pdf.set_font("Poppins", "", 10)
         y_data_start = pdf.get_y()
@@ -405,33 +385,16 @@ def generate_pdf(treatment_group, control_group, holdout_percentage, impact_grap
             pdf.cell(col_widths[1], row_height, f"{row['Pre-treatment']:,.2f}", border=1, ln=0, align='C', fill=True)
             pdf.cell(col_widths[2], row_height, f"{row['Post-treatment']:,.2f}", border=1, ln=1, align='C', fill=True)
 
-       
-        
-
-
         pdf.ln(9)
         if pdf.get_y() > 170:
-            pdf.add_page()
-            
+            pdf.add_page() 
         pdf.set_font("Poppins", size=10)
         pdf.set_text_color(33, 31, 36)
         pdf.multi_cell(0, 5, "The graph below shows the aggregate effect, the point effect, and the cumulative effect. ")
-
         pdf.image(temp_image_path, x=10, y=pdf.get_y(), w=190)  
-        
-
-        
-
-        
-         
-
-
         pdf_output = "reporte.pdf"
         pdf.output(pdf_output, "F")
-
-
         os.remove(temp_image_path)
-
 
         return pdf_output
 
@@ -465,12 +428,6 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-
-
-
-
-
-
 st.title("Experimental Design")
 
 # Initialize session state variables
@@ -492,9 +449,7 @@ if "last_params" not in st.session_state:
         st.session_state.last_params = {}
 if "fig2" not in st.session_state:
     st.session_state.fig2 = None
-
-    #--------------------------------------------------------------------------------------------------------------------------------
-
+#--------------------------------------------------------------------------------------------------------------------------------
 st.subheader("1. Upload file")
 
 def style_table(df):
@@ -531,17 +486,12 @@ if file is not None:
             </style>
         """, unsafe_allow_html=True)
 
-        
         styled_table = style_table(data.head()).to_html()
 
-        
         st.markdown(f'<div class="dataframe-container">{styled_table}</div>', unsafe_allow_html=True)
-
 
         st.text("Type the name of columns for the following parameters:")
         col1, col2, col3 = st.columns(3)
-
-        
 
         def normalize_text(text):
             """Remove accents and convert to lowercase"""
@@ -554,10 +504,9 @@ if file is not None:
             st.session_state.graph_generated = False
             st.session_state.current_fig = None
             st.session_state.simulation_button_clicked = False
-        
+
         contains_date = ["date", "day", "time", "fecha", "dia", "tiempo"]
         contains_locations = ["location", "region", "state", "ubicacion", "region", "estado"]
-
         contains_date_norm = [normalize_text(x) for x in contains_date]
         contains_locations_norm = [normalize_text(x) for x in contains_locations]
 
@@ -711,12 +660,13 @@ if file is not None:
                 deltas_range = (delta_min, delta_max, delta_step)
             st.text("Select range of periods")
             col1, col2, col3 = st.columns(3)
-            with col1:
-                period_min = st.number_input("Period Min:", min_value=1, max_value=100, value=5, step=1)
-            with col2:    
-                period_max = st.number_input("Period Max:", min_value=5, max_value=100, value=30, step=1)
             with col3:    
                 period_step = st.number_input("Period Step:", min_value=1, max_value=100, value=5, step=1)
+            with col1:
+                period_min = st.number_input("Period Min:", min_value=1, max_value=100, value=5, step=period_step)
+            with col2:    
+                period_max = st.number_input("Period Max:", min_value=5, max_value=100, value=30, step=period_step)
+            
             if period_min > period_max:
                 st.error("Period Min must be less than Period Max")
                 st.stop()
@@ -731,30 +681,56 @@ if file is not None:
                 st.stop()
             else:
                 periods_range = (period_min, period_max+1, period_step)
-            
-            
-            
-            
-            
 
-            
-            st.text("Click on the button to start simulation")
+            # Multi-cell mode
+            enable_multicell = st.checkbox("Enable Multi-Cell Mode", value=False, help="Enable to select specific group sizes and get top N results per size", key="multicell_checkbox")
 
-
+            # Multi-cell configuration
+            multicell_config = None
+            if enable_multicell:
+                col1, col2 = st.columns(2)
+                with col1:
+                    unique_locations = cleaned['location'].unique()
+                    no_locations = len(unique_locations)
+                    max_group_size = round(no_locations * 0.45)
+                    min_elements_in_treatment = round(no_locations * 0.05)
+                    
+                    available_sizes = list(range(min_elements_in_treatment, max_group_size + 1))
+                    selected_sizes = st.multiselect(
+                        "Select Group Sizes",
+                        options=available_sizes,
+                        default=available_sizes[:3] if len(available_sizes) >= 3 else available_sizes,
+                        help="Choose which group sizes to evaluate",
+                        key="multicell_sizes"
+                    )
+                
+                with col2:
+                    top_n_per_size = st.number_input(
+                        "Top N Results per Size",
+                        min_value=1,
+                        max_value=10,
+                        value=3,
+                        help="Number of best groups to keep for each size",
+                        key="multicell_top_n"
+                    )
+                
+                if selected_sizes:
+                    multicell_config = {
+                        'sizes': selected_sizes,
+                        'top_n': top_n_per_size
+                    }  
 
             if "simulation_results" not in st.session_state:
                 st.session_state.simulation_results = None
                 st.session_state.sensitivity_results = None
                 st.session_state.results = None
 
-            
             if "selected_point" not in st.session_state:
                 st.session_state.selected_point = None
 
-            
             if "last_params" not in st.session_state:
                 st.session_state.last_params = {}
-
+  
             
             current_params = {
                 "excluded_locations": excluded_locations,
@@ -763,26 +739,35 @@ if file is not None:
                 "deltas_range": (delta_min, delta_max, delta_step),
                 "periods_range": (period_min, period_max+1, period_step),
                 "col_target": col_target,
+                "enable_multicell": enable_multicell,
+                "multicell_config": multicell_config,
             }
-
-            
+     
+            # Reset simulation state when parameters change
             if current_params != st.session_state.last_params:
                 st.session_state.simulation_button_clicked = False  
                 st.session_state.selected_point = None  
+                st.session_state.simulation_results = None
+                st.session_state.sensitivity_results = None
+                st.session_state.results = None
+                st.session_state.fig2 = None
                 st.session_state.last_params = current_params  
-
 
             if "simulation_button_clicked" not in st.session_state:
                 st.session_state.simulation_button_clicked = False
 
+            st.text("Click on the button to start simulation")
 
-            if st.button("Run Simulation") or st.session_state.simulation_button_clicked:
-                if not st.session_state.simulation_button_clicked:
+            # Handle simulation execution
+            run_simulation = st.button("Run Simulation")
+            
+            if run_simulation or st.session_state.simulation_button_clicked:
+                if run_simulation or not st.session_state.simulation_button_clicked:
                     st.session_state.simulation_button_clicked = True
-                    
-                    update_metrics("experimental_design")
-                    
-                    with st.spinner('Running simulation...'):
+
+                    with st.spinner('Running simulation...'):                        
+                        st.session_state.is_multicell_mode = False
+                        
                         results = run_geo_analysis_streamlit_app(
                             data=cleaned,
                             excluded_locations=excluded_locations,
@@ -790,28 +775,138 @@ if file is not None:
                             significance_level=significance_level,
                             deltas_range=deltas_range,
                             periods_range=periods_range,
+                            multicell_config=multicell_config
                         )
 
-                        
-
                     results_by_size = transform_results_data(results['simulation_results'])
-                    
-                    
                     
                     st.session_state.results = results
                     st.session_state.simulation_results = results_by_size
                     st.session_state.sensitivity_results = results['sensitivity_results']
+                    st.session_state.full_results = results
+                    st.session_state.multicell_config = multicell_config if enable_multicell else None
                     periods = list(np.arange(*periods_range))
 
-                    try:
-                        
-                        st.session_state.fig2 = plot_mde_results(results_by_size, results['sensitivity_results'], periods)
-                    except ValueError as e:
-                        st.error(f"Error generating the heatmap: {e}")
-                        st.stop()
+                    
+                    if enable_multicell and multicell_config and st.session_state.results.get('simulation_results'):
+                        st.session_state.is_multicell_mode = True
+                    else:
+                        st.session_state.is_multicell_mode = False
+                        try:
+                            st.session_state.fig2 = plot_mde_results(results_by_size, results['sensitivity_results'], periods)
+                        except ValueError as e:
+                            st.error(f"Error generating the heatmap: {e}")
+                            st.stop()
                     
 
-                if st.session_state.simulation_results is not None:
+                
+                if (enable_multicell and multicell_config and 
+                    getattr(st.session_state, 'is_multicell_mode', False) and
+                    st.session_state.results and st.session_state.results.get('simulation_results')):
+                    
+                    
+                    
+                    
+                    processed_sizes = list(st.session_state.results['simulation_results'].keys())
+                    all_selected_sizes = multicell_config.get('sizes', [])
+                    skipped_sizes = [size for size in all_selected_sizes if size not in processed_sizes]
+                    
+                    st.write(" ")
+
+                    
+                    if skipped_sizes:
+                        st.warning(f"The following sizes were skipped due to insufficient data: {skipped_sizes}")
+                
+                    
+                    st.subheader("Multi-Cell Results")
+                    
+                    
+                    sensitivity_data = st.session_state.results.get('sensitivity_results', {})
+                    
+                    
+                    available_periods = set()
+                    for size_data in sensitivity_data.values():
+                        available_periods.update(size_data.keys())
+                    available_periods = sorted(list(available_periods))
+                    
+                    
+                    if available_periods:
+                        selected_period = st.selectbox(
+                            "Select Period to Display:",
+                            options=available_periods,
+                            index=0,
+                            help="Choose the treatment period to analyze. Different periods may show different MDE values.",
+                            key="multicell_period_selector"
+                        )
+                        
+                    else:
+                        selected_period = None
+                        st.warning("No sensitivity data available for period selection.")
+                    
+                    detailed_results = []
+                    
+                    for size, data in st.session_state.results['simulation_results'].items():
+                        if isinstance(data, list):
+                            for idx, group in enumerate(data):
+                                
+                                mde_info = {}
+                                if size in sensitivity_data and selected_period is not None:
+                                    period_data = sensitivity_data[size].get(selected_period, {})
+                                    mde_raw = period_data.get('MDE')
+                                    mde_value = mde_raw * 100 if mde_raw is not None else None
+                                    p_value = period_data.get('P-Value')
+                                    
+                                    mde_info = {
+                                        'MDE': f"{int(round(mde_value))}" if mde_value is not None else "N/A",
+                                        'Period': selected_period,
+                                        'P-Value': f"{p_value:.4f}" if p_value is not None else "N/A"
+                                    }
+                                else:
+                                    mde_info = {'MDE': "N/A", 'Period': "N/A", 'P-Value': "N/A"}
+                                
+                                detailed_results.append({
+                                    'Size': size,
+                                    'Rank': idx + 1,
+                                    'Treatment Group': ', '.join(group['Best Treatment Group']),
+                                    'Control Group': ', '.join(group['Control Group']),
+                                    'SMAPE': f"{group['SMAPE']:.4f}",
+                                    'Holdout %': f"{group['Holdout Percentage']:.2f}%",
+                                    'MDE': f"{mde_info['MDE']}%",
+                                    'Period': mde_info['Period'],
+                                    'P-Value': mde_info['P-Value']
+                                })
+                    
+                    if detailed_results:
+                        df_detailed = pd.DataFrame(detailed_results)
+                        
+                        
+                        df_detailed = df_detailed.sort_values(['Size', 'Rank'])
+                        
+                        
+                        if selected_period:
+                            st.caption(f"💡 **Note:** MDE and P-Value shown for {selected_period}-day treatment period. Change the period selector above to see different results.")
+                        
+                        
+                        st.dataframe(
+                            df_detailed, 
+                            use_container_width=True,
+                            height=min(600, len(detailed_results) * 35 + 50)  
+                        )
+                        
+                        
+                        csv = df_detailed.to_csv(index=False)
+                        st.download_button(
+                            label="Download Results as CSV",
+                            data=csv,
+                            file_name=f"multicell_results_{pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')}.csv",
+                            mime="text/csv"
+                        )
+                        
+                    else:
+                        st.warning("No detailed results to display.")
+
+                # Single-cell mode
+                elif st.session_state.simulation_results is not None and not getattr(st.session_state, 'is_multicell_mode', False):
 
 
                     st.markdown(
@@ -828,34 +923,32 @@ if file is not None:
 
                     st.write('<h4 style="text-align: center;"> Geo Murray MDE Heatmap</h4>', unsafe_allow_html=True)
                     fig2 = st.session_state.fig2
-                    event = st.plotly_chart(fig2,key="heatmap",on_select="rerun",config={
-                        'modeBarButtonsToRemove': [
-                            'zoom2d',
-                            'pan2d',
-                            'select2d',
-                            'lasso2d',
-                            'resetScale2d',
-                        ],
-                        'displaylogo': False
-                    })
+                    if fig2 is None or not hasattr(fig2, 'to_dict'):
+                        st.error("Heatmap could not be generated for these parameters.")
+                        event = st.empty()
+                    else:
+                        event = st.plotly_chart(
+                            fig2,
+                            key="heatmap",
+                            on_select="rerun",
+                            config={
+                                'modeBarButtonsToRemove': [
+                                    'zoom2d',
+                                    'pan2d',
+                                    'select2d',
+                                    'lasso2d',
+                                    'resetScale2d',
+                                ],
+                                'displaylogo': False
+                            }
+                        )
                     
-
-
-
                     selected_point = event.selection
                    
-                    
-
-       
-
                     if selected_point and "points" in selected_point and len(selected_point["points"]) > 0:
                         point = selected_point["points"][0]
-
-
-
                         if "x" in point and "y" in point:
-                            st.session_state.selected_point = point
-                            
+                            st.session_state.selected_point = point 
 
                     if st.session_state.selected_point:
                         x_value, y_value = st.session_state.selected_point["x"], st.session_state.selected_point["y"]
@@ -863,12 +956,10 @@ if file is not None:
                         try:
                             if isinstance(x_value, str) and "Day-" in x_value:
                                 period_idx = int(x_value.replace("Day-", "")) 
-
                             else:
                                 period_idx = None
 
-                            if isinstance(y_value, (int, float)):
-                                
+                            if isinstance(y_value, (int, float)): 
                                 y_value_str = f"{treatment_percentage:.2f}%"
 
                             else:
@@ -895,17 +986,15 @@ if file is not None:
                                 mde = 'N/A'
                                 if period_idx is not None and y_value is not None:
                                     y_value_float = float(y_value.strip('%')) if isinstance(y_value, str) else float(y_value)
-
-                                    
                                     matching_size = None
                                     for size, data in st.session_state.simulation_results.items():
-
                                         if abs(float(data['Holdout Percentage']) - y_value_float) < 0.01:
                                             matching_size = size
                                             break
                                     
                                     if matching_size is not None:
                                         mde = st.session_state.sensitivity_results[matching_size][period_idx]['MDE']
+
                                 st.write(f"- **Minimum Detectable Effect (MDE):** {round(mde*100)}%")
                                 random_sate = cleaned['location'].unique()[0]
                                 filtered_data = cleaned[cleaned['location'] == random_sate]
@@ -922,13 +1011,12 @@ if file is not None:
                                 holdout_percentage = st.session_state.simulation_results[location]['Holdout Percentage']
                                 treatment_states = treatment_group.split(',') 
                                 length_treatment = len(treatment_states)
-                                
+                               
                                 st.subheader("4. Generate report of results")
                                 st.write("Click on the button to generate and download the PDF report.")
                                 if st.button("Generate and Download PDF"):
                                     with st.spinner("Generating report..."):
                                         if "selected_point" in st.session_state and st.session_state.selected_point:
-
                                             point = st.session_state.selected_point
                                             y_value = point["y"]
                                             y_value_str = f"{y_value:.2f}%" if isinstance(y_value, (int, float)) else str(y_value)
@@ -936,8 +1024,6 @@ if file is not None:
                                             if st.session_state.results is None:
                                                 st.error("Please run the simulation first before generating a PDF.")
                                                 st.stop()
-
-                                                
 
                                             location = None
                                             for loc, data in st.session_state.simulation_results.items():
@@ -975,6 +1061,7 @@ if file is not None:
                                                         
                                                     }
                                                 )
+                                
 
                                                 pdf_file = generate_pdf(
                                                     treatment_group, 
@@ -1003,8 +1090,6 @@ if file is not None:
                                                     p_value=p_value)
                                                 
                                                 
-
-
                                                 with open(pdf_file, "rb") as file:
                                                     b64_pdf = base64.b64encode(file.read()).decode()
                                                 
@@ -1020,15 +1105,21 @@ if file is not None:
                                                 """
                                                 streamlit_js_eval(js_expressions=js)
 
+                                            st.success("PDF report generated successfully!")
+
+                                        else:
+                                            st.error("Please select a point on the heatmap first.")
 
                         except Exception as e:
-                            st.error(f"Error recovering information: {str(e)}")
-                            st.error(f"Error type: {type(e).__name__}")
-                            
-                            import traceback
-                            st.error(f"Full error trace:\n{traceback.format_exc()}")  
-                            st.stop()
-                      
+                            st.error(f"Error processing selected point: {str(e)}")
+                            st.exception(e)
+                    else:
+                        st.info("Please select a point on the heatmap to see detailed information.")
+            else:
+                pass     
+    else:
+        st.error("Please upload data first!")
+
 
 
 
