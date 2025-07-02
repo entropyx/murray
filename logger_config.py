@@ -8,7 +8,6 @@ import os
 log_dir = Path("logs")
 log_dir.mkdir(exist_ok=True)
 
-# Generate unique filename with timestamp
 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 log_filename = f"murray_{timestamp}.log"
 

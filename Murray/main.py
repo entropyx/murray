@@ -12,7 +12,7 @@ from logger_config import get_logger
 import os
 import warnings
 
-# Suppress Streamlit ScriptRunContext warnings
+
 warnings.filterwarnings("ignore", message=".*ScriptRunContext.*", category=UserWarning)
 
 logger = get_logger("main")
@@ -282,17 +282,17 @@ class SyntheticControl(BaseEstimator, RegressorMixin):
         if len(control_group) != len(self.w_):
             raise ValueError("The number of control locations must match the number of weights.")
         
-        # Find indices where weights are above the threshold
+        
         significant_indices = np.where(self.w_ >= min_weight_threshold)[0]
         
         if len(significant_indices) == 0:
-            # If no weights meet the threshold, keep the one with the highest weight
+            
             significant_indices = [np.argmax(self.w_)]
         
         filtered_control_group = [control_group[i] for i in significant_indices]
         filtered_weights = self.w_[significant_indices]
         
-        # Renormalize weights to sum to 1
+        
         if np.sum(filtered_weights) > 0:
             filtered_weights = filtered_weights / np.sum(filtered_weights)
         
@@ -369,7 +369,7 @@ def evaluate_group(treatment_group, data, total_Y, correlation_matrix, min_holdo
     counterfactual_full_original = counterfactual_full_original.flatten()
     y_original = y_original.flatten()
 
-    # Filter control group based on weights
+
     filtered_control_group, filtered_weights = model.filter_controls_by_weights(
         control_group, min_weight_threshold=0.001
     )
@@ -377,8 +377,6 @@ def evaluate_group(treatment_group, data, total_Y, correlation_matrix, min_holdo
     logger.debug("Calculating metrics")
     MAPE = np.mean(np.abs((y_original[split_index:] - counterfactual_full_original[split_index:]) / (y_original[split_index:] + 1e-10))) * 100
     SMAPE_value = smape(y_original[split_index:], counterfactual_full_original[split_index:])
-
-    # Calculate observed conformity
     observed_conformity = np.mean(y_original - counterfactual_full_original)
 
     return (treatment_group, filtered_control_group, MAPE, SMAPE_value, y_original, counterfactual_full_original, filtered_weights, observed_conformity)

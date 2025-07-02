@@ -1036,7 +1036,6 @@ if file is not None:
                                                 weights = print_weights(st.session_state.results, treatment_percentage)
                                                 confidence_level = 1 - significance_level
                                                 
-                                                # Extract p-value from sensitivity results
                                                 p_value = None
                                                 if matching_size is not None and period_idx is not None:
                                                     if matching_size in st.session_state.sensitivity_results:
