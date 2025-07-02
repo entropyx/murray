@@ -399,19 +399,16 @@ def select_treatments_exclusive(similarity_matrix, treatment_size, excluded_loca
     if used_treatment_locations is None:
         used_treatment_locations = set()
     
-    # Combine globally excluded and already used treatment locations
     all_excluded = set(excluded_locations) | used_treatment_locations
     
     logger.debug(f"select_treatments_exclusive: treatment_size={treatment_size}, excluded={len(all_excluded)} locations")
     
-    # Check if excluded locations exist in matrix
     missing_locations = [location for location in excluded_locations if location not in similarity_matrix.index or location not in similarity_matrix.columns]
     
     if missing_locations:
         logger.error(f"The following locations are not present in the similarity matrix: {missing_locations}")
         raise KeyError(f"The following locations are not present in the similarity matrix: {missing_locations}")
     
-    # Filter similarity matrix to exclude all unavailable locations
     similarity_matrix_filtered = similarity_matrix.loc[
         ~similarity_matrix.index.isin(all_excluded),
         ~similarity_matrix.columns.isin(all_excluded)
@@ -419,12 +416,10 @@ def select_treatments_exclusive(similarity_matrix, treatment_size, excluded_loca
     
     logger.debug(f"Filtered similarity matrix shape: {similarity_matrix_filtered.shape}")
     
-    # Check if we have enough locations for this treatment size
     if treatment_size > similarity_matrix_filtered.shape[1]:
         logger.warning(f"Treatment size ({treatment_size}) exceeds available locations ({similarity_matrix_filtered.shape[1]}), skipping")
         return []
     
-    # Generate combinations
     n = similarity_matrix_filtered.shape[1]
     r = treatment_size
     max_combinations = comb(n, r)
@@ -439,7 +434,7 @@ def select_treatments_exclusive(similarity_matrix, treatment_size, excluded_loca
     
     combinations = set()
     attempts = 0
-    max_attempts = n_combinations * 10  # Avoid infinite loops
+    max_attempts = n_combinations * 10
     
     while len(combinations) < n_combinations and attempts < max_attempts:
         sample_columns = np.random.choice(
@@ -482,8 +477,6 @@ def select_controls_exclusive(correlation_matrix, treatment_group, used_treatmen
     logger.debug(f"select_controls_exclusive called: treatment_group={treatment_group}, used_treatment_locations={len(used_treatment_locations)}, excluded_locations={len(excluded_locations)}")
     
     control_group = set()
-    # Exclude: current treatment group + previously used treatment locations + globally excluded
-    # NOTE: Control locations from previous cells are NOT excluded (can be reused)
     all_excluded = set(treatment_group) | used_treatment_locations | set(excluded_locations)
     
     for treatment_location in treatment_group:
@@ -492,10 +485,8 @@ def select_controls_exclusive(correlation_matrix, treatment_group, used_treatmen
             continue
         treatment_row = correlation_matrix.loc[treatment_location]
 
-        # Filter out already used locations and treatment group locations
         available_correlations = treatment_row[~treatment_row.index.isin(all_excluded)]
         
-        # Find states that meet min_correlation
         similar_states = available_correlations[
             available_correlations >= min_correlation
         ].sort_values(ascending=False).index.tolist()
@@ -583,7 +574,6 @@ def evaluate_group_exclusive(treatment_group, data, total_Y, correlation_matrix,
     counterfactual_full_original = counterfactual_full_original.flatten()
     y_original = y_original.flatten()
 
-    # Filter control group based on weights
     filtered_control_group, filtered_weights = model.filter_controls_by_weights(
         control_group, min_weight_threshold=0.001
     )
@@ -592,7 +582,6 @@ def evaluate_group_exclusive(treatment_group, data, total_Y, correlation_matrix,
     MAPE = np.mean(np.abs((y_original[split_index:] - counterfactual_full_original[split_index:]) / (y_original[split_index:] + 1e-10))) * 100
     SMAPE_value = smape(y_original[split_index:], counterfactual_full_original[split_index:])
 
-    # Calculate observed conformity
     observed_conformity = np.mean(y_original - counterfactual_full_original)
 
     return (treatment_group, filtered_control_group, MAPE, SMAPE_value, y_original, counterfactual_full_original, filtered_weights, observed_conformity)
@@ -615,18 +604,17 @@ def BetterGroups(similarity_matrix, excluded_locations, data, correlation_matrix
     
     df_pivot = data.pivot(index='time', columns='location', values='Y')
     
-    # --- Multi-cell flexible with location exclusivity ---
+    # --- Multi-cell mode---
     if multicell_config is not None and multicell_config.get('sizes'):
         logger.info(f"Starting multi-cell flexible with location exclusivity")
         sizes = multicell_config['sizes']
         top_n = multicell_config.get('top_n', 1)
         results_by_size = {}
-        used_treatment_locations = set()  # Track ONLY treatment locations across all cells
+        used_treatment_locations = set()
         
         for size in sizes:
             logger.info(f"Processing size: {size}, used_treatment_locations so far: {len(used_treatment_locations)}")
             
-            # Generate groups excluding already used treatment locations
             groups = select_treatments_exclusive(similarity_matrix, size, excluded_locations, used_treatment_locations)
             if not groups:
                 logger.warning(f"No valid groups available for size {size} (insufficient available locations)")
@@ -657,29 +645,23 @@ def BetterGroups(similarity_matrix, excluded_locations, data, correlation_matrix
                     if status_updater:
                         status_updater.text(f"Evaluando grupos de size {size}: {int((idx + 1) / total_groups * 100)}% ⏳")
             
-            # Filtrar y ordenar por MAPE
             valid_results = [r for r in results if r is not None]
             if not valid_results:
                 logger.warning(f"No valid results for size {size}")
                 continue
                 
-            # Sort all results by performance
             sorted_results = sorted(valid_results, key=lambda x: (x[2], -x[3]))
             
-            # STEP 1: Select top_n TREATMENT groups while ensuring exclusivity WITHIN this size
             selected_treatment_groups = []
-            size_used_treatments = set()  # Track treatments used within this size
+            size_used_treatments = set()
             
             for result in sorted_results:
                 treatment_group = set(result[0])
-                
-                # Check if this treatment group overlaps with:
-                # 1. Previously used treatments across sizes
-                # 2. Previously selected treatments within this size
+
                 all_conflicts = used_treatment_locations | size_used_treatments
                 
-                if not (treatment_group & all_conflicts):  # No overlap
-                    selected_treatment_groups.append(result[0])  # Store only treatment group
+                if not (treatment_group & all_conflicts):
+                    selected_treatment_groups.append(result[0])
                     size_used_treatments.update(treatment_group)
                     
                     if len(selected_treatment_groups) >= top_n:
@@ -687,13 +669,8 @@ def BetterGroups(similarity_matrix, excluded_locations, data, correlation_matrix
                 else:
                     logger.debug(f"Skipping treatment group {result[0]} due to conflicts with used locations")
             
-            # STEP 2: For each selected treatment group, re-evaluate with proper control selection
-            # Now we know ALL treatment locations that will be used in this size
             final_results = []
             for treatment_group in selected_treatment_groups:
-                # For this specific group, exclude:
-                # 1. Treatment locations from previous sizes
-                # 2. Treatment locations from OTHER groups in this size (not this group itself)
                 other_treatments_this_size = set()
                 for other_group in selected_treatment_groups:
                     if other_group != treatment_group:
@@ -701,7 +678,6 @@ def BetterGroups(similarity_matrix, excluded_locations, data, correlation_matrix
                 
                 current_used_treatments = used_treatment_locations | other_treatments_this_size
                 
-                # Re-evaluate this specific treatment group with proper control exclusivity
                 result = evaluate_group_exclusive(
                     treatment_group=treatment_group,
                     data=data,
@@ -715,7 +691,6 @@ def BetterGroups(similarity_matrix, excluded_locations, data, correlation_matrix
                 if result is not None:
                     final_results.append(result)
             
-            # Store results
             results_by_size[size] = []
             for idx, r in enumerate(final_results):
                 result_dict = {
@@ -731,20 +706,17 @@ def BetterGroups(similarity_matrix, excluded_locations, data, correlation_matrix
                 }
                 results_by_size[size].append(result_dict)
             
-            # Mark ONLY the best group's TREATMENT locations as used across sizes
             if final_results:
-                best_result = final_results[0]  # Only the best result affects future sizes
-                used_treatment_locations.update(best_result[0])  # Only treatment locations
-                # Control locations (best_result[1]) are NOT marked as used - they can be reused
+                best_result = final_results[0]
+                used_treatment_locations.update(best_result[0])
                 logger.info(f"Marked {len(best_result[0])} treatment locations as used. Total used treatment locations: {len(used_treatment_locations)}")
         
         if not results_by_size:
             logger.warning("No valid results for any size in multi-cell mode")
             return None
         return results_by_size
-    # --- Fin multi-cell flexible ---
 
-    # --- Modo clásico (single-cell, mejor grupo por size) ---
+    # --- Single-cell mode ---
     logger.info(f"Starting single-cell mode")
     possible_groups = []
     for size in range(min_elements_in_treatment, max_group_size + 1):
@@ -922,8 +894,7 @@ def run_simulation(delta, y_real, y_control, period, n_permutations, significanc
     Wrapper function to run a single simulation of statistical power.
     """
     logger.debug(f"Starting simulation: delta={delta}, period={period}, n_permutations={n_permutations}")
-    
-    # Asegurarse de que y_real y y_control son arrays de numpy
+
     y_real = np.array(y_real).flatten()
     y_control = np.array(y_control).flatten()
     
@@ -971,15 +942,12 @@ def evaluate_sensitivity(results_by_size, deltas, periods, n_permutations, signi
 
     for size, result in results_by_size.items():
         
-        # Handle both single-cell (dict) and multi-cell (list) formats
         if isinstance(result, list):
-            # Multi-cell format: use the best group (first in list)
-            if not result:  # Empty list
+            if not result:
                 logger.warning(f"Skipping size {size} - no groups available")
                 continue
-            actual_result = result[0]  # Take the best group
+            actual_result = result[0]
         else:
-            # Single-cell format: direct dict
             actual_result = result
         
         if ('Actual Target Metric (y)' not in actual_result or 
@@ -1007,7 +975,6 @@ def evaluate_sensitivity(results_by_size, deltas, periods, n_permutations, signi
 
                 
                 step += 1
-                # Only update progress if we're in a Streamlit context and have valid updaters
                 if is_streamlit_context() and progress_bar:
                     try:
                         progress_bar.progress(min(step / total_steps,1.0))
@@ -1055,10 +1022,8 @@ def transform_results_data(results_by_size):
     transformed_data = {}
     
     for size, data in results_by_size.items():
-        # Check if this is multi-cell format (list of dicts) or single-cell format (single dict)
         if isinstance(data, list):
-            # Multi-cell format: take the best group (first in list)
-            if data:  # Check if list is not empty
+            if data:
                 group_data = data[0]
                 transformed_data[size] = {
                     'Best Treatment Group': ', '.join(group_data['Best Treatment Group']),
@@ -1071,7 +1036,6 @@ def transform_results_data(results_by_size):
                     'Holdout Percentage': float(group_data['Holdout Percentage'])
                 }
         else:
-            # Single-cell format: direct dict
             transformed_data[size] = {
                 'Best Treatment Group': ', '.join(data['Best Treatment Group']),
                 'Control Group': ', '.join(data['Control Group']),
