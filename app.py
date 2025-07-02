@@ -14,7 +14,6 @@ st.set_page_config(
 )
 
 
-# Add this function after check_credentials and before add_user
 def get_user_role(username):
     try:
         with open('traffic_metrics/users.json', 'r') as f:
@@ -22,22 +21,20 @@ def get_user_role(username):
         return users[username]['role']
     except Exception as e:
         st.error(f"Error getting user role: {e}")
-        return "user"  # Default role if there's an error
+        return "user"
 
-# Function to create registration link
+
 def create_registration_link(role, max_uses=1):
     try:
-        # Generate a unique token
+        #Generate a unique token
         token = hashlib.sha256(os.urandom(32)).hexdigest()[:16]
 
-        # Load or create registration links
         if os.path.exists('traffic_metrics/registration_links.json'):
             with open('traffic_metrics/registration_links.json', 'r') as f:
                 links = json.load(f)
         else:
             links = {}
 
-        # Store the link information
         links[token] = {
             'role': role,
             'max_uses': max_uses,
@@ -45,7 +42,6 @@ def create_registration_link(role, max_uses=1):
             'created_at': str(datetime.datetime.now())
         }
 
-        # Save the links
         with open('traffic_metrics/registration_links.json', 'w') as f:
             json.dump(links, f, indent=4)
 
@@ -53,7 +49,6 @@ def create_registration_link(role, max_uses=1):
     except Exception as e:
         return None, f"Error creating registration link: {str(e)}"
 
-# Function to validate registration link
 def validate_registration_link(token):
     try:
         if not os.path.exists('traffic_metrics/registration_links.json'):
@@ -74,7 +69,6 @@ def validate_registration_link(token):
         return False, None
 
 
-# Initialize session state for login
 if 'authenticated' not in st.session_state:
     st.session_state.authenticated = False
 if 'role' not in st.session_state:
@@ -101,7 +95,6 @@ if not st.session_state.authenticated:
             if login:
                 is_entropy_email = username.strip().endswith("@entropy.tech")
                 if is_entropy_email:
-                    # Acceso directo para correos @entropy.tech
                     st.session_state.authenticated = True
                     st.session_state.username = username
                     st.session_state.role = "user"
@@ -136,10 +129,8 @@ if not st.session_state.authenticated:
                     st.error("You must enter a username.")
                 else:
                     if is_entropy_email:
-                        # El usuario se registra con el username elegido y acceso por correo @entropy.tech
                         success, message = add_user(username.strip(), new_password, role="user")
                     else:
-                        # El usuario se registra con el username y el token
                         success, message = add_user(username.strip(), new_password, registration_token=reg_input.strip())
                         if success and reg_input:
                             mark_link_as_used(reg_input.strip())
@@ -149,11 +140,7 @@ if not st.session_state.authenticated:
                         st.error(message)
 
 
-
-
-# Only show the main content if authenticated
 if st.session_state.authenticated:
-    # Navigation setup
     pages = []
     if st.session_state.role == "admin":
         pages = {
@@ -215,26 +202,3 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
-
-# Ocultar elementos específicos de Streamlit
-# hide_streamlit_style = """
-#             <style>
-#             /* Ocultar específicamente el enlace 'dashboard' */
-#             [data-testid="stSidebarNav"] div:has(> a:contains("dashboard")) {display: none !important;}
-#             [data-testid="stSidebarNav"] div:has(> a[href*="dashboard"]) {display: none !important;}
-#             [data-testid="stSidebarNav"] a[href*="dashboard"] {display: none !important;}
-#             [data-testid="stSidebarNav"] div:has(> a:contains("dashborad")) {display: none !important;}
-#             [data-testid="stSidebarNav"] div:has(> a[href*="dashborad"]) {display: none !important;}
-#             [data-testid="stSidebarNav"] a[href*="dashborad"] {display: none !important;}
-
-#             div.stButton > button:first-child {
-#                 background-color: #3e7cb1;
-#                 color: white;
-#                 border-radius: 5px;
-#             }
-#             div.stButton > button:hover {
-#                 background-color: #2c5a8f;
-#                 color: white;
-#             }
-#             </style>
-#             """
