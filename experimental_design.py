@@ -842,13 +842,14 @@ if file is not None:
                                 mde_info = {}
                                 if size in sensitivity_data and selected_period is not None:
                                     period_data = sensitivity_data[size].get(selected_period, {})
-                                    mde_value = period_data.get('MDE')
+                                    mde_raw = period_data.get('MDE')
+                                    mde_value = mde_raw * 100 if mde_raw is not None else None
                                     p_value = period_data.get('P-Value')
                                     
                                     mde_info = {
-                                        'MDE': f"{mde_value:.3f}" if mde_value is not None else "N/A",
+                                        'MDE': f"{int(round(mde_value))}" if mde_value is not None else "N/A",
                                         'Period': selected_period,
-                                        'P-Value': f"{p_value:.4f}" if p_value is not None else "N/A"
+                                        'P-Value': f"{round(p_value)}" if p_value is not None else "N/A"
                                     }
                                 else:
                                     mde_info = {'MDE': "N/A", 'Period': "N/A", 'P-Value': "N/A"}
@@ -860,7 +861,7 @@ if file is not None:
                                     'Control Group': ', '.join(group['Control Group']),
                                     'SMAPE': f"{group['SMAPE']:.4f}",
                                     'Holdout %': f"{group['Holdout Percentage']:.2f}%",
-                                    'MDE': mde_info['MDE'],
+                                    'MDE': f"{mde_info['MDE']}%",
                                     'Period': mde_info['Period'],
                                     'P-Value': mde_info['P-Value']
                                 })

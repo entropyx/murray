@@ -613,7 +613,6 @@ def BetterGroups(similarity_matrix, excluded_locations, data, correlation_matrix
         used_treatment_locations = set()
         
         for size in sizes:
-            logger.info(f"Processing size: {size}, used_treatment_locations so far: {len(used_treatment_locations)}")
             
             groups = select_treatments_exclusive(similarity_matrix, size, excluded_locations, used_treatment_locations)
             if not groups:
@@ -621,9 +620,11 @@ def BetterGroups(similarity_matrix, excluded_locations, data, correlation_matrix
                 continue
                 
             total_groups = len(groups)
-            logger.info(f"Total groups: {total_groups}")
             results = []
-            
+            total_groups_all_sizes = sum(len(select_treatments_exclusive(similarity_matrix, s, excluded_locations, used_treatment_locations)) for s in sizes)
+            groups_processed_so_far = sum(len(results_by_size.get(s, [])) for s in sizes)
+            log_interval = max(1, total_groups_all_sizes // 10)
+
             with concurrent.futures.ProcessPoolExecutor(max_workers=2) as executor:
                 futures = executor.map(
                     evaluate_group_exclusive,
@@ -640,11 +641,14 @@ def BetterGroups(similarity_matrix, excluded_locations, data, correlation_matrix
                 
                 for idx, result in enumerate(futures):
                     results.append(result)
+                    current_total = groups_processed_so_far + idx + 1
                     if progress_updater:
-                        progress_updater.progress((idx + 1) / total_groups)
+                        progress_updater.progress(current_total / total_groups_all_sizes)
                     if status_updater:
-                        status_updater.text(f"Evaluando grupos de size {size}: {int((idx + 1) / total_groups * 100)}% ⏳")
-            
+                        status_updater.text(f"Evaluando grupos totales: {current_total}/{total_groups_all_sizes} ({int(current_total / total_groups_all_sizes * 100)}%) ⏳")
+                    if current_total % log_interval == 0 or idx == 0 or current_total == total_groups_all_sizes:
+                        logger.info(f"Processed {current_total}/{total_groups_all_sizes} total groups")
+    
             valid_results = [r for r in results if r is not None]
             if not valid_results:
                 logger.warning(f"No valid results for size {size}")
@@ -712,8 +716,7 @@ def BetterGroups(similarity_matrix, excluded_locations, data, correlation_matrix
             if final_results:
                 best_result = final_results_sorted[0]
                 used_treatment_locations.update(best_result[0])
-                logger.info(f"Marked {len(best_result[0])} treatment locations as used. Total used treatment locations: {len(used_treatment_locations)}")
-        
+                        
         if not results_by_size:
             logger.warning("No valid results for any size in multi-cell mode")
             return None
@@ -731,7 +734,7 @@ def BetterGroups(similarity_matrix, excluded_locations, data, correlation_matrix
 
     total_groups = len(possible_groups)
     results = []
-    
+    log_interval = max(1, total_groups // 10)
     with concurrent.futures.ProcessPoolExecutor(max_workers=2) as executor:
         futures = executor.map(
             evaluate_group,
@@ -749,7 +752,9 @@ def BetterGroups(similarity_matrix, excluded_locations, data, correlation_matrix
                 progress_updater.progress((idx + 1) / total_groups)
             if status_updater:
                 status_updater.text(f"Finding the best groups: {int((idx + 1) / total_groups * 100)}% complete ⏳")
-    
+            if (idx + 1) % log_interval == 0 or idx == 0 or idx == total_groups - 1:
+                logger.info(f"Processed {idx + 1}/{total_groups} groups")
+    logger.info(f"All groups processed. Results count: {len(results)}")
     results_by_size = {}
     for size in range(min_elements_in_treatment, max_group_size + 1):
         best_results = [result for result in results if result is not None and len(result[0]) == size]
