@@ -691,8 +691,11 @@ def BetterGroups(similarity_matrix, excluded_locations, data, correlation_matrix
                 if result is not None:
                     final_results.append(result)
             
+            
+            final_results_sorted = sorted(final_results, key=lambda x: (x[2], -x[3]))
+            
             results_by_size[size] = []
-            for idx, r in enumerate(final_results):
+            for idx, r in enumerate(final_results_sorted):
                 result_dict = {
                     'Best Treatment Group': r[0],
                     'Control Group': r[1],
@@ -707,7 +710,7 @@ def BetterGroups(similarity_matrix, excluded_locations, data, correlation_matrix
                 results_by_size[size].append(result_dict)
             
             if final_results:
-                best_result = final_results[0]
+                best_result = final_results_sorted[0]
                 used_treatment_locations.update(best_result[0])
                 logger.info(f"Marked {len(best_result[0])} treatment locations as used. Total used treatment locations: {len(used_treatment_locations)}")
         
