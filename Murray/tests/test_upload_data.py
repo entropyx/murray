@@ -39,7 +39,11 @@ def test_cleaned_data_basic():
     assert 'time' in result.columns
     assert 'location' in result.columns
     assert 'Y' in result.columns
-    assert len(result) == 10
+    assert len(result) == 20
+    assert set(result['location'].unique()) == {'a', 'b'}
+    expected_dates = pd.date_range('2023-01-01', periods=10)
+    assert len(result['time'].unique()) == 10
+
 
 def test_cleaned_data_column_renaming():
     data = pd.DataFrame({
@@ -53,8 +57,38 @@ def test_cleaned_data_column_renaming():
     assert 'time' in result.columns
     assert 'location' in result.columns
     assert 'Y' in result.columns
-    assert result['time'].equals(data['timestamp'])
-    assert result['location'].equals(data['region'])
-    assert result['Y'].equals(data['metric'])
+    assert len(result) == 10
+    expected_dates = pd.date_range('2023-01-01', periods=5)
+    assert len(result['time'].unique()) == 5
+    assert set(result['location'].unique()) == {'x', 'y'}
+
+
+def test_cleaned_data_fills_missing_combinations():
+    data = pd.DataFrame({
+        'date': ['2023-01-01', '2023-01-02', '2023-01-01'],
+        'location': ['A', 'A', 'B'],
+        'value': [10, 20, 15]
+    })
+    
+    result = cleaned_data(data, 'value', 'location', 'date')
+    
+    assert len(result) == 4
+    missing_combo = result[(result['time'] == '2023-01-02') & (result['location'] == 'b')]
+    assert len(missing_combo) == 1
+    assert missing_combo['Y'].iloc[0] == 0
+
+
+def test_cleaned_data_handles_duplicates():
+    data = pd.DataFrame({
+        'date': ['2023-01-01', '2023-01-01', '2023-01-02'],
+        'location': ['A', 'A', 'A'],
+        'value': [10, 20, 30]
+    })
+    
+    result = cleaned_data(data, 'value', 'location', 'date')
+    
+    assert len(result) == 2
+    jan_01_value = result[result['time'] == '2023-01-01']['Y'].iloc[0]
+    assert jan_01_value == 15.0
 
 
