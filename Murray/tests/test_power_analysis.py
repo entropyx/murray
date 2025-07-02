@@ -34,7 +34,7 @@ def test_simulate_power(synthetic_series):
     y_real = synthetic_series.copy()
     y_control = synthetic_series.copy() * 0.95  
 
-    delta, power, y_lifted = simulate_power(
+    delta, power, y_lifted, p_value = simulate_power(
         y_real=y_real,
         y_control=y_control,
         delta=0.1,
@@ -46,14 +46,16 @@ def test_simulate_power(synthetic_series):
     assert isinstance(delta, float), "Delta must be a float"
     assert isinstance(power, float), "Statistical power must be a float"
     assert isinstance(y_lifted, np.ndarray), "The adjusted series must be a NumPy array"
+    assert isinstance(p_value, float), "P-value must be a float"
     assert len(y_lifted) == len(y_real), "The adjusted series must have the same length as the original"
+    assert 0 <= p_value <= 1, "P-value must be between 0 and 1"
 
 
 def test_run_simulation(synthetic_series):
     y_real = synthetic_series.copy()
     y_control = synthetic_series.copy() * 0.98
 
-    delta, power, y_lifted = run_simulation(
+    delta, power, y_lifted, p_value = run_simulation(
         delta=0.2,
         y_real=y_real,
         y_control=y_control,
@@ -65,6 +67,8 @@ def test_run_simulation(synthetic_series):
     assert isinstance(delta, float), "Delta must be a float"
     assert isinstance(power, float), "Statistical power must be a float"
     assert isinstance(y_lifted, np.ndarray), "The adjusted series must be a NumPy array"
+    assert isinstance(p_value, float), "P-value must be a float"
+    assert 0 <= p_value <= 1, "P-value must be between 0 and 1"
 
 
 def test_evaluate_sensitivity():

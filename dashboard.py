@@ -9,7 +9,6 @@ import hmac
 import os
 from utils_auth import create_registration_link, validate_registration_link
 
-# Move these functions to the top of the file, after imports
 def load_registration_links():
     try:
         if not os.path.exists('traffic_metrics/registration_links.json'):
@@ -23,7 +22,6 @@ def load_registration_links():
 def display_registration_links():
     st.title("Registration Links Management")
     
-    # Create new registration link
     with st.expander("Create New Registration Link", expanded=True):
         with st.form("create_link_form"):
             role = st.selectbox("Role", ["user", "admin"])
@@ -36,68 +34,6 @@ def display_registration_links():
                     st.success("Registration token created successfully!")
                     st.code(token, language="text")
 
-
-        
-
-
-# def check_password():
-    # """Returns `True` if the user had the correct password."""
-
-    # def password_entered():
-    #     """Checks whether a password entered by the user is correct."""
-    #     try:
-    #         # Intentar obtener la contraseña de secrets.toml
-    #         secret_password = st.secrets.get("password")
-            
-    #         # Si no está en secrets.toml, intentar con variable de entorno
-    #         if not secret_password:
-    #             secret_password = os.environ.get("PASSWORD")
-            
-    #         # Verificar que tenemos una contraseña para comparar
-    #         if not secret_password:
-    #             st.error("No se encontró la contraseña de configuración")
-    #             st.session_state["password_correct"] = False
-    #             return
-            
-    #         # Verificar que el usuario ingresó una contraseña
-    #         if "password" not in st.session_state or not st.session_state["password"]:
-    #             st.error("Por favor ingrese una contraseña")
-    #             st.session_state["password_correct"] = False
-    #             return
-            
-    #         # Comparar las contraseñas
-    #         if hmac.compare_digest(str(st.session_state["password"]), str(secret_password)):
-    #             st.session_state["password_correct"] = True
-    #             del st.session_state["password"]  # Limpiar la contraseña de la sesión
-    #         else:
-    #             st.error("Contraseña incorrecta")
-    #             st.session_state["password_correct"] = False
-                
-    #     except Exception as e:
-    #         st.error(f"Error al verificar la contraseña: {str(e)}")
-    #         st.session_state["password_correct"] = False
-
-    # # Inicializar el estado de la contraseña
-    # if "password_correct" not in st.session_state:
-    #     st.session_state["password_correct"] = False
-
-    # # Mostrar el formulario de contraseña si no está autenticado
-    # if not st.session_state["password_correct"]:
-    #     st.text_input(
-    #         "Password", 
-    #         type="password", 
-    #         on_change=password_entered, 
-    #         key="password"
-    #     )
-    #     return False
-    
-    # return True
-
-
-
-
-
-# if check_password(True):
 if True:
     if 'last_refresh' not in st.session_state:
         st.session_state.last_refresh = time.time()
@@ -134,7 +70,6 @@ if True:
 
     st.logo(sidebar_logo,size="large", icon_image=main_body_logo)
 
-    # Create tabs for different sections
     tab1, tab2 = st.tabs(["Traffic Metrics", "Registration Links"])
 
     with tab1:
@@ -161,7 +96,6 @@ if True:
             
             if data:
                 df = pd.DataFrame(data)
-                # st.dataframe(df)
                 df['timestamp'] = pd.to_datetime(df['timestamp'])
                 df_filtered = df[df['section'].isin(df['section'].unique())]
                 
@@ -242,13 +176,3 @@ if True:
         st.session_state.last_refresh = time.time()
         time.sleep(1)  
         st.rerun()  
-
-# Eliminar estas funciones y llamadas que están al final del archivo
-# def main():
-#     if st.session_state.get('role') != 'admin':
-#         st.error("Access denied. Admin privileges required.")
-#         return
-#     display_registration_links()
-
-# if __name__ == "__main__":
-#     main()  

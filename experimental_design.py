@@ -554,12 +554,10 @@ if file is not None:
             st.session_state.graph_generated = False
             st.session_state.current_fig = None
             st.session_state.simulation_button_clicked = False
-
-        # Palabras clave originales
+        
         contains_date = ["date", "day", "time", "fecha", "dia", "tiempo"]
         contains_locations = ["location", "region", "state", "ubicacion", "region", "estado"]
 
-        # Palabras clave normalizadas
         contains_date_norm = [normalize_text(x) for x in contains_date]
         contains_locations_norm = [normalize_text(x) for x in contains_locations]
 
@@ -614,11 +612,7 @@ if file is not None:
                 except Exception as e:
                     st.error(str(e))
                     st.stop()
-
-
-
     #--------------------------------------------------------------------------------------------------------------------------------
-
             st.subheader("2. Data visualization")
             if "graph_button_clicked" not in st.session_state:
                 st.session_state.graph_button_clicked = False
@@ -648,11 +642,7 @@ if file is not None:
                     ],
                     'displaylogo': False
                 })
-                
-
-
     #--------------------------------------------------------------------------------------------------------------------------------
-
             st.subheader("3. Experimental design")
             st.text("Parameter configuration")
 
@@ -917,7 +907,6 @@ if file is not None:
                                     if matching_size is not None:
                                         mde = st.session_state.sensitivity_results[matching_size][period_idx]['MDE']
                                 st.write(f"- **Minimum Detectable Effect (MDE):** {round(mde*100)}%")
-                                #st.plotly_chart(plot_metrics(st.session_state.results),use_container_width=True)
                                 random_sate = cleaned['location'].unique()[0]
                                 filtered_data = cleaned[cleaned['location'] == random_sate]
                                 firt_day = filtered_data['time'].min()
@@ -929,23 +918,10 @@ if file is not None:
                                 firt_day = firt_day.strftime('%Y-%m-%d')
                                 firt_report_day = firt_report_day.strftime('%Y-%m-%d')
                                 second_report_day = second_report_day.strftime('%Y-%m-%d')
-
                                 treatment_day = treatment_day.strftime('%Y-%m-%d')
-                               
-                                
-                                
-
-                                
                                 holdout_percentage = st.session_state.simulation_results[location]['Holdout Percentage']
-                
                                 treatment_states = treatment_group.split(',') 
                                 length_treatment = len(treatment_states)
-                               
-                                
-                                        
-
-
-                                
                                 
                                 st.subheader("4. Generate report of results")
                                 st.write("Click on the button to generate and download the PDF report.")
@@ -985,7 +961,6 @@ if file is not None:
                                                 weights = print_weights(st.session_state.results, treatment_percentage)
                                                 confidence_level = 1 - significance_level
                                                 
-                                                # Extract p-value from sensitivity results
                                                 p_value = None
                                                 if matching_size is not None and period_idx is not None:
                                                     if matching_size in st.session_state.sensitivity_results:
@@ -1000,14 +975,6 @@ if file is not None:
                                                         
                                                     }
                                                 )
-                                                
-
-
-
-
-                                                
-                                                
-
 
                                                 pdf_file = generate_pdf(
                                                     treatment_group, 

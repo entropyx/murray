@@ -4,7 +4,6 @@ import os
 import datetime
 from logger_config import get_logger
 
-# Inicializar logger para este módulo
 logger = get_logger("auth")
 
 def check_credentials(username, password):

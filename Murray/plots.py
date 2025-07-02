@@ -1555,7 +1555,6 @@ def plot_impact_evaluation_report(results_evaluation, significance_level=0.05):
         axes[1].set_ylabel('Point Difference')
         axes[1].yaxis.set_label_position('right')
         axes[1].legend()
-
         axes[1].grid(True, alpha=0.2, linestyle='-', linewidth=0.5)
 
 
@@ -1637,7 +1636,7 @@ def calculate_confidence_bands(predicted, n_bootstrap=1000, ci=95, seed=42,
         lower = np.convolve(lower, np.ones(window_size) / window_size, mode='same')
         upper = np.convolve(upper, np.ones(window_size) / window_size, mode='same')
 
-    # ✅ Banda centrada en la predicción (garantiza que la cubra)
+    
     max_band_width = np.std(predicted) * 2
     band_width = np.clip(upper - lower, 0, max_band_width)
     lower = predicted - band_width / 2
@@ -1657,15 +1656,15 @@ def calculate_optimal_noise_scale(predictions, actual_values, min_relative_scale
     residuals = residuals[:cutoff]
     actual_values = actual_values[:cutoff]
 
-    # Escala absoluta robusta
+
     mad = np.median(np.abs(residuals - np.median(residuals)))
     scale_mad = mad * 1.4826
 
-    # Escala relativa
+    
     mask = (actual_values != 0)
     relative_errors = np.abs(residuals[mask] / actual_values[mask])
     relative_scale = max(np.median(relative_errors), min_relative_scale)
 
-    # Escala final, más conservadora cuando hay poco error
+    
     final_scale = max(scale_mad, relative_scale * np.median(np.abs(actual_values)))
     return final_scale
