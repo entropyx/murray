@@ -731,6 +731,7 @@ if file is not None:
             if "last_params" not in st.session_state:
                 st.session_state.last_params = {}
   
+            
             current_params = {
                 "excluded_locations": excluded_locations,
                 "maximum_treatment_percentage_pre": maximum_treatment_percentage_pre,
@@ -738,11 +739,18 @@ if file is not None:
                 "deltas_range": (delta_min, delta_max, delta_step),
                 "periods_range": (period_min, period_max+1, period_step),
                 "col_target": col_target,
+                "enable_multicell": enable_multicell,
+                "multicell_config": multicell_config,
             }
      
+            # Reset simulation state when parameters change
             if current_params != st.session_state.last_params:
                 st.session_state.simulation_button_clicked = False  
                 st.session_state.selected_point = None  
+                st.session_state.simulation_results = None
+                st.session_state.sensitivity_results = None
+                st.session_state.results = None
+                st.session_state.fig2 = None
                 st.session_state.last_params = current_params  
 
             if "simulation_button_clicked" not in st.session_state:
@@ -750,8 +758,11 @@ if file is not None:
 
             st.text("Click on the button to start simulation")
 
-            if st.button("Run Simulation") or st.session_state.simulation_button_clicked:
-                if not st.session_state.simulation_button_clicked:
+            # Handle simulation execution
+            run_simulation = st.button("Run Simulation")
+            
+            if run_simulation or st.session_state.simulation_button_clicked:
+                if run_simulation or not st.session_state.simulation_button_clicked:
                     st.session_state.simulation_button_clicked = True
 
                     with st.spinner('Running simulation...'):                        
@@ -779,7 +790,6 @@ if file is not None:
                     
                     if enable_multicell and multicell_config and st.session_state.results.get('simulation_results'):
                         st.session_state.is_multicell_mode = True
-                        
                     else:
                         st.session_state.is_multicell_mode = False
                         try:
@@ -849,7 +859,7 @@ if file is not None:
                                     mde_info = {
                                         'MDE': f"{int(round(mde_value))}" if mde_value is not None else "N/A",
                                         'Period': selected_period,
-                                        'P-Value': f"{round(p_value)}" if p_value is not None else "N/A"
+                                        'P-Value': f"{p_value:.4f}" if p_value is not None else "N/A"
                                     }
                                 else:
                                     mde_info = {'MDE': "N/A", 'Period': "N/A", 'P-Value': "N/A"}
