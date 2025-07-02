@@ -476,10 +476,10 @@ if 'incremental_report' not in st.session_state:
         st.session_state.incremental_report = None
 if 'last_day' not in st.session_state:
         st.session_state.last_day = None
-if 'firt_day' not in st.session_state:
-        st.session_state.firt_day = None
-if 'firt_report_day' not in st.session_state:
-        st.session_state.firt_report_day = None
+if 'first_day' not in st.session_state:
+        st.session_state.first_day = None
+if 'first_report_day' not in st.session_state:
+        st.session_state.first_report_day = None
 if 'second_report_day' not in st.session_state:
         st.session_state.second_report_day = None
 if 'lower_bound_value' not in st.session_state:
@@ -631,7 +631,7 @@ if file is not None:
             st.subheader("3. Experimental evaluation")
             random_sate = data1['location'].unique()[0]
             filtered_data = data1[data1['location'] == random_sate]
-            firt_day = filtered_data['time'].min()
+            first_day = filtered_data['time'].min()
             last_day = filtered_data['time'].max()
             
 
@@ -639,8 +639,8 @@ if file is not None:
 
 
             st.text("Parameter configuration")
-            start_treatment = st.date_input("Treatment start date",min_value=firt_day,max_value=last_day,value=firt_day)
-            end_treatment = st.date_input("Treatment end date",min_value=firt_day,max_value=last_day,value=last_day)
+            start_treatment = st.date_input("Treatment start date",min_value=first_day,max_value=last_day,value=first_day)
+            end_treatment = st.date_input("Treatment end date",min_value=first_day,max_value=last_day,value=last_day)
             treatment_group = st.multiselect("Select treatment group", data1['location'].unique())
             spend = st.number_input("Select spend")
             mmm_option = st.selectbox("Select the option to calculate the iROAS or iCPA", ["iROAS", "iCPA"])
@@ -729,7 +729,7 @@ if file is not None:
                         st.session_state.permutation_test_report = plot_permutation_test_report(results)
                         st.session_state.period = period
                         second_report_day = last_day - pd.Timedelta(days=period)
-                        firt_report_day = last_day - pd.Timedelta(days=(period*2)-1)
+                        first_report_day = last_day - pd.Timedelta(days=(period*2)-1)
                         treatment_day = last_day - pd.Timedelta(days=period-1)
                 
                         
@@ -766,10 +766,10 @@ if file is not None:
                         
 
                 
-                if mmm_option == "iROAS":
+                if mmm_option == "iCPA":
                     st.session_state.metric_mmm = spend / st.session_state.incremental 
                 else:
-                    st.session_state.metric_mmm = spend / st.session_state.incremental 
+                    st.session_state.metric_mmm = st.session_state.incremental / spend 
 
 
                 
@@ -791,13 +791,19 @@ if file is not None:
                 last_day = pd.to_datetime(last_day)
                 treatment_day = last_day - pd.Timedelta(days=end_position_treatment - start_position_treatment)
                 second_report_day = last_day - pd.Timedelta(days=st.session_state.period)
-                firt_report_day = last_day - pd.Timedelta(days=(st.session_state.period*2)-1)
+                first_report_day = last_day - pd.Timedelta(days=(st.session_state.period*2)-1)
                 treatment_day = last_day - pd.Timedelta(days=st.session_state.period-1)
                 treatment_day = treatment_day.strftime('%Y-%m-%d')
+                treatment_day = treatment_day.strftime('%Y-%m-%d')
                 last_day = last_day.strftime('%Y-%m-%d')
-                firt_day = firt_day.strftime('%Y-%m-%d')
-                firt_report_day = firt_report_day.strftime('%Y-%m-%d')
+                first_day = first_day.strftime('%Y-%m-%d')
+                first_report_day = first_report_day.strftime('%Y-%m-%d')
                 second_report_day = second_report_day.strftime('%Y-%m-%d')
+                # st.write(f"Last day: {last_day}")
+                # st.write(f"First day: {first_day}")
+                # st.write(f"First report day: {first_report_day}")
+                # st.write(f"Second report day: {second_report_day}")
+                # st.write(f"Treatment day: {treatment_day}")
 
 
 

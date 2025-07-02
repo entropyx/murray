@@ -39,7 +39,7 @@ data = pd.DataFrame({
 ```python
 results = run_geo_analysis(
     data = data,
-    excluded_locations = ['mexico city', 'méxico'],
+    excluded_locations = ['mexico city', 'mexico'],
     maximum_treatment_percentage=0.30,
     significance_level = 0.1,
     deltas_range = (0.01, 0.3, 0.02),
