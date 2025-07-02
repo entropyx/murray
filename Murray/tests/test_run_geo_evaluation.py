@@ -31,7 +31,7 @@ def test_run_geo_evaluation(sample_data):
 
     assert isinstance(results, dict), "The result must be a dictionary"
     expected_keys = [
-        "MAPE", "SMAPE", "predictions", "treatment", "p_value", "power",
+        "MAPE", "SMAPE", "counterfactual", "treatment", "p_value", "power",
         "percenge_lift", "control_group", "observed_stat",
         "null_stats", "weights", "period", "spend", "length_treatment"
     ]

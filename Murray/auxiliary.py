@@ -1,7 +1,45 @@
 import pandas as pd
+from logger_config import get_logger
 
+logger = get_logger("auxiliary")
 
+def handle_duplicates(data, subset=['time', 'location'], agg_method='mean'):
+    """
+    Handle duplicate entries in a DataFrame by aggregating them.
     
+    Args:
+        data (pd.DataFrame): The DataFrame to check for duplicates
+        subset (list): Columns to check for duplicates
+        agg_method (str): Aggregation method ('mean', 'sum', 'first', 'last')
+    
+    Returns:
+        pd.DataFrame: DataFrame with duplicates handled
+    """
+    
+    
+    if data.empty:
+        logger.warning("DataFrame is empty, returning as is")
+        return data
+    
+    
+    missing_cols = [col for col in subset if col not in data.columns]
+    if missing_cols:
+        raise ValueError(f"Missing columns for duplicate check: {missing_cols}")
+    
+    duplicates = data.duplicated(subset=subset, keep=False)
+    if duplicates.any():
+        logger.warning(f"Found {duplicates.sum()} duplicate entries in the data. Aggregating by {agg_method}.")
+        
+        data = data.groupby(subset)['Y'].agg(agg_method).reset_index()
+    else:
+        logger.debug("No duplicate entries found")
+    
+    
+    if data.duplicated(subset=subset).any():
+        raise ValueError(f"Duplicate entries still exist after aggregation in columns {subset}. Please check your data.")
+    
+    return data
+
 def cleaned_data(data, col_target, col_locations, col_dates, fill_value=0):
     """
     Cleans and processes input data to prepare it for analysis and visualization.
@@ -69,6 +107,9 @@ def cleaned_data(data, col_target, col_locations, col_dates, fill_value=0):
             raise ValueError("No valid locations found after cleaning. Please check your data.")
 
         
+        data_input = handle_duplicates(data_input, subset=['time', 'location'], agg_method='mean')
+        
+        
         full_index = pd.MultiIndex.from_product([all_dates, all_locations], names=['time', 'location'])
         full_data = pd.DataFrame(index=full_index).reset_index()
         full_data['time'] = pd.to_datetime(full_data['time'])
@@ -85,14 +126,11 @@ def cleaned_data(data, col_target, col_locations, col_dates, fill_value=0):
         return merged_data
 
     except (TypeError, ValueError) as e:
+        logger.error(f"Data Cleaning Error: {str(e)}")
         raise ValueError(f"Data Cleaning Error: {str(e)}") from e
     except Exception as e:
+        logger.error(f"An unexpected error occurred: {str(e)}")
         raise Exception(f"An unexpected error occurred: {str(e)}") from e
-
-        
-
-        
-    
 
 
 
@@ -108,38 +146,12 @@ def market_correlations(data):
     Returns:
         correlation_matrix (pd.DataFrame): DataFrame containing correlations between locations in a standard matrix format.
     """
+    
     required_columns = {'time', 'location', 'Y'}
     if not required_columns.issubset(data.columns):
         raise ValueError(f"The DataFrame must contain the columns: {required_columns}")
-
     
     pivoted_data = data.pivot(index='time', columns='location', values='Y')
-    correlation_matrix = pivoted_data.corr(method='pearson')
-
-        
-    correlation_df = correlation_matrix.reset_index().melt(
-        id_vars='location',
-        var_name='var2',
-        value_name='correlation'
-    )
-
-
-    sorted_correlation_df = (
-        correlation_df
-        .sort_values(by=['location', 'correlation'], ascending=[True, False])
-        .query("location != var2")
-    )
-
-
-    sorted_correlation_df['rank'] = sorted_correlation_df.groupby('location').cumcount() + 2
     
-
-    wide_correlation_df = (
-        sorted_correlation_df
-        .pivot(index='location', columns='rank', values='var2')
-        .reset_index()
-    )
-
-    wide_correlation_df.columns = ['location'] + [f"location_{i}" for i in range(2, len(wide_correlation_df.columns) + 1)]
-
+    correlation_matrix = pivoted_data.corr(method='pearson')
     return correlation_matrix

@@ -7,6 +7,9 @@ from streamlit_js_eval import streamlit_js_eval
 from fpdf import FPDF
 import base64
 import os
+from Murray.metrics import update_metrics, load_metrics
+import unicodedata
+
 
 
 ENTROPY_LOGO = "utils/Logo Entropy Dark Gray.png" 
@@ -42,14 +45,18 @@ st.logo(sidebar_logo,size="large", icon_image=main_body_logo)
 
 def generate_pdf(treatment_group, control_group, holdout_percentage, impact_graph, 
                  weights,period_idx,mde,att,incremental,tarjet_variable,firt_day,
-                 last_day,treatment_day,df,firt_report_day,second_report_day):
+                 last_day,treatment_day,df,firt_report_day,second_report_day,
+                 prediction_value_absolute,prediction_value_percentage,
+                 lower_bound_value_absolute,lower_bound_value_percentage,
+                 upper_bound_value_absolute,upper_bound_value_percentage,
+                 confidence_level,p_value=None):
         """
         Generates a PDF report with explanations for each aspect.
         """
         
         
         temp_image_path = "temp_impact_graph.png"
-        impact_graph.savefig(temp_image_path, bbox_inches='tight', dpi=300)
+        impact_graph.savefig(temp_image_path, bbox_inches='tight', dpi=100)
         
 
         pdf = FPDF()
@@ -133,8 +140,38 @@ def generate_pdf(treatment_group, control_group, holdout_percentage, impact_grap
         )
                             
         pdf.ln(5)
-
         
+        
+        if p_value is not None:
+            pdf.set_font("Poppins", style='B', size=12)
+            pdf.set_text_color(27, 0, 67)
+            pdf.cell(200, 8, "Statistical Significance (P-Value)", ln=True)
+            pdf.set_font("Poppins", size=10)
+            pdf.set_text_color(33, 31, 36)
+            
+            
+            if p_value < 0.001:
+                p_value_str = f"{p_value:.6f} (p < 0.001)"
+                significance = "Highly Significant"
+            elif p_value < 0.01:
+                p_value_str = f"{p_value:.4f} (p < 0.01)"
+                significance = "Very Significant"
+            elif p_value < 0.05:
+                p_value_str = f"{p_value:.4f} (p < 0.05)"
+                significance = "Significant"
+            elif p_value < 0.1:
+                p_value_str = f"{p_value:.4f} (p < 0.1)"
+                significance = "Marginally Significant"
+            else:
+                p_value_str = f"{p_value:.4f} (p ≥ 0.1)"
+                significance = "Not Significant"
+            
+            pdf.multi_cell(0, 5, f"The statistical significance of the minimum detectable effect is evaluated using permutation tests. "
+                                f"The p-value obtained is {p_value_str}, which indicates that the result is {significance.lower()}. "
+                                f"This p-value represents the probability of observing the observed effect size or larger under the null hypothesis "
+                                f"that there is no true treatment effect.")
+            pdf.ln(5)
+
         pdf.set_font("Poppins", style='B', size=12)
         pdf.set_text_color(27, 0, 67)
         pdf.cell(200, 8, "Conversion Percentages")
@@ -214,14 +251,66 @@ def generate_pdf(treatment_group, control_group, holdout_percentage, impact_grap
         if pdf.get_y() > 250:
             pdf.add_page() 
         
-        pdf.set_font("Poppins", style='B', size=10)
-        pdf.set_text_color(33, 31, 36)
-        pdf.cell(200, 5, f"ATT: {att:,.2f}", ln=True)
-        pdf.cell(200, 5, f"Lift total: {incremental:,.2f}", ln=True)
-        pdf.cell(200, 5, f"Percentage Lift: {round(mde * 100)}%", ln=True)
+        pdf.ln(2)
+        header_bg = (103, 85, 130)  
+        row_bg = (246, 246, 246)    
+        text_color = (33, 31, 36)   
 
+        
+        col_widths = [63, 63, 64]  
+        row_height = 8
+        title_height = 10
 
+        
+        pdf.set_fill_color(*header_bg)
+        pdf.set_text_color(255, 255, 255)
+        pdf.set_font("Poppins", "B", 12)
+        
+        
+        if p_value is not None:
+            
+            if p_value < 0.001:
+                title_text = f"P-Value: {p_value:.6f} (p < 0.001)"
+            elif p_value < 0.01:
+                title_text = f"P-Value: {p_value:.4f} (p < 0.01)"
+            elif p_value < 0.05:
+                title_text = f"P-Value: {p_value:.4f} (p < 0.05)"
+            elif p_value < 0.1:
+                title_text = f"P-Value: {p_value:.4f} (p < 0.1)"
+            else:
+                title_text = f"P-Value: {p_value:.4f} (p ≥ 0.1)"
+        else:
+            title_text = f"Confidence Level {confidence_level * 100}%"
+        
+        pdf.cell(190, title_height, title_text, border=1, ln=1, align='C', fill=True)
+ 
+        
+        pdf.set_text_color(*text_color)
+        pdf.set_font("Poppins", "", 10)
+
+        
+        row_data = [
+            ("Median Prediction", prediction_value_absolute, prediction_value_percentage),
+            ("Lower Bound", lower_bound_value_absolute, lower_bound_value_percentage),
+            ("Upper Bound", upper_bound_value_absolute, upper_bound_value_percentage),
+        ]
+        for i, (label, abs_val, pct_val) in enumerate(row_data):
+            bg_color = alt_row_bg if i % 2 else white_row_bg
+            pdf.set_fill_color(*bg_color)
+            if i == 0:
+                pdf.set_font("Poppins", "B", 10)
+            else:
+                pdf.set_font("Poppins", size=10)
+            pdf.cell(col_widths[0], row_height, label, border=1, ln=0, align='C', fill=True)
+            pdf.cell(col_widths[1], row_height, f"{abs_val:,.2f}", border=1, ln=0, align='C', fill=True)
+            pdf.cell(col_widths[2], row_height, f"{pct_val:,.2f}%", border=1, ln=1, align='C', fill=True)
+        
         pdf.ln(4)
+        pdf.set_font("Poppins", size=11)
+        pdf.set_text_color(33, 31, 36)
+        pdf.multi_cell(0, 5, f"MDE: {mde * 100}%")
+        pdf.ln(5)
+
         if pdf.get_y() > 250:
             pdf.add_page() 
         
@@ -454,27 +543,51 @@ if file is not None:
 
         
 
+        def normalize_text(text):
+            """Remove accents and convert to lowercase"""
+            if not isinstance(text, str):
+                return str(text).lower()
+            return ''.join(c for c in unicodedata.normalize('NFD', text)
+                          if unicodedata.category(c) != 'Mn').lower()
+
         def reset_states():
             st.session_state.graph_generated = False
             st.session_state.current_fig = None
             st.session_state.simulation_button_clicked = False
 
+        # Palabras clave originales
+        contains_date = ["date", "day", "time", "fecha", "dia", "tiempo"]
+        contains_locations = ["location", "region", "state", "ubicacion", "region", "estado"]
+
+        # Palabras clave normalizadas
+        contains_date_norm = [normalize_text(x) for x in contains_date]
+        contains_locations_norm = [normalize_text(x) for x in contains_locations]
+
         with col1:
-            contains_date = ["date", "day", "time"]
-            matching_column1 = next((col for col in data.columns if any(p in col.lower() for p in contains_date)), None)
-            col_dates = st.text_input("Dates", matching_column1 if matching_column1 else "", 
+            matching_column1 = next(
+                (col for col in data.columns if any(p in normalize_text(col) for p in contains_date_norm)), None
+            )
+            col_dates = st.text_input("Date", matching_column1 if matching_column1 else "", 
                                     on_change=reset_states, key="dates")
         with col2:
-            contains_locations = ["location", "region", "state"]
-            matching_column2 = next((col for col in data.columns if any(q in col.lower() for q in contains_locations)), None)
+            matching_column2 = next(
+                (col for col in data.columns if any(q in normalize_text(col) for q in contains_locations_norm)), None
+            )
             if matching_column2:
                 data[matching_column2] = data[matching_column2].astype(str)
             col_locations = st.text_input("Locations", matching_column2 if matching_column2 else "", 
                                         on_change=reset_states, key="locations")
+            
         with col3:
-            target_columns = [col for col in data.columns 
-                            if not any(d in col.lower() for d in contains_date) 
-                            and not any(l in col.lower() for l in contains_locations)]
+            target_columns = [
+                col for col in data.columns
+                if not any(
+                    d in normalize_text(col) for d in contains_date_norm
+                )
+                and not any(
+                    l in normalize_text(col) for l in contains_locations_norm
+                )
+            ]
             col_target = st.selectbox("Target", target_columns, on_change=reset_states, key="target")
         
         if col_dates == "" or col_locations == "" or col_target == "":
@@ -489,7 +602,9 @@ if file is not None:
                 st.session_state.current_fig = None
             if col_dates and col_locations and col_target:
                 try:
-                    data1 = cleaned_data(data, col_target=col_target, col_locations=col_locations, col_dates=col_dates)
+                    if col_locations in data.columns:
+                        data[col_locations] = data[col_locations].astype(str)
+                    cleaned = cleaned_data(data, col_target=col_target, col_locations=col_locations, col_dates=col_dates)
                 except TypeError as e:
                     st.error(str(e))
                     st.stop()
@@ -512,7 +627,7 @@ if file is not None:
                 st.session_state.graph_button_clicked = True  
 
             if st.session_state.graph_button_clicked:
-                fig = plot_geodata(data1)
+                fig = plot_geodata(cleaned)
                 st.session_state.fig = fig
                 st.markdown(
                     """
@@ -549,7 +664,7 @@ if file is not None:
                 }
 
             """, unsafe_allow_html=True)
-            excluded_locations = st.multiselect("Select excluded locations", data1['location'].unique())
+            excluded_locations = st.multiselect("Select excluded locations", cleaned['location'].unique())
             
             st.markdown(
                 """
@@ -671,287 +786,282 @@ if file is not None:
                 st.session_state.simulation_button_clicked = False
 
 
-            if st.button("Run simulation") and not st.session_state.simulation_button_clicked:
-                st.session_state.simulation_button_clicked = True  
-
-                st.markdown(
-                    """
-                    <style>
-                        
-                        div[data-testid="stProgress"] > div > div > div {
-                            background-color: #D8E5EF !important;
-                        }
-
-                        
-                        div[data-testid="stProgress"] > div > div > div > div {
-                            background-color: #8BB0D0 !important;
-                        }
-                    </style>
-                    """,
-                    unsafe_allow_html=True,
-                )
-
-
-                progress_bar_1 = st.progress(0)
-                status_text_1 = st.empty()
-                progress_bar_2 = st.progress(0)
-                status_text_2 = st.empty()        
-
-                
-                try:
-                    results = run_geo_analysis_streamlit_app(
-                        data=data1,
-                        excluded_locations=excluded_locations,
-                        maximum_treatment_percentage=maximum_treatment_percentage,
-                        significance_level=significance_level,
-                        deltas_range=deltas_range,
-                        periods_range=periods_range,
-                        progress_bar_1=progress_bar_1,
-                        status_text_1=status_text_1,
-                        progress_bar_2=progress_bar_2,
-                        status_text_2=status_text_2
-                    )
+            if st.button("Run Simulation") or st.session_state.simulation_button_clicked:
+                if not st.session_state.simulation_button_clicked:
+                    st.session_state.simulation_button_clicked = True
                     
-
+                    update_metrics("experimental_design")
                     
+                    with st.spinner('Running simulation...'):
+                        results = run_geo_analysis_streamlit_app(
+                            data=cleaned,
+                            excluded_locations=excluded_locations,
+                            maximum_treatment_percentage=maximum_treatment_percentage,
+                            significance_level=significance_level,
+                            deltas_range=deltas_range,
+                            periods_range=periods_range,
+                        )
 
-                except ValueError as e:  
-                    st.error(str(e))
-                    st.stop()
-
-                except Exception as e:  
-                    st.error(f"An unexpected error occurred: {str(e)}")
-                    st.stop()
-                
-                results_by_size = transform_results_data(results['simulation_results'])
-                
-                
-                
-                st.session_state.results = results
-                st.session_state.simulation_results = results_by_size
-                st.session_state.sensitivity_results = results['sensitivity_results']
-                periods = list(np.arange(*periods_range))
-
-                try:
-                    
-                    st.session_state.fig2 = plot_mde_results(results_by_size, results['sensitivity_results'], periods)
-                except ValueError as e:
-                    st.error(f"Error generating the heatmap: {e}")
-                    st.stop()
-                
-
-            if st.session_state.simulation_results is not None:
-
-
-                st.markdown(
-                    """
-                    <style>
-                    .js-plotly-plot .plotly .cursor-move {
-                        cursor: default !important;
-                    }
-                    </style>
-                    """,
-                    unsafe_allow_html=True
-                )
-
-
-                st.write('<h4 style="text-align: center;"> Geo Murray MDE Heatmap</h4>', unsafe_allow_html=True)
-                fig2 = st.session_state.fig2
-                event = st.plotly_chart(fig2,key="heatmap",on_select="rerun",config={
-                    'modeBarButtonsToRemove': [
-                        'zoom2d',
-                        'pan2d',
-                        'select2d',
-                        'lasso2d',
-                        'resetScale2d',
-                    ],
-                    'displaylogo': False
-                })
-                
-
-
-
-                selected_point = event.selection
-               
-                
-
-   
-
-                if selected_point and "points" in selected_point and len(selected_point["points"]) > 0:
-                    point = selected_point["points"][0]
-
-
-
-                    if "x" in point and "y" in point:
-                        st.session_state.selected_point = point
                         
 
-                if st.session_state.selected_point:
-                    x_value, y_value = st.session_state.selected_point["x"], st.session_state.selected_point["y"]
-                    treatment_percentage = round(100 - float(y_value.strip('%')),2)
+                    results_by_size = transform_results_data(results['simulation_results'])
+                    
+                    
+                    
+                    st.session_state.results = results
+                    st.session_state.simulation_results = results_by_size
+                    st.session_state.sensitivity_results = results['sensitivity_results']
+                    periods = list(np.arange(*periods_range))
+
                     try:
-                        if isinstance(x_value, str) and "Day-" in x_value:
-                            period_idx = int(x_value.replace("Day-", "")) 
-
-                        else:
-                            period_idx = None
-
-                        if isinstance(y_value, (int, float)):
-                            
-                            y_value_str = f"{treatment_percentage:.2f}%"
-
-                        else:
-                            y_value_str = str(f'{treatment_percentage}%')
-
-                        st.write(f"###### Locations with a treatment percentage of: {y_value_str}")
-
-                        location = None
-                        for loc, data in st.session_state.simulation_results.items():
-
-                            holdout_str = f"{data['Holdout Percentage']:.2f}%"
-                            if holdout_str == y_value:
-                                location = loc
-                                break
-
-                        if location is None:
-                            st.write(f"Error: Location not found for the holdout percentage: {y_value_str}")
-                        else:
-                            treatment_group = st.session_state.simulation_results.get(location, {}).get('Best Treatment Group', 'N/A')
-                            control_group = st.session_state.simulation_results.get(location, {}).get('Control Group', 'N/A')
-                            st.write(f"- **Treatment group:** {treatment_group}")
-                            st.write(f"- **Control group:** {control_group}")
-                            mde = 'N/A'
-                            if period_idx is not None and y_value is not None:
-                                y_value_float = float(y_value.strip('%')) if isinstance(y_value, str) else float(y_value)
-
-                                
-                                matching_size = None
-                                for size, data in st.session_state.simulation_results.items():
-
-                                    if abs(float(data['Holdout Percentage']) - y_value_float) < 0.01:
-                                        matching_size = size
-                                        break
-                                
-                                if matching_size is not None:
-                                    mde = st.session_state.sensitivity_results[matching_size][period_idx]['MDE']
-                            st.write(f"- **Minimum Detectable Effect (MDE):** {round(mde*100)}%")
-                            random_sate = data1['location'].unique()[0]
-                            filtered_data = data1[data1['location'] == random_sate]
-                            firt_day = filtered_data['time'].min()
-                            last_day = filtered_data['time'].max()
-                            second_report_day = last_day - pd.Timedelta(days=period_idx)
-                            firt_report_day = last_day - pd.Timedelta(days=(period_idx*2)-1)
-                            treatment_day = last_day - pd.Timedelta(days=period_idx-1)
-                            last_day = last_day.strftime('%Y-%m-%d')
-                            firt_day = firt_day.strftime('%Y-%m-%d')
-                            firt_report_day = firt_report_day.strftime('%Y-%m-%d')
-                            second_report_day = second_report_day.strftime('%Y-%m-%d')
-
-                            treatment_day = treatment_day.strftime('%Y-%m-%d')
-                           
-                            mde = 'N/A'
-                            if period_idx is not None and y_value is not None:
-                                y_value_float = float(y_value.strip('%')) if isinstance(y_value, str) else float(y_value)
-
-                                
-                                matching_size = None
-                                for size, data in st.session_state.simulation_results.items():
-
-                                    if abs(float(data['Holdout Percentage']) - y_value_float) < 0.01:
-                                        matching_size = size
-                                        break
-                                
-                                if matching_size is not None:
-                                    mde = st.session_state.sensitivity_results[matching_size][period_idx]['MDE']
-
-                            
-                            holdout_percentage = st.session_state.simulation_results[location]['Holdout Percentage']
-        
-                            treatment_states = treatment_group.split(',') 
-                            length_treatment = len(treatment_states)
-                           
-                            
-                                    
-
-
-                            
-                            
-                            st.subheader("4. Generate report of results")
-                            st.write("Click on the button to generate and download the PDF report.")
-                            if st.button("Generate and Download PDF"):
-                                if "selected_point" in st.session_state and st.session_state.selected_point:
-
-                                    point = st.session_state.selected_point
-                                    y_value = point["y"]
-                                    y_value_str = f"{y_value:.2f}%" if isinstance(y_value, (int, float)) else str(y_value)
-
-                                    if st.session_state.results is None:
-                                        st.error("Please run the simulation first before generating a PDF.")
-                                        st.stop()
-
-                                        
-
-                                    location = None
-                                    for loc, data in st.session_state.simulation_results.items():
-                                        holdout_str = f"{data['Holdout Percentage']:.2f}%"
-                                        if holdout_str == y_value_str:
-                                            location = loc
-                                            break
-
-                                    if location is None:
-                                        st.write(f"Location not found for the holdout percentage: {y_value_str}")
-                                    else:
-                                        treatment_group = st.session_state.simulation_results[location]['Best Treatment Group']
-                                        control_group = st.session_state.simulation_results[location]['Control Group']
-                                        
-                                        pre_treatment, pre_counterfactual, post_treatment, post_counterfactual,impact_graph,att,incremental = plot_impact_report(st.session_state.results, period_idx, holdout_percentage,length_treatment)
-                                        weights = print_weights(st.session_state.results, treatment_percentage)
-                                        df = pd.DataFrame(
-                                            {
-                                                "Group": ["Treatment", "Counterfactual (control)", "Absolute difference"],
-                                                "Pre-treatment": [np.sum(pre_treatment),np.sum(pre_counterfactual), np.abs(np.sum(pre_treatment)-np.sum(pre_counterfactual))],
-                                                "Post-treatment": [np.sum(post_treatment), np.sum(post_counterfactual),np.abs(np.sum(post_treatment)- np.sum(post_counterfactual))]
-                                                
-                                            }
-                                        )
-                                        
-
-
-
-
-                                        
-                                        
-
-
-                                        pdf_file = generate_pdf(treatment_group, control_group, holdout_percentage, impact_graph,weights,period_idx,mde,att,incremental,col_target,firt_day,last_day,treatment_day,df,firt_report_day,second_report_day)
-                                        
-                                        
-
-
-                                        with open(pdf_file, "rb") as file:
-                                            b64_pdf = base64.b64encode(file.read()).decode()
-                                        
-                                        js = f"""
-                                            var link = document.createElement('a');
-                                            link.href = 'data:application/pdf;base64,{b64_pdf}';
-                                            link.download = 'experimental_design_report.pdf';
-                                            document.body.appendChild(link);
-                                            link.click();
-
-
-                                            document.body.removeChild(link);
-                                        """
-                                        streamlit_js_eval(js_expressions=js)
-
-
-                    except Exception as e:
-                        st.error(f"Error recovering information: {str(e)}")
-                        st.error(f"Error type: {type(e).__name__}")
                         
-                        import traceback
-                        st.error(f"Full error trace:\n{traceback.format_exc()}")  
+                        st.session_state.fig2 = plot_mde_results(results_by_size, results['sensitivity_results'], periods)
+                    except ValueError as e:
+                        st.error(f"Error generating the heatmap: {e}")
                         st.stop()
-                  
+                    
+
+                if st.session_state.simulation_results is not None:
+
+
+                    st.markdown(
+                        """
+                        <style>
+                        .js-plotly-plot .plotly .cursor-move {
+                            cursor: default !important;
+                        }
+                        </style>
+                        """,
+                        unsafe_allow_html=True
+                    )
+
+
+                    st.write('<h4 style="text-align: center;"> Geo Murray MDE Heatmap</h4>', unsafe_allow_html=True)
+                    fig2 = st.session_state.fig2
+                    event = st.plotly_chart(fig2,key="heatmap",on_select="rerun",config={
+                        'modeBarButtonsToRemove': [
+                            'zoom2d',
+                            'pan2d',
+                            'select2d',
+                            'lasso2d',
+                            'resetScale2d',
+                        ],
+                        'displaylogo': False
+                    })
+                    
+
+
+
+                    selected_point = event.selection
+                   
+                    
+
+       
+
+                    if selected_point and "points" in selected_point and len(selected_point["points"]) > 0:
+                        point = selected_point["points"][0]
+
+
+
+                        if "x" in point and "y" in point:
+                            st.session_state.selected_point = point
+                            
+
+                    if st.session_state.selected_point:
+                        x_value, y_value = st.session_state.selected_point["x"], st.session_state.selected_point["y"]
+                        treatment_percentage = round(100 - float(y_value.strip('%')),2)
+                        try:
+                            if isinstance(x_value, str) and "Day-" in x_value:
+                                period_idx = int(x_value.replace("Day-", "")) 
+
+                            else:
+                                period_idx = None
+
+                            if isinstance(y_value, (int, float)):
+                                
+                                y_value_str = f"{treatment_percentage:.2f}%"
+
+                            else:
+                                y_value_str = str(f'{treatment_percentage}%')
+
+                            st.write(f"###### Locations with a treatment percentage of: {y_value_str}")
+
+                            location = None
+                            for loc, data in st.session_state.simulation_results.items():
+
+                                holdout_str = f"{data['Holdout Percentage']:.2f}%"
+                                if holdout_str == y_value:
+                                    location = loc
+                                    break
+
+                            if location is None:
+                                st.write(f"Error: Location not found for the holdout percentage: {y_value_str}")
+                            else:
+                                treatment_group = st.session_state.simulation_results.get(location, {}).get('Best Treatment Group', 'N/A')
+                                control_group = st.session_state.simulation_results.get(location, {}).get('Control Group', 'N/A')
+                                st.write(f"- **Treatment group:** {treatment_group}")
+                                st.write(f"- **Control group:** {control_group}")
+                               
+                                mde = 'N/A'
+                                if period_idx is not None and y_value is not None:
+                                    y_value_float = float(y_value.strip('%')) if isinstance(y_value, str) else float(y_value)
+
+                                    
+                                    matching_size = None
+                                    for size, data in st.session_state.simulation_results.items():
+
+                                        if abs(float(data['Holdout Percentage']) - y_value_float) < 0.01:
+                                            matching_size = size
+                                            break
+                                    
+                                    if matching_size is not None:
+                                        mde = st.session_state.sensitivity_results[matching_size][period_idx]['MDE']
+                                st.write(f"- **Minimum Detectable Effect (MDE):** {round(mde*100)}%")
+                                #st.plotly_chart(plot_metrics(st.session_state.results),use_container_width=True)
+                                random_sate = cleaned['location'].unique()[0]
+                                filtered_data = cleaned[cleaned['location'] == random_sate]
+                                firt_day = filtered_data['time'].min()
+                                last_day = filtered_data['time'].max()
+                                second_report_day = last_day - pd.Timedelta(days=period_idx)
+                                firt_report_day = last_day - pd.Timedelta(days=(period_idx*2)-1)
+                                treatment_day = last_day - pd.Timedelta(days=period_idx-1)
+                                last_day = last_day.strftime('%Y-%m-%d')
+                                firt_day = firt_day.strftime('%Y-%m-%d')
+                                firt_report_day = firt_report_day.strftime('%Y-%m-%d')
+                                second_report_day = second_report_day.strftime('%Y-%m-%d')
+
+                                treatment_day = treatment_day.strftime('%Y-%m-%d')
+                               
+                                
+                                
+
+                                
+                                holdout_percentage = st.session_state.simulation_results[location]['Holdout Percentage']
+                
+                                treatment_states = treatment_group.split(',') 
+                                length_treatment = len(treatment_states)
+                               
+                                
+                                        
+
+
+                                
+                                
+                                st.subheader("4. Generate report of results")
+                                st.write("Click on the button to generate and download the PDF report.")
+                                if st.button("Generate and Download PDF"):
+                                    with st.spinner("Generating report..."):
+                                        if "selected_point" in st.session_state and st.session_state.selected_point:
+
+                                            point = st.session_state.selected_point
+                                            y_value = point["y"]
+                                            y_value_str = f"{y_value:.2f}%" if isinstance(y_value, (int, float)) else str(y_value)
+
+                                            if st.session_state.results is None:
+                                                st.error("Please run the simulation first before generating a PDF.")
+                                                st.stop()
+
+                                                
+
+                                            location = None
+                                            for loc, data in st.session_state.simulation_results.items():
+                                                holdout_str = f"{data['Holdout Percentage']:.2f}%"
+                                                if holdout_str == y_value_str:
+                                                    location = loc
+                                                    break
+
+                                            if location is None:
+                                                st.write(f"Location not found for the holdout percentage: {y_value_str}")
+                                            else:
+                                                treatment_group = st.session_state.simulation_results[location]['Best Treatment Group']
+                                                control_group = st.session_state.simulation_results[location]['Control Group']
+                                                pre_treatment, pre_counterfactual, post_treatment, post_counterfactual,impact_graph,att,incremental,lower_bound_value,upper_bound_value,prediction_value = plot_impact_report(st.session_state.results, period_idx, holdout_percentage,length_treatment,significance_level)
+                                                prediction_value_absolute = prediction_value
+                                                prediction_value_percentage = (prediction_value - np.sum(post_counterfactual)) / np.abs(np.sum(post_counterfactual)) * 100
+                                                lower_bound_value_absolute = lower_bound_value
+                                                lower_bound_value_percentage = (lower_bound_value - np.sum(post_counterfactual)) / np.abs(np.sum(post_counterfactual)) * 100
+                                                upper_bound_value_absolute = upper_bound_value
+                                                upper_bound_value_percentage = (upper_bound_value - np.sum(post_counterfactual)) / np.abs(np.sum(post_counterfactual)) * 100
+                                                weights = print_weights(st.session_state.results, treatment_percentage)
+                                                confidence_level = 1 - significance_level
+                                                
+                                                # Extract p-value from sensitivity results
+                                                p_value = None
+                                                if matching_size is not None and period_idx is not None:
+                                                    if matching_size in st.session_state.sensitivity_results:
+                                                        if period_idx in st.session_state.sensitivity_results[matching_size]:
+                                                            p_value = st.session_state.sensitivity_results[matching_size][period_idx].get('P-Value', None)
+                                                
+                                                df = pd.DataFrame(
+                                                    {
+                                                        "Group": ["Treatment", "Counterfactual (control)", "Absolute difference"],
+                                                        "Pre-treatment": [np.sum(pre_treatment),np.sum(pre_counterfactual), np.abs(np.sum(pre_treatment)-np.sum(pre_counterfactual))],
+                                                        "Post-treatment": [np.sum(post_treatment), np.sum(post_counterfactual),np.abs(np.sum(post_treatment)- np.sum(post_counterfactual))]
+                                                        
+                                                    }
+                                                )
+                                                
+
+
+
+
+                                                
+                                                
+
+
+                                                pdf_file = generate_pdf(
+                                                    treatment_group, 
+                                                    control_group, 
+                                                    holdout_percentage, 
+                                                    impact_graph,
+                                                    weights,
+                                                    period_idx,
+                                                    mde,
+                                                    att,
+                                                    incremental,
+                                                    col_target,
+                                                    firt_day,
+                                                    last_day,
+                                                    treatment_day,
+                                                    df,
+                                                    firt_report_day,
+                                                    second_report_day,
+                                                    prediction_value_absolute,
+                                                    prediction_value_percentage,
+                                                    lower_bound_value_absolute,
+                                                    lower_bound_value_percentage,
+                                                    upper_bound_value_absolute,
+                                                    upper_bound_value_percentage,
+                                                    confidence_level,
+                                                    p_value=p_value)
+                                                
+                                                
+
+
+                                                with open(pdf_file, "rb") as file:
+                                                    b64_pdf = base64.b64encode(file.read()).decode()
+                                                
+                                                js = f"""
+                                                    var link = document.createElement('a');
+                                                    link.href = 'data:application/pdf;base64,{b64_pdf}';
+                                                    link.download = 'experimental_design_report.pdf';
+                                                    document.body.appendChild(link);
+                                                    link.click();
+
+
+                                                    document.body.removeChild(link);
+                                                """
+                                                streamlit_js_eval(js_expressions=js)
+
+
+                        except Exception as e:
+                            st.error(f"Error recovering information: {str(e)}")
+                            st.error(f"Error type: {type(e).__name__}")
+                            
+                            import traceback
+                            st.error(f"Full error trace:\n{traceback.format_exc()}")  
+                            st.stop()
+                      
 
 
 

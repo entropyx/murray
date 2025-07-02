@@ -1,9 +1,12 @@
 import streamlit as st
+import hashlib
+import json
+import os
+import datetime
+from utils_auth import check_credentials, add_user, mark_link_as_used
 
 
 
-
-# Configure page
 st.set_page_config(
     page_title="Geo Murray",
     page_icon="utils/Group 105.png",
@@ -11,16 +14,165 @@ st.set_page_config(
 )
 
 
-# Navigation setup
-Pages = {
-    "Murray": [
-        st.Page("experimental_design.py", title="Experimental design"),
-        st.Page("experimental_evaluation.py", title="Experimental evaluation")
-    ]
-}
+# Add this function after check_credentials and before add_user
+def get_user_role(username):
+    try:
+        with open('traffic_metrics/users.json', 'r') as f:
+            users = json.load(f)
+        return users[username]['role']
+    except Exception as e:
+        st.error(f"Error getting user role: {e}")
+        return "user"  # Default role if there's an error
 
-pg = st.navigation(Pages)
-pg.run()
+# Function to create registration link
+def create_registration_link(role, max_uses=1):
+    try:
+        # Generate a unique token
+        token = hashlib.sha256(os.urandom(32)).hexdigest()[:16]
+
+        # Load or create registration links
+        if os.path.exists('traffic_metrics/registration_links.json'):
+            with open('traffic_metrics/registration_links.json', 'r') as f:
+                links = json.load(f)
+        else:
+            links = {}
+
+        # Store the link information
+        links[token] = {
+            'role': role,
+            'max_uses': max_uses,
+            'used_count': 0,
+            'created_at': str(datetime.datetime.now())
+        }
+
+        # Save the links
+        with open('traffic_metrics/registration_links.json', 'w') as f:
+            json.dump(links, f, indent=4)
+
+        return token
+    except Exception as e:
+        return None, f"Error creating registration link: {str(e)}"
+
+# Function to validate registration link
+def validate_registration_link(token):
+    try:
+        if not os.path.exists('traffic_metrics/registration_links.json'):
+            return False, None
+
+        with open('traffic_metrics/registration_links.json', 'r') as f:
+            links = json.load(f)
+
+        if token not in links:
+            return False, None
+
+        link_info = links[token]
+        if link_info['used_count'] >= link_info['max_uses']:
+            return False, None
+
+        return True, link_info['role']
+    except Exception as e:
+        return False, None
+
+
+# Initialize session state for login
+if 'authenticated' not in st.session_state:
+    st.session_state.authenticated = False
+if 'role' not in st.session_state:
+    st.session_state.role = "user"
+if 'username' not in st.session_state:
+    st.session_state.username = ""
+
+# Login system
+if not st.session_state.authenticated:
+    st.title("Welcome to Geo Murray")
+    st.write("Login or register.")
+
+    query_params = st.query_params
+    url_token = query_params.get("token", [""])[0]
+    if "registration_token" not in st.session_state:
+        st.session_state.registration_token = url_token
+
+    tab1, tab2 = st.tabs(["Login", "Register"])
+    with tab1:
+        with st.form("login_form"):
+            username = st.text_input("Username")
+            password = st.text_input("Password", type="password")
+            login = st.form_submit_button("Login")
+            if login:
+                is_entropy_email = username.strip().endswith("@entropy.tech")
+                if is_entropy_email:
+                    # Acceso directo para correos @entropy.tech
+                    st.session_state.authenticated = True
+                    st.session_state.username = username
+                    st.session_state.role = "user"
+                    st.rerun()
+                elif check_credentials(username, password):
+                    st.session_state.authenticated = True
+                    st.session_state.username = username
+                    st.session_state.role = get_user_role(username)
+                    st.rerun()
+                else:
+                    st.error("Username or password incorrect")
+
+    with tab2:
+        with st.form("register_form"):
+            username = st.text_input("Username")
+            reg_input = st.text_input(
+                "Registration token or valid email",
+                key="registration_token"
+            )
+            new_password = st.text_input("New password", type="password")
+            confirm_password = st.text_input("Confirm password", type="password")
+            register = st.form_submit_button("Register")
+            if register:
+                is_entropy_email = reg_input.strip().endswith("@entropy.tech")
+                if not is_entropy_email and not reg_input:
+                    st.error("You must enter a valid Registration Token or a valid email in the second field.")
+                elif new_password != confirm_password:
+                    st.error("The passwords do not match")
+                elif len(new_password) < 6:
+                    st.error("The password must be at least 6 characters long")
+                elif not username:
+                    st.error("You must enter a username.")
+                else:
+                    if is_entropy_email:
+                        # El usuario se registra con el username elegido y acceso por correo @entropy.tech
+                        success, message = add_user(username.strip(), new_password, role="user")
+                    else:
+                        # El usuario se registra con el username y el token
+                        success, message = add_user(username.strip(), new_password, registration_token=reg_input.strip())
+                        if success and reg_input:
+                            mark_link_as_used(reg_input.strip())
+                    if success:
+                        st.success(message)
+                    else:
+                        st.error(message)
+
+
+
+
+# Only show the main content if authenticated
+if st.session_state.authenticated:
+    # Navigation setup
+    pages = []
+    if st.session_state.role == "admin":
+        pages = {
+         "Hello " + st.session_state.username: [
+            st.Page("experimental_design.py", title="Experimental design"),
+            st.Page("experimental_evaluation.py", title="Experimental evaluation"),
+            st.Page("dashboard.py", title="Dashboard"),
+        ]
+        }
+    else:
+        pages = {
+            "Hello " + st.session_state.username: [
+            st.Page("experimental_design.py", title="Experimental design"),
+            st.Page("experimental_evaluation.py", title="Experimental evaluation"),
+        ]
+        }
+
+    pg = st.navigation(pages)
+    pg.run()
 
 st.markdown(
     """
@@ -63,3 +215,26 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
+
+# Ocultar elementos específicos de Streamlit
+# hide_streamlit_style = """
+#             <style>
+#             /* Ocultar específicamente el enlace 'dashboard' */
+#             [data-testid="stSidebarNav"] div:has(> a:contains("dashboard")) {display: none !important;}
+#             [data-testid="stSidebarNav"] div:has(> a[href*="dashboard"]) {display: none !important;}
+#             [data-testid="stSidebarNav"] a[href*="dashboard"] {display: none !important;}
+#             [data-testid="stSidebarNav"] div:has(> a:contains("dashborad")) {display: none !important;}
+#             [data-testid="stSidebarNav"] div:has(> a[href*="dashborad"]) {display: none !important;}
+#             [data-testid="stSidebarNav"] a[href*="dashborad"] {display: none !important;}
+
+#             div.stButton > button:first-child {
+#                 background-color: #3e7cb1;
+#                 color: white;
+#                 border-radius: 5px;
+#             }
+#             div.stButton > button:hover {
+#                 background-color: #2c5a8f;
+#                 color: white;
+#             }
+#             </style>
+#             """

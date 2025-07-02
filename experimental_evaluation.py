@@ -7,6 +7,8 @@ from fpdf import FPDF
 import os
 import base64
 from streamlit_js_eval import streamlit_js_eval
+from Murray.metrics import update_metrics, load_metrics
+import unicodedata
 
 
 
@@ -42,9 +44,9 @@ st.logo(sidebar_logo, size="large", icon_image=main_body_logo)
 
 def generate_pdf(treatment_group, control_group, holdout_percentage, 
                  impact_graph,percenge_lift,p_value,power,period,
-                 permutation_test,treatment_day,first_day,last_day,
-                 col_target,metric_mmm,mmm_option,lift_total,first_report_day,second_report_day,
-                 pre_treatment,pre_counterfactual,post_treatment,post_counterfactual,att,incremental,df,spend):
+                 permutation_test,treatment_day,firt_day,last_day,
+                 col_target,metric_mmm,mmm_option,lift_total,firt_report_day,second_report_day,
+                 pre_treatment,pre_counterfactual,post_treatment,post_counterfactual,att,incremental,df,spend,lower_value,upper_value,prediction_value):
         """
         Generates a PDF report with explanations for each aspect.
         """
@@ -53,14 +55,14 @@ def generate_pdf(treatment_group, control_group, holdout_percentage,
         
         impact_graph.set_size_inches(10, 6)   
         temp_image_path_impact = "temp_impact_graph.png"
-        impact_graph.savefig(temp_image_path_impact, bbox_inches='tight', dpi=300)  
+        impact_graph.savefig(temp_image_path_impact, bbox_inches='tight', dpi=100)  
 
 
 
 
         permutation_test.set_size_inches(10, 6)   
         temp_image_path_permutation = "temp_permutation_test.png"
-        permutation_test.savefig(temp_image_path_permutation, bbox_inches='tight', dpi=300)  
+        permutation_test.savefig(temp_image_path_permutation, bbox_inches='tight', dpi=100)  
         
 
         header_bg = (103, 85, 130)  
@@ -94,7 +96,7 @@ def generate_pdf(treatment_group, control_group, holdout_percentage,
         pdf.set_font("Poppins", size=10)
         pdf.set_text_color(33, 31, 36)
         pdf.multi_cell(0,5 , f"This report provides information about the the results of the analysis of a treatment on the variable '{col_target}' with a duration of {period} days. "
-                       f"The data included in the design have a period of {first_day} to {last_day} where the treatment started on {treatment_day} until {last_day}."
+                       f"The data included in the design have a period of {firt_day} to {last_day} where the treatment started on {treatment_day} until {last_day}."
                        f"It includes information about the treatment group, control group, and the statistics results of the analysis.")
         
 
@@ -160,12 +162,46 @@ def generate_pdf(treatment_group, control_group, holdout_percentage,
         pdf.multi_cell(0, 5, f"Based on the analysis of the injected data and configured parameters, "
                         f"it can be observed that the treatment has the followings results:")
 
-        pdf.set_font("Poppins",style='B', size=10)
-        pdf.set_text_color(33, 31, 36)
-        pdf.multi_cell(0, 5, f"Percentage Lift: {percenge_lift}%")
-        pdf.multi_cell(0, 5, f"Lift total: {lift_total}")
-        pdf.multi_cell(0, 5, f"P-value: {p_value}")
-        pdf.multi_cell(0, 5, f"Power: {power}")
+
+        pdf.ln(2)
+        header_bg = (103, 85, 130)  # Color de fondo del encabezado
+        row_bg = (246, 246, 246)    # Color de fondo de las filas
+        text_color = (33, 31, 36)   # Color del texto
+
+        # Crear tabla simple
+        pdf.set_font("Poppins", "B", 10)
+        pdf.set_text_color(*text_color)
+        
+        # Primera columna de métricas
+        metrics_col1 = [
+            ("Prediction value", f"{prediction_value:,.2f}"),
+            ("Lower value", f"{lower_value:.2f}%"),
+            ("Upper value", f"{upper_value:.2f}%")
+        ]
+        
+        # Segunda columna de métricas
+        metrics_col2 = [
+            ("Percentage Lift", f"{percenge_lift}%"),
+            ("Lift total", f"{lift_total:,.2f}"),
+            ("P-value", f"{p_value}"),
+            ("Power", f"{power}")
+        ]
+
+        
+        for i in range(max(len(metrics_col1), len(metrics_col2))):
+            # First column
+            if i < len(metrics_col1):
+                metric, value = metrics_col1[i]
+                pdf.multi_cell(95, 6, f"{metric}: {value}")
+            else:
+                pdf.multi_cell(95, 6, "")
+            
+            # Second column
+            if i < len(metrics_col2):
+                metric, value = metrics_col2[i]
+                pdf.set_xy(pdf.get_x() + 95, pdf.get_y() - 8)
+                pdf.multi_cell(95, 6, f"{metric}: {value}")
+            pdf.ln(2)  
 
         pdf.ln(4)
         
@@ -187,7 +223,7 @@ def generate_pdf(treatment_group, control_group, holdout_percentage,
         
         header_texts = [
             "Group",
-            f"Pre-treatment\n({first_report_day} to {second_report_day})",
+            f"Pre-treatment\n({firt_report_day} to {second_report_day})",
             f"Post-treatment\n({treatment_day} to {last_day})",
             "Increment"
         ]
@@ -440,13 +476,18 @@ if 'incremental_report' not in st.session_state:
         st.session_state.incremental_report = None
 if 'last_day' not in st.session_state:
         st.session_state.last_day = None
-if 'first_day' not in st.session_state:
-        st.session_state.first_day = None
-if 'first_report_day' not in st.session_state:
-        st.session_state.first_report_day = None
+if 'firt_day' not in st.session_state:
+        st.session_state.firt_day = None
+if 'firt_report_day' not in st.session_state:
+        st.session_state.firt_report_day = None
 if 'second_report_day' not in st.session_state:
         st.session_state.second_report_day = None
-        
+if 'lower_bound_value' not in st.session_state:
+        st.session_state.lower_bound_value = None
+if 'upper_bound_value' not in st.session_state:
+        st.session_state.upper_bound_value = None
+if 'prediction_value' not in st.session_state:
+        st.session_state.prediction_value = None
 
 
 
@@ -510,20 +551,50 @@ if file is not None:
             st.session_state.current_fig = None
             st.session_state.simulation_button_clicked = False
 
+        def normalize_text(text):
+            """Remove accents and convert to lowercase"""
+            if not isinstance(text, str):
+                return str(text).lower()
+            return ''.join(c for c in unicodedata.normalize('NFD', text)
+                          if unicodedata.category(c) != 'Mn').lower()
+
+        def reset_states():
+            st.session_state.graph_generated = False
+            st.session_state.current_fig = None
+            st.session_state.simulation_button_clicked = False
+
+        # Palabras clave originales
+        contains_date = ["date", "day", "time", "fecha", "dia", "tiempo"]
+        contains_locations = ["location", "region", "state", "ubicacion", "region", "estado"]
+
+        # Palabras clave normalizadas
+        contains_date_norm = [normalize_text(x) for x in contains_date]
+        contains_locations_norm = [normalize_text(x) for x in contains_locations]
+
         with col1:
-            contains_date = ["date", "day", "time"]
-            matching_column1 = next((col for col in data.columns if any(p in col.lower() for p in contains_date)), None)
-            col_dates = st.text_input("Dates", matching_column1 if matching_column1 else "", 
+            matching_column1 = next(
+                (col for col in data.columns if any(p in normalize_text(col) for p in contains_date_norm)), None
+            )
+            col_dates = st.text_input("Date", matching_column1 if matching_column1 else "", 
                                     on_change=reset_states, key="dates")
         with col2:
-            contains_locations = ["location", "region", "state"]
-            matching_column2 = next((col for col in data.columns if any(q in col.lower() for q in contains_locations)), None)
+            matching_column2 = next(
+                (col for col in data.columns if any(q in normalize_text(col) for q in contains_locations_norm)), None
+            )
+            if matching_column2:
+                data[matching_column2] = data[matching_column2].astype(str)
             col_locations = st.text_input("Locations", matching_column2 if matching_column2 else "", 
                                         on_change=reset_states, key="locations")
         with col3:
-            target_columns = [col for col in data.columns 
-                            if not any(d in col.lower() for d in contains_date) 
-                            and not any(l in col.lower() for l in contains_locations)]
+            target_columns = [
+                col for col in data.columns
+                if not any(
+                    d in normalize_text(col) for d in contains_date_norm
+                )
+                and not any(
+                    l in normalize_text(col) for l in contains_locations_norm
+                )
+            ]
             col_target = st.selectbox("Target", target_columns, on_change=reset_states, key="target")
         
         if col_dates == "" or col_locations == "" or col_target == "":
@@ -560,7 +631,7 @@ if file is not None:
             st.subheader("3. Experimental evaluation")
             random_sate = data1['location'].unique()[0]
             filtered_data = data1[data1['location'] == random_sate]
-            first_day = filtered_data['time'].min()
+            firt_day = filtered_data['time'].min()
             last_day = filtered_data['time'].max()
             
 
@@ -568,8 +639,8 @@ if file is not None:
 
 
             st.text("Parameter configuration")
-            start_treatment = st.date_input("Treatment start date",min_value=first_day,max_value=last_day,value=first_day)
-            end_treatment = st.date_input("Treatment end date",min_value=first_day,max_value=last_day,value=last_day)
+            start_treatment = st.date_input("Treatment start date",min_value=firt_day,max_value=last_day,value=firt_day)
+            end_treatment = st.date_input("Treatment end date",min_value=firt_day,max_value=last_day,value=last_day)
             treatment_group = st.multiselect("Select treatment group", data1['location'].unique())
             spend = st.number_input("Select spend")
             mmm_option = st.selectbox("Select the option to calculate the iROAS or iCPA", ["iROAS", "iCPA"])
@@ -619,12 +690,15 @@ if file is not None:
             if st.button("Evaluate") or st.session_state.evaluation_button_clicked:
                 if not st.session_state.evaluation_button_clicked:
                     st.session_state.evaluation_button_clicked = True
-                    with st.spinner('Running analysis... Please wait.'):
+                    
+                    update_metrics("experimental_evaluation")
+                    
+                    with st.spinner('Running analysis...'):
                         
-                        results = run_geo_evaluation(data1, start_treatment, end_treatment, treatment_group,spend)
+                        results = run_geo_evaluation(data1, start_treatment, end_treatment, treatment_group, spend)
                         treatment = results['treatment']
                         st.session_state.treatment = treatment
-                        counterfactual = results['predictions']
+                        counterfactual = results['counterfactual']
                         st.session_state.counterfactual = counterfactual
                         p_value = results['p_value']
                         st.session_state.p_value = p_value
@@ -645,8 +719,7 @@ if file is not None:
                         
                         total_Y = data1['Y'].sum()
                         treatment_Y = data1[data1['location'].isin(treatment_group)]['Y'].sum()
-                        lift_total_pre = results["treatment"] - results["predictions"]
-                        lift_total = np.sum(lift_total_pre[start_position_treatment:])
+                        lift_total = (results["treatment"][start_position_treatment:].sum() - results["counterfactual"][start_position_treatment:].sum())
                         st.session_state.lift_total = round(lift_total,2)
                         st.session_state.holdout_percentage = round(((total_Y - treatment_Y) / total_Y) * 100, 2)
                         st.session_state.treatment_group = ", ".join(treatment_group)
@@ -656,7 +729,7 @@ if file is not None:
                         st.session_state.permutation_test_report = plot_permutation_test_report(results)
                         st.session_state.period = period
                         second_report_day = last_day - pd.Timedelta(days=period)
-                        first_report_day = last_day - pd.Timedelta(days=(period*2)-1)
+                        firt_report_day = last_day - pd.Timedelta(days=(period*2)-1)
                         treatment_day = last_day - pd.Timedelta(days=period-1)
                 
                         
@@ -669,12 +742,17 @@ if file is not None:
 
                         
                         length_treatment = len(treatment_group)
-                        impact_graph,att,incremental = plot_impact_evaluation_streamlit(results,filtered_data,length_treatment)
+                        impact_graph,att,incremental,lower_bound_value,upper_bound_value,prediction_value = plot_impact_evaluation_streamlit(results,filtered_data,length_treatment)
+                        st.session_state.lower_bound_value = lower_bound_value
+                        st.session_state.upper_bound_value = upper_bound_value
                         st.session_state.incremental = incremental
+                        st.session_state.prediction_value = prediction_value
                         
                         st.session_state.impact_graph = impact_graph
 
-                        impact_graph_report,pre_treatment,pre_counterfactual,post_treatment,post_counterfactual,att_report,incremental_report = plot_impact_evaluation_report(results)
+                        impact_graph_report,pre_treatment,pre_counterfactual,post_treatment,post_counterfactual,att_report,incremental_report,lower_bound_value,upper_bound_value,prediction_value = plot_impact_evaluation_report(results)
+                        st.session_state.lower_bound_value = lower_bound_value
+                        st.session_state.upper_bound_value = upper_bound_value
                         st.session_state.impact_graph_report = impact_graph_report
                         st.session_state.pre_treatment = pre_treatment
                         st.session_state.pre_counterfactual = pre_counterfactual
@@ -688,10 +766,10 @@ if file is not None:
                         
 
                 
-                if mmm_option == "iCPA":
+                if mmm_option == "iROAS":
                     st.session_state.metric_mmm = spend / st.session_state.incremental 
                 else:
-                    st.session_state.metric_mmm = st.session_state.incremental / spend 
+                    st.session_state.metric_mmm = spend / st.session_state.incremental 
 
 
                 
@@ -700,29 +778,26 @@ if file is not None:
                 st.write(f"P-value: {st.session_state.p_value}")
                 st.write(f"Power: {st.session_state.power}")
                 st.write(f"Percentage Lift: {st.session_state.percenge_lift} %")
-                st.write(f"Lift_total: {st.session_state.lift_total}")
+                st.write(f"Lift total: {st.session_state.lift_total}")
                 st.write(f"Holdout percentage: {st.session_state.holdout_percentage} %")
                 st.write(f"Treatment group: {st.session_state.treatment_group}")
                 st.write(f"Control group: {st.session_state.control_group}")
-           
+                # st.write(f"Lower bound value: {st.session_state.lower_bound_value}")
+                # st.write(f"Upper bound value: {st.session_state.upper_bound_value}")
+                # st.write(f"Prediction value: {st.session_state.prediction_value}")
                 
  
                 
                 last_day = pd.to_datetime(last_day)
                 treatment_day = last_day - pd.Timedelta(days=end_position_treatment - start_position_treatment)
                 second_report_day = last_day - pd.Timedelta(days=st.session_state.period)
-                first_report_day = last_day - pd.Timedelta(days=(st.session_state.period*2)-1)
+                firt_report_day = last_day - pd.Timedelta(days=(st.session_state.period*2)-1)
                 treatment_day = last_day - pd.Timedelta(days=st.session_state.period-1)
                 treatment_day = treatment_day.strftime('%Y-%m-%d')
                 last_day = last_day.strftime('%Y-%m-%d')
-                first_day = first_day.strftime('%Y-%m-%d')
-                first_report_day = first_report_day.strftime('%Y-%m-%d')
+                firt_day = firt_day.strftime('%Y-%m-%d')
+                firt_report_day = firt_report_day.strftime('%Y-%m-%d')
                 second_report_day = second_report_day.strftime('%Y-%m-%d')
-                # st.write(f"Last day: {last_day}")
-                # st.write(f"First day: {first_day}")
-                # st.write(f"First report day: {first_report_day}")
-                # st.write(f"Second report day: {second_report_day}")
-                # st.write(f"Treatment day: {treatment_day}")
 
 
 
@@ -765,56 +840,65 @@ if file is not None:
                 
 
                 st.write("##### Generate report of results")   
-
                 if st.button("Generate and Download PDF", key="pdf_button"):
-                    st.session_state.pdf_output = generate_pdf(
-                        st.session_state.treatment_group,
-                        st.session_state.control_group,
-                        st.session_state.holdout_percentage,
-                        st.session_state.impact_graph_report,
-                        st.session_state.percenge_lift,
-                        st.session_state.p_value,
-                        st.session_state.power,
-                        st.session_state.period,
-                        st.session_state.permutation_test_report,
-                        treatment_day,
-                        first_day,
-                        last_day,
-                        col_target,
-                        st.session_state.metric_mmm,
-                        st.session_state.mmm_option,
-                        st.session_state.lift_total,
-                        first_report_day,
-                        second_report_day,
-                        st.session_state.pre_treatment,
-                        st.session_state.pre_counterfactual,
-                        st.session_state.post_treatment,
-                        st.session_state.post_counterfactual,
-                        st.session_state.att_report,
-                        st.session_state.incremental_report,
-                        df,
-                        spend
-                    )
+                    with st.spinner("Generating report..."):
+                        st.session_state.pdf_output = generate_pdf(
+                            st.session_state.treatment_group,
+                            st.session_state.control_group,
+                            st.session_state.holdout_percentage,
+                            st.session_state.impact_graph_report,
+                            st.session_state.percenge_lift,
+                            st.session_state.p_value,
+                            st.session_state.power,
+                            st.session_state.period,
+                            st.session_state.permutation_test_report,
+                            treatment_day,
+                            firt_day,
+                            last_day,
+                            col_target,
+                            st.session_state.metric_mmm,
+                            st.session_state.mmm_option,
+                            st.session_state.lift_total,
+                            firt_report_day,
+                            second_report_day,
+                            st.session_state.pre_treatment,
+                            st.session_state.pre_counterfactual,
+                            st.session_state.post_treatment,
+                            st.session_state.post_counterfactual,
+                            st.session_state.att_report,
+                            st.session_state.incremental_report,
+                            df,
+                            spend,
+                            st.session_state.lower_bound_value,
+                            st.session_state.upper_bound_value,
+                            st.session_state.prediction_value
+                        )
 
 
 
 
-                    with open(st.session_state.pdf_output, "rb") as file:
-                        b64_pdf = base64.b64encode(file.read()).decode()
-                        download_button = f"""
-                            var link = document.createElement('a');
-                            link.href = 'data:application/pdf;base64,{b64_pdf}';
-                            link.download = 'experimental_evaluation_report.pdf';
-                            link.click();
-                        """
-                        streamlit_js_eval(js_expressions=download_button)
-                    
-                    
-                    if os.path.exists(st.session_state.pdf_output):
-                        os.remove(st.session_state.pdf_output)
+                        with open(st.session_state.pdf_output, "rb") as file:
+                            b64_pdf = base64.b64encode(file.read()).decode()
+                            download_button = f"""
+                                var link = document.createElement('a');
+                                link.href = 'data:application/pdf;base64,{b64_pdf}';
+                                link.download = 'experimental_evaluation_report.pdf';
+                                link.click();
+                            """
+                            streamlit_js_eval(js_expressions=download_button)
+                        
+                        
+                        if os.path.exists(st.session_state.pdf_output):
+                            os.remove(st.session_state.pdf_output)
 
                 
             
+
+
+
+
+
+
 
 
 

@@ -4,6 +4,10 @@ import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
 from Murray.main import BetterGroups, SyntheticControl, select_treatments, select_controls
 from Murray.auxiliary import market_correlations, cleaned_data
+from logger_config import get_logger
+
+# Inicializar logger para este módulo
+logger = get_logger("tests")
 
 @pytest.fixture(scope="module")
 def cleaned_dataframe():
@@ -66,7 +70,7 @@ def test_better_groups_valid(similarity_matrix, correlation_matrix, test_data):
 
 def test_better_groups_no_valid_treatments(similarity_matrix, correlation_matrix, test_data):
     test_data = test_data[test_data["location"].isin(["X", "Y"])]  
-    print(f"test data: {test_data}")
+    logger.debug(f"test data: {test_data}")
     results = BetterGroups(
         similarity_matrix=similarity_matrix,
         excluded_locations=[],

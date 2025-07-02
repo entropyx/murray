@@ -10,5 +10,11 @@ node_modules/
 *.pyz
 *.pdf
 *.pkl
+*.env
+.env
 build/
 *.egg-info
+.streamlit/secrets.toml
+traffic_metrics
+logs/
+
