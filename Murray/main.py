@@ -625,7 +625,7 @@ def BetterGroups(similarity_matrix, excluded_locations, data, correlation_matrix
             groups_processed_so_far = sum(len(results_by_size.get(s, [])) for s in sizes)
             log_interval = max(1, total_groups_all_sizes // 10)
 
-            with concurrent.futures.ProcessPoolExecutor(max_workers=2) as executor:
+            with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
                 futures = executor.map(
                     evaluate_group_exclusive,
                     groups,
@@ -636,7 +636,6 @@ def BetterGroups(similarity_matrix, excluded_locations, data, correlation_matrix
                     [df_pivot] * total_groups,
                     [used_treatment_locations] * total_groups,
                     [excluded_locations] * total_groups,
-                    chunksize=5
                 )
                 
                 for idx, result in enumerate(futures):
@@ -735,7 +734,7 @@ def BetterGroups(similarity_matrix, excluded_locations, data, correlation_matrix
     total_groups = len(possible_groups)
     results = []
     log_interval = max(1, total_groups // 10)
-    with concurrent.futures.ProcessPoolExecutor(max_workers=2) as executor:
+    with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
         futures = executor.map(
             evaluate_group,
             possible_groups,
@@ -765,20 +764,20 @@ def BetterGroups(similarity_matrix, excluded_locations, data, correlation_matrix
             treatment_Y = data[data['location'].isin(best_treatment_group)]['Y'].sum()
             
             if total_Y > 0:
-                holdout_percentage = round(((total_Y - treatment_Y) / total_Y) * 100, 2)
+                holdout_percentage = ((total_Y - treatment_Y) / total_Y) * 100
             else:
                 holdout_percentage = 0.0
 
             results_by_size[size] = {
                 'Best Treatment Group': best_treatment_group,
                 'Control Group': best_control_group,
-                'MAPE': round(best_MAPE, 2),
-                'SMAPE': round(best_SMAPE, 2),
-                'Actual Target Metric (y)': np.round(y, 2),
-                'Predictions': np.round(predictions, 2),
-                'Weights': np.round(weights, 2),
+                'MAPE': best_MAPE,
+                'SMAPE': best_SMAPE,
+                'Actual Target Metric (y)': y,
+                'Predictions': predictions,
+                'Weights': weights,
                 'Holdout Percentage': holdout_percentage,
-                'observed_conformity': round(observed_conformity, 2)
+                'observed_conformity': observed_conformity
             }
 
     if not results or all(result is None for result in results):
@@ -922,7 +921,7 @@ def run_simulation(delta, y_real, y_control, period, n_permutations, significanc
         logger.error(f"Simulation failed for delta={delta}, period={period}: {str(e)}")
         raise
 
-def evaluate_sensitivity(results_by_size, deltas, periods, n_permutations, significance_level=0.05, inference_type="iid", size_block=None, progress_bar=None, status_text=None):
+def evaluate_sensitivity(results_by_size, deltas, periods, n_permutations, significance_level=0.05, inference_type="iid",  size_block=None, progress_bar=None, status_text=None):
     """
     Evaluates sensitivity of results to different treatment periods and deltas using permutations.
 
@@ -979,9 +978,7 @@ def evaluate_sensitivity(results_by_size, deltas, periods, n_permutations, signi
             for delta in deltas:
                 logger.debug(f"Running simulation for size={size}, period={period}, delta={delta}")
                 res = run_simulation(delta, y_real, y_control, period, n_permutations, significance_level, inference_type, size_block)
-                # Round the results
-                delta, power, adjusted_series = res
-                results.append((round(delta, 2), round(power, 2), np.round(adjusted_series, 2)))
+                results.append(res)
 
                 
                 step += 1
