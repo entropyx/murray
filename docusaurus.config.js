@@ -109,27 +109,27 @@ const config = {
       style: 'dark',
       links: [
         {
-          title: 'Aprende Murray',
+          title: 'Learn Murray',
           items: [
             {
-              label: 'Documentación',
+              label: 'Documentation',
               to: '/docs/Welcome%20to%20Murray',
             },
             {
-              label: 'Guía de Usuario',
+              label: 'User Guide',
               to: '/docs/tutorial-extras/User%20Guide',
             },
             {
-              label: 'Metodología',
+              label: 'Methodology',
               to: '/docs/Methodology',
             },
           ],
         },
         {
-          title: 'Recursos',
+          title: 'Resources',
           items: [
             {
-              label: 'Ejemplos',
+              label: 'Examples',
               to: '/docs/Murray%20Python%20Package/Walkthrough',
             },
             {
@@ -146,7 +146,7 @@ const config = {
           title: 'Entropy Community',
           items: [
             {
-              label: 'Sitio Oficial',
+              label: 'Official Site',
               href: 'https://entropyx.github.io',
             },
             {
@@ -163,11 +163,11 @@ const config = {
           title: 'Legal',
           items: [
             {
-              label: 'Licencia',
+              label: 'License',
               href: 'https://github.com/entropyx/murray/blob/main/LICENSE',
             },
             {
-              label: 'Términos de Uso',
+              label: 'Terms of Use',
               href: '#',
             },
           ],

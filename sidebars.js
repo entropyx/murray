@@ -29,7 +29,7 @@ const sidebars = {
     },
     {
       type: 'category',
-      label: 'Comenzando',
+      label: 'Getting Started',
       items: [
         {
           type: 'doc',
