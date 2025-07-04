@@ -57,16 +57,8 @@ function StatsSection() {
       <div className="container">
         <div className={styles.statsGrid}>
           <div className={styles.statItem}>
-            <div className={styles.statNumber}>95%</div>
-            <div className={styles.statLabel}>Accuracy in geospatial analysis results</div>
-          </div>
-          <div className={styles.statItem}>
-            <div className={styles.statNumber}>5x</div>
-            <div className={styles.statLabel}>Processing speed improvement</div>
-          </div>
-          <div className={styles.statItem}>
-            <div className={styles.statNumber}>24/7</div>
-            <div className={styles.statLabel}>Specialized technical support</div>
+            <div className={styles.statNumber}>MMM</div>
+            <div className={styles.statLabel}>Incremental measurement for calibration</div>
           </div>
         </div>
       </div>
@@ -90,7 +82,7 @@ export default function Home() {
               <Feature
                 icon="📊"
                 title="Accurate Measurement"
-                description="Use advanced statistical models and AI algorithms to measure the ROI of online and offline media."
+                description="Use advanced mathematical models and statistical models to measure incremental impact."
                 link="/docs/Methodology"
               />
               <Feature
@@ -100,9 +92,9 @@ export default function Home() {
                 link="/docs/Murray%20Python%20Package/Walkthrough"
               />
               <Feature
-                icon="⚡"
-                title="Scalable Processing"
-                description="Optimized architecture for handling large volumes of geospatial data with maximum performance."
+                icon="🔍"
+                title="Full visibility"
+                description="See the impact of differents scenarios in your business."
                 link="/docs/Murray%20Python%20Package/Getting%20Started"
               />
             </div>

@@ -95,7 +95,7 @@ const config = {
           type: 'docSidebar',
           sidebarId: 'tutorialSidebar',
           position: 'left',
-          label: 'Documentación',
+          label: 'Documentation',
         },
         {
           href: 'https://github.com/entropyx/murray',
