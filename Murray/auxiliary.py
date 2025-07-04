@@ -3,42 +3,45 @@ from logger_config import get_logger
 
 logger = get_logger("auxiliary")
 
-def handle_duplicates(data, subset=['time', 'location'], agg_method='mean'):
+
+def handle_duplicates(data, subset=["time", "location"], agg_method="mean"):
     """
     Handle duplicate entries in a DataFrame by aggregating them.
-    
+
     Args:
         data (pd.DataFrame): The DataFrame to check for duplicates
         subset (list): Columns to check for duplicates
         agg_method (str): Aggregation method ('mean', 'sum', 'first', 'last')
-    
+
     Returns:
         pd.DataFrame: DataFrame with duplicates handled
     """
-    
-    
+
     if data.empty:
         logger.warning("DataFrame is empty, returning as is")
         return data
-    
-    
+
     missing_cols = [col for col in subset if col not in data.columns]
     if missing_cols:
         raise ValueError(f"Missing columns for duplicate check: {missing_cols}")
-    
+
     duplicates = data.duplicated(subset=subset, keep=False)
     if duplicates.any():
-        logger.warning(f"Found {duplicates.sum()} duplicate entries in the data. Aggregating by {agg_method}.")
-        
-        data = data.groupby(subset)['Y'].agg(agg_method).reset_index()
+        logger.warning(
+            f"Found {duplicates.sum()} duplicate entries in the data. Aggregating by {agg_method}."
+        )
+
+        data = data.groupby(subset)["Y"].agg(agg_method).reset_index()
     else:
         logger.debug("No duplicate entries found")
-    
-    
+
     if data.duplicated(subset=subset).any():
-        raise ValueError(f"Duplicate entries still exist after aggregation in columns {subset}. Please check your data.")
-    
+        raise ValueError(
+            f"Duplicate entries still exist after aggregation in columns {subset}. Please check your data."
+        )
+
     return data
+
 
 def cleaned_data(data, col_target, col_locations, col_dates, fill_value=0):
     """
@@ -55,74 +58,78 @@ def cleaned_data(data, col_target, col_locations, col_dates, fill_value=0):
         pd.DataFrame: A cleaned and processed DataFrame, indexed by date and location.
     """
     try:
-        
+
         if not isinstance(data, pd.DataFrame):
             raise TypeError("Input data must be a pandas DataFrame.")
 
-        
-        missing_columns = [col for col in [col_target, col_locations, col_dates] if col not in data.columns]
+        missing_columns = [
+            col
+            for col in [col_target, col_locations, col_dates]
+            if col not in data.columns
+        ]
         if missing_columns:
             raise ValueError(f"Missing required columns: {', '.join(missing_columns)}")
 
-        
-        invalid_values = ['(not set)', 'nan']
+        invalid_values = ["(not set)", "nan"]
         data = data[~data[col_locations].isin(invalid_values)]
         data = data.dropna(subset=[col_locations])
 
-        
         data[col_locations] = data[col_locations].str.strip().str.lower()
 
-        
-        data_input = data.rename(columns={
-            col_locations: 'location',
-            col_target: 'Y',
-            col_dates: 'time'
-        })
+        data_input = data.rename(
+            columns={col_locations: "location", col_target: "Y", col_dates: "time"}
+        )
 
-        
         if data_input.empty:
-            raise ValueError(f"The DataFrame is empty after processing. Please check your data in the {col_target} column.")
+            raise ValueError(
+                f"The DataFrame is empty after processing. Please check your data in the {col_target} column."
+            )
 
-        
-        data_input['time'] = pd.to_datetime(data_input['time'], errors='coerce')
+        data_input["time"] = pd.to_datetime(data_input["time"], errors="coerce")
 
-        
-        if data_input['time'].isna().any():
+        if data_input["time"].isna().any():
             raise ValueError("Some dates are invalid. Please check and correct them.")
 
-        
-        if not data_input['time'].notna().any():
-            raise ValueError("No valid dates found in the 'time' column. Please check your data.")
+        if not data_input["time"].notna().any():
+            raise ValueError(
+                "No valid dates found in the 'time' column. Please check your data."
+            )
 
-        
-        all_dates = pd.date_range(start=data_input['time'].min(), end=data_input['time'].max(), freq='D')
-        all_locations = data_input['location'].unique()
+        all_dates = pd.date_range(
+            start=data_input["time"].min(), end=data_input["time"].max(), freq="D"
+        )
+        all_locations = data_input["location"].unique()
 
-        
-        if data_input['location'].isna().any():
-            raise ValueError("NaN values found in the 'location' column. Please review the data.")
+        if data_input["location"].isna().any():
+            raise ValueError(
+                "NaN values found in the 'location' column. Please review the data."
+            )
 
-        
         if len(all_locations) == 0:
-            raise ValueError("No valid locations found after cleaning. Please check your data.")
+            raise ValueError(
+                "No valid locations found after cleaning. Please check your data."
+            )
 
-        
-        data_input = handle_duplicates(data_input, subset=['time', 'location'], agg_method='mean')
-        
-        
-        full_index = pd.MultiIndex.from_product([all_dates, all_locations], names=['time', 'location'])
+        data_input = handle_duplicates(
+            data_input, subset=["time", "location"], agg_method="mean"
+        )
+
+        full_index = pd.MultiIndex.from_product(
+            [all_dates, all_locations], names=["time", "location"]
+        )
         full_data = pd.DataFrame(index=full_index).reset_index()
-        full_data['time'] = pd.to_datetime(full_data['time'])
+        full_data["time"] = pd.to_datetime(full_data["time"])
 
-        
-        merged_data = pd.merge(full_data, data_input, on=['time', 'location'], how='left')
-        merged_data['Y'] = merged_data['Y'].fillna(fill_value)
+        merged_data = pd.merge(
+            full_data, data_input, on=["time", "location"], how="left"
+        )
+        merged_data["Y"] = merged_data["Y"].fillna(fill_value)
 
-        
-        zero_counts = merged_data.groupby('location')['Y'].apply(lambda x: (x == 0).sum())
+        zero_counts = merged_data.groupby("location")["Y"].apply(
+            lambda x: (x == 0).sum()
+        )
         high_zero_locations = zero_counts[zero_counts > len(merged_data) * 0.8]
 
-        
         return merged_data
 
     except (TypeError, ValueError) as e:
@@ -131,8 +138,6 @@ def cleaned_data(data, col_target, col_locations, col_dates, fill_value=0):
     except Exception as e:
         logger.error(f"An unexpected error occurred: {str(e)}")
         raise Exception(f"An unexpected error occurred: {str(e)}") from e
-
-
 
 
 def market_correlations(data):
@@ -146,12 +151,12 @@ def market_correlations(data):
     Returns:
         correlation_matrix (pd.DataFrame): DataFrame containing correlations between locations in a standard matrix format.
     """
-    
-    required_columns = {'time', 'location', 'Y'}
+
+    required_columns = {"time", "location", "Y"}
     if not required_columns.issubset(data.columns):
         raise ValueError(f"The DataFrame must contain the columns: {required_columns}")
-    
-    pivoted_data = data.pivot(index='time', columns='location', values='Y')
-    
-    correlation_matrix = pivoted_data.corr(method='pearson')
+
+    pivoted_data = data.pivot(index="time", columns="location", values="Y")
+
+    correlation_matrix = pivoted_data.corr(method="pearson")
     return correlation_matrix

@@ -37,7 +37,7 @@ logger.add(
     level="INFO",
     colorize=True,
     backtrace=True,
-    diagnose=True
+    diagnose=True,
 )
 
 
@@ -47,18 +47,18 @@ logger.add(
     format=file_format,
     level="INFO",
     backtrace=True,
-    diagnose=True
+    diagnose=True,
 )
 
 
 def get_logger(name: str = None, context: str = None):
     """
     Get a logger with specific context.
-    
+
     Args:
         name: Module/function name
         context: Additional context (e.g: 'simulation', 'evaluation')
-    
+
     Returns:
         Logger configured with context
     """
@@ -66,13 +66,11 @@ def get_logger(name: str = None, context: str = None):
         log = logger.bind(name=name)
     else:
         log = logger
-    
+
     if context:
         log = log.bind(context=context)
-    
+
     return log
 
 
-
-
-__all__ = ['logger', 'get_logger'] 
+__all__ = ["logger", "get_logger"]

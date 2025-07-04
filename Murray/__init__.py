@@ -10,8 +10,7 @@ from .plots import (
     plot_metrics,
     plot_impact_graphs_evaluation,
     print_incremental_results_evaluation,
-    plot_permutation_test
+    plot_permutation_test,
 )
 
 __version__ = "1.1.0"
-
