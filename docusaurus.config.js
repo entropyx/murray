@@ -17,19 +17,16 @@ const config = {
   onBrokenMarkdownLinks: 'warn',
 
   i18n: {
-    defaultLocale: 'es',
-    locales: ['es', 'en'],
+    defaultLocale: 'en',
+    locales: ['en'],
   },
 
-  // Metadatos adicionales para SEO
-  metadata: [
-    {name: 'keywords', content: 'geospatial, experiments, Murray, entropy, analysis'},
-    {name: 'description', content: 'Murray es una herramienta avanzada para el diseño y análisis de experimentos geoespaciales'},
-    {property: 'og:image', content: 'img/card_social.jpg'},
-    {property: 'og:type', content: 'website'},
-    {name: 'twitter:card', content: 'summary_large_image'},
-  ],
- 
+  // Metadatos personalizados
+  customFields: {
+    keywords: 'geospatial, experiments, Murray, entropy, analysis',
+    description: 'Murray es una herramienta avanzada para el diseño y análisis de experimentos geoespaciales',
+  },
+
   presets: [
     [
       'classic',
@@ -40,31 +37,11 @@ const config = {
           rehypePlugins: [require('rehype-katex')],
           // Configuración adicional para docs
           editUrl: 'https://github.com/entropyx/murray/tree/main/',
-          showLastUpdateAuthor: true,
+          showLastUpdateAuthor: false,
           showLastUpdateTime: true,
           breadcrumbs: true,
         },
-        blog: {
-          showReadingTime: true,
-          readingTime: ({content, frontMatter, defaultReadingTime}) =>
-            defaultReadingTime({content, options: {wordsPerMinute: 300}}),
-          feedOptions: {
-            type: ['rss', 'atom'],
-            xslt: true,
-            title: 'Murray Blog',
-            description: 'Noticias y actualizaciones sobre Murray',
-          },
-          onInlineTags: 'warn',
-          onInlineAuthors: 'warn',
-          onUntruncatedBlogPosts: 'warn',
-          remarkPlugins: [require('remark-math')],
-          rehypePlugins: [require('rehype-katex')],
-          blogTitle: 'Murray Blog',
-          blogDescription: 'Noticias y actualizaciones sobre Murray',
-          postsPerPage: 10,
-          blogSidebarTitle: 'Artículos recientes',
-          blogSidebarCount: 'ALL',
-        },
+        blog: false,
         theme: {
           customCss: './src/css/custom.css',
         },
@@ -73,19 +50,19 @@ const config = {
   ],
 
   plugins: [
-    // Plugin para sitemap
-    [
-      '@docusaurus/plugin-sitemap',
-      {
-        changefreq: 'weekly',
-        priority: 0.5,
-        ignorePatterns: ['/tags/**'],
-        filename: 'sitemap.xml',
-      },
-    ],
+    // Plugins adicionales (sitemap ya incluido en preset classic)
   ],
 
   themeConfig: {
+    // Metadatos para SEO
+    metadata: [
+      {name: 'keywords', content: 'geospatial, experiments, Murray, entropy, analysis'},
+      {name: 'description', content: 'Murray es una herramienta avanzada para el diseño y análisis de experimentos geoespaciales'},
+      {property: 'og:image', content: 'img/card_social.jpg'},
+      {property: 'og:type', content: 'website'},
+      {name: 'twitter:card', content: 'summary_large_image'},
+    ],
+
     // Configuración de colores del tema
     colorMode: {
       defaultMode: 'light',
@@ -119,19 +96,6 @@ const config = {
           sidebarId: 'tutorialSidebar',
           position: 'left',
           label: 'Documentación',
-        },
-        {
-          to: '/blog',
-          label: 'Blog',
-          position: 'left'
-        },
-        {
-          type: 'search',
-          position: 'right',
-        },
-        {
-          type: 'localeDropdown',
-          position: 'right',
         },
         {
           href: 'https://github.com/entropyx/murray',
@@ -223,16 +187,7 @@ const config = {
       darkTheme: prismThemes.dracula,
       additionalLanguages: ['bash', 'json', 'python', 'javascript', 'typescript'],
     },
-    // Configuración del algoritmo de búsqueda
-    algolia: {
-      // Si tienes configurado Algolia
-      appId: 'YOUR_APP_ID',
-      apiKey: 'YOUR_SEARCH_API_KEY',
-      indexName: 'YOUR_INDEX_NAME',
-      contextualSearch: true,
-      searchParameters: {},
-      searchPagePath: 'search',
-    },
+
     // Configuración de tabla de contenidos
     tableOfContents: {
       minHeadingLevel: 2,
@@ -259,10 +214,6 @@ const config = {
     // Analytics (opcional)
     {
       src: 'https://www.googletagmanager.com/gtag/js?id=GA_MEASUREMENT_ID',
-      async: true,
-    },
-    {
-      src: '/js/analytics.js',
       async: true,
     },
   ],
