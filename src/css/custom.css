@@ -4,97 +4,719 @@
  * work well for content-centric websites.
  */
 
+/* Importar fuentes similares a Entropy */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
 /* You can override the default Infima variables here. */
 :root {
-  /* Paleta principal inspirada en Entropy */
-  --ifm-color-primary: #0066cc; /* Azul principal */
-  --ifm-color-primary-dark: #0052a3;
-  --ifm-color-primary-darker: #004d99;
-  --ifm-color-primary-darkest: #003d7a;
-  --ifm-color-primary-light: #1a75d1;
-  --ifm-color-primary-lighter: #3385d6;
-  --ifm-color-primary-lightest: #4d94db;
+  /* Fuentes personalizadas estilo Entropy */
+  --ifm-font-family-base: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --ifm-font-family-monospace: 'JetBrains Mono', 'Fira Code', 'Monaco', 'Consolas', 'Liberation Mono', 'Courier New', monospace;
   
-  /* Colores del footer y otros elementos */
-  --ifm-footer-background-color: #111827; /* Gris oscuro/azulado */
-  --ifm-footer-color: #ffffff;
+  /* Paleta principal inspirada en Entropy */
+  --ifm-color-primary: #3E7CB1;
+  --ifm-color-primary-dark: #366d9b;
+  --ifm-color-primary-darker: #32658f;
+  --ifm-color-primary-darkest: #295274;
+  --ifm-color-primary-light: #468bd7;
+  --ifm-color-primary-lighter: #5299e3;
+  --ifm-color-primary-lightest: #66b0f0;
+  
+  /* Colores secundarios estilo Entropy */
+  --ifm-color-secondary: #211F24;
+  --ifm-color-success: #87D8AD;
+  --ifm-color-warning: #5F4D7B;
+  --ifm-color-danger: #FF6B6B;
+  --ifm-color-info: #3E7CB1;
+  
+  /* Colores de fondo estilo Entropy */
+  --ifm-background-color: #ffffff;
+  --ifm-background-surface-color: #f8f9fa;
+  --ifm-color-content-background: #ffffff;
+  
+  /* Colores de texto */
+  --ifm-font-color-base: #1a202c;
+  --ifm-font-color-secondary: #4a5568;
+  --ifm-heading-color: #1a202c;
+  
+  /* Colores de énfasis */
+  --ifm-color-emphasis-0: #ffffff;
+  --ifm-color-emphasis-100: #f7fafc;
+  --ifm-color-emphasis-200: #edf2f7;
+  --ifm-color-emphasis-300: #e2e8f0;
+  --ifm-color-emphasis-400: #cbd5e0;
+  --ifm-color-emphasis-500: #a0aec0;
+  --ifm-color-emphasis-600: #718096;
+  --ifm-color-emphasis-700: #4a5568;
+  --ifm-color-emphasis-800: #2d3748;
+  --ifm-color-emphasis-900: #1a202c;
+  
+  /* Colores del footer estilo Entropy */
+  --ifm-footer-background-color: #1a202c;
+  --ifm-footer-color: #f7fafc;
   --ifm-footer-link-color: #ffffff;
   --ifm-footer-title-color: #ffffff;
   
-  /* Colores de fondo y texto */
-  --ifm-background-color: #ffffff;
-  --ifm-font-color-base: #1f2937;
+  /* Espaciado y dimensiones */
+  --ifm-spacing-horizontal: 1.5rem;
+  --ifm-spacing-vertical: 1.5rem;
+  --ifm-global-spacing: 1rem;
+  
+  /* Bordes y sombras estilo Entropy */
+  --ifm-border-radius: 12px;
+  --ifm-border-radius-sm: 8px;
+  --ifm-border-radius-lg: 16px;
+  
+  /* Sombras estilo Entropy */
+  --ifm-shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  --ifm-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --ifm-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --ifm-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --ifm-shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  
+  /* Transiciones */
+  --ifm-transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  --ifm-transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --ifm-transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  
+  /* Tipografía optimizada */
+  --ifm-font-size-base: 14px;
+  --ifm-font-weight-light: 300;
+  --ifm-font-weight-normal: 400;
+  --ifm-font-weight-medium: 500;
+  --ifm-font-weight-semibold: 600;
+  --ifm-font-weight-bold: 700;
+  --ifm-font-weight-extrabold: 800;
+  --ifm-font-weight-black: 900;
+  
+  /* Tamaños de fuente reducidos */
+  --ifm-h1-font-size: 5.8rem;
+  --ifm-h2-font-size: 2rem;
+  --ifm-h3-font-size: 1.5rem;
+  --ifm-h4-font-size: 1.25rem;
+  --ifm-h5-font-size: 1.1rem;
+  --ifm-h6-font-size: 1rem;
+  
+  /* Líneas de altura */
+  --ifm-line-height-base: 1.7;
+  --ifm-heading-line-height: 1.2;
+  
+  /* Gradientes estilo Entropy */
+  --entropy-gradient-primary: linear-gradient(135deg, #3E7CB1 0%, #295274 100%);
+  --entropy-gradient-secondary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --entropy-gradient-dark: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
+  --entropy-gradient-light: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
 }
 
-/* For readability concerns, you should choose a lighter palette in dark mode. */
+/* Tema oscuro estilo Entropy */
 [data-theme='dark'] {
-  --ifm-color-primary: #4d94db;
-  --ifm-color-primary-dark: #3385d6;
-  --ifm-color-primary-darker: #1a75d1;
-  --ifm-color-primary-darkest: #0066cc;
-  --ifm-color-primary-light: #66a3e0;
-  --ifm-color-primary-lighter: #80b3e6;
-  --ifm-color-primary-lightest: #99c2eb;
-  --ifm-background-color: #1f2937;
-  --ifm-font-color-base: #ffffff;
+  --ifm-color-primary: #5299e3;
+  --ifm-color-primary-dark: #3E7CB1;
+  --ifm-color-primary-darker: #366d9b;
+  --ifm-color-primary-darkest: #295274;
+  --ifm-color-primary-light: #66b0f0;
+  --ifm-color-primary-lighter: #7bbdf3;
+  --ifm-color-primary-lightest: #90caf6;
+  
+  --ifm-background-color: #0f1419;
+  --ifm-background-surface-color: #1a202c;
+  --ifm-color-content-background: #1a202c;
+  
+  --ifm-font-color-base: #e2e8f0;
+  --ifm-font-color-secondary: #a0aec0;
+  --ifm-heading-color: #ffffff;
+  
+  --ifm-color-emphasis-0: #0f1419;
+  --ifm-color-emphasis-100: #1a202c;
+  --ifm-color-emphasis-200: #2d3748;
+  --ifm-color-emphasis-300: #4a5568;
+  --ifm-color-emphasis-400: #718096;
+  --ifm-color-emphasis-500: #a0aec0;
+  --ifm-color-emphasis-600: #cbd5e0;
+  --ifm-color-emphasis-700: #e2e8f0;
+  --ifm-color-emphasis-800: #f7fafc;
+  --ifm-color-emphasis-900: #ffffff;
+  
+  --ifm-footer-background-color: #0f1419;
+  --ifm-footer-color: #f7fafc;
+  --ifm-footer-link-color: #ffffff;
+  --ifm-footer-title-color: #ffffff;
+  
+  --entropy-gradient-primary: linear-gradient(135deg, #5299e3 0%, #3E7CB1 100%);
+  --entropy-gradient-secondary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --entropy-gradient-dark: linear-gradient(135deg, #0f1419 0%, #1a202c 100%);
+  --entropy-gradient-light: linear-gradient(135deg, #2d3748 0%, #4a5568 100%);
 }
 
-/* 🎨 Modo Claro */
-.hero.hero--primary {
-  background: linear-gradient(135deg, #0066cc 0%, #004d99 100%);
+/* Estilos globales estilo Entropy */
+html {
+  scroll-behavior: smooth;
+  font-feature-settings: 'liga', 'kern';
+}
+
+body {
+  font-family: var(--ifm-font-family-base);
+  line-height: var(--ifm-line-height-base);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: 'liga', 'kern';
+}
+
+/* Tipografía estilo Entropy */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: var(--ifm-font-weight-bold);
+  line-height: var(--ifm-heading-line-height);
+  letter-spacing: -0.025em;
+  color: var(--ifm-heading-color);
+}
+
+h1 {
+  font-size: 3rem !important;
+  font-weight: var(--ifm-font-weight-extrabold);
+  color: var(--ifm-color-primary);
+  margin-bottom: 1.5rem;
+}
+
+h2 {
+  font-size: var(--ifm-h2-font-size);
+  font-weight: var(--ifm-font-weight-bold);
+}
+
+h3 {
+  font-size: var(--ifm-h3-font-size);
+  font-weight: var(--ifm-font-weight-semibold);
+}
+
+/* Enlaces profesionales */
+a {
+  color: var(--ifm-color-primary);
+  text-decoration: none;
+}
+
+/* Remover hover effects globales que pueden interferir */
+a:hover {
+  color: var(--ifm-color-primary);
+  text-decoration: none;
+}
+
+/* Botones profesionales */
+.button {
+  font-weight: var(--ifm-font-weight-semibold);
+  border-radius: var(--ifm-border-radius);
+  border: 2px solid transparent;
+  font-size: 1rem;
+  padding: 0.75rem 1.5rem;
+  text-transform: none;
+}
+
+.button--primary {
+  background: var(--ifm-color-primary);
+  color: white;
+  border: 2px solid transparent;
+}
+
+.button--secondary {
+  background: transparent;
+  color: var(--ifm-color-primary);
+  border: 2px solid var(--ifm-color-primary);
+}
+
+/* Navbar profesional */
+.navbar {
+  background: var(--ifm-background-color);
+  border-bottom: 1px solid var(--ifm-color-emphasis-200);
+  padding: 0.5rem 0;
+}
+
+.navbar__title {
+  font-weight: var(--ifm-font-weight-bold);
+  font-size: 1.5rem;
+  color: var(--ifm-heading-color);
+}
+
+.navbar__link {
+  color: var(--ifm-font-color-base);
+  padding: 0.5rem 1rem;
+}
+
+.navbar__link--active {
+  color: var(--ifm-color-primary);
+  font-weight: var(--ifm-font-weight-semibold);
+}
+
+/* Eliminar hover effects de navbar */
+.navbar__link:hover {
+  color: var(--ifm-font-color-base);
+  text-decoration: none;
+}
+
+/* GitHub icon profesional */
+.header-github-link:before {
+  content: '';
+  width: 24px;
+  height: 24px;
+  display: flex;
+  background: url("data:image/svg+xml,%3Csvg viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill='%23718096' d='M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12'/%3E%3C/svg%3E") no-repeat;
+}
+
+[data-theme='dark'] .header-github-link:before {
+  background: url("data:image/svg+xml,%3Csvg viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill='%23e2e8f0' d='M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12'/%3E%3C/svg%3E") no-repeat;
+}
+
+/* Barra de anuncios profesional */
+.announcementBar {
+  background: var(--ifm-color-primary) !important;
+  color: white !important;
+  font-weight: var(--ifm-font-weight-medium);
+  padding: 0.75rem 0;
+}
+
+.announcementBar a {
+  color: white !important;
+  text-decoration: underline;
+  font-weight: var(--ifm-font-weight-semibold);
+}
+
+.announcementBar a:hover {
   color: white !important;
 }
 
-/* 🌙 Modo Oscuro */
-[data-theme='dark'] .hero.hero--primary {
-  background-color: transparent !important; /* Color para modo oscuro */
-  color: #ffffff !important;
+/* Sidebar profesional y limpio */
+.theme-doc-sidebar-container {
+  background: var(--ifm-background-surface-color);
+  border-right: 1px solid var(--ifm-color-emphasis-200);
 }
 
-/* Si prefieres usar una clase específica */
-.footer {
-  background-color: #211f24
-  ; /* O el color que prefieras */
+.menu__link {
+  padding: 0.5rem 1rem;
+  margin: 0.125rem 0;
+  color: var(--ifm-font-color-base) !important;
+  font-weight: var(--ifm-font-weight-normal);
 }
 
-/* Footer personalizado */
-footer.footer {
-  background-color: #111827 !important;
+.menu__link--active {
+  background: #6c757d !important;
+  color: white !important;
+  font-weight: var(--ifm-font-weight-medium);
 }
 
-.footer__link-item {
-  color: #ffffff !important;
+/* Asegurar que no hay hover effects */
+.menu__link:hover {
+  color: var(--ifm-font-color-base) !important;
+  background: none !important;
 }
 
-.footer__title {
-  color: #ffffff !important;
+.menu__link--active:hover {
+  background: #6c757d !important;
+  color: white !important;
 }
 
-/* Estilos para el footer */
-.footer {
-  padding: 1.5rem 0;  /* Reducimos el padding vertical */
+/* Para modo oscuro */
+[data-theme='dark'] .menu__link {
+  color: var(--ifm-font-color-base) !important;
 }
 
-.footer__links {
-  margin-bottom: 1rem;  /* Reducimos el espacio entre links y copyright */
+[data-theme='dark'] .menu__link--active {
+  background: #6c757d !important;
+  color: white !important;
 }
 
-.footer__col {
-  margin-bottom: 0;  /* Quitamos el margen inferior de las columnas */
+[data-theme='dark'] .menu__link:hover {
+  color: var(--ifm-font-color-base) !important;
+  background: none !important;
 }
 
-.footer__title {
+[data-theme='dark'] .menu__link--active:hover {
+  background: #6c757d !important;
+  color: white !important;
+}
+
+/* Override adicional para asegurar visibilidad total */
+.menu__link,
+.menu__link a,
+.theme-doc-sidebar-item-link {
+  color: var(--ifm-font-color-base) !important;
+}
+
+.menu__link--active,
+.menu__link--active a,
+.theme-doc-sidebar-item-link--active {
+  background: var(--ifm-color-emphasis-300) !important;
+  color: black !important;
+}
+
+/* Eliminar todas las transiciones y efectos hover */
+.menu__link,
+.menu__link a,
+.menu__link--active,
+.menu__link--active a {
+  transition: none !important;
+  text-decoration: none !important;
+}
+
+.menu__link:hover,
+.menu__link a:hover {
+  color: var(--ifm-font-color-base) !important;
+  background: none !important;
+  text-decoration: none !important;
+}
+
+.menu__link--active:hover,
+.menu__link--active a:hover {
+  background: #f1f1f1 !important;
+  color: black !important;
+  text-decoration: none !important;
+}
+
+/* Asegurar que las subsecciones expandidas sean visibles */
+.menu__list .menu__list-item,
+.menu__list .menu__list-item-collapsible {
+  color: var(--ifm-font-color-base) !important;
+}
+
+.menu__list .menu__list-item .menu__link,
+.menu__list .menu__list-item-collapsible .menu__link {
+  color: var(--ifm-font-color-base) !important;
+  background: none !important;
+}
+
+.menu__list .menu__list-item .menu__link--active,
+.menu__list .menu__list-item-collapsible .menu__link--active {
+  background: #f1f1f1 !important;
+  color: black !important;
+}
+
+
+
+/* Contenido principal estilo Entropy */
+.main-wrapper {
+  max-width: none;
+  background: var(--ifm-background-color);
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 var(--ifm-spacing-horizontal);
+}
+
+/* Markdown optimizado */
+.markdown {
+  line-height: var(--ifm-line-height-base);
   font-size: 1rem;
-  margin-bottom: 0.5rem;
+}
+
+.markdown h1, .markdown h2, .markdown h3, .markdown h4, .markdown h5, .markdown h6 {
+  margin-top: 3rem;
+  margin-bottom: 1.5rem;
+  scroll-margin-top: 5rem;
+}
+
+.markdown h1 {
+  font-size: 1.5rem !important;
+  font-weight: var(--ifm-font-weight-extrabold);
+  color: var(--ifm-color-primary);
+  margin-bottom: 1.5rem;
+}
+
+.markdown p {
+  margin-bottom: 1.5rem;
+  color: var(--ifm-font-color-secondary);
+}
+
+.markdown img {
+  border-radius: var(--ifm-border-radius);
+  box-shadow: var(--ifm-shadow-lg);
+  margin: 2rem 0;
+}
+
+.markdown blockquote {
+  border-left: 2px solid var(--ifm-color-emphasis-300);
+  background: none;
+  padding: 0.5rem 1rem;
+  margin: 1.5rem 0;
+  font-style: normal;
+  color: var(--ifm-font-color-secondary);
+}
+
+/* Bloques de código - usar defaults de Docusaurus */
+.prism-code {
+  border-radius: var(--ifm-border-radius);
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 0.9rem;
+}
+
+/* Tablas estilo Entropy */
+.markdown table {
+  border-collapse: collapse;
+  margin: 2rem 0;
+  width: 100%;
+  background: var(--ifm-background-surface-color);
+  border-radius: var(--ifm-border-radius);
+  overflow: hidden;
+  box-shadow: var(--ifm-shadow-sm);
+}
+
+.markdown th, .markdown td {
+  border: 1px solid var(--ifm-color-emphasis-200);
+  padding: 1rem;
+  text-align: left;
+}
+
+.markdown th {
+  background: var(--ifm-color-emphasis-100);
+  font-weight: var(--ifm-font-weight-semibold);
+  color: var(--ifm-heading-color);
+}
+
+.markdown tr:nth-child(even) {
+  background: var(--ifm-color-emphasis-50);
+}
+
+.markdown tr:hover {
+  background: none;
+}
+
+/* Footer estilo Entropy */
+.footer {
+  background: var(--ifm-footer-background-color) !important;
+  color: var(--ifm-footer-color);
+  padding: 3rem 0 1rem;
+  border-top: 1px solid var(--ifm-color-emphasis-200);
+}
+
+.footer__title {
+  color: var(--ifm-footer-title-color) !important;
+  font-weight: var(--ifm-font-weight-semibold);
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
 }
 
 .footer__link-item {
-  font-size: 0.9rem;
-  line-height: 1.5;  /* Reducimos el espacio entre líneas */
+  color: #ffffff !important;
+  font-weight: var(--ifm-font-weight-medium);
+  opacity: 0.9;
+  transition: all 0.2s ease;
 }
+
+.footer__link-item:hover {
+  color: var(--ifm-color-primary) !important;
+  text-decoration: none;
+  opacity: 1;
+}
+
+
 
 .footer__copyright {
-  font-size: 0.8rem;
-  margin-top: 0.5rem;  /* Reducimos el espacio antes del copyright */
+  color: var(--ifm-footer-color);
+  font-size: 0.9rem;
+  text-align: center;
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--ifm-color-emphasis-200);
+}
+
+/* Tabla de contenidos simplificada */
+.table-of-contents {
+  border-left: 2px solid var(--ifm-color-emphasis-300);
+  padding-left: 1rem;
+  background: none;
+  padding: 0.5rem 0 0.5rem 1rem;
+}
+
+.table-of-contents .table-of-contents__link {
+  color: var(--ifm-font-color-secondary);
+  font-weight: var(--ifm-font-weight-medium);
+}
+
+.table-of-contents .table-of-contents__link--active {
+  color: var(--ifm-color-primary);
+  font-weight: var(--ifm-font-weight-semibold);
+}
+
+/* Paginación simplificada */
+.pagination-nav {
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--ifm-color-emphasis-200);
+}
+
+.pagination-nav__link {
+  border: 1px solid var(--ifm-color-emphasis-200);
+  border-radius: 6px;
+  padding: 0.75rem 1rem;
+  background: var(--ifm-background-surface-color);
+}
+
+/* Alertas simplificadas */
+.alert {
+  border-radius: 4px;
+  border-left: 2px solid;
+  box-shadow: none;
+  padding: 0.75rem 1rem;
+  margin: 1rem 0;
+  background: none;
+}
+
+.alert--primary {
+  border-left-color: var(--ifm-color-primary);
+  background: rgba(62, 124, 177, 0.05);
+}
+
+.alert--secondary {
+  border-left-color: var(--ifm-color-secondary);
+  background: rgba(108, 117, 125, 0.05);
+}
+
+.alert--success {
+  border-left-color: var(--ifm-color-success);
+  background: rgba(135, 216, 173, 0.05);
+}
+
+.alert--warning {
+  border-left-color: var(--ifm-color-warning);
+  background: rgba(95, 77, 123, 0.05);
+}
+
+.alert--danger {
+  border-left-color: var(--ifm-color-danger);
+  background: rgba(255, 107, 107, 0.05);
+}
+
+.alert--info {
+  border-left-color: var(--ifm-color-info);
+  background: rgba(62, 124, 177, 0.05);
+}
+
+/* Breadcrumbs simplificados */
+.breadcrumbs {
+  margin-bottom: 1.5rem;
+  padding: 0.5rem 0;
+  background: none;
+}
+
+.breadcrumbs__item--active .breadcrumbs__link {
+  color: var(--ifm-color-primary);
+  font-weight: var(--ifm-font-weight-semibold);
+}
+
+/* Mejoras responsivas estilo Entropy */
+@media (max-width: 1024px) {
+  :root {
+    --ifm-spacing-horizontal: 1rem;
+    --ifm-h1-font-size: 2.5rem;
+    --ifm-h2-font-size: 2rem;
+    --ifm-h3-font-size: 1.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  :root {
+    --ifm-font-size-base: 15px;
+    --ifm-h1-font-size: 2rem;
+    --ifm-h2-font-size: 1.5rem;
+    --ifm-h3-font-size: 1.25rem;
+    --ifm-spacing-horizontal: 0.75rem;
+  }
+  
+  .container {
+    padding: 0 1rem;
+  }
+  
+  .navbar__title {
+    font-size: 1.25rem;
+  }
+  
+  .button {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  :root {
+    --ifm-font-size-base: 14px;
+    --ifm-h1-font-size: 1.75rem;
+    --ifm-h2-font-size: 1.5rem;
+    --ifm-h3-font-size: 1.25rem;
+  }
+  
+  .markdown h1, .markdown h2, .markdown h3, .markdown h4, .markdown h5, .markdown h6 {
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+  }
+}
+
+/* Override Docusaurus hero styles */
+.hero--primary .hero__title,
+.hero--primary h1,
+.hero--primary .container h1,
+.hero--primary .container .hero__title {
+  color: white !important;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.5) !important;
+}
+
+.hero--primary .hero__subtitle,
+.hero--primary p {
+  color: rgba(255, 255, 255, 0.9) !important;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.3) !important;
+}
+
+/* Ensure hero background is always appropriate */
+.hero--primary {
+  background: linear-gradient(135deg, var(--ifm-color-primary) 0%, var(--ifm-color-primary-dark) 50%, var(--ifm-color-primary-darkest) 100%) !important;
+}
+
+/* Force visibility for all hero text elements */
+.hero--primary *,
+.hero--primary .container *,
+.hero--primary .hero__title,
+.hero--primary .hero__subtitle {
+  color: white !important;
+}
+
+/* Specific overrides for hero title visibility */
+.hero--primary h1,
+.hero--primary .hero__title {
+  color: white !important;
+  text-shadow: 0 2px 6px rgba(0,0,0,0.7) !important;
+  font-weight: 700 !important;
+}
+
+/* Hero button overrides */
+.hero--primary .button--primary {
+  background: white !important;
+  color: var(--ifm-color-primary) !important;
+  font-weight: 700 !important;
+  border: none !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+}
+
+.hero--primary .button--primary:hover {
+  background: white !important;
+  color: var(--ifm-color-primary) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Dark mode button overrides */
+[data-theme='dark'] .hero--primary .button--primary {
+  background: linear-gradient(135deg, var(--ifm-color-primary) 0%, var(--ifm-color-primary-dark) 100%) !important;
+  color: white !important;
+  box-shadow: 0 4px 12px rgba(62, 124, 177, 0.3) !important;
+}
+
+[data-theme='dark'] .hero--primary .button--primary:hover {
+  background: linear-gradient(135deg, var(--ifm-color-primary) 0%, var(--ifm-color-primary-dark) 100%) !important;
+  color: white !important;
+  box-shadow: 0 4px 12px rgba(62, 124, 177, 0.3) !important;
+}
+
+/* Regla específica para títulos de páginas */
+.theme-doc-markdown h1,
+[class*="docTitle"] h1,
+.markdown > h1:first-child {
+  font-size: 3.5rem !important;
 }
 

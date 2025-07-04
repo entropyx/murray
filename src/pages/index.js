@@ -9,61 +9,133 @@ import styles from './index.module.css';
 function HomepageHeader() {
   const {siteConfig} = useDocusaurusContext();
   return (
-    <header className={clsx('hero', styles.heroBanner)}>
-      <div className={styles.heroInner}>
-        <Heading as="h1" className={styles.heroTitle}>
-          Geo Murray
-        </Heading>
-        <p className={styles.heroSubtitle}>
-        Tool for designing geospatial experiments
-        </p>
-      </div>
-      <div className={styles.heroWave}>
-        <svg viewBox="0 0 1440 320">
-          <path fill="currentColor" d="M0,96L48,112C96,128,192,160,288,160C384,160,480,128,576,112C672,96,768,96,864,112C960,128,1056,160,1152,160C1248,160,1344,128,1392,112L1440,96L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
-        </svg>
+    <header className={clsx('hero hero--primary', styles.heroBanner)}>
+      <div className="container">
+        <div className={styles.heroInner}>
+          <Heading as="h1" className={styles.heroTitle}>
+            Are you ready to optimize your geospatial analysis?
+          </Heading>
+          <p className={styles.heroSubtitle}>
+            Advanced geospatial measurement solutions to optimize business growth
+          </p>
+          <div className={styles.heroButtons}>
+            <Link
+              className={clsx('button button--primary button--lg', styles.primaryButton)}
+              to="/docs/Welcome%20to%20Murray">
+              Implement Murray
+            </Link>
+            <Link
+              className={clsx('button button--secondary button--lg', styles.secondaryButton)}
+              href="https://github.com/entropyx/murray">
+              See on GitHub
+            </Link>
+          </div>
+        </div>
       </div>
     </header>
   );
 }
 
-function Feature({title, description, icon}) {
+function Feature({title, description, icon, link}) {
   return (
     <div className={styles.feature}>
       <div className={styles.featureIcon}>{icon}</div>
       <h3 className={styles.featureTitle}>{title}</h3>
       <p className={styles.featureDescription}>{description}</p>
+      {link && (
+        <Link className={styles.featureLink} to={link}>
+          Explore more →
+        </Link>
+      )}
     </div>
   );
 }
+
+function StatsSection() {
+  return (
+    <section className={styles.stats}>
+      <div className="container">
+        <div className={styles.statsGrid}>
+          <div className={styles.statItem}>
+            <div className={styles.statNumber}>95%</div>
+            <div className={styles.statLabel}>Accuracy in geospatial analysis results</div>
+          </div>
+          <div className={styles.statItem}>
+            <div className={styles.statNumber}>5x</div>
+            <div className={styles.statLabel}>Processing speed improvement</div>
+          </div>
+          <div className={styles.statItem}>
+            <div className={styles.statNumber}>24/7</div>
+            <div className={styles.statLabel}>Specialized technical support</div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+
 
 export default function Home() {
   const {siteConfig} = useDocusaurusContext();
   return (
     <Layout
-      title={siteConfig.title}
-      description="A tool for geographic incrementality testing">
+      title={`${siteConfig.title} - Advanced Geospatial Analysis`}
+      description="Murray provides advanced geospatial measurement solutions to optimize business growth. Powerful, scalable, and reliable.">
       <HomepageHeader />
       <main>
-        <div className={styles.features}>
-          <div className={styles.featuresInner}>
-            <Feature
-              icon="🚀"
-              title="Easy to Use"
-              description="Murray was designed to be intuitive and accessible to any user."
-            />
-            <Feature
-              icon="📊"
-              title="Reliable Results"
-              description="Robust methods that generate accurate and reliable results."
-            />
-            <Feature
-              icon="⚡"
-              title="High Performance"
-              description="Optimized for handling large geospatial datasets."
-            />
+        <section className={styles.features}>
+          <div className="container">
+            <div className={styles.featuresInner}>
+              <Feature
+                icon="📊"
+                title="Accurate Measurement"
+                description="Use advanced statistical models and AI algorithms to measure the ROI of online and offline media."
+                link="/docs/Methodology"
+              />
+              <Feature
+                icon="🔬"
+                title="Robust Experimentation"
+                description="Conduct controlled experiments and geo-lift studies to calibrate and validate your measurement models."
+                link="/docs/Murray%20Python%20Package/Walkthrough"
+              />
+              <Feature
+                icon="⚡"
+                title="Scalable Processing"
+                description="Optimized architecture for handling large volumes of geospatial data with maximum performance."
+                link="/docs/Murray%20Python%20Package/Getting%20Started"
+              />
+            </div>
           </div>
-        </div>
+        </section>
+        
+        <StatsSection />
+        
+        <section className={styles.showcase}>
+          <div className="container">
+            <div className={styles.showcaseContent}>
+              <div className={styles.showcaseText}>
+                <h2>Powered by Entropy</h2>
+                <p>
+                  Murray is developed by Entropy, pioneers in marketing science and incremental measurement. 
+                  Our experience in Marketing Mix Modeling (MMM) and experimentation guarantees reliable and growth-oriented measurement solutions.
+                </p>
+                <Link
+                  className="button button--primary"
+                  href="https://entropy.tech">
+                  Learn more about Entropy
+                </Link>
+              </div>
+              <div className={styles.showcaseImage}>
+                <img
+                  src="/img/heatmap.png"
+                  alt="Advanced geospatial analysis with Murray"
+                  className={styles.showcaseImg}
+                />
+              </div>
+            </div>
+          </div>
+        </section>
       </main>
     </Layout>
   );
