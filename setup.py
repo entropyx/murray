@@ -1,5 +1,5 @@
 from setuptools import setup, find_packages
-import re 
+import re
 import os
 
 with open(os.path.join("Murray", "__init__.py")) as f:
@@ -17,7 +17,7 @@ setup(
         "tqdm",
         "matplotlib",
         "seaborn",
-        "plotly"
+        "plotly",
     ],
     author="Entropy Team",
     author_email="dev@entropy.tech",
