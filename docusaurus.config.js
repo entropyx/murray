@@ -173,14 +173,14 @@ const config = {
           ],
         },
       ],
-      logo: {
-        alt: 'Murray Logo',
-        src: 'img/logo.svg',
-        href: 'https://entropyx.github.io',
-        width: 160,
-        height: 51,
-      },
-      copyright: `Copyright © ${new Date().getFullYear()} Entropy Labs. Construido con Docusaurus.`,
+      // logo: {
+      //   alt: 'Murray Logo',
+      //   src: 'img/logo.svg',
+      //   href: 'https://entropyx.github.io',
+      //   width: 160,
+      //   height: 51,
+      // },
+      copyright: `Copyright © ${new Date().getFullYear()} Entropy. Built with Docusaurus.`,
     },
     prism: {
       theme: prismThemes.github,
