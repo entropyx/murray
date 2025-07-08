@@ -4,15 +4,18 @@ import pandas as pd
 from Murray.post_analysis import run_geo_evaluation
 from Murray.auxiliary import market_correlations, cleaned_data
 
+
 @pytest.fixture
 def sample_data():
     """Fixture that generates a test DataFrame with fictitious data"""
     np.random.seed(42)
-    data = pd.DataFrame({
-        "time": np.tile(pd.date_range("2023-01-01", periods=100, freq="D"), 10),
-        "location": np.repeat([f"Location_{i}" for i in range(10)], 100),
-        "Y": np.random.rand(1000) * 100
-    })
+    data = pd.DataFrame(
+        {
+            "time": np.tile(pd.date_range("2023-01-01", periods=100, freq="D"), 10),
+            "location": np.repeat([f"Location_{i}" for i in range(10)], 100),
+            "Y": np.random.rand(1000) * 100,
+        }
+    )
     return data
 
 
@@ -24,16 +27,27 @@ def test_run_geo_evaluation(sample_data):
         end_treatment="2023-03-10",
         treatment_group=["Location_0", "Location_1"],
         spend=50000,
-        n_permutations=100,  
+        n_permutations=100,
         inference_type="iid",
-        significance_level=0.05
+        significance_level=0.05,
     )
 
     assert isinstance(results, dict), "The result must be a dictionary"
     expected_keys = [
-        "MAPE", "SMAPE", "counterfactual", "treatment", "p_value", "power",
-        "percenge_lift", "control_group", "observed_stat",
-        "null_stats", "weights", "period", "spend", "length_treatment"
+        "MAPE",
+        "SMAPE",
+        "counterfactual",
+        "treatment",
+        "p_value",
+        "power",
+        "percenge_lift",
+        "control_group",
+        "observed_stat",
+        "null_stats",
+        "weights",
+        "period",
+        "spend",
+        "length_treatment",
     ]
     for key in expected_keys:
         assert key in results, f"Missing the key '{key}' in the results"
