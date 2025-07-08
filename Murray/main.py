@@ -571,23 +571,164 @@ def compute_residuals(y_treatment, y_control):
     return y_treatment - y_control
 
 
-def simulate_power(y_real, y_control, delta, period, n_permutations=1000, significance_level=0.05, inference_type="iid", stat_func=None):
+def _block_permutation(data, block_size):
     """
-    Simulates statistical power using conformal inference and returns the adjusted series.
+    Perform block-based permutation for time series data to preserve local temporal structure.
+    
+    Args:
+        data (numpy array): Time series data to permute
+        block_size (int): Size of blocks to permute
+        
+    Returns:
+        numpy array: Block-permuted data
+    """
+    data = np.array(data).flatten()
+    n = len(data)
+    
+    blocks = []
+    for i in range(0, n, block_size):
+        block = data[i:i + block_size]
+        blocks.append(block)
+    
+    np.random.shuffle(blocks)
+    
+    permuted = np.concatenate(blocks)
+    
+    return permuted[:n]
+
+
+def calculate_minimum_sample_size(y_real, y_control, delta, period, target_power=0.8, 
+                                 significance_level=0.05, inference_type="iid", 
+                                 max_iterations=20, tolerance=0.05):
+    """
+    Calculate minimum sample size needed to achieve target statistical power.
+    
+    Uses iterative approach to find the minimum number of time periods needed
+    to achieve the target power level for a given effect size.
+    
+    Args:
+        y_real (numpy array): Actual target metrics (full series)
+        y_control (numpy array): Control metrics (full series)
+        delta (float): Effect size to detect
+        period (int): Treatment period duration
+        target_power (float): Target statistical power (default 0.8)
+        significance_level (float): Significance level (default 0.05)
+        inference_type (str): Type of inference ("iid" or "block")
+        max_iterations (int): Maximum number of iterations
+        tolerance (float): Tolerance for power convergence
+        
+    Returns:
+        dict: Dictionary containing minimum sample size, achieved power, and iterations
+    """
+    logger.info(f"Calculating minimum sample size for delta={delta}, target_power={target_power}")
+    
+    y_real = np.array(y_real).flatten()
+    y_control = np.array(y_control).flatten()
+    
+    min_size = period + 10  # Minimum size should be larger than treatment period
+    max_size = len(y_real)
+    
+
+    for iteration in range(max_iterations):
+        current_size = (min_size + max_size) // 2
+        
+        if current_size >= len(y_real):
+            logger.warning(f"Required sample size exceeds available data length ({len(y_real)})")
+            break
+            
+        y_real_sub = y_real[:current_size]
+        y_control_sub = y_control[:current_size]
+        
+        try:
+            _, power, power_ci, _, _ = simulate_power(
+                y_real_sub, y_control_sub, delta, period,
+                n_permutations=500,  
+                significance_level=significance_level,
+                inference_type=inference_type,
+                n_power_simulations=30  
+            )
+            
+            logger.debug(f"Iteration {iteration + 1}: size={current_size}, power={power:.3f}, target={target_power}")
+            
+            
+            if abs(power - target_power) <= tolerance:
+                logger.info(f"Converged at iteration {iteration + 1}: size={current_size}, power={power:.3f}")
+                return {
+                    'minimum_sample_size': current_size,
+                    'achieved_power': power,
+                    'power_ci': power_ci,
+                    'iterations': iteration + 1,
+                    'converged': True
+                }
+            
+            
+            if power < target_power:
+                min_size = current_size + 1
+            else:
+                max_size = current_size - 1
+                
+        except Exception as e:
+            logger.error(f"Error in sample size calculation at iteration {iteration + 1}: {str(e)}")
+            break
+            
+        
+        if min_size >= max_size:
+            break
+    
+    
+    final_size = min(max_size, len(y_real))
+    try:
+        _, final_power, final_ci, _, _ = simulate_power(
+            y_real[:final_size], y_control[:final_size], delta, period,
+            n_permutations=500, significance_level=significance_level,
+            inference_type=inference_type, n_power_simulations=30
+        )
+        
+        logger.info(f"Sample size calculation completed: size={final_size}, power={final_power:.3f} (target={target_power})")
+        return {
+            'minimum_sample_size': final_size,
+            'achieved_power': final_power,
+            'power_ci': final_ci,
+            'iterations': max_iterations,
+            'converged': False
+        }
+        
+    except Exception as e:
+        logger.error(f"Final power calculation failed: {str(e)}")
+        return {
+            'minimum_sample_size': len(y_real),
+            'achieved_power': None,
+            'power_ci': None,
+            'iterations': max_iterations,
+            'converged': False
+        }
+
+
+def simulate_power(y_real, y_control, delta, period, n_permutations=1000, significance_level=0.05, inference_type="iid", stat_func=None, n_power_simulations=100, block_size=5):
+    """
+    Simulates statistical power using Monte Carlo simulation with permutation tests.
+    
+    Power is calculated by:
+    1. Simulating multiple datasets under the alternative hypothesis (with effect)
+    2. For each simulated dataset, running a permutation test
+    3. Calculating the proportion of tests that reject the null hypothesis
 
     Args:
         y_real (numpy array): Actual target metrics.
         y_control (numpy array): Control metrics.
         delta (float): Effect size applied.
         period (int): Duration of the treatment period.
-        n_permutations (int): Number of permutations.
+        n_permutations (int): Number of permutations per test.
         significance_level (float): Significance level.
-        inference_type (str): Type of conformal inference ("iid" or "block").
+        inference_type (str): Type of inference ("iid" or "block").
+        stat_func (callable): Custom test statistic function.
+        n_power_simulations (int): Number of Monte Carlo simulations for power calculation.
+        block_size (int): Block size for block-based permutation.
 
     Returns:
-        tuple: Delta, statistical power, and the adjusted series with the applied effect.
+        tuple: Delta, statistical power, confidence interval, and sample adjusted series.
     """
-    logger.debug(f"Starting simulate_power: delta={delta}, period={period}, n_permutations={n_permutations}")
+    logger.debug(f"Starting simulate_power: delta={delta}, period={period}, n_permutations={n_permutations}, n_power_simulations={n_power_simulations}")
     
     y_real = np.array(y_real).flatten()
     y_control = np.array(y_control).flatten()
@@ -597,33 +738,71 @@ def simulate_power(y_real, y_control, delta, period, n_permutations=1000, signif
     
     logger.debug(f"Treatment period: {start_treatment} to {end_treatment}")
     
-    y_with_lift = apply_lift(y_real, delta, start_treatment, end_treatment)
-    residuals = compute_residuals(y_with_lift, y_control)
-    treatment_residuals = residuals[start_treatment:]
+    # Default test statistic functions
+    if stat_func is None:
+        if inference_type == "mean_diff":
+            stat_func = lambda x: np.mean(x)
+        elif inference_type == "t_test":
+            stat_func = lambda x: np.mean(x) / (np.std(x) / np.sqrt(len(x))) if np.std(x) > 0 else 0
+        elif inference_type == "median_diff":
+            stat_func = lambda x: np.median(x)
+        else:  # default sum
+            stat_func = lambda x: np.sum(x)
     
-    def stat_func(x):
-        return np.sum(x)
+    # Monte Carlo power simulation
+    rejected_tests = 0
+    p_values = []
     
-    observed_stat = stat_func(treatment_residuals)
-    logger.debug(f"Observed statistic: {observed_stat}")
+    for sim in range(n_power_simulations):
+        if sim % 50 == 0 and sim > 0:
+            logger.debug(f"Completed {sim}/{n_power_simulations} power simulations")
+        
+        # Add noise to make each simulation slightly different
+        noise_scale = np.std(y_real) * 0.05  # 5% of data std as noise
+        y_real_noisy = y_real + np.random.normal(0, noise_scale, len(y_real))
+        y_control_noisy = y_control + np.random.normal(0, noise_scale, len(y_control))
+        
+        # Apply effect
+        y_with_lift = apply_lift(y_real_noisy, delta, start_treatment, end_treatment)
+        residuals = compute_residuals(y_with_lift, y_control_noisy)
+        treatment_residuals = residuals[start_treatment:]
+        
+        observed_stat = stat_func(treatment_residuals)
+        
+        # Permutation test
+        null_stats = []
+        for i in range(n_permutations):
+            if inference_type == "block":
+                # Block-based permutation for time series
+                permuted_residuals = _block_permutation(residuals, block_size)
+            else:
+                # IID permutation
+                permuted_residuals = np.random.permutation(residuals)
+            
+            permuted = permuted_residuals[start_treatment:]
+            null_stats.append(stat_func(permuted))
+        
+        null_stats = np.array(null_stats)
+        
+        # Two-sided test
+        p_value = np.mean(np.abs(null_stats) >= np.abs(observed_stat))
+        p_values.append(p_value)
+        
+        if p_value < significance_level:
+            rejected_tests += 1
     
-    logger.debug("Starting permutation test")
-    null_stats = []
-    for i in range(n_permutations):
-        if i % 1000 == 0 and i > 0:
-            logger.debug(f"Completed {i}/{n_permutations} permutations")
-        permuted_residuals = np.random.permutation(residuals)
-        permuted = permuted_residuals[start_treatment:]
-        null_stats.append(stat_func(permuted))
+    power = rejected_tests / n_power_simulations
     
-    null_stats = np.array(null_stats)
+    # Calculate confidence interval for power estimate
+    power_se = np.sqrt(power * (1 - power) / n_power_simulations)
+    power_ci = (max(0, power - 1.96 * power_se), min(1, power + 1.96 * power_se))
     
-    p_value = np.mean(null_stats >= observed_stat)
-    power = np.mean(p_value < significance_level)
     
-    logger.debug(f"Permutation test completed: p_value={p_value:.4f}, power={power:.4f}")
+    y_with_lift_sample = apply_lift(y_real, delta, start_treatment, end_treatment)
+    
+    logger.debug(f"Power simulation completed: power={power:.4f}, CI=({power_ci[0]:.4f}, {power_ci[1]:.4f}), mean p-value={np.mean(p_values):.4f}")
 
-    return delta, power, y_with_lift,p_value
+    return delta, power, power_ci, y_with_lift_sample, np.mean(p_values)
 
 def run_simulation(delta, y_real, y_control, period, n_permutations, significance_level, inference_type="iid", size_block=None):
     """
@@ -631,7 +810,6 @@ def run_simulation(delta, y_real, y_control, period, n_permutations, significanc
     """
     logger.debug(f"Starting simulation: delta={delta}, period={period}, n_permutations={n_permutations}")
     
-    # Asegurarse de que y_real y y_control son arrays de numpy
     y_real = np.array(y_real).flatten()
     y_control = np.array(y_control).flatten()
     
@@ -644,6 +822,8 @@ def run_simulation(delta, y_real, y_control, period, n_permutations, significanc
             n_permutations=n_permutations,
             significance_level=significance_level,
             inference_type=inference_type,
+            block_size=size_block if size_block else 5,
+            n_power_simulations=50  
         )
         logger.debug(f"Simulation completed successfully: delta={delta}, power={result[1]:.4f}")
         return result
@@ -717,26 +897,31 @@ def evaluate_sensitivity(results_by_size, deltas, periods, n_permutations, signi
                         logger.debug(f"Status update failed: {e}")
 
             
-            statistical_power = [(res[0], res[1], res[3]) for res in results]
-            mde = next((delta for delta, power, p_value in statistical_power if power >= 0.85), None)
+            # Extract results: (delta, power, power_ci, y_with_lift_sample, mean_p_value)
+            statistical_power = [(res[0], res[1], res[2], res[4]) for res in results]  # (delta, power, power_ci, p_value)
+            mde = next((delta for delta, power, ci, p_value in statistical_power if power >= 0.8), None)
             
             
             mde_p_value = None
+            mde_ci = None
             if mde is not None:
-                for delta, power, p_value in statistical_power:
+                for delta, power, ci, p_value in statistical_power:
                     if delta == mde:
                         mde_p_value = p_value
+                        mde_ci = ci
+                        power = power
                         break
             
-            logger.info(f"Period {period} completed for size {size}. MDE found: {mde} with p-value: {mde_p_value}")
+            logger.info(f"Period {period} completed for size {size}. MDE found: {mde} with p-value: {mde_p_value}, power: {power} and CI: {mde_ci}")
 
-            for delta, _, adjusted_series,p_value in results:
+            for delta, _, ci, adjusted_series, p_value in results:
                 lift_series[(size, delta, period)] = adjusted_series
 
             results_by_period[period] = {
                 'Statistical Power': statistical_power,
                 'MDE': mde,
-                'P-Value': mde_p_value
+                'P-Value': mde_p_value,
+                'MDE_CI': mde_ci
             }
 
         sensitivity_results[size] = results_by_period

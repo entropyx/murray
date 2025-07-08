@@ -1,5 +1,6 @@
 /murray-env/
 venv/
+env/
 **/__pycache__/
 node_modules/
 .docusaurus/
@@ -12,6 +13,7 @@ node_modules/
 *.pkl
 *.env
 .env
+
 build/
 *.egg-info
 .streamlit/secrets.toml
