@@ -1,5 +1,6 @@
 /murray-env/
 venv/
+env/
 **/__pycache__/
 node_modules/
 .docusaurus/
@@ -17,4 +18,4 @@ build/
 .streamlit/secrets.toml
 traffic_metrics
 logs/
-
+env/
