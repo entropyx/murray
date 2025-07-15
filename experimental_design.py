@@ -153,23 +153,35 @@ def generate_pdf(treatment_group, control_group, holdout_percentage, impact_grap
             if p_value < 0.001:
                 p_value_str = f"{p_value:.6f} (p < 0.001)"
                 significance = "Highly Significant"
+                explanation = (f"The obtained p-value is {p_value_str}, indicating that the result is {significance.lower()}. "
+                             f"This means there is less than a 0.1% chance that these results occurred by chance. "
+                             f"We have extremely strong evidence that the treatment is having a real effect.")
             elif p_value < 0.01:
                 p_value_str = f"{p_value:.4f} (p < 0.01)"
                 significance = "Very Significant"
+                explanation = (f"The obtained p-value is {p_value_str}, indicating that the result is {significance.lower()}. "
+                             f"This means there is less than a 1% chance that these results occurred by chance. "
+                             f"We have very solid evidence that the treatment is working as expected.")
             elif p_value < 0.05:
                 p_value_str = f"{p_value:.4f} (p < 0.05)"
                 significance = "Significant"
+                explanation = (f"The obtained p-value is {p_value_str}, indicating that the result is {significance.lower()}. "
+                             f"This means there is less than a 5% chance that these results occurred by chance. "
+                             f"We have good evidence that the treatment is having a positive effect.")
             elif p_value < 0.1:
                 p_value_str = f"{p_value:.4f} (p < 0.1)"
                 significance = "Marginally Significant"
+                explanation = (f"The obtained p-value is {p_value_str}, indicating that the result is {significance.lower()}. "
+                             f"This means there is less than a 10% chance that these results occurred by chance. "
+                             f"While there is evidence of a treatment effect, the results should be interpreted with some caution.")
             else:
                 p_value_str = f"{p_value:.4f} (p ≥ 0.1)"
                 significance = "Not Significant"
+                explanation = (f"The obtained p-value is {p_value_str}, indicating that the result is {significance.lower()}. "
+                             f"This means there is more than a 10% chance that these results occurred by chance. "
+                             f"We don't have sufficient evidence to conclude that the treatment is having a real effect.")
             
-            pdf.multi_cell(0, 5, f"The statistical significance of the minimum detectable effect is evaluated using permutation tests. "
-                                f"The p-value obtained is {p_value_str}, which indicates that the result is {significance.lower()}. "
-                                f"This p-value represents the probability of observing the observed effect size or larger under the null hypothesis "
-                                f"that there is no true treatment effect.")
+            pdf.multi_cell(0, 5, explanation)
             pdf.ln(5)
 
         pdf.set_font("Poppins", style='B', size=12)
