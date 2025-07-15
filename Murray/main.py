@@ -1016,12 +1016,6 @@ def run_geo_analysis_streamlit_app(data, maximum_treatment_percentage, significa
     else:
       logger.warning("Sensitivity evaluation returned None")
       
-    
-    
-
-    
-    
-
     logger.info("run_geo_analysis_streamlit_app completed successfully")
     return {
         "simulation_results": simulation_results,
