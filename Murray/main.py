@@ -6,7 +6,6 @@ from sklearn.preprocessing import MinMaxScaler
 from sklearn.base import BaseEstimator, RegressorMixin
 from Murray.plots import plot_mde_results
 from Murray.auxiliary import market_correlations, handle_duplicates
-import concurrent.futures
 from sklearn.linear_model import Ridge
 from logger_config import get_logger
 import os
@@ -725,7 +724,7 @@ def BetterGroups(
     """
     unique_locations = data["location"].unique()
     no_locations = len(unique_locations)
-    max_group_size = round(no_locations * 0.45)
+    max_group_size = round(no_locations * 0.35)
     min_elements_in_treatment = round(no_locations * 0.15)
     min_holdout = 100 - (maximum_treatment_percentage * 100)
     total_Y = data["Y"].sum()
@@ -1251,7 +1250,7 @@ def simulate_power(y_real, y_control, delta, period, n_permutations=1000, signif
     
     # Calculate confidence interval for power estimate
     power_se = np.sqrt(power * (1 - power) / n_power_simulations)
-    power_ci = (max(0, power - 1.96 * power_se), min(1, power + 1.96 * power_se))
+    power_ci = (max(0, power - 1.95 * power_se), min(1, power + 1.95 * power_se))
     
     
     y_with_lift_sample = apply_lift(y_real, delta, start_treatment, end_treatment)
@@ -1260,7 +1259,6 @@ def simulate_power(y_real, y_control, delta, period, n_permutations=1000, signif
 
     return delta, power, power_ci, y_with_lift_sample, np.mean(p_values)
 
-    return delta, power, power_ci, y_with_lift_sample, np.mean(p_values)
 
 def run_simulation(
     delta,
@@ -1397,15 +1395,16 @@ def evaluate_sensitivity(
             
             mde_p_value = None
             mde_ci = None
+            mde_power = None
             if mde is not None:
                 for delta, power, ci, p_value in statistical_power:
                     if delta == mde:
                         mde_p_value = p_value
                         mde_ci = ci
-                        power = power
+                        mde_power = power
                         break
             
-            logger.info(f"Period {period} completed for size {size}. MDE found: {mde} with p-value: {mde_p_value}, power: {power} and CI: {mde_ci}")
+            logger.info(f"Period {period} completed for size {size}. MDE found: {mde} with p-value: {mde_p_value}, power: {mde_power} and CI: {mde_ci[0]:.4f} - {mde_ci[1]:.4f}")
 
             for delta, _, ci, adjusted_series, p_value in results:
                 lift_series[(size, delta, period)] = adjusted_series
@@ -1414,7 +1413,8 @@ def evaluate_sensitivity(
                 'Statistical Power': statistical_power,
                 'MDE': mde,
                 'P-Value': mde_p_value,
-                'MDE_CI': mde_ci
+                'MDE_CI': mde_ci,
+                'Power': mde_power
             }
 
         sensitivity_results[size] = results_by_period
