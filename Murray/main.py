@@ -1393,18 +1393,18 @@ def evaluate_sensitivity(
             mde = next((delta for delta, power, ci, p_value in statistical_power if power >= 0.8), None)
             
             
-            mde_p_value = None
-            mde_ci = None
-            mde_power = None
+            p_value = None
+            power_ci = None
+            power = None
             if mde is not None:
                 for delta, power, ci, p_value in statistical_power:
                     if delta == mde:
-                        mde_p_value = p_value
-                        mde_ci = ci
-                        mde_power = power
+                        p_value = p_value
+                        power_ci = ci
+                        power = power
                         break
             
-            logger.info(f"Period {period} completed for size {size}. MDE found: {mde} with p-value: {mde_p_value}, power: {mde_power} and CI: {mde_ci[0]:.4f} - {mde_ci[1]:.4f}")
+            logger.info(f"Period {period} completed for size {size}. MDE found: {mde} with p-value: {p_value:.4f}, power: {power:.4f} and CI: ({power_ci[0]:.4f} - {power_ci[1]:.4f})")
 
             for delta, _, ci, adjusted_series, p_value in results:
                 lift_series[(size, delta, period)] = adjusted_series
@@ -1412,9 +1412,9 @@ def evaluate_sensitivity(
             results_by_period[period] = {
                 'Statistical Power': statistical_power,
                 'MDE': mde,
-                'P-Value': mde_p_value,
-                'MDE_CI': mde_ci,
-                'Power': mde_power
+                'P-Value': p_value,
+                'MDE_CI': power_ci,
+                'Power': power
             }
 
         sensitivity_results[size] = results_by_period
