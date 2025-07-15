@@ -243,8 +243,129 @@ def generate_pdf(
     for i, row in weights.iterrows():
         bg_color = alt_row_bg if i % 2 else white_row_bg
 
-        pdf.set_fill_color(*bg_color)
-        pdf.set_text_color(*text_color)
+        
+
+        y_actual = pdf.get_y() + 2
+        pdf.line(10, y_actual, 200, y_actual)
+        pdf.set_text_color(0, 0, 0)
+
+
+        pdf.ln(7)
+
+        pdf.set_font("Poppins", size=10)
+        pdf.set_text_color(33, 31, 36)
+
+        pdf.multi_cell(0,5 , f"This report provides information about the experimental design on the variable '{tarjet_variable}', the experimental design was conducted for a duration of {period_idx} days. "
+                            f"The data included in the design have a period of {firt_day} to {last_day} where the treatment started on {treatment_day} until {last_day}."
+                            f"It includes information about the treatment group, control group, minimum detectable effect (MDE), and other relevant information.")
+        
+
+
+        pdf.ln(5)
+
+
+        
+        pdf.set_font("Poppins", style='B', size=12)
+        pdf.set_text_color(27, 0, 67)
+        pdf.cell(200, 8, "Treatment Group:", ln=True)
+        pdf.set_font("Poppins", size=10)
+        pdf.set_text_color(33, 31, 36)
+
+        pdf.multi_cell(0,5 , f"The treatment group consists of individuals or units that received the experimental intervention or treatment. "
+                            f"The following is the description of the treatment group: ")
+        
+        pdf.set_font("Poppins", style='B', size=9.5)
+        pdf.set_text_color(33, 31, 36)
+        pdf.multi_cell(0, 5, treatment_group)
+
+
+        pdf.ln(5)
+
+
+        pdf.set_font("Poppins", style='B', size=12)
+        pdf.set_text_color(27, 0, 67)
+        pdf.cell(200, 8, "Control Group:", ln=True)
+        pdf.set_font("Poppins", size=10)
+        pdf.set_text_color(33, 31, 36)
+
+        pdf.multi_cell(0, 5, f"The control group is used as a baseline for comparison. These are the individuals or units that did not receive the treatment "
+                            f"but were otherwise similar. Here is each location of the control group: ")
+
+        pdf.set_font("Poppins", style='B', size=9.5)
+        pdf.set_text_color(33, 31, 36)
+        pdf.multi_cell(0, 5, control_group)
+
+
+        pdf.ln(5)
+
+        pdf.set_font("Poppins", style='B', size=12)
+        pdf.set_text_color(27, 0, 67)
+        pdf.cell(200, 8, "Minimum Detectable Effect (MDE)", ln=True)
+        pdf.set_font("Poppins", size=10)
+        pdf.set_text_color(33, 31, 36)
+
+
+        pdf.multi_cell(0, 5, f"The experimental design is based on the minimum detectable effect (MDE) which is the smallest effect that can be detected with a given level of confidence. "
+                            f"In this case, the MDE is {round(mde * 100)}% for the period of {period_idx} days. "
+        )
+                            
+        pdf.ln(5)
+        
+        
+        if p_value is not None:
+            pdf.set_font("Poppins", style='B', size=12)
+            pdf.set_text_color(27, 0, 67)
+            pdf.cell(200, 8, "Statistical Significance (P-Value)", ln=True)
+            pdf.set_font("Poppins", size=10)
+            pdf.set_text_color(33, 31, 36)
+            
+            
+            if p_value < 0.001:
+                p_value_str = f"{p_value:.6f} (p < 0.001)"
+                significance = "Highly Significant"
+                explanation = (f"The obtained p-value is {p_value_str}, indicating that the result is {significance.lower()}. "
+                             f"This means there is less than a 0.1% chance that these results occurred by chance. "
+                             f"We have extremely strong evidence that the treatment is having a real effect.")
+            elif p_value < 0.01:
+                p_value_str = f"{p_value:.4f} (p < 0.01)"
+                significance = "Very Significant"
+                explanation = (f"The obtained p-value is {p_value_str}, indicating that the result is {significance.lower()}. "
+                             f"This means there is less than a 1% chance that these results occurred by chance. "
+                             f"We have very solid evidence that the treatment is working as expected.")
+            elif p_value < 0.05:
+                p_value_str = f"{p_value:.4f} (p < 0.05)"
+                significance = "Significant"
+                explanation = (f"The obtained p-value is {p_value_str}, indicating that the result is {significance.lower()}. "
+                             f"This means there is less than a 5% chance that these results occurred by chance. "
+                             f"We have good evidence that the treatment is having a positive effect.")
+            elif p_value < 0.1:
+                p_value_str = f"{p_value:.4f} (p < 0.1)"
+                significance = "Marginally Significant"
+                explanation = (f"The obtained p-value is {p_value_str}, indicating that the result is {significance.lower()}. "
+                             f"This means there is less than a 10% chance that these results occurred by chance. "
+                             f"While there is evidence of a treatment effect, the results should be interpreted with some caution.")
+            else:
+                p_value_str = f"{p_value:.4f} (p ≥ 0.1)"
+                significance = "Not Significant"
+                explanation = (f"The obtained p-value is {p_value_str}, indicating that the result is {significance.lower()}. "
+                             f"This means there is more than a 10% chance that these results occurred by chance. "
+                             f"We don't have sufficient evidence to conclude that the treatment is having a real effect.")
+            
+            pdf.multi_cell(0, 5, explanation)
+            pdf.ln(5)
+
+        pdf.set_font("Poppins", style='B', size=12)
+        pdf.set_text_color(27, 0, 67)
+        pdf.cell(200, 8, "Conversion Percentages")
+
+
+
+        pdf.set_font("Poppins", size=10)
+        pdf.set_text_color(33, 31, 36)
+        pdf.cell(200, 8, f"Treatment Percentage: {(100 - holdout_percentage):.2f}%", ln=True)
+
+        pdf.cell(200, 5, f"Holdout Percentage: {holdout_percentage:.2f}%", ln=True)
+        pdf.cell(200, 5, f"Treatment Percentage: {(100 - holdout_percentage):.2f}%", ln=True)
         pdf.set_font("Poppins", size=10)
 
         pdf.cell(col_width, row_height, row["Control Location"], 1, 0, "C", True)

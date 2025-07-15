@@ -1258,7 +1258,7 @@ def simulate_power(y_real, y_control, delta, period, n_permutations=1000, signif
     
     logger.debug(f"Power simulation completed: power={power:.4f}, CI=({power_ci[0]:.4f}, {power_ci[1]:.4f}), mean p-value={np.mean(p_values):.4f}")
 
-    return delta, power, y_with_lift, p_value
+    return delta, power, power_ci, y_with_lift_sample, np.mean(p_values)
 
     return delta, power, power_ci, y_with_lift_sample, np.mean(p_values)
 
@@ -1291,9 +1291,6 @@ def run_simulation(
             inference_type=inference_type,
             block_size=size_block if size_block else 5,
             n_power_simulations=50  
-        )
-        logger.debug(
-            f"Simulation completed successfully: delta={delta}, power={result[1]:.4f}"
         )
         return result
     except Exception as e:
@@ -1569,12 +1566,12 @@ def run_geo_analysis_streamlit_app(
         progress_bar=progress_bar_2,
         status_text=status_text_2,
     )
-
+    
     if sensitivity_results is not None:
-        logger.info("Sensitivity evaluation completed successfully.")
+      logger.info("Sensitivity evaluation completed successfully.")
     else:
-        logger.warning("Sensitivity evaluation returned None")
-
+      logger.warning("Sensitivity evaluation returned None")
+      
     logger.info("run_geo_analysis_streamlit_app completed successfully")
     return {
         "simulation_results": simulation_results,
