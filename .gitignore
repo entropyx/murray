@@ -19,3 +19,6 @@ build/
 traffic_metrics
 logs/
 env/
+specs/
+ai_docs/
+.claude/
