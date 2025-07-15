@@ -13,10 +13,12 @@ node_modules/
 *.pkl
 *.env
 .env
-
 build/
 *.egg-info
 .streamlit/secrets.toml
 traffic_metrics
 logs/
+specs/
+ai_docs/
+.claude/
 
