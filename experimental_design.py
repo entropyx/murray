@@ -838,7 +838,7 @@ if file is not None:
             enable_multicell = st.checkbox(
                 "Enable Multi-Cell Mode",
                 value=False,
-                help="Enable to select specific group sizes and get top N results per size",
+                help="Enable to create a single optimized experiment with multiple cells of different sizes",
                 key="multicell_checkbox",
             )
 
@@ -856,24 +856,24 @@ if file is not None:
                         range(min_elements_in_treatment, max_group_size + 1)
                     )
                     selected_sizes = st.multiselect(
-                        "Select Group Sizes",
+                        "Allowed Group Sizes",
                         options=available_sizes,
                         default=(
                             available_sizes[:3]
                             if len(available_sizes) >= 3
                             else available_sizes
                         ),
-                        help="Choose which group sizes to evaluate",
+                        help="Choose the pool of allowed sizes for cells in the experiment. The system will select the best combination.",
                         key="multicell_sizes",
                     )
 
                 with col2:
                     top_n_per_size = st.number_input(
-                        "Top N Results per Size",
+                        "Total Number of Cells",
                         min_value=1,
                         max_value=10,
                         value=3,
-                        help="Number of best groups to keep for each size",
+                        help="Total number of cells in the final experiment (may have different sizes)",
                         key="multicell_top_n",
                     )
 
@@ -882,6 +882,8 @@ if file is not None:
                         "sizes": selected_sizes,
                         "top_n": top_n_per_size,
                     }
+                    
+
 
             if "simulation_results" not in st.session_state:
                 st.session_state.simulation_results = None
@@ -939,6 +941,7 @@ if file is not None:
                             periods_range=periods_range,
                             multicell_config=multicell_config,
                             inference_type=selected_test,
+                            global_optimization=enable_multicell,
                         )
 
                     results_by_size = transform_results_data(
@@ -979,147 +982,145 @@ if file is not None:
                     and st.session_state.results
                     and st.session_state.results.get("simulation_results")
                 ):
-
-                    processed_sizes = list(
-                        st.session_state.results["simulation_results"].keys()
-                    )
-                    all_selected_sizes = multicell_config.get("sizes", [])
-                    skipped_sizes = [
-                        size
-                        for size in all_selected_sizes
-                        if size not in processed_sizes
-                    ]
-
                     st.write(" ")
-
-                    if skipped_sizes:
-                        st.warning(
-                            f"The following sizes were skipped due to insufficient data: {skipped_sizes}"
-                        )
-
-                    st.subheader("Multi-Cell Results")
-
-                    sensitivity_data = st.session_state.results.get(
-                        "sensitivity_results", {}
-                    )
-
-                    available_periods = set()
-                    for size_data in sensitivity_data.values():
-                        available_periods.update(size_data.keys())
-                    available_periods = sorted(list(available_periods))
-
-                    if available_periods:
-                        selected_period = st.selectbox(
-                            "Select Period to Display:",
-                            options=available_periods,
-                            index=0,
-                            help="Choose the treatment period to analyze. Different periods may show different MDE values.",
-                            key="multicell_period_selector",
-                        )
-
-                    else:
+                    st.subheader("Global Multi-Cell Experiment Results")
+                    
+                    simulation_results = st.session_state.results["simulation_results"]
+                    
+                    # Check if we have global experiment results
+                    if "global_experiment" in simulation_results:
+                        global_experiment = simulation_results["global_experiment"]
+                        
+                        
+                        # Get sensitivity data for MDE/Power information
+                        sensitivity_data = st.session_state.results.get("sensitivity_results", {})
+                        
+                        
+                        # Period selection for MDE display
+                        available_periods = set()
+                        for size_data in sensitivity_data.values():
+                            available_periods.update(size_data.keys())
+                        available_periods = sorted(list(available_periods))
+                        
                         selected_period = None
-                        st.warning(
-                            "No sensitivity data available for period selection."
-                        )
-
-                    detailed_results = []
-
-                    for size, data in st.session_state.results[
-                        "simulation_results"
-                    ].items():
-                        if isinstance(data, list):
-                            for idx, group in enumerate(data):
-
-                                mde_info = {}
-                                if (
-                                    size in sensitivity_data
-                                    and selected_period is not None
-                                ):
-                                    period_data = sensitivity_data[size].get(
-                                        selected_period, {}
-                                    )
-                                    mde_raw = period_data.get("MDE")
-                                    mde_value = (
-                                        mde_raw * 100 if mde_raw is not None else None
-                                    )
-                                    p_value = period_data.get("P-Value")
-                                    power_raw = period_data.get("Power")
-                                    power_value = (
-                                        power_raw * 100 if power_raw is not None else None
-                                    )
-
-                                    mde_info = {
-                                        "MDE": (
-                                            f"{int(round(mde_value))}"
-                                            if mde_value is not None
-                                            else "N/A"
-                                        ),
-                                        "Period": selected_period,
-                                        "P-Value": (
-                                            f"{p_value:.4f}"
-                                            if p_value is not None
-                                            else "N/A"
-                                        ),
-                                        "Power": (
-                                            f"{int(round(power_value))}"
-                                            if power_value is not None
-                                            else "N/A"
-                                        ),
-                                    }
-                                else:
-                                    mde_info = {
-                                        "MDE": "N/A",
-                                        "Period": "N/A",
-                                        "P-Value": "N/A",
-                                        "Power": "N/A",
-                                    }
-
-                                detailed_results.append(
-                                    {
-                                        "Size": size,
-                                        "Rank": idx + 1,
-                                        "Treatment Group": ", ".join(
-                                            group["Best Treatment Group"]
-                                        ),
-                                        "Control Group": ", ".join(
-                                            group["Control Group"]
-                                        ),
-                                        "SMAPE": f"{group['SMAPE']:.4f}",
-                                        "Holdout %": f"{group['Holdout Percentage']:.2f}%",
-                                        "MDE": f"{mde_info['MDE']}%",
-                                        "Period": mde_info["Period"],
-                                        "P-Value": mde_info["P-Value"],
-                                        "Power": f"{mde_info['Power']}%",
-                                    }
-                                )
-
-                    if detailed_results:
-                        df_detailed = pd.DataFrame(detailed_results)
-
-                        df_detailed = df_detailed.sort_values(["Size", "Rank"])
-
-                        if selected_period:
-                            st.caption(
-                                f"💡 **Note:** MDE, P-Value, and Power shown for {selected_period}-day treatment period. Change the period selector above to see different results."
+                        if available_periods:
+                            selected_period = st.selectbox(
+                                "Select Period for MDE Analysis:",
+                                options=available_periods,
+                                index=0,
+                                help="Choose the treatment period to analyze for MDE, P-Value, and Power calculations.",
+                                key="global_multicell_period_selector",
                             )
-
-                        st.dataframe(
-                            df_detailed,
-                            use_container_width=True,
-                            height=min(600, len(detailed_results) * 35 + 50),
-                        )
-
-                        csv = df_detailed.to_csv(index=False)
-                        st.download_button(
-                            label="Download Results as CSV",
-                            data=csv,
-                            file_name=f"multicell_results_{pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')}.csv",
-                            mime="text/csv",
-                        )
-
+                        
+                        # Format results for display
+                        detailed_results = []
+                        
+                        for cell in global_experiment:
+                            cell_size = cell["Size"]
+                            
+                            # Get MDE info for this cell size and period
+                            mde_info = {"MDE": "N/A", "P-Value": "N/A", "Power": "N/A"}
+                            if selected_period and sensitivity_data:
+                                # Check if cell_size exists in sensitivity_data
+                                if cell_size in sensitivity_data:
+                                    size_data = sensitivity_data[cell_size]
+                                    if isinstance(size_data, dict) and selected_period in size_data:
+                                        period_data = size_data[selected_period]
+                                        mde_raw = period_data.get("MDE")
+                                        mde_value = mde_raw * 100 if mde_raw is not None else None
+                                        p_value = period_data.get("P-Value")
+                                        power_raw = period_data.get("Power")
+                                        power_value = power_raw * 100 if power_raw is not None else None
+                                        
+                                        mde_info = {
+                                            "MDE": f"{int(round(mde_value))}" if mde_value is not None else "N/A",
+                                            "P-Value": f"{p_value:.4f}" if p_value is not None else "N/A",
+                                            "Power": f"{int(round(power_value))}" if power_value is not None else "N/A",
+                                        }
+                                else:
+                                    # If exact size not found, try to find closest size
+                                    available_sizes = [int(s) for s in sensitivity_data.keys() if str(s).isdigit()]
+                                    if available_sizes:
+                                        closest_size = min(available_sizes, key=lambda x: abs(x - cell_size))
+                                        size_data = sensitivity_data[closest_size]
+                                        if isinstance(size_data, dict) and selected_period in size_data:
+                                            period_data = size_data[selected_period]
+                                            mde_raw = period_data.get("MDE")
+                                            mde_value = mde_raw * 100 if mde_raw is not None else None
+                                            p_value = period_data.get("P-Value")
+                                            power_raw = period_data.get("Power")
+                                            power_value = power_raw * 100 if power_raw is not None else None
+                                            
+                                            mde_info = {
+                                                "MDE": f"{int(round(mde_value))}" if mde_value is not None else f"N/A (≈{closest_size})",
+                                                "P-Value": f"{p_value:.4f}" if p_value is not None else "N/A",
+                                                "Power": f"{int(round(power_value))}" if power_value is not None else f"N/A (≈{closest_size})",
+                                            }
+                            
+                            detailed_results.append({
+                                "Cell": cell["Cell"],
+                                "Size": cell["Size"],
+                                "Treatment Group": ", ".join(cell["Best Treatment Group"]),
+                                "Control Group": ", ".join(cell["Control Group"]),
+                                "SMAPE": f"{cell['SMAPE']:.4f}",
+                                "Holdout %": f"{cell['Holdout Percentage']:.2f}%",
+                                "MDE": f"{mde_info['MDE']}%" if mde_info['MDE'] != "N/A" else "N/A",
+                                "P-Value": mde_info["P-Value"],
+                                "Power": f"{mde_info['Power']}%" if mde_info['Power'] != "N/A" else "N/A",
+                            })
+                        
+                        if detailed_results:
+                            df_detailed = pd.DataFrame(detailed_results)
+                            df_detailed = df_detailed.sort_values("Cell")
+                            
+                            if selected_period:
+                                st.caption(
+                                    f"💡 **Note:** MDE, P-Value, and Power shown for {selected_period}-day treatment period. "
+                                    f"Each cell uses the statistical analysis for its respective size."
+                                )
+                            
+                            st.dataframe(
+                                df_detailed,
+                                use_container_width=True,
+                                height=min(600, len(detailed_results) * 35 + 50),
+                            )
+                            
+                            # Download button
+                            csv = df_detailed.to_csv(index=False)
+                            st.download_button(
+                                label="Download Global Experiment Results as CSV",
+                                data=csv,
+                                file_name=f"global_multicell_experiment_{pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')}.csv",
+                                mime="text/csv",
+                            )
+                            
+                            # Show location usage summary
+                            all_treatment_locations = set()
+                            all_control_locations = set()
+                            for cell in global_experiment:
+                                all_treatment_locations.update(cell["Best Treatment Group"])
+                                all_control_locations.update(cell["Control Group"])
+                            
+                            total_unique_locations = len(all_treatment_locations | all_control_locations)
+                            
+                            with st.expander("📍 Location Usage Summary", expanded=False):
+                                col1, col2, col3 = st.columns(3)
+                                with col1:
+                                    st.metric("Treatment Locations", len(all_treatment_locations))
+                                with col2:
+                                    st.metric("Control Locations", len(all_control_locations))
+                                with col3:
+                                    st.metric("Total Unique Locations", total_unique_locations)
+                                
+                                st.write("**Treatment Locations Used:**", ", ".join(sorted(all_treatment_locations)))
+                                st.write("**Control Locations Used:**", ", ".join(sorted(all_control_locations)))
+                        
+                        else:
+                            st.warning("No experiment results to display.")
+                    
+                    # Handle legacy multi-cell results (if any)
                     else:
-                        st.warning("No detailed results to display.")
+                        st.warning("⚠️ Legacy multi-cell mode detected. Please re-run the simulation to use the new global optimization.")
 
                 # Single-cell mode
                 elif st.session_state.simulation_results is not None and not getattr(

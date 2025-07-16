@@ -717,6 +717,7 @@ def BetterGroups(
     progress_updater=None,
     status_updater=None,
     multicell_config=None,
+    global_optimization=False,
 ):
     """
     Simula posibles grupos de tratamiento y evalúa su desempeño.
@@ -736,9 +737,26 @@ def BetterGroups(
 
     # --- Multi-cell mode---
     if multicell_config is not None and multicell_config.get("sizes"):
-        logger.info(f"Starting multi-cell flexible with location exclusivity")
         sizes = multicell_config["sizes"]
         top_n = multicell_config.get("top_n", 1)
+        
+        # Check if global optimization is requested
+        if global_optimization:
+            logger.info(f"Starting global multi-cell optimization for {top_n} cells with allowed sizes {sizes}")
+            return optimize_global_multicell(
+                similarity_matrix=similarity_matrix,
+                allowed_sizes=sizes,
+                total_cells_needed=top_n,
+                excluded_locations=excluded_locations,
+                data=data,
+                correlation_matrix=correlation_matrix,
+                maximum_treatment_percentage=maximum_treatment_percentage,
+                progress_updater=progress_updater,
+                status_updater=status_updater,
+            )
+        
+        # Original multi-cell mode (per-size optimization)
+        logger.info(f"Starting multi-cell flexible with location exclusivity")
         results_by_size = {}
         used_treatment_locations = set()
 
@@ -888,6 +906,178 @@ def BetterGroups(
             logger.warning("No valid results for any size in multi-cell mode")
             return None
         return results_by_size
+
+def optimize_global_multicell(
+    similarity_matrix,
+    allowed_sizes,
+    total_cells_needed,
+    excluded_locations,
+    data,
+    correlation_matrix,
+    maximum_treatment_percentage,
+    progress_updater=None,
+    status_updater=None,
+):
+    """
+    Global optimization for multi-cell experiments with heterogeneous cell sizes.
+    
+    Creates a single experiment with N cells of potentially different sizes,
+    ensuring global mutual exclusivity across all cells.
+    
+    Args:
+        similarity_matrix: Correlation matrix for treatment selection
+        allowed_sizes: List of allowed cell sizes to choose from
+        total_cells_needed: Total number of cells in final experiment
+        excluded_locations: Globally excluded locations
+        data: Input data
+        correlation_matrix: Market correlation matrix
+        maximum_treatment_percentage: Max treatment percentage
+        progress_updater: Progress bar updater
+        status_updater: Status text updater
+        
+    Returns:
+        dict: Single optimized experiment with heterogeneous cells
+    """
+    logger.info(f"Starting global multi-cell optimization for {total_cells_needed} cells with sizes {allowed_sizes}")
+    
+    unique_locations = data["location"].unique()
+    no_locations = len(unique_locations)
+    min_holdout = 100 - (maximum_treatment_percentage * 100)
+    total_Y = data["Y"].sum()
+    
+    if total_Y == 0:
+        return None
+        
+    df_pivot = data.pivot(index="time", columns="location", values="Y")
+    
+    # Phase 1: Generate all candidate groups for each allowed size
+    all_candidates = []
+    total_candidates_count = 0
+    
+    logger.info("Phase 1: Generating candidates for all allowed sizes")
+    
+    for size in allowed_sizes:
+        logger.info(f"Generating candidates for size {size}")
+        
+        # Generate treatment groups for this size
+        groups = select_treatments_exclusive(
+            similarity_matrix, size, excluded_locations, used_treatment_locations=set()
+        )
+        
+        if not groups:
+            logger.warning(f"No valid groups available for size {size}")
+            continue
+            
+        # Evaluate each group independently
+        size_results = []
+        with concurrent.futures.ProcessPoolExecutor(max_workers=2) as executor:
+            futures = executor.map(
+                evaluate_group_exclusive,
+                groups,
+                [data] * len(groups),
+                [total_Y] * len(groups),
+                [correlation_matrix] * len(groups),
+                [min_holdout] * len(groups),
+                [df_pivot] * len(groups),
+                [set()] * len(groups),  # No used locations in phase 1
+                [excluded_locations] * len(groups),
+                chunksize=5,
+            )
+            
+            for result in futures:
+                if result is not None:
+                    # Add size information to result
+                    result_with_size = result + (size,)  # Append size as last element
+                    size_results.append(result_with_size)
+                    
+        # Sort by performance and keep best candidates for this size
+        size_results.sort(key=lambda x: (x[2], -x[3]))  # Sort by MAPE, then SMAPE desc
+        
+        # Keep top candidates (more than needed to have options during global selection)
+        max_candidates_per_size = min(len(size_results), total_cells_needed * 3)
+        all_candidates.extend(size_results[:max_candidates_per_size])
+        total_candidates_count += len(size_results[:max_candidates_per_size])
+        
+        logger.info(f"Generated {len(size_results[:max_candidates_per_size])} candidates for size {size} (out of {len(size_results)} total results)")
+    
+    if not all_candidates:
+        logger.warning("No valid candidates generated for any size")
+        return None
+        
+    # Phase 2: Global optimization - select best N non-overlapping cells
+    logger.info(f"Phase 2: Global optimization - selecting {total_cells_needed} cells from {total_candidates_count} candidates")
+    
+    # Sort all candidates by performance across all sizes
+    all_candidates.sort(key=lambda x: (x[2], -x[3]))  # Sort by MAPE, then SMAPE desc
+    
+    selected_cells = []
+    used_treatment_locations = set()
+    candidates_rejected = 0
+    
+    for candidate in all_candidates:
+        treatment_group = set(candidate[0])
+        control_group = set(candidate[1])
+        size = candidate[8]
+        
+        # Check for conflicts with already selected cells (only treatment locations must be exclusive)
+        if not (treatment_group & used_treatment_locations):
+            selected_cells.append(candidate)
+            used_treatment_locations.update(treatment_group)
+            logger.debug(f"✅ Accepted cell {len(selected_cells)}: size={size}, treatment={treatment_group}")
+        else:
+            candidates_rejected += 1
+            conflicts = treatment_group & used_treatment_locations
+            logger.debug(f"❌ Rejected candidate size={size}, treatment={treatment_group}, conflicts={conflicts}")
+        
+        # Update progress indicators
+        if progress_updater:
+            try:
+                progress_updater.progress(len(selected_cells) / total_cells_needed)
+            except Exception as e:
+                logger.debug(f"Progress update failed: {e}")
+                
+        if status_updater:
+            try:
+                status_updater.text(f"Selected {len(selected_cells)}/{total_cells_needed} cells")
+            except Exception as e:
+                logger.debug(f"Status update failed: {e}")
+        
+        if len(selected_cells) >= total_cells_needed:
+            break
+    
+    if len(selected_cells) < total_cells_needed:
+        logger.warning(f"Could only select {len(selected_cells)} cells out of {total_cells_needed} requested due to location conflicts")
+        logger.info(f"Summary: {candidates_rejected} candidates rejected, {len(all_candidates)} total candidates processed")
+    else:
+        logger.info(f"Successfully selected {len(selected_cells)} cells from {len(all_candidates)} candidates ({candidates_rejected} rejected)")
+    
+    # Format results as unified experiment
+    unified_results = []
+    for i, cell in enumerate(selected_cells):
+        (treatment_group, control_group, mape, smape, y, predictions, weights, observed_conformity, size) = cell
+        
+        treatment_Y = data[data["location"].isin(treatment_group)]["Y"].sum()
+        holdout_percentage = ((total_Y - treatment_Y) / total_Y) * 100 if total_Y > 0 else 0.0
+        
+        result_dict = {
+            "Cell": i + 1,
+            "Size": size,
+            "Best Treatment Group": treatment_group,
+            "Control Group": control_group,
+            "MAPE": mape,
+            "SMAPE": smape,
+            "Actual Target Metric (y)": y,
+            "Predictions": predictions,
+            "Weights": weights,
+            "Holdout Percentage": holdout_percentage,
+            "observed_conformity": observed_conformity,
+        }
+        unified_results.append(result_dict)
+    
+    logger.info(f"Global optimization completed: {len(selected_cells)} cells selected")
+    
+    # Return in format expected by UI (single experiment)
+    return {"global_experiment": unified_results}
 
     # --- Single-cell mode ---
     logger.info(f"Starting single-cell mode")
@@ -1503,6 +1693,7 @@ def run_geo_analysis_streamlit_app(
     n_permutations=10000,
     multicell_config=None,
     inference_type="sum",
+    global_optimization=False,
 ):
     """
     Runs a complete geo analysis pipeline including market correlation, group optimization,
@@ -1550,6 +1741,7 @@ def run_geo_analysis_streamlit_app(
         progress_updater=progress_bar_1,
         status_updater=status_text_1,
         multicell_config=multicell_config,
+        global_optimization=global_optimization,
     )
 
     if simulation_results is None:
@@ -1562,16 +1754,56 @@ def run_geo_analysis_streamlit_app(
 
     # Step 3: Evaluate sensitivity for different deltas and periods
     logger.info("Step 3: Evaluating sensitivity for different deltas and periods.....")
-    sensitivity_results, series_lifts = evaluate_sensitivity(
-        simulation_results,
-        deltas,
-        periods,
-        n_permutations,
-        significance_level,
-        inference_type=inference_type,
-        progress_bar=progress_bar_2,
-        status_text=status_text_2,
-    )
+    
+    # Check if we have global optimization results
+    if isinstance(simulation_results, dict) and "global_experiment" in simulation_results:
+        logger.info("Detected global optimization results, generating sensitivity data by size")
+        # Extract sizes from global experiment and create artificial results_by_size for sensitivity analysis
+        global_experiment = simulation_results["global_experiment"]
+        results_by_size = {}
+        
+        # Group cells by size to create sensitivity data
+        for cell in global_experiment:
+            size = cell["Size"]
+            if size not in results_by_size:
+                results_by_size[size] = []
+            
+            # Create a result dict compatible with evaluate_sensitivity
+            result_dict = {
+                "Best Treatment Group": cell["Best Treatment Group"],
+                "Control Group": cell["Control Group"],
+                "MAPE": cell["MAPE"],
+                "SMAPE": cell["SMAPE"],
+                "Actual Target Metric (y)": cell["Actual Target Metric (y)"],
+                "Predictions": cell["Predictions"],
+                "Weights": cell["Weights"],
+                "observed_conformity": cell["observed_conformity"]
+            }
+            results_by_size[size].append(result_dict)
+        
+        # Run sensitivity analysis on the artificial results_by_size
+        sensitivity_results, series_lifts = evaluate_sensitivity(
+            results_by_size,
+            deltas,
+            periods,
+            n_permutations,
+            significance_level,
+            inference_type=inference_type,
+            progress_bar=progress_bar_2,
+            status_text=status_text_2,
+        )
+    else:
+        # Normal sensitivity analysis for regular results
+        sensitivity_results, series_lifts = evaluate_sensitivity(
+            simulation_results,
+            deltas,
+            periods,
+            n_permutations,
+            significance_level,
+            inference_type=inference_type,
+            progress_bar=progress_bar_2,
+            status_text=status_text_2,
+        )
     
     if sensitivity_results is not None:
       logger.info("Sensitivity evaluation completed successfully.")
@@ -1640,16 +1872,55 @@ def run_geo_analysis(
     )
 
     # Step 3: Evaluate sensitivity for different deltas and periods
-    sensitivity_results, series_lifts = evaluate_sensitivity(
-        simulation_results,
-        deltas,
-        periods,
-        n_permutations,
-        significance_level,
-        inference_type=inference_type,
-        progress_bar=progress_bar_2,
-        status_text=status_text_2,
-    )
+    # Check if we have global optimization results
+    if isinstance(simulation_results, dict) and "global_experiment" in simulation_results:
+        logger.info("Detected global optimization results, generating sensitivity data by size")
+        # Extract sizes from global experiment and create artificial results_by_size for sensitivity analysis
+        global_experiment = simulation_results["global_experiment"]
+        results_by_size = {}
+        
+        # Group cells by size to create sensitivity data
+        for cell in global_experiment:
+            size = cell["Size"]
+            if size not in results_by_size:
+                results_by_size[size] = []
+            
+            # Create a result dict compatible with evaluate_sensitivity
+            result_dict = {
+                "Best Treatment Group": cell["Best Treatment Group"],
+                "Control Group": cell["Control Group"],
+                "MAPE": cell["MAPE"],
+                "SMAPE": cell["SMAPE"],
+                "Actual Target Metric (y)": cell["Actual Target Metric (y)"],
+                "Predictions": cell["Predictions"],
+                "Weights": cell["Weights"],
+                "observed_conformity": cell["observed_conformity"]
+            }
+            results_by_size[size].append(result_dict)
+        
+        # Run sensitivity analysis on the artificial results_by_size
+        sensitivity_results, series_lifts = evaluate_sensitivity(
+            results_by_size,
+            deltas,
+            periods,
+            n_permutations,
+            significance_level,
+            inference_type=inference_type,
+            progress_bar=progress_bar_2,
+            status_text=status_text_2,
+        )
+    else:
+        # Normal sensitivity analysis for regular results
+        sensitivity_results, series_lifts = evaluate_sensitivity(
+            simulation_results,
+            deltas,
+            periods,
+            n_permutations,
+            significance_level,
+            inference_type=inference_type,
+            progress_bar=progress_bar_2,
+            status_text=status_text_2,
+        )
     if sensitivity_results is not None:
         logger.info("Complete.")
 
