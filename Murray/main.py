@@ -739,10 +739,12 @@ def BetterGroups(
     if multicell_config is not None and multicell_config.get("sizes"):
         sizes = multicell_config["sizes"]
         top_n = multicell_config.get("top_n", 1)
-        
+
         # Check if global optimization is requested
         if global_optimization:
-            logger.info(f"Starting global multi-cell optimization for {top_n} cells with allowed sizes {sizes}")
+            logger.info(
+                f"Starting global multi-cell optimization for {top_n} cells with allowed sizes {sizes}"
+            )
             return optimize_global_multicell(
                 similarity_matrix=similarity_matrix,
                 allowed_sizes=sizes,
@@ -754,7 +756,7 @@ def BetterGroups(
                 progress_updater=progress_updater,
                 status_updater=status_updater,
             )
-        
+
         # Original multi-cell mode (per-size optimization)
         logger.info(f"Starting multi-cell flexible with location exclusivity")
         results_by_size = {}
@@ -907,6 +909,7 @@ def BetterGroups(
             return None
         return results_by_size
 
+
 def optimize_global_multicell(
     similarity_matrix,
     allowed_sizes,
@@ -920,10 +923,10 @@ def optimize_global_multicell(
 ):
     """
     Global optimization for multi-cell experiments with heterogeneous cell sizes.
-    
+
     Creates a single experiment with N cells of potentially different sizes,
     ensuring global mutual exclusivity across all cells.
-    
+
     Args:
         similarity_matrix: Correlation matrix for treatment selection
         allowed_sizes: List of allowed cell sizes to choose from
@@ -934,40 +937,42 @@ def optimize_global_multicell(
         maximum_treatment_percentage: Max treatment percentage
         progress_updater: Progress bar updater
         status_updater: Status text updater
-        
+
     Returns:
         dict: Single optimized experiment with heterogeneous cells
     """
-    logger.info(f"Starting global multi-cell optimization for {total_cells_needed} cells with sizes {allowed_sizes}")
-    
+    logger.info(
+        f"Starting global multi-cell optimization for {total_cells_needed} cells with sizes {allowed_sizes}"
+    )
+
     unique_locations = data["location"].unique()
     no_locations = len(unique_locations)
     min_holdout = 100 - (maximum_treatment_percentage * 100)
     total_Y = data["Y"].sum()
-    
+
     if total_Y == 0:
         return None
-        
+
     df_pivot = data.pivot(index="time", columns="location", values="Y")
-    
+
     # Phase 1: Generate all candidate groups for each allowed size
     all_candidates = []
     total_candidates_count = 0
-    
+
     logger.info("Phase 1: Generating candidates for all allowed sizes")
-    
+
     for size in allowed_sizes:
         logger.info(f"Generating candidates for size {size}")
-        
+
         # Generate treatment groups for this size
         groups = select_treatments_exclusive(
             similarity_matrix, size, excluded_locations, used_treatment_locations=set()
         )
-        
+
         if not groups:
             logger.warning(f"No valid groups available for size {size}")
             continue
-            
+
         # Evaluate each group independently
         size_results = []
         with concurrent.futures.ProcessPoolExecutor(max_workers=2) as executor:
@@ -983,82 +988,110 @@ def optimize_global_multicell(
                 [excluded_locations] * len(groups),
                 chunksize=5,
             )
-            
+
             for result in futures:
                 if result is not None:
                     # Add size information to result
                     result_with_size = result + (size,)  # Append size as last element
                     size_results.append(result_with_size)
-                    
+
         # Sort by performance and keep best candidates for this size
-        size_results.sort(key=lambda x: (x[2], -x[3]))  # Sort by MAPE, then SMAPE desc
-        
+        size_results.sort(key=lambda x: (x[2], -x[3]))
+
         # Keep top candidates (more than needed to have options during global selection)
         max_candidates_per_size = min(len(size_results), total_cells_needed * 3)
         all_candidates.extend(size_results[:max_candidates_per_size])
         total_candidates_count += len(size_results[:max_candidates_per_size])
-        
-        logger.info(f"Generated {len(size_results[:max_candidates_per_size])} candidates for size {size} (out of {len(size_results)} total results)")
-    
+
+        logger.info(
+            f"Generated {len(size_results[:max_candidates_per_size])} candidates for size {size} (out of {len(size_results)} total results)"
+        )
+
     if not all_candidates:
         logger.warning("No valid candidates generated for any size")
         return None
-        
+
     # Phase 2: Global optimization - select best N non-overlapping cells
-    logger.info(f"Phase 2: Global optimization - selecting {total_cells_needed} cells from {total_candidates_count} candidates")
-    
+    logger.info(
+        f"Phase 2: Global optimization - selecting {total_cells_needed} cells from {total_candidates_count} candidates"
+    )
+
     # Sort all candidates by performance across all sizes
     all_candidates.sort(key=lambda x: (x[2], -x[3]))  # Sort by MAPE, then SMAPE desc
-    
+
     selected_cells = []
     used_treatment_locations = set()
     candidates_rejected = 0
-    
+
     for candidate in all_candidates:
         treatment_group = set(candidate[0])
         control_group = set(candidate[1])
         size = candidate[8]
-        
+
         # Check for conflicts with already selected cells (only treatment locations must be exclusive)
         if not (treatment_group & used_treatment_locations):
             selected_cells.append(candidate)
             used_treatment_locations.update(treatment_group)
-            logger.debug(f"✅ Accepted cell {len(selected_cells)}: size={size}, treatment={treatment_group}")
+            logger.debug(
+                f"✅ Accepted cell {len(selected_cells)}: size={size}, treatment={treatment_group}"
+            )
         else:
             candidates_rejected += 1
             conflicts = treatment_group & used_treatment_locations
-            logger.debug(f"❌ Rejected candidate size={size}, treatment={treatment_group}, conflicts={conflicts}")
-        
+            logger.debug(
+                f"❌ Rejected candidate size={size}, treatment={treatment_group}, conflicts={conflicts}"
+            )
+
         # Update progress indicators
         if progress_updater:
             try:
                 progress_updater.progress(len(selected_cells) / total_cells_needed)
             except Exception as e:
                 logger.debug(f"Progress update failed: {e}")
-                
+
         if status_updater:
             try:
-                status_updater.text(f"Selected {len(selected_cells)}/{total_cells_needed} cells")
+                status_updater.text(
+                    f"Selected {len(selected_cells)}/{total_cells_needed} cells"
+                )
             except Exception as e:
                 logger.debug(f"Status update failed: {e}")
-        
+
         if len(selected_cells) >= total_cells_needed:
             break
-    
+
     if len(selected_cells) < total_cells_needed:
-        logger.warning(f"Could only select {len(selected_cells)} cells out of {total_cells_needed} requested due to location conflicts")
-        logger.info(f"Summary: {candidates_rejected} candidates rejected, {len(all_candidates)} total candidates processed")
+        logger.warning(
+            f"Could only select {len(selected_cells)} cells out of {total_cells_needed} requested due to location conflicts"
+        )
+        logger.info(
+            f"Summary: {candidates_rejected} candidates rejected, {len(all_candidates)} total candidates processed"
+        )
     else:
-        logger.info(f"Successfully selected {len(selected_cells)} cells from {len(all_candidates)} candidates ({candidates_rejected} rejected)")
-    
+        logger.info(
+            f"Successfully selected {len(selected_cells)} cells from {len(all_candidates)} candidates ({candidates_rejected} rejected)"
+        )
+
     # Format results as unified experiment
     unified_results = []
     for i, cell in enumerate(selected_cells):
-        (treatment_group, control_group, mape, smape, y, predictions, weights, observed_conformity, size) = cell
-        
+        (
+            treatment_group,
+            control_group,
+            mape,
+            smape,
+            y,
+            predictions,
+            weights,
+            observed_conformity,
+            size,
+        ) = cell
+
         treatment_Y = data[data["location"].isin(treatment_group)]["Y"].sum()
-        holdout_percentage = ((total_Y - treatment_Y) / total_Y) * 100 if total_Y > 0 else 0.0
-        
+        holdout_percentage = (
+            ((total_Y - treatment_Y) / total_Y) * 100 if total_Y > 0 else 0.0
+        )
+
         result_dict = {
             "Cell": i + 1,
             "Size": size,
@@ -1073,9 +1106,9 @@ def optimize_global_multicell(
             "observed_conformity": observed_conformity,
         }
         unified_results.append(result_dict)
-    
+
     logger.info(f"Global optimization completed: {len(selected_cells)} cells selected")
-    
+
     # Return in format expected by UI (single experiment)
     return {"global_experiment": unified_results}
 
@@ -1219,38 +1252,46 @@ def compute_residuals(y_treatment, y_control):
 def _block_permutation(data, block_size):
     """
     Perform block-based permutation for time series data to preserve local temporal structure.
-    
+
     Args:
         data (numpy array): Time series data to permute
         block_size (int): Size of blocks to permute
-        
+
     Returns:
         numpy array: Block-permuted data
     """
     data = np.array(data).flatten()
     n = len(data)
-    
+
     blocks = []
     for i in range(0, n, block_size):
-        block = data[i:i + block_size]
+        block = data[i : i + block_size]
         blocks.append(block)
-    
+
     np.random.shuffle(blocks)
-    
+
     permuted = np.concatenate(blocks)
-    
+
     return permuted[:n]
 
 
-def calculate_minimum_sample_size(y_real, y_control, delta, period, target_power=0.8, 
-                                 significance_level=0.05, inference_type="iid", 
-                                 max_iterations=20, tolerance=0.05):
+def calculate_minimum_sample_size(
+    y_real,
+    y_control,
+    delta,
+    period,
+    target_power=0.8,
+    significance_level=0.05,
+    inference_type="iid",
+    max_iterations=20,
+    tolerance=0.05,
+):
     """
     Calculate minimum sample size needed to achieve target statistical power.
-    
+
     Uses iterative approach to find the minimum number of time periods needed
     to achieve the target power level for a given effect size.
-    
+
     Args:
         y_real (numpy array): Actual target metrics (full series)
         y_control (numpy array): Control metrics (full series)
@@ -1261,98 +1302,124 @@ def calculate_minimum_sample_size(y_real, y_control, delta, period, target_power
         inference_type (str): Type of inference ("iid" or "block")
         max_iterations (int): Maximum number of iterations
         tolerance (float): Tolerance for power convergence
-        
+
     Returns:
         dict: Dictionary containing minimum sample size, achieved power, and iterations
     """
-    logger.info(f"Calculating minimum sample size for delta={delta}, target_power={target_power}")
-    
+    logger.info(
+        f"Calculating minimum sample size for delta={delta}, target_power={target_power}"
+    )
+
     y_real = np.array(y_real).flatten()
     y_control = np.array(y_control).flatten()
-    
+
     min_size = period + 10  # Minimum size should be larger than treatment period
     max_size = len(y_real)
-    
 
     for iteration in range(max_iterations):
         current_size = (min_size + max_size) // 2
-        
+
         if current_size >= len(y_real):
-            logger.warning(f"Required sample size exceeds available data length ({len(y_real)})")
+            logger.warning(
+                f"Required sample size exceeds available data length ({len(y_real)})"
+            )
             break
-            
+
         y_real_sub = y_real[:current_size]
         y_control_sub = y_control[:current_size]
-        
+
         try:
             _, power, power_ci, _, _ = simulate_power(
-                y_real_sub, y_control_sub, delta, period,
-                n_permutations=500,  
+                y_real_sub,
+                y_control_sub,
+                delta,
+                period,
+                n_permutations=500,
                 significance_level=significance_level,
                 inference_type=inference_type,
-                n_power_simulations=30  
+                n_power_simulations=30,
             )
-            
-            logger.debug(f"Iteration {iteration + 1}: size={current_size}, power={power:.3f}, target={target_power}")
-            
-            
+
+            logger.debug(
+                f"Iteration {iteration + 1}: size={current_size}, power={power:.3f}, target={target_power}"
+            )
+
             if abs(power - target_power) <= tolerance:
-                logger.info(f"Converged at iteration {iteration + 1}: size={current_size}, power={power:.3f}")
+                logger.info(
+                    f"Converged at iteration {iteration + 1}: size={current_size}, power={power:.3f}"
+                )
                 return {
-                    'minimum_sample_size': current_size,
-                    'achieved_power': power,
-                    'power_ci': power_ci,
-                    'iterations': iteration + 1,
-                    'converged': True
+                    "minimum_sample_size": current_size,
+                    "achieved_power": power,
+                    "power_ci": power_ci,
+                    "iterations": iteration + 1,
+                    "converged": True,
                 }
-            
-            
+
             if power < target_power:
                 min_size = current_size + 1
             else:
                 max_size = current_size - 1
-                
+
         except Exception as e:
-            logger.error(f"Error in sample size calculation at iteration {iteration + 1}: {str(e)}")
+            logger.error(
+                f"Error in sample size calculation at iteration {iteration + 1}: {str(e)}"
+            )
             break
-            
-        
+
         if min_size >= max_size:
             break
-    
-    
+
     final_size = min(max_size, len(y_real))
     try:
         _, final_power, final_ci, _, _ = simulate_power(
-            y_real[:final_size], y_control[:final_size], delta, period,
-            n_permutations=500, significance_level=significance_level,
-            inference_type=inference_type, n_power_simulations=30
+            y_real[:final_size],
+            y_control[:final_size],
+            delta,
+            period,
+            n_permutations=500,
+            significance_level=significance_level,
+            inference_type=inference_type,
+            n_power_simulations=30,
         )
-        
-        logger.info(f"Sample size calculation completed: size={final_size}, power={final_power:.3f} (target={target_power})")
+
+        logger.info(
+            f"Sample size calculation completed: size={final_size}, power={final_power:.3f} (target={target_power})"
+        )
         return {
-            'minimum_sample_size': final_size,
-            'achieved_power': final_power,
-            'power_ci': final_ci,
-            'iterations': max_iterations,
-            'converged': False
+            "minimum_sample_size": final_size,
+            "achieved_power": final_power,
+            "power_ci": final_ci,
+            "iterations": max_iterations,
+            "converged": False,
         }
-        
+
     except Exception as e:
         logger.error(f"Final power calculation failed: {str(e)}")
         return {
-            'minimum_sample_size': len(y_real),
-            'achieved_power': None,
-            'power_ci': None,
-            'iterations': max_iterations,
-            'converged': False
+            "minimum_sample_size": len(y_real),
+            "achieved_power": None,
+            "power_ci": None,
+            "iterations": max_iterations,
+            "converged": False,
         }
 
 
-def simulate_power(y_real, y_control, delta, period, n_permutations=1000, significance_level=0.05, inference_type="iid", stat_func=None, n_power_simulations=100, block_size=5):
+def simulate_power(
+    y_real,
+    y_control,
+    delta,
+    period,
+    n_permutations=1000,
+    significance_level=0.05,
+    inference_type="iid",
+    stat_func=None,
+    n_power_simulations=100,
+    block_size=5,
+):
     """
     Simulates statistical power using Monte Carlo simulation with permutation tests.
-    
+
     Power is calculated by:
     1. Simulating multiple datasets under the alternative hypothesis (with effect)
     2. For each simulated dataset, running a permutation test
@@ -1373,8 +1440,10 @@ def simulate_power(y_real, y_control, delta, period, n_permutations=1000, signif
     Returns:
         tuple: Delta, statistical power, confidence interval, and sample adjusted series.
     """
-    logger.debug(f"Starting simulate_power: delta={delta}, period={period}, n_permutations={n_permutations}, n_power_simulations={n_power_simulations}")
-    
+    logger.debug(
+        f"Starting simulate_power: delta={delta}, period={period}, n_permutations={n_permutations}, n_power_simulations={n_power_simulations}"
+    )
+
     y_real = np.array(y_real).flatten()
     y_control = np.array(y_control).flatten()
 
@@ -1382,38 +1451,40 @@ def simulate_power(y_real, y_control, delta, period, n_permutations=1000, signif
     end_treatment = start_treatment + period
 
     logger.debug(f"Treatment period: {start_treatment} to {end_treatment}")
-    
+
     # Default test statistic functions
     if stat_func is None:
         if inference_type == "mean_diff":
             stat_func = lambda x: np.mean(x)
         elif inference_type == "t_test":
-            stat_func = lambda x: np.mean(x) / (np.std(x) / np.sqrt(len(x))) if np.std(x) > 0 else 0
+            stat_func = lambda x: (
+                np.mean(x) / (np.std(x) / np.sqrt(len(x))) if np.std(x) > 0 else 0
+            )
         elif inference_type == "median_diff":
             stat_func = lambda x: np.median(x)
         else:  # default sum
             stat_func = lambda x: np.sum(x)
-    
+
     # Monte Carlo power simulation
     rejected_tests = 0
     p_values = []
-    
+
     for sim in range(n_power_simulations):
         if sim % 50 == 0 and sim > 0:
             logger.debug(f"Completed {sim}/{n_power_simulations} power simulations")
-        
+
         # Add noise to make each simulation slightly different
         noise_scale = np.std(y_real) * 0.05  # 5% of data std as noise
         y_real_noisy = y_real + np.random.normal(0, noise_scale, len(y_real))
         y_control_noisy = y_control + np.random.normal(0, noise_scale, len(y_control))
-        
+
         # Apply effect
         y_with_lift = apply_lift(y_real_noisy, delta, start_treatment, end_treatment)
         residuals = compute_residuals(y_with_lift, y_control_noisy)
         treatment_residuals = residuals[start_treatment:]
-        
+
         observed_stat = stat_func(treatment_residuals)
-        
+
         # Permutation test
         null_stats = []
         for i in range(n_permutations):
@@ -1423,29 +1494,30 @@ def simulate_power(y_real, y_control, delta, period, n_permutations=1000, signif
             else:
                 # IID permutation
                 permuted_residuals = np.random.permutation(residuals)
-            
+
             permuted = permuted_residuals[start_treatment:]
             null_stats.append(stat_func(permuted))
-        
+
         null_stats = np.array(null_stats)
-        
+
         # Two-sided test
         p_value = np.mean(np.abs(null_stats) >= np.abs(observed_stat))
         p_values.append(p_value)
-        
+
         if p_value < significance_level:
             rejected_tests += 1
-    
+
     power = rejected_tests / n_power_simulations
-    
+
     # Calculate confidence interval for power estimate
     power_se = np.sqrt(power * (1 - power) / n_power_simulations)
     power_ci = (max(0, power - 1.95 * power_se), min(1, power + 1.95 * power_se))
-    
-    
+
     y_with_lift_sample = apply_lift(y_real, delta, start_treatment, end_treatment)
-    
-    logger.debug(f"Power simulation completed: power={power:.4f}, CI=({power_ci[0]:.4f}, {power_ci[1]:.4f}), mean p-value={np.mean(p_values):.4f}")
+
+    logger.debug(
+        f"Power simulation completed: power={power:.4f}, CI=({power_ci[0]:.4f}, {power_ci[1]:.4f}), mean p-value={np.mean(p_values):.4f}"
+    )
 
     return delta, power, power_ci, y_with_lift_sample, np.mean(p_values)
 
@@ -1463,8 +1535,10 @@ def run_simulation(
     """
     Wrapper function to run a single simulation of statistical power.
     """
-    logger.debug(f"Starting simulation: delta={delta}, period={period}, n_permutations={n_permutations}")
-    
+    logger.debug(
+        f"Starting simulation: delta={delta}, period={period}, n_permutations={n_permutations}"
+    )
+
     y_real = np.array(y_real).flatten()
     y_control = np.array(y_control).flatten()
 
@@ -1478,7 +1552,7 @@ def run_simulation(
             significance_level=significance_level,
             inference_type=inference_type,
             block_size=size_block if size_block else 5,
-            n_power_simulations=50  
+            n_power_simulations=50,
         )
         return result
     except Exception as e:
@@ -1577,11 +1651,18 @@ def evaluate_sensitivity(
                     except Exception as e:
                         logger.debug(f"Status update failed: {e}")
 
-            
-            statistical_power = [(res[0], res[1], res[2], res[4]) for res in results]  # (delta, power, power_ci, p_value)
-            mde = next((delta for delta, power, ci, p_value in statistical_power if power >= 0.8), None)
-            
-            
+            statistical_power = [
+                (res[0], res[1], res[2], res[4]) for res in results
+            ]  # (delta, power, power_ci, p_value)
+            mde = next(
+                (
+                    delta
+                    for delta, power, ci, p_value in statistical_power
+                    if power >= 0.8
+                ),
+                None,
+            )
+
             p_value = None
             power_ci = None
             power = None
@@ -1592,23 +1673,29 @@ def evaluate_sensitivity(
                         power_ci = ci
                         power = power
                         break
-            
+
             # Format values safely for logging
             p_value_str = f"{p_value:.4f}" if p_value is not None else "None"
             power_str = f"{power:.4f}" if power is not None else "None"
-            power_ci_str = f"({power_ci[0]:.4f} - {power_ci[1]:.4f})" if power_ci is not None else "None"
-            
-            logger.info(f"Period {period} completed for size {size}. MDE found: {mde} with p-value: {p_value_str}, power: {power_str} and CI: {power_ci_str}")
+            power_ci_str = (
+                f"({power_ci[0]:.4f} - {power_ci[1]:.4f})"
+                if power_ci is not None
+                else "None"
+            )
+
+            logger.info(
+                f"Period {period} completed for size {size}. MDE found: {mde} with p-value: {p_value_str}, power: {power_str} and CI: {power_ci_str}"
+            )
 
             for delta, _, ci, adjusted_series, p_value in results:
                 lift_series[(size, delta, period)] = adjusted_series
 
             results_by_period[period] = {
-                'Statistical Power': statistical_power,
-                'MDE': mde,
-                'P-Value': p_value,
-                'MDE_CI': power_ci,
-                'Power': power
+                "Statistical Power": statistical_power,
+                "MDE": mde,
+                "P-Value": p_value,
+                "MDE_CI": power_ci,
+                "Power": power,
             }
 
         sensitivity_results[size] = results_by_period
@@ -1754,20 +1841,25 @@ def run_geo_analysis_streamlit_app(
 
     # Step 3: Evaluate sensitivity for different deltas and periods
     logger.info("Step 3: Evaluating sensitivity for different deltas and periods.....")
-    
+
     # Check if we have global optimization results
-    if isinstance(simulation_results, dict) and "global_experiment" in simulation_results:
-        logger.info("Detected global optimization results, generating sensitivity data by size")
+    if (
+        isinstance(simulation_results, dict)
+        and "global_experiment" in simulation_results
+    ):
+        logger.info(
+            "Detected global optimization results, generating sensitivity data by size"
+        )
         # Extract sizes from global experiment and create artificial results_by_size for sensitivity analysis
         global_experiment = simulation_results["global_experiment"]
         results_by_size = {}
-        
+
         # Group cells by size to create sensitivity data
         for cell in global_experiment:
             size = cell["Size"]
             if size not in results_by_size:
                 results_by_size[size] = []
-            
+
             # Create a result dict compatible with evaluate_sensitivity
             result_dict = {
                 "Best Treatment Group": cell["Best Treatment Group"],
@@ -1777,10 +1869,10 @@ def run_geo_analysis_streamlit_app(
                 "Actual Target Metric (y)": cell["Actual Target Metric (y)"],
                 "Predictions": cell["Predictions"],
                 "Weights": cell["Weights"],
-                "observed_conformity": cell["observed_conformity"]
+                "observed_conformity": cell["observed_conformity"],
             }
             results_by_size[size].append(result_dict)
-        
+
         # Run sensitivity analysis on the artificial results_by_size
         sensitivity_results, series_lifts = evaluate_sensitivity(
             results_by_size,
@@ -1804,12 +1896,12 @@ def run_geo_analysis_streamlit_app(
             progress_bar=progress_bar_2,
             status_text=status_text_2,
         )
-    
+
     if sensitivity_results is not None:
-      logger.info("Sensitivity evaluation completed successfully.")
+        logger.info("Sensitivity evaluation completed successfully.")
     else:
-      logger.warning("Sensitivity evaluation returned None")
-      
+        logger.warning("Sensitivity evaluation returned None")
+
     logger.info("run_geo_analysis_streamlit_app completed successfully")
     return {
         "simulation_results": simulation_results,
@@ -1873,18 +1965,23 @@ def run_geo_analysis(
 
     # Step 3: Evaluate sensitivity for different deltas and periods
     # Check if we have global optimization results
-    if isinstance(simulation_results, dict) and "global_experiment" in simulation_results:
-        logger.info("Detected global optimization results, generating sensitivity data by size")
+    if (
+        isinstance(simulation_results, dict)
+        and "global_experiment" in simulation_results
+    ):
+        logger.info(
+            "Detected global optimization results, generating sensitivity data by size"
+        )
         # Extract sizes from global experiment and create artificial results_by_size for sensitivity analysis
         global_experiment = simulation_results["global_experiment"]
         results_by_size = {}
-        
+
         # Group cells by size to create sensitivity data
         for cell in global_experiment:
             size = cell["Size"]
             if size not in results_by_size:
                 results_by_size[size] = []
-            
+
             # Create a result dict compatible with evaluate_sensitivity
             result_dict = {
                 "Best Treatment Group": cell["Best Treatment Group"],
@@ -1894,10 +1991,10 @@ def run_geo_analysis(
                 "Actual Target Metric (y)": cell["Actual Target Metric (y)"],
                 "Predictions": cell["Predictions"],
                 "Weights": cell["Weights"],
-                "observed_conformity": cell["observed_conformity"]
+                "observed_conformity": cell["observed_conformity"],
             }
             results_by_size[size].append(result_dict)
-        
+
         # Run sensitivity analysis on the artificial results_by_size
         sensitivity_results, series_lifts = evaluate_sensitivity(
             results_by_size,

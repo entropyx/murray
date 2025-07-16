@@ -1,7 +1,11 @@
 import streamlit as st
 import pandas as pd
 from Murray.main import run_geo_analysis_streamlit_app, transform_results_data
-from Murray.auxiliary import cleaned_data, analyze_data_characteristics, get_test_explanation
+from Murray.auxiliary import (
+    cleaned_data,
+    analyze_data_characteristics,
+    get_test_explanation,
+)
 from Murray.plots import *
 from streamlit_js_eval import streamlit_js_eval
 from fpdf import FPDF
@@ -101,12 +105,13 @@ def generate_pdf(
     pdf.set_font("Poppins", size=10)
     pdf.set_text_color(33, 31, 36)
     pdf.multi_cell(
-        0, 5,
+        0,
+        5,
         f"This report provides information about the experimental design on the variable '{tarjet_variable}', "
         f"the experimental design was conducted for a duration of {period_idx} days. "
         f"The data included in the design have a period of {firt_day} to {last_day} where the treatment "
         f"started on {treatment_day} until {last_day}. It includes information about the treatment group, "
-        f"control group, minimum detectable effect (MDE), and other relevant information."
+        f"control group, minimum detectable effect (MDE), and other relevant information.",
     )
     pdf.ln(5)
 
@@ -116,9 +121,11 @@ def generate_pdf(
     pdf.cell(200, 8, "Treatment Group:", ln=True)
     pdf.set_font("Poppins", size=10)
     pdf.set_text_color(33, 31, 36)
-    pdf.multi_cell(0, 5,
+    pdf.multi_cell(
+        0,
+        5,
         "The treatment group consists of individuals or units that received the experimental intervention or treatment. "
-        "The following is the description of the treatment group: "
+        "The following is the description of the treatment group: ",
     )
     pdf.set_font("Poppins", style="B", size=9.5)
     pdf.multi_cell(0, 5, treatment_group)
@@ -130,9 +137,11 @@ def generate_pdf(
     pdf.cell(200, 8, "Control Group:", ln=True)
     pdf.set_font("Poppins", size=10)
     pdf.set_text_color(33, 31, 36)
-    pdf.multi_cell(0, 5,
+    pdf.multi_cell(
+        0,
+        5,
         "The control group is used as a baseline for comparison. These are the individuals or units that did not "
-        "receive the treatment but were otherwise similar. Here is each location of the control group: "
+        "receive the treatment but were otherwise similar. Here is each location of the control group: ",
     )
     pdf.set_font("Poppins", style="B", size=9.5)
     pdf.multi_cell(0, 5, control_group)
@@ -144,10 +153,12 @@ def generate_pdf(
     pdf.cell(200, 8, "Minimum Detectable Effect (MDE)", ln=True)
     pdf.set_font("Poppins", size=10)
     pdf.set_text_color(33, 31, 36)
-    pdf.multi_cell(0, 5,
+    pdf.multi_cell(
+        0,
+        5,
         f"The experimental design is based on the minimum detectable effect (MDE) which is the smallest effect "
         f"that can be detected with a given level of confidence. In this case, the MDE is {round(mde * 100)}% "
-        f"for the period of {period_idx} days."
+        f"for the period of {period_idx} days.",
     )
     pdf.ln(5)
 
@@ -199,7 +210,7 @@ def generate_pdf(
                 "This means there is more than a 10% chance that these results occurred by chance. "
                 "We don't have sufficient evidence to conclude that the treatment is having a real effect."
             )
-        
+
         pdf.multi_cell(0, 5, explanation)
         pdf.ln(5)
 
@@ -210,7 +221,7 @@ def generate_pdf(
         pdf.cell(200, 8, "Statistical Power", ln=True)
         pdf.set_font("Poppins", size=10)
         pdf.set_text_color(33, 31, 36)
-        
+
         power_percentage = power_value * 100
         if power_percentage >= 80:
             power_interpretation = "High"
@@ -233,7 +244,7 @@ def generate_pdf(
                 "This means we have a low probability of detecting a true effect if one exists. "
                 "Low power increases the risk of missing real treatment effects (false negatives)."
             )
-        
+
         pdf.multi_cell(0, 5, power_explanation)
         pdf.ln(5)
 
@@ -243,10 +254,16 @@ def generate_pdf(
     pdf.cell(200, 8, "Conversion Percentages", ln=True)
     pdf.set_font("Poppins", size=10)
     pdf.set_text_color(33, 31, 36)
-    pdf.cell(200, 5, f"Treatment Percentage: {(100 - holdout_percentage):.2f}%", ln=True)
+    pdf.cell(
+        200, 5, f"Treatment Percentage: {(100 - holdout_percentage):.2f}%", ln=True
+    )
     pdf.cell(200, 5, f"Holdout Percentage: {holdout_percentage:.2f}%", ln=True)
-    pdf.multi_cell(0, 5, "The holdout percentage represents the portion of the total conversions that belong to the control group. "
-                            "The treatment percentage represents the portion of the total conversions that are allocated to the treatment group.")
+    pdf.multi_cell(
+        0,
+        5,
+        "The holdout percentage represents the portion of the total conversions that belong to the control group. "
+        "The treatment percentage represents the portion of the total conversions that are allocated to the treatment group.",
+    )
     pdf.ln(5)
 
     # Control Locations and Weights Section
@@ -290,9 +307,11 @@ def generate_pdf(
     pdf.set_font("Poppins", size=10)
     pdf.set_text_color(33, 31, 36)
 
-    pdf.multi_cell(0, 5,
+    pdf.multi_cell(
+        0,
+        5,
         "The results show the impact of the treatment on different treatment locations. "
-        "Below is the ATT value and the lift value total of the target variable."
+        "Below is the ATT value and the lift value total of the target variable.",
     )
 
     pdf.ln(1)
@@ -338,7 +357,7 @@ def generate_pdf(
         ("Lower Bound", lower_bound_value_absolute, lower_bound_value_percentage),
         ("Upper Bound", upper_bound_value_absolute, upper_bound_value_percentage),
     ]
-    
+
     for i, (label, abs_val, pct_val) in enumerate(row_data):
         bg_color = alt_row_bg if i % 2 else white_row_bg
         pdf.set_fill_color(*bg_color)
@@ -347,8 +366,24 @@ def generate_pdf(
         else:
             pdf.set_font("Poppins", size=10)
         pdf.cell(col_widths[0], row_height, label, border=1, ln=0, align="C", fill=True)
-        pdf.cell(col_widths[1], row_height, f"{abs_val:,.2f}", border=1, ln=0, align="C", fill=True)
-        pdf.cell(col_widths[2], row_height, f"{pct_val:,.2f}%", border=1, ln=1, align="C", fill=True)
+        pdf.cell(
+            col_widths[1],
+            row_height,
+            f"{abs_val:,.2f}",
+            border=1,
+            ln=0,
+            align="C",
+            fill=True,
+        )
+        pdf.cell(
+            col_widths[2],
+            row_height,
+            f"{pct_val:,.2f}%",
+            border=1,
+            ln=1,
+            align="C",
+            fill=True,
+        )
 
     # MDE value
     pdf.ln(4)
@@ -363,12 +398,14 @@ def generate_pdf(
     # Pre/Post intervention explanation
     pdf.set_font("Poppins", size=10)
     pdf.set_text_color(33, 31, 36)
-    pdf.multi_cell(0, 5,
+    pdf.multi_cell(
+        0,
+        5,
         "It is important to be able to identify the impact of the intervention pre-intervention and "
         "post-intervention in real values. In this case, a small table is presented where the pre-intervention "
         "value (with the same duration as the treatment period) and the post-intervention value are observed. "
         "This allows for a quick and simple identification of the impact that an intervention would have in "
-        "comparison to the locations where it is not applied (counterfactual)."
+        "comparison to the locations where it is not applied (counterfactual).",
     )
 
     pdf.ln(1)
@@ -428,9 +465,33 @@ def generate_pdf(
     for i, row in df.iterrows():
         bg_color = alt_row_bg if i % 2 else white_row_bg
         pdf.set_fill_color(*bg_color)
-        pdf.cell(col_widths[0], row_height, str(row["Group"]), border=1, ln=0, align="C", fill=True)
-        pdf.cell(col_widths[1], row_height, f"{row['Pre-treatment']:,.2f}", border=1, ln=0, align="C", fill=True)
-        pdf.cell(col_widths[2], row_height, f"{row['Post-treatment']:,.2f}", border=1, ln=1, align="C", fill=True)
+        pdf.cell(
+            col_widths[0],
+            row_height,
+            str(row["Group"]),
+            border=1,
+            ln=0,
+            align="C",
+            fill=True,
+        )
+        pdf.cell(
+            col_widths[1],
+            row_height,
+            f"{row['Pre-treatment']:,.2f}",
+            border=1,
+            ln=0,
+            align="C",
+            fill=True,
+        )
+        pdf.cell(
+            col_widths[2],
+            row_height,
+            f"{row['Post-treatment']:,.2f}",
+            border=1,
+            ln=1,
+            align="C",
+            fill=True,
+        )
 
     # Final graph section
     pdf.ln(9)
@@ -438,7 +499,11 @@ def generate_pdf(
         pdf.add_page()
     pdf.set_font("Poppins", size=10)
     pdf.set_text_color(33, 31, 36)
-    pdf.multi_cell(0, 5, "The graph below shows the aggregate effect, the point effect, and the cumulative effect.")
+    pdf.multi_cell(
+        0,
+        5,
+        "The graph below shows the aggregate effect, the point effect, and the cumulative effect.",
+    )
     pdf.image(temp_image_path, x=10, y=pdf.get_y(), w=190)
 
     # Clean up and return
@@ -713,18 +778,18 @@ if file is not None:
             excluded_locations = st.multiselect(
                 "Select excluded locations", cleaned["location"].unique()
             )
-            
+
             data_analysis = analyze_data_characteristics(cleaned, col_target="Y")
-    
-            recommended_test = data_analysis.get('recommended_test', 'sum') 
-            
+
+            recommended_test = data_analysis.get("recommended_test", "sum")
+
             test_options = {
                 "sum": "Sum Test - Total cumulative effect",
                 "mean_diff": "Mean Difference Test - Average effect",
                 "t_test": "T-Test - Standardized mean difference",
-                "median_diff": "Median Difference Test - Robust to outliers"
+                "median_diff": "Median Difference Test - Robust to outliers",
             }
-            
+
             selected_test = recommended_test
             st.markdown(f"**Selected Test:** {selected_test}")
 
@@ -882,8 +947,6 @@ if file is not None:
                         "sizes": selected_sizes,
                         "top_n": top_n_per_size,
                     }
-                    
-
 
             if "simulation_results" not in st.session_state:
                 st.session_state.simulation_results = None
@@ -984,24 +1047,24 @@ if file is not None:
                 ):
                     st.write(" ")
                     st.subheader("Global Multi-Cell Experiment Results")
-                    
+
                     simulation_results = st.session_state.results["simulation_results"]
-                    
+
                     # Check if we have global experiment results
                     if "global_experiment" in simulation_results:
                         global_experiment = simulation_results["global_experiment"]
-                        
-                        
+
                         # Get sensitivity data for MDE/Power information
-                        sensitivity_data = st.session_state.results.get("sensitivity_results", {})
-                        
-                        
+                        sensitivity_data = st.session_state.results.get(
+                            "sensitivity_results", {}
+                        )
+
                         # Period selection for MDE display
                         available_periods = set()
                         for size_data in sensitivity_data.values():
                             available_periods.update(size_data.keys())
                         available_periods = sorted(list(available_periods))
-                        
+
                         selected_period = None
                         if available_periods:
                             selected_period = st.selectbox(
@@ -1011,80 +1074,145 @@ if file is not None:
                                 help="Choose the treatment period to analyze for MDE, P-Value, and Power calculations.",
                                 key="global_multicell_period_selector",
                             )
-                        
+
                         # Format results for display
                         detailed_results = []
-                        
+
                         for cell in global_experiment:
                             cell_size = cell["Size"]
-                            
+
                             # Get MDE info for this cell size and period
                             mde_info = {"MDE": "N/A", "P-Value": "N/A", "Power": "N/A"}
                             if selected_period and sensitivity_data:
                                 # Check if cell_size exists in sensitivity_data
                                 if cell_size in sensitivity_data:
                                     size_data = sensitivity_data[cell_size]
-                                    if isinstance(size_data, dict) and selected_period in size_data:
+                                    if (
+                                        isinstance(size_data, dict)
+                                        and selected_period in size_data
+                                    ):
                                         period_data = size_data[selected_period]
                                         mde_raw = period_data.get("MDE")
-                                        mde_value = mde_raw * 100 if mde_raw is not None else None
+                                        mde_value = (
+                                            mde_raw * 100
+                                            if mde_raw is not None
+                                            else None
+                                        )
                                         p_value = period_data.get("P-Value")
                                         power_raw = period_data.get("Power")
-                                        power_value = power_raw * 100 if power_raw is not None else None
-                                        
+                                        power_value = (
+                                            power_raw * 100
+                                            if power_raw is not None
+                                            else None
+                                        )
+
                                         mde_info = {
-                                            "MDE": f"{int(round(mde_value))}" if mde_value is not None else "N/A",
-                                            "P-Value": f"{p_value:.4f}" if p_value is not None else "N/A",
-                                            "Power": f"{int(round(power_value))}" if power_value is not None else "N/A",
+                                            "MDE": (
+                                                f"{int(round(mde_value))}"
+                                                if mde_value is not None
+                                                else "N/A"
+                                            ),
+                                            "P-Value": (
+                                                f"{p_value:.4f}"
+                                                if p_value is not None
+                                                else "N/A"
+                                            ),
+                                            "Power": (
+                                                f"{int(round(power_value))}"
+                                                if power_value is not None
+                                                else "N/A"
+                                            ),
                                         }
                                 else:
                                     # If exact size not found, try to find closest size
-                                    available_sizes = [int(s) for s in sensitivity_data.keys() if str(s).isdigit()]
+                                    available_sizes = [
+                                        int(s)
+                                        for s in sensitivity_data.keys()
+                                        if str(s).isdigit()
+                                    ]
                                     if available_sizes:
-                                        closest_size = min(available_sizes, key=lambda x: abs(x - cell_size))
+                                        closest_size = min(
+                                            available_sizes,
+                                            key=lambda x: abs(x - cell_size),
+                                        )
                                         size_data = sensitivity_data[closest_size]
-                                        if isinstance(size_data, dict) and selected_period in size_data:
+                                        if (
+                                            isinstance(size_data, dict)
+                                            and selected_period in size_data
+                                        ):
                                             period_data = size_data[selected_period]
                                             mde_raw = period_data.get("MDE")
-                                            mde_value = mde_raw * 100 if mde_raw is not None else None
+                                            mde_value = (
+                                                mde_raw * 100
+                                                if mde_raw is not None
+                                                else None
+                                            )
                                             p_value = period_data.get("P-Value")
                                             power_raw = period_data.get("Power")
-                                            power_value = power_raw * 100 if power_raw is not None else None
-                                            
+                                            power_value = (
+                                                power_raw * 100
+                                                if power_raw is not None
+                                                else None
+                                            )
+
                                             mde_info = {
-                                                "MDE": f"{int(round(mde_value))}" if mde_value is not None else f"N/A (≈{closest_size})",
-                                                "P-Value": f"{p_value:.4f}" if p_value is not None else "N/A",
-                                                "Power": f"{int(round(power_value))}" if power_value is not None else f"N/A (≈{closest_size})",
+                                                "MDE": (
+                                                    f"{int(round(mde_value))}"
+                                                    if mde_value is not None
+                                                    else f"N/A (≈{closest_size})"
+                                                ),
+                                                "P-Value": (
+                                                    f"{p_value:.4f}"
+                                                    if p_value is not None
+                                                    else "N/A"
+                                                ),
+                                                "Power": (
+                                                    f"{int(round(power_value))}"
+                                                    if power_value is not None
+                                                    else f"N/A (≈{closest_size})"
+                                                ),
                                             }
-                            
-                            detailed_results.append({
-                                "Cell": cell["Cell"],
-                                "Size": cell["Size"],
-                                "Treatment Group": ", ".join(cell["Best Treatment Group"]),
-                                "Control Group": ", ".join(cell["Control Group"]),
-                                "SMAPE": f"{cell['SMAPE']:.4f}",
-                                "Holdout %": f"{cell['Holdout Percentage']:.2f}%",
-                                "MDE": f"{mde_info['MDE']}%" if mde_info['MDE'] != "N/A" else "N/A",
-                                "P-Value": mde_info["P-Value"],
-                                "Power": f"{mde_info['Power']}%" if mde_info['Power'] != "N/A" else "N/A",
-                            })
-                        
+
+                            detailed_results.append(
+                                {
+                                    "Cell": cell["Cell"],
+                                    "Size": cell["Size"],
+                                    "Treatment Group": ", ".join(
+                                        cell["Best Treatment Group"]
+                                    ),
+                                    "Control Group": ", ".join(cell["Control Group"]),
+                                    "SMAPE": f"{cell['SMAPE']:.4f}",
+                                    "Holdout %": f"{cell['Holdout Percentage']:.2f}%",
+                                    "MDE": (
+                                        f"{mde_info['MDE']}%"
+                                        if mde_info["MDE"] != "N/A"
+                                        else "N/A"
+                                    ),
+                                    "P-Value": mde_info["P-Value"],
+                                    "Power": (
+                                        f"{mde_info['Power']}%"
+                                        if mde_info["Power"] != "N/A"
+                                        else "N/A"
+                                    ),
+                                }
+                            )
+
                         if detailed_results:
                             df_detailed = pd.DataFrame(detailed_results)
                             df_detailed = df_detailed.sort_values("Cell")
-                            
+
                             if selected_period:
                                 st.caption(
                                     f"💡 **Note:** MDE, P-Value, and Power shown for {selected_period}-day treatment period. "
                                     f"Each cell uses the statistical analysis for its respective size."
                                 )
-                            
+
                             st.dataframe(
                                 df_detailed,
                                 use_container_width=True,
                                 height=min(600, len(detailed_results) * 35 + 50),
                             )
-                            
+
                             # Download button
                             csv = df_detailed.to_csv(index=False)
                             st.download_button(
@@ -1093,34 +1221,55 @@ if file is not None:
                                 file_name=f"global_multicell_experiment_{pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')}.csv",
                                 mime="text/csv",
                             )
-                            
+
                             # Show location usage summary
                             all_treatment_locations = set()
                             all_control_locations = set()
                             for cell in global_experiment:
-                                all_treatment_locations.update(cell["Best Treatment Group"])
+                                all_treatment_locations.update(
+                                    cell["Best Treatment Group"]
+                                )
                                 all_control_locations.update(cell["Control Group"])
-                            
-                            total_unique_locations = len(all_treatment_locations | all_control_locations)
-                            
-                            with st.expander("📍 Location Usage Summary", expanded=False):
+
+                            total_unique_locations = len(
+                                all_treatment_locations | all_control_locations
+                            )
+
+                            with st.expander(
+                                "📍 Location Usage Summary", expanded=False
+                            ):
                                 col1, col2, col3 = st.columns(3)
                                 with col1:
-                                    st.metric("Treatment Locations", len(all_treatment_locations))
+                                    st.metric(
+                                        "Treatment Locations",
+                                        len(all_treatment_locations),
+                                    )
                                 with col2:
-                                    st.metric("Control Locations", len(all_control_locations))
+                                    st.metric(
+                                        "Control Locations", len(all_control_locations)
+                                    )
                                 with col3:
-                                    st.metric("Total Unique Locations", total_unique_locations)
-                                
-                                st.write("**Treatment Locations Used:**", ", ".join(sorted(all_treatment_locations)))
-                                st.write("**Control Locations Used:**", ", ".join(sorted(all_control_locations)))
-                        
+                                    st.metric(
+                                        "Total Unique Locations", total_unique_locations
+                                    )
+
+                                st.write(
+                                    "**Treatment Locations Used:**",
+                                    ", ".join(sorted(all_treatment_locations)),
+                                )
+                                st.write(
+                                    "**Control Locations Used:**",
+                                    ", ".join(sorted(all_control_locations)),
+                                )
+
                         else:
                             st.warning("No experiment results to display.")
-                    
+
                     # Handle legacy multi-cell results (if any)
                     else:
-                        st.warning("⚠️ Legacy multi-cell mode detected. Please re-run the simulation to use the new global optimization.")
+                        st.warning(
+                            "⚠️ Legacy multi-cell mode detected. Please re-run the simulation to use the new global optimization."
+                        )
 
                 # Single-cell mode
                 elif st.session_state.simulation_results is not None and not getattr(
