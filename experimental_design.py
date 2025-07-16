@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 from Murray.main import run_geo_analysis_streamlit_app, transform_results_data
-from Murray.auxiliary import cleaned_data
+from Murray.auxiliary import cleaned_data, analyze_data_characteristics, get_test_explanation
 from Murray.plots import *
 from streamlit_js_eval import streamlit_js_eval
 from fpdf import FPDF
@@ -713,6 +713,20 @@ if file is not None:
             excluded_locations = st.multiselect(
                 "Select excluded locations", cleaned["location"].unique()
             )
+            
+            data_analysis = analyze_data_characteristics(cleaned, col_target="Y")
+    
+            recommended_test = data_analysis.get('recommended_test', 'sum') 
+            
+            test_options = {
+                "sum": "Sum Test - Total cumulative effect",
+                "mean_diff": "Mean Difference Test - Average effect",
+                "t_test": "T-Test - Standardized mean difference",
+                "median_diff": "Median Difference Test - Robust to outliers"
+            }
+            
+            selected_test = recommended_test
+            st.markdown(f"**Selected Test:** {selected_test}")
 
             st.markdown(
                 """
@@ -924,6 +938,7 @@ if file is not None:
                             deltas_range=deltas_range,
                             periods_range=periods_range,
                             multicell_config=multicell_config,
+                            inference_type=selected_test,
                         )
 
                     results_by_size = transform_results_data(
