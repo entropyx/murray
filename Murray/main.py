@@ -1267,7 +1267,7 @@ def run_simulation(
     period,
     n_permutations,
     significance_level,
-    inference_type="iid",
+    inference_type="sum",
     size_block=None,
 ):
     """
@@ -1302,7 +1302,7 @@ def evaluate_sensitivity(
     periods,
     n_permutations,
     significance_level=0.05,
-    inference_type="iid",
+    inference_type="sum",
     size_block=None,
     progress_bar=None,
     status_text=None,
@@ -1388,7 +1388,6 @@ def evaluate_sensitivity(
                         logger.debug(f"Status update failed: {e}")
 
             
-            # Extract results: (delta, power, power_ci, y_with_lift_sample, mean_p_value)
             statistical_power = [(res[0], res[1], res[2], res[4]) for res in results]  # (delta, power, power_ci, p_value)
             mde = next((delta for delta, power, ci, p_value in statistical_power if power >= 0.8), None)
             
@@ -1404,7 +1403,12 @@ def evaluate_sensitivity(
                         power = power
                         break
             
-            logger.info(f"Period {period} completed for size {size}. MDE found: {mde} with p-value: {p_value:.4f}, power: {power:.4f} and CI: ({power_ci[0]:.4f} - {power_ci[1]:.4f})")
+            # Format values safely for logging
+            p_value_str = f"{p_value:.4f}" if p_value is not None else "None"
+            power_str = f"{power:.4f}" if power is not None else "None"
+            power_ci_str = f"({power_ci[0]:.4f} - {power_ci[1]:.4f})" if power_ci is not None else "None"
+            
+            logger.info(f"Period {period} completed for size {size}. MDE found: {mde} with p-value: {p_value_str}, power: {power_str} and CI: {power_ci_str}")
 
             for delta, _, ci, adjusted_series, p_value in results:
                 lift_series[(size, delta, period)] = adjusted_series
@@ -1498,6 +1502,7 @@ def run_geo_analysis_streamlit_app(
     status_text_2=None,
     n_permutations=10000,
     multicell_config=None,
+    inference_type="sum",
 ):
     """
     Runs a complete geo analysis pipeline including market correlation, group optimization,
@@ -1563,6 +1568,7 @@ def run_geo_analysis_streamlit_app(
         periods,
         n_permutations,
         significance_level,
+        inference_type=inference_type,
         progress_bar=progress_bar_2,
         status_text=status_text_2,
     )
@@ -1592,6 +1598,7 @@ def run_geo_analysis(
     progress_bar_2=None,
     status_text_2=None,
     n_permutations=10000,
+    inference_type="sum",
 ):
     """
     Runs a complete geo analysis pipeline including market correlation, group optimization,
@@ -1639,6 +1646,7 @@ def run_geo_analysis(
         periods,
         n_permutations,
         significance_level,
+        inference_type=inference_type,
         progress_bar=progress_bar_2,
         status_text=status_text_2,
     )
