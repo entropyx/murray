@@ -964,7 +964,6 @@ def optimize_global_multicell(
     for size in allowed_sizes:
         logger.info(f"Generating candidates for size {size}")
 
-        # Generate treatment groups for this size
         groups = select_treatments_exclusive(
             similarity_matrix, size, excluded_locations, used_treatment_locations=set()
         )
@@ -973,7 +972,6 @@ def optimize_global_multicell(
             logger.warning(f"No valid groups available for size {size}")
             continue
 
-        # Evaluate each group independently
         size_results = []
         with concurrent.futures.ProcessPoolExecutor(max_workers=2) as executor:
             futures = executor.map(
@@ -996,7 +994,7 @@ def optimize_global_multicell(
                     size_results.append(result_with_size)
 
         # Sort by performance and keep best candidates for this size
-        size_results.sort(key=lambda x: (x[2], -x[3]))
+        size_results.sort(key=lambda x: (x[2], -x[3])) 
 
         # Keep top candidates (more than needed to have options during global selection)
         max_candidates_per_size = min(len(size_results), total_cells_needed * 3)
@@ -1016,8 +1014,7 @@ def optimize_global_multicell(
         f"Phase 2: Global optimization - selecting {total_cells_needed} cells from {total_candidates_count} candidates"
     )
 
-    # Sort all candidates by performance across all sizes
-    all_candidates.sort(key=lambda x: (x[2], -x[3]))  # Sort by MAPE, then SMAPE desc
+    all_candidates.sort(key=lambda x: (x[2], -x[3])) 
 
     selected_cells = []
     used_treatment_locations = set()
@@ -1042,7 +1039,6 @@ def optimize_global_multicell(
                 f"❌ Rejected candidate size={size}, treatment={treatment_group}, conflicts={conflicts}"
             )
 
-        # Update progress indicators
         if progress_updater:
             try:
                 progress_updater.progress(len(selected_cells) / total_cells_needed)
@@ -1109,7 +1105,7 @@ def optimize_global_multicell(
 
     logger.info(f"Global optimization completed: {len(selected_cells)} cells selected")
 
-    # Return in format expected by UI (single experiment)
+    
     return {"global_experiment": unified_results}
 
     # --- Single-cell mode ---
@@ -1313,7 +1309,7 @@ def calculate_minimum_sample_size(
     y_real = np.array(y_real).flatten()
     y_control = np.array(y_control).flatten()
 
-    min_size = period + 10  # Minimum size should be larger than treatment period
+    min_size = period + 10 
     max_size = len(y_real)
 
     for iteration in range(max_iterations):
@@ -1473,8 +1469,7 @@ def simulate_power(
         if sim % 50 == 0 and sim > 0:
             logger.debug(f"Completed {sim}/{n_power_simulations} power simulations")
 
-        # Add noise to make each simulation slightly different
-        noise_scale = np.std(y_real) * 0.05  # 5% of data std as noise
+        noise_scale = np.std(y_real) * 0.05
         y_real_noisy = y_real + np.random.normal(0, noise_scale, len(y_real))
         y_control_noisy = y_control + np.random.normal(0, noise_scale, len(y_control))
 
@@ -1885,7 +1880,6 @@ def run_geo_analysis_streamlit_app(
             status_text=status_text_2,
         )
     else:
-        # Normal sensitivity analysis for regular results
         sensitivity_results, series_lifts = evaluate_sensitivity(
             simulation_results,
             deltas,
@@ -1964,7 +1958,6 @@ def run_geo_analysis(
     )
 
     # Step 3: Evaluate sensitivity for different deltas and periods
-    # Check if we have global optimization results
     if (
         isinstance(simulation_results, dict)
         and "global_experiment" in simulation_results
@@ -1972,7 +1965,6 @@ def run_geo_analysis(
         logger.info(
             "Detected global optimization results, generating sensitivity data by size"
         )
-        # Extract sizes from global experiment and create artificial results_by_size for sensitivity analysis
         global_experiment = simulation_results["global_experiment"]
         results_by_size = {}
 
@@ -1982,7 +1974,6 @@ def run_geo_analysis(
             if size not in results_by_size:
                 results_by_size[size] = []
 
-            # Create a result dict compatible with evaluate_sensitivity
             result_dict = {
                 "Best Treatment Group": cell["Best Treatment Group"],
                 "Control Group": cell["Control Group"],
