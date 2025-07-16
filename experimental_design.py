@@ -726,7 +726,7 @@ if file is not None:
             }
             
             selected_test = recommended_test
-            st.markdown(f"**Selected Test:** {selected_test}")
+            # st.markdown(f"**Selected Test:** {selected_test}")
 
             st.markdown(
                 """
