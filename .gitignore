@@ -4,6 +4,7 @@ env/
 **/__pycache__/
 node_modules/
 .docusaurus/
+docs/
 *.pyc
 *.pyo
 *.pyd
