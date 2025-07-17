@@ -1,4 +1,6 @@
 import pandas as pd
+import numpy as np
+from scipy import stats
 from logger_config import get_logger
 
 logger = get_logger("auxiliary")
@@ -160,3 +162,303 @@ def market_correlations(data):
 
     correlation_matrix = pivoted_data.corr(method="pearson")
     return correlation_matrix
+
+
+def analyze_data_characteristics(data, col_target="Y"):
+    """
+    Analyze data characteristics to recommend appropriate statistical test functions.
+
+    Args:
+        data (pd.DataFrame): The DataFrame containing the data to analyze.
+        col_target (str): The name of the target variable column.
+
+    Returns:
+        dict: Dictionary containing data characteristics and test recommendations.
+    """
+    logger.info("Analyzing data characteristics for statistical test selection")
+
+    try:
+        if col_target not in data.columns:
+            raise ValueError(f"Target column '{col_target}' not found in data")
+
+        target_data = data[col_target].dropna()
+
+        if len(target_data) < 3:
+            logger.warning("Insufficient data for statistical analysis")
+            return {
+                "sample_size": len(target_data),
+                "recommended_test": "sum",
+                "confidence": "low",
+                "reason": "Insufficient data for statistical analysis",
+            }
+
+        # Basic statistics
+        sample_size = len(target_data)
+        mean_val = target_data.mean()
+        median_val = target_data.median()
+        std_val = target_data.std()
+        min_val = target_data.min()
+        max_val = target_data.max()
+
+        # Check for normality (Shapiro-Wilk test)
+        if sample_size <= 5000:  # Shapiro-Wilk works best for smaller samples
+            normality_stat, normality_p = stats.shapiro(target_data)
+            is_normal = normality_p > 0.05
+            normality_test = "Shapiro-Wilk"
+        else:
+            # Use D'Agostino's test for larger samples
+            normality_stat, normality_p = stats.normaltest(target_data)
+            is_normal = normality_p > 0.05
+            normality_test = "D'Agostino-Pearson"
+
+        # Check for outliers using IQR method
+        Q1 = target_data.quantile(0.25)
+        Q3 = target_data.quantile(0.75)
+        IQR = Q3 - Q1
+        lower_bound = Q1 - 1.5 * IQR
+        upper_bound = Q3 + 1.5 * IQR
+
+        outliers = target_data[
+            (target_data < lower_bound) | (target_data > upper_bound)
+        ]
+        has_outliers = len(outliers) > 0
+        outlier_percentage = (len(outliers) / len(target_data)) * 100
+
+        # Check if data is count/discrete
+        is_integer = target_data.apply(
+            lambda x: x == int(x) if pd.notna(x) else False
+        ).all()
+        is_non_negative = (target_data >= 0).all()
+
+        # Check skewness
+        skewness = stats.skew(target_data)
+        is_skewed = abs(skewness) > 1.0  # Moderate to high skewness
+
+        # Determine data type characteristics
+        if is_integer and is_non_negative and mean_val > 0:
+            data_type = "count"
+        elif is_non_negative and not is_integer:
+            data_type = "continuous_positive"
+        elif is_integer:
+            data_type = "discrete"
+        else:
+            data_type = "continuous"
+
+        # Decision tree for test recommendation
+        recommended_test, confidence, reason = _recommend_statistical_test(
+            data_type=data_type,
+            is_normal=is_normal,
+            has_outliers=has_outliers,
+            outlier_percentage=outlier_percentage,
+            sample_size=sample_size,
+            is_skewed=is_skewed,
+            skewness=skewness,
+        )
+
+        return {
+            "sample_size": sample_size,
+            "mean": mean_val,
+            "median": median_val,
+            "std": std_val,
+            "min": min_val,
+            "max": max_val,
+            "data_type": data_type,
+            "is_normal": is_normal,
+            "normality_p_value": normality_p,
+            "normality_test": normality_test,
+            "has_outliers": has_outliers,
+            "outlier_count": len(outliers),
+            "outlier_percentage": outlier_percentage,
+            "skewness": skewness,
+            "is_skewed": is_skewed,
+            "recommended_test": recommended_test,
+            "confidence": confidence,
+            "reason": reason,
+        }
+
+    except Exception as e:
+        logger.error(f"Error analyzing data characteristics: {str(e)}")
+        return {
+            "sample_size": 0,
+            "recommended_test": "sum",
+            "confidence": "low",
+            "reason": f"Error in analysis: {str(e)}",
+        }
+
+
+def _recommend_statistical_test(
+    data_type,
+    is_normal,
+    has_outliers,
+    outlier_percentage,
+    sample_size,
+    is_skewed,
+    skewness,
+):
+    """
+    Internal function to recommend statistical test based on data characteristics.
+
+    Returns:
+        tuple: (recommended_test, confidence, reason)
+    """
+
+    # High confidence recommendations
+    if data_type == "count" and not has_outliers:
+        return (
+            "sum",
+            "high",
+            "Count data without outliers - sum test captures total impact",
+        )
+
+    if data_type == "count" and has_outliers and outlier_percentage > 10:
+        return (
+            "median_diff",
+            "high",
+            "Count data with significant outliers - median test is robust",
+        )
+
+    if not is_normal and (is_skewed or has_outliers) and outlier_percentage > 5:
+        return (
+            "median_diff",
+            "high",
+            "Non-normal data with outliers - median test is robust to outliers",
+        )
+
+    if is_normal and not has_outliers and sample_size >= 30:
+        return (
+            "mean_diff",
+            "high",
+            "Normal data without outliers - mean test is optimal",
+        )
+
+    if is_normal and not has_outliers and sample_size < 30:
+        return (
+            "t_test",
+            "high",
+            "Normal data with small sample - t-test accounts for sample size",
+        )
+
+    # Medium confidence recommendations
+    if data_type == "continuous_positive" and not is_skewed and not has_outliers:
+        return "mean_diff", "medium", "Continuous positive data - mean test suitable"
+
+    if not is_normal and not has_outliers and sample_size >= 50:
+        return (
+            "mean_diff",
+            "medium",
+            "Non-normal data without outliers - mean test with large sample",
+        )
+
+    if is_normal and has_outliers and outlier_percentage <= 5:
+        return (
+            "mean_diff",
+            "medium",
+            "Normal data with few outliers - mean test acceptable",
+        )
+
+    # Low confidence / fallback recommendations
+    if has_outliers and outlier_percentage > 15:
+        return "median_diff", "low", "High outlier percentage - median test as fallback"
+
+    if abs(skewness) > 2:
+        return "median_diff", "low", "Highly skewed data - median test as fallback"
+
+    if sample_size < 10:
+        return (
+            "median_diff",
+            "low",
+            "Very small sample - median test as conservative choice",
+        )
+
+    # Default recommendation
+    return "sum", "low", "Default recommendation - sum test for general use"
+
+
+def get_test_explanation(test_type):
+    """
+    Get explanation for each statistical test type.
+
+    Args:
+        test_type (str): The statistical test type.
+
+    Returns:
+        dict: Dictionary with explanation, use_cases, and assumptions.
+    """
+    explanations = {
+        "sum": {
+            "name": "Sum Test",
+            "description": "Tests the total cumulative effect across the treatment period",
+            "use_cases": [
+                "Count data (sales, conversions, clicks)",
+                "When total impact/volume matters",
+                "Business metrics where absolute magnitude is important",
+            ],
+            "assumptions": [
+                "Data represents counts or totals",
+                "Non-negative values",
+                "Additive effects are meaningful",
+            ],
+            "formula": "Σ(treatment_residuals)",
+            "interpretation": "Detects changes in total volume or count",
+        },
+        "mean_diff": {
+            "name": "Mean Difference Test",
+            "description": "Tests the average difference between treatment and control",
+            "use_cases": [
+                "Continuous data with normal distribution",
+                "Per-unit effects (average order value)",
+                "When you want to detect average changes",
+            ],
+            "assumptions": [
+                "Data is approximately normally distributed",
+                "Similar variances between groups",
+                "No significant outliers",
+            ],
+            "formula": "Mean(treatment_residuals)",
+            "interpretation": "Detects changes in average values",
+        },
+        "t_test": {
+            "name": "T-Test Statistic",
+            "description": "Tests standardized mean difference accounting for variance and sample size",
+            "use_cases": [
+                "Normal data with small sample sizes",
+                "When you need standardized effect sizes",
+                "A/B testing with continuous outcomes",
+            ],
+            "assumptions": [
+                "Data is normally distributed",
+                "Independent observations",
+                "Constant variance",
+            ],
+            "formula": "Mean(residuals) / (Std(residuals) / √n)",
+            "interpretation": "Detects standardized changes accounting for variability",
+        },
+        "median_diff": {
+            "name": "Median Difference Test",
+            "description": "Tests the median difference, robust to outliers and non-normal data",
+            "use_cases": [
+                "Non-normal or skewed data",
+                "Data with outliers",
+                "When you want robust estimates",
+            ],
+            "assumptions": [
+                "Independent observations",
+                "Ordinal or continuous data",
+                "Minimal assumptions about distribution",
+            ],
+            "formula": "Median(treatment_residuals)",
+            "interpretation": "Detects changes in median values, robust to outliers",
+        },
+    }
+
+    return explanations.get(
+        test_type,
+        {
+            "name": "Unknown Test",
+            "description": "Test type not recognized",
+            "use_cases": [],
+            "assumptions": [],
+            "formula": "Unknown",
+            "interpretation": "Unknown",
+        },
+    )
