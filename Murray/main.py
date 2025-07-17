@@ -1931,6 +1931,7 @@ def run_geo_analysis(
     n_permutations=10000,
     test_type="sum",
     inference_type="iid",
+    global_optimization=False,
 ):
     """
     Runs a complete geo analysis pipeline including market correlation, group optimization,
@@ -1972,10 +1973,7 @@ def run_geo_analysis(
     )
 
     # Step 3: Evaluate sensitivity for different deltas and periods
-    if (
-        isinstance(simulation_results, dict)
-        and "global_experiment" in simulation_results
-    ):
+    if global_optimization:
         logger.info(
             "Detected global optimization results, generating sensitivity data by size"
         )
