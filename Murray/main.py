@@ -609,6 +609,24 @@ def evaluate_group_exclusive(
 ):
     """
     Evaluates a treatment group with location exclusivity for multi-cell mode.
+    
+    Applies the same evaluation logic as evaluate_group() but with additional
+    exclusivity constraints for multi-cell experiments.
+    
+    Args:
+        treatment_group (list): List of treatment locations to evaluate
+        data (pd.DataFrame): Input data with 'location', 'time', and 'Y' columns
+        total_Y (float): Total sum of Y values across all locations
+        correlation_matrix (pd.DataFrame): Market correlation matrix for control selection
+        min_holdout (float): Minimum required holdout percentage
+        df_pivot (pd.DataFrame): Pivoted data with time as index and locations as columns
+        used_treatment_locations (set): Set of locations already used as treatment in other cells
+        excluded_locations (list): List of globally excluded locations
+    
+    Returns:
+        tuple: (treatment_group, control_group, MAPE, SMAPE, y_original, 
+                counterfactual_full_original, filtered_weights, observed_conformity)
+        None: If holdout percentage is below minimum or no valid control group found
     """
     logger.debug(
         f"Starting exclusive evaluation for treatment group: {treatment_group}"
@@ -720,8 +738,30 @@ def BetterGroups(
     global_optimization=False,
 ):
     """
-    Simula posibles grupos de tratamiento y evalúa su desempeño.
-    Si multicell_config está presente, usa los sizes y top_n del usuario y guarda los mejores N grupos por size.
+    Simulates and evaluates treatment groups for geo-experiments.
+    
+    Supports three modes:
+    1. Single-cell mode: Finds optimal treatment groups for each size
+    2. Multi-cell normal mode: Finds N best groups per size with location exclusivity
+    3. Multi-cell global mode: Global optimization for heterogeneous cell sizes
+    
+    Args:
+        similarity_matrix (pd.DataFrame): Correlation matrix for treatment selection
+        excluded_locations (list): List of locations to exclude from treatment selection
+        data (pd.DataFrame): Input data with 'location', 'time', and 'Y' columns
+        correlation_matrix (pd.DataFrame): Market correlation matrix for control selection
+        maximum_treatment_percentage (float): Maximum treatment percentage (default: 0.50)
+        progress_updater (callable): Progress bar updater function
+        status_updater (callable): Status text updater function
+        multicell_config (dict): Multi-cell configuration with 'sizes' and 'top_n' keys
+        global_optimization (bool): Whether to use global optimization for multi-cell mode
+    
+    Returns:
+        dict: Results organized by mode:
+            - Single-cell: {size: {group_info}}
+            - Multi-cell normal: {size: [group1, group2, ...]}
+            - Multi-cell global: {"global_experiment": [cell1, cell2, ...]}
+        None: If no valid groups found
     """
     unique_locations = data["location"].unique()
     no_locations = len(unique_locations)
@@ -1538,6 +1578,23 @@ def run_simulation(
 ):
     """
     Wrapper function to run a single simulation of statistical power.
+    
+    Performs a statistical power simulation by comparing real treatment data
+    against synthetic control data using permutation testing.
+    
+    Args:
+        delta (float): Effect size to test for statistical significance.
+        y_real (array-like): Real treatment group data.
+        y_control (array-like): Control group data for comparison.
+        period (int): Number of periods to simulate.
+        n_permutations (int): Number of permutations to run for the test.
+        significance_level (float): Significance level for the statistical test.
+        test_type (str, optional): Type of test to perform. Default is "sum".
+        inference_type (str, optional): Type of inference to use. Default is "iid".
+        size_block (optional): Block size for inference. Default is None.
+    
+    Returns:
+        dict: Dictionary containing simulation results including power, p-value, and test statistics.
     """
     logger.debug(
         f"Starting simulation: delta={delta}, period={period}, n_permutations={n_permutations}"
@@ -1797,21 +1854,27 @@ def run_geo_analysis_streamlit_app(
 
     Args:
         data (pd.DataFrame): Input data containing metrics for analysis.
-        excluded_locations (list): List of states to exclude from the analysis.
         maximum_treatment_percentage (float): Maximum treatment percentage to ensure sufficient control.
         significance_level (float): Significance level for statistical testing.
         deltas_range (tuple): Range of delta values to evaluate as (start, stop, step).
         periods_range (tuple): Range of treatment periods to evaluate as (start, stop, step).
-        n_permutations (int, optional): Number of permutations for sensitivity evaluation. Default is 5000.
-        multicell_config (dict, optional): Configuration for multi-cell mode. Default is None.
+        excluded_locations (list): List of states to exclude from the analysis.
+        progress_bar_1 (callable): Progress bar updater for group optimization phase.
+        status_text_1 (callable): Status text updater for group optimization phase.
+        progress_bar_2 (callable): Progress bar updater for sensitivity evaluation phase.
+        status_text_2 (callable): Status text updater for sensitivity evaluation phase.
+        n_permutations (int): Number of permutations for sensitivity evaluation (default: 10000).
+        multicell_config (dict): Configuration for multi-cell mode with 'sizes' and 'top_n' keys.
+        test_type (str): Statistical test type ("sum", "mean_diff", "t_test", "median_diff").
+        inference_type (str): Type of inference ("iid" or "block").
+        global_optimization (bool): Whether to use global optimization for multi-cell mode.
 
     Returns:
-        fig: MDE visualization figure.
-        tuple: Tuple containing periods
         dict: Dictionary containing simulation results, sensitivity results, and adjusted series lifts.
             - "simulation_results": Results from group optimization.
             - "sensitivity_results": Sensitivity results for evaluated deltas and periods.
             - "series_lifts": Adjusted series for each delta and period.
+        None: If analysis fails due to insufficient data or invalid configuration.
     """
     logger.info("Starting run_geo_analysis_streamlit_app............")
 
@@ -1939,12 +2002,19 @@ def run_geo_analysis(
 
     Args:
         data (pd.DataFrame): Input data containing metrics for analysis.
-        excluded_locations (list): List of states to exclude from the analysis.
         maximum_treatment_percentage (float): Maximum treatment percentage to ensure sufficient control.
         significance_level (float): Significance level for statistical testing.
         deltas_range (tuple): Range of delta values to evaluate as (start, stop, step).
         periods_range (tuple): Range of treatment periods to evaluate as (start, stop, step).
-        n_permutations (int, optional): Number of permutations for sensitivity evaluation. Default is 5000.
+        excluded_locations (list): List of states to exclude from the analysis.
+        progress_bar_1 (optional): First progress bar for UI updates.
+        status_text_1 (optional): First status text for UI updates.
+        progress_bar_2 (optional): Second progress bar for UI updates.
+        status_text_2 (optional): Second status text for UI updates.
+        n_permutations (int, optional): Number of permutations for sensitivity evaluation. Default is 10000.
+        test_type (str, optional): Type of test to perform. Default is "sum".
+        inference_type (str, optional): Type of inference to use. Default is "iid".
+        global_optimization (bool, optional): Whether to use global optimization mode. Default is False.
 
     Returns:
         dict: Dictionary containing simulation results, sensitivity results, and adjusted series lifts.
