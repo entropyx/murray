@@ -1852,10 +1852,7 @@ def run_geo_analysis_streamlit_app(
     logger.info("Step 3: Evaluating sensitivity for different deltas and periods.....")
 
     # Check if we have global optimization results
-    if (
-        isinstance(simulation_results, dict)
-        and "global_experiment" in simulation_results
-    ):
+    if global_optimization:
         logger.info(
             "Detected global optimization results, generating sensitivity data by size"
         )
