@@ -725,7 +725,7 @@ def BetterGroups(
     """
     unique_locations = data["location"].unique()
     no_locations = len(unique_locations)
-    max_group_size = round(no_locations * 0.35)
+    max_group_size = round(no_locations * 0.45)
     min_elements_in_treatment = round(no_locations * 0.15)
     min_holdout = 100 - (maximum_treatment_percentage * 100)
     total_Y = data["Y"].sum()
@@ -1332,6 +1332,7 @@ def calculate_minimum_sample_size(
                 period,
                 n_permutations=500,
                 significance_level=significance_level,
+                test_type="sum",
                 inference_type=inference_type,
                 n_power_simulations=30,
             )
@@ -1375,6 +1376,7 @@ def calculate_minimum_sample_size(
             period,
             n_permutations=500,
             significance_level=significance_level,
+            test_type="sum",
             inference_type=inference_type,
             n_power_simulations=30,
         )
@@ -1408,6 +1410,7 @@ def simulate_power(
     period,
     n_permutations=1000,
     significance_level=0.05,
+    test_type="sum",
     inference_type="iid",
     stat_func=None,
     n_power_simulations=100,
@@ -1428,6 +1431,7 @@ def simulate_power(
         period (int): Duration of the treatment period.
         n_permutations (int): Number of permutations per test.
         significance_level (float): Significance level.
+        test_type (str): Statistical test type ("sum", "mean_diff", "t_test", "median_diff").
         inference_type (str): Type of inference ("iid" or "block").
         stat_func (callable): Custom test statistic function.
         n_power_simulations (int): Number of Monte Carlo simulations for power calculation.
@@ -1450,13 +1454,13 @@ def simulate_power(
 
     # Default test statistic functions
     if stat_func is None:
-        if inference_type == "mean_diff":
+        if test_type == "mean_diff":
             stat_func = lambda x: np.mean(x)
-        elif inference_type == "t_test":
+        elif test_type == "t_test":
             stat_func = lambda x: (
                 np.mean(x) / (np.std(x) / np.sqrt(len(x))) if np.std(x) > 0 else 0
             )
-        elif inference_type == "median_diff":
+        elif test_type == "median_diff":
             stat_func = lambda x: np.median(x)
         else:  # default sum
             stat_func = lambda x: np.sum(x)
@@ -1524,7 +1528,8 @@ def run_simulation(
     period,
     n_permutations,
     significance_level,
-    inference_type="sum",
+    test_type="sum",
+    inference_type="iid",
     size_block=None,
 ):
     """
@@ -1545,6 +1550,7 @@ def run_simulation(
             period=period,
             n_permutations=n_permutations,
             significance_level=significance_level,
+            test_type=test_type,
             inference_type=inference_type,
             block_size=size_block if size_block else 5,
             n_power_simulations=50,
@@ -1561,7 +1567,8 @@ def evaluate_sensitivity(
     periods,
     n_permutations,
     significance_level=0.05,
-    inference_type="sum",
+    test_type="sum",
+    inference_type="iid",
     size_block=None,
     progress_bar=None,
     status_text=None,
@@ -1575,6 +1582,7 @@ def evaluate_sensitivity(
         periods (list): List of treatment periods to evaluate.
         n_permutations (int): Number of permutations.
         significance_level (float): Significance level.
+        test_type (str): Statistical test type ("sum", "mean_diff", "t_test", "median_diff").
         inference_type (str): Type of conformal inference ("iid" or "block").
         size_block (int): Size of blocks for block shuffling (if applicable).
 
@@ -1627,6 +1635,7 @@ def evaluate_sensitivity(
                     period,
                     n_permutations,
                     significance_level,
+                    test_type,
                     inference_type,
                     size_block,
                 )
@@ -1679,7 +1688,7 @@ def evaluate_sensitivity(
             )
 
             logger.info(
-                f"Period {period} completed for size {size}. MDE found: {mde} with p-value: {p_value_str}, power: {power_str} and CI: {power_ci_str}"
+                f"Period {period} completed for size {size}. MDE found: {mde} with p-value: {p_value_str}, power: {power_str}"
             )
 
             for delta, _, ci, adjusted_series, p_value in results:
@@ -1774,8 +1783,8 @@ def run_geo_analysis_streamlit_app(
     status_text_2=None,
     n_permutations=10000,
     multicell_config=None,
-    inference_type="sum",
-    global_optimization=False,
+    test_type="sum",
+    inference_type="iid",
 ):
     """
     Runs a complete geo analysis pipeline including market correlation, group optimization,
@@ -1916,7 +1925,8 @@ def run_geo_analysis(
     progress_bar_2=None,
     status_text_2=None,
     n_permutations=10000,
-    inference_type="sum",
+    test_type="sum",
+    inference_type="iid",
 ):
     """
     Runs a complete geo analysis pipeline including market correlation, group optimization,

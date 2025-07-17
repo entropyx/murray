@@ -791,7 +791,7 @@ if file is not None:
             }
 
             selected_test = recommended_test
-            st.markdown(f"**Selected Test:** {selected_test}")
+            # st.markdown(f"**Selected Test:** {selected_test}")
 
             st.markdown(
                 """
@@ -1066,13 +1066,91 @@ if file is not None:
                         available_periods = sorted(list(available_periods))
 
                         selected_period = None
-                        if available_periods:
-                            selected_period = st.selectbox(
-                                "Select Period for MDE Analysis:",
-                                options=available_periods,
-                                index=0,
-                                help="Choose the treatment period to analyze for MDE, P-Value, and Power calculations.",
-                                key="global_multicell_period_selector",
+                        st.warning(
+                            "No sensitivity data available for period selection."
+                        )
+
+                    detailed_results = []
+
+                    for size, data in st.session_state.results[
+                        "simulation_results"
+                    ].items():
+                        if isinstance(data, list):
+                            for idx, group in enumerate(data):
+
+                                mde_info = {}
+                                if (
+                                    size in sensitivity_data
+                                    and selected_period is not None
+                                ):
+                                    period_data = sensitivity_data[size].get(
+                                        selected_period, {}
+                                    )
+                                    mde_raw = period_data.get("MDE")
+                                    mde_value = (
+                                        mde_raw * 100 if mde_raw is not None else None
+                                    )
+                                    p_value = period_data.get("P-Value")
+                                    power_raw = period_data.get("Power")
+                                    power_value = (
+                                        power_raw * 100
+                                        if power_raw is not None
+                                        else None
+                                    )
+
+                                    mde_info = {
+                                        "MDE": (
+                                            f"{int(round(mde_value))}"
+                                            if mde_value is not None
+                                            else "N/A"
+                                        ),
+                                        "Period": selected_period,
+                                        "P-Value": (
+                                            f"{p_value:.4f}"
+                                            if p_value is not None
+                                            else "N/A"
+                                        ),
+                                        "Power": (
+                                            f"{int(round(power_value))}"
+                                            if power_value is not None
+                                            else "N/A"
+                                        ),
+                                    }
+                                else:
+                                    mde_info = {
+                                        "MDE": "N/A",
+                                        "Period": "N/A",
+                                        "P-Value": "N/A",
+                                        "Power": "N/A",
+                                    }
+
+                                detailed_results.append(
+                                    {
+                                        "Size": size,
+                                        "Rank": idx + 1,
+                                        "Treatment Group": ", ".join(
+                                            group["Best Treatment Group"]
+                                        ),
+                                        "Control Group": ", ".join(
+                                            group["Control Group"]
+                                        ),
+                                        "SMAPE": f"{group['SMAPE']:.4f}",
+                                        "Holdout %": f"{group['Holdout Percentage']:.2f}%",
+                                        "MDE": f"{mde_info['MDE']}%",
+                                        "Period": mde_info["Period"],
+                                        "P-Value": mde_info["P-Value"],
+                                        "Power": f"{mde_info['Power']}%",
+                                    }
+                                )
+
+                    if detailed_results:
+                        df_detailed = pd.DataFrame(detailed_results)
+
+                        df_detailed = df_detailed.sort_values(["Size", "Rank"])
+
+                        if selected_period:
+                            st.caption(
+                                f"💡 **Note:** MDE, P-Value, and Power shown for {selected_period}-day treatment period. Change the period selector above to see different results."
                             )
 
                         # Format results for display
