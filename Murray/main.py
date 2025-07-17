@@ -731,6 +731,7 @@ def BetterGroups(
     total_Y = data["Y"].sum()
 
     if total_Y == 0:
+        logger.error("BetterGroups failed: Total Y sum is 0. Check that your data contains non-zero values in the 'Y' column.")
         return None
 
     df_pivot = data.pivot(index="time", columns="location", values="Y")
@@ -905,9 +906,90 @@ def BetterGroups(
                 used_treatment_locations.update(best_result[0])
 
         if not results_by_size:
-            logger.warning("No valid results for any size in multi-cell mode")
+            logger.error("BetterGroups failed: No valid results for any size in multi-cell mode. Try reducing excluded locations or adjusting group sizes.")
             return None
         return results_by_size
+
+    # --- Single-cell mode ---
+    logger.info(f"Starting single-cell mode")
+    possible_groups = []
+    for size in range(min_elements_in_treatment, max_group_size + 1):
+        groups = select_treatments(similarity_matrix, size, excluded_locations)
+        possible_groups.extend(groups)
+
+    if not possible_groups:
+        logger.error("BetterGroups failed: No possible groups found for single-cell mode. Check excluded locations and treatment percentage settings.")
+        return None
+
+    total_groups = len(possible_groups)
+    results = []
+    log_interval = max(1, total_groups // 10)
+    with concurrent.futures.ProcessPoolExecutor(max_workers=2) as executor:
+        futures = executor.map(
+            evaluate_group,
+            possible_groups,
+            [data] * total_groups,
+            [total_Y] * total_groups,
+            [correlation_matrix] * total_groups,
+            [min_holdout] * total_groups,
+            [df_pivot] * total_groups,
+            chunksize=5,
+        )
+        for idx, result in enumerate(futures):
+            results.append(result)
+            if progress_updater:
+                progress_updater.progress((idx + 1) / total_groups)
+            if status_updater:
+                status_updater.text(
+                    f"Finding the best groups: {int((idx + 1) / total_groups * 100)}% complete ⏳"
+                )
+            if (idx + 1) % log_interval == 0 or idx == 0 or idx == total_groups - 1:
+                logger.info(f"Processed {idx + 1}/{total_groups} groups")
+    logger.info(f"All groups processed. Results count: {len(results)}")
+    results_by_size = {}
+    for size in range(min_elements_in_treatment, max_group_size + 1):
+        best_results = [
+            result
+            for result in results
+            if result is not None and len(result[0]) == size
+        ]
+        if best_results:
+            best_result = min(best_results, key=lambda x: (x[2], -x[3]))
+            (
+                best_treatment_group,
+                best_control_group,
+                best_MAPE,
+                best_SMAPE,
+                y,
+                predictions,
+                weights,
+                observed_conformity,
+            ) = best_result
+
+            treatment_Y = data[data["location"].isin(best_treatment_group)]["Y"].sum()
+
+            if total_Y > 0:
+                holdout_percentage = ((total_Y - treatment_Y) / total_Y) * 100
+            else:
+                holdout_percentage = 0.0
+
+            results_by_size[size] = {
+                "Best Treatment Group": best_treatment_group,
+                "Control Group": best_control_group,
+                "MAPE": best_MAPE,
+                "SMAPE": best_SMAPE,
+                "Actual Target Metric (y)": y,
+                "Predictions": predictions,
+                "Weights": weights,
+                "Holdout Percentage": holdout_percentage,
+                "observed_conformity": observed_conformity,
+            }
+
+    if not results or all(result is None for result in results):
+        logger.error("BetterGroups failed: No valid results found for single-cell mode. Check data quality and configuration.")
+        return None
+
+    return results_by_size
 
 
 def optimize_global_multicell(
@@ -951,6 +1033,7 @@ def optimize_global_multicell(
     total_Y = data["Y"].sum()
 
     if total_Y == 0:
+        logger.error("BetterGroups failed: Total Y sum is 0. Check that your data contains non-zero values in the 'Y' column.")
         return None
 
     df_pivot = data.pivot(index="time", columns="location", values="Y")
@@ -1006,7 +1089,7 @@ def optimize_global_multicell(
         )
 
     if not all_candidates:
-        logger.warning("No valid candidates generated for any size")
+        logger.error("BetterGroups failed: No valid candidates generated for any size. Check excluded locations, group sizes, and data quality.")
         return None
 
     # Phase 2: Global optimization - select best N non-overlapping cells
@@ -1107,85 +1190,6 @@ def optimize_global_multicell(
 
     
     return {"global_experiment": unified_results}
-
-    # --- Single-cell mode ---
-    logger.info(f"Starting single-cell mode")
-    possible_groups = []
-    for size in range(min_elements_in_treatment, max_group_size + 1):
-        groups = select_treatments(similarity_matrix, size, excluded_locations)
-        possible_groups.extend(groups)
-
-    if not possible_groups:
-        return None
-
-    total_groups = len(possible_groups)
-    results = []
-    log_interval = max(1, total_groups // 10)
-    with concurrent.futures.ProcessPoolExecutor(max_workers=2) as executor:
-        futures = executor.map(
-            evaluate_group,
-            possible_groups,
-            [data] * total_groups,
-            [total_Y] * total_groups,
-            [correlation_matrix] * total_groups,
-            [min_holdout] * total_groups,
-            [df_pivot] * total_groups,
-            chunksize=5,
-        )
-        for idx, result in enumerate(futures):
-            results.append(result)
-            if progress_updater:
-                progress_updater.progress((idx + 1) / total_groups)
-            if status_updater:
-                status_updater.text(
-                    f"Finding the best groups: {int((idx + 1) / total_groups * 100)}% complete ⏳"
-                )
-            if (idx + 1) % log_interval == 0 or idx == 0 or idx == total_groups - 1:
-                logger.info(f"Processed {idx + 1}/{total_groups} groups")
-    logger.info(f"All groups processed. Results count: {len(results)}")
-    results_by_size = {}
-    for size in range(min_elements_in_treatment, max_group_size + 1):
-        best_results = [
-            result
-            for result in results
-            if result is not None and len(result[0]) == size
-        ]
-        if best_results:
-            best_result = min(best_results, key=lambda x: (x[2], -x[3]))
-            (
-                best_treatment_group,
-                best_control_group,
-                best_MAPE,
-                best_SMAPE,
-                y,
-                predictions,
-                weights,
-                observed_conformity,
-            ) = best_result
-
-            treatment_Y = data[data["location"].isin(best_treatment_group)]["Y"].sum()
-
-            if total_Y > 0:
-                holdout_percentage = ((total_Y - treatment_Y) / total_Y) * 100
-            else:
-                holdout_percentage = 0.0
-
-            results_by_size[size] = {
-                "Best Treatment Group": best_treatment_group,
-                "Control Group": best_control_group,
-                "MAPE": best_MAPE,
-                "SMAPE": best_SMAPE,
-                "Actual Target Metric (y)": y,
-                "Predictions": predictions,
-                "Weights": weights,
-                "Holdout Percentage": holdout_percentage,
-                "observed_conformity": observed_conformity,
-            }
-
-    if not results or all(result is None for result in results):
-        return None
-
-    return results_by_size
 
 
 def apply_lift(y, delta, start_treatment, end_treatment):
@@ -1785,6 +1789,7 @@ def run_geo_analysis_streamlit_app(
     multicell_config=None,
     test_type="sum",
     inference_type="iid",
+    global_optimization=False,
 ):
     """
     Runs a complete geo analysis pipeline including market correlation, group optimization,
@@ -1884,6 +1889,7 @@ def run_geo_analysis_streamlit_app(
             periods,
             n_permutations,
             significance_level,
+            test_type=test_type,
             inference_type=inference_type,
             progress_bar=progress_bar_2,
             status_text=status_text_2,
@@ -1895,6 +1901,7 @@ def run_geo_analysis_streamlit_app(
             periods,
             n_permutations,
             significance_level,
+            test_type=test_type,
             inference_type=inference_type,
             progress_bar=progress_bar_2,
             status_text=status_text_2,
@@ -2003,6 +2010,7 @@ def run_geo_analysis(
             periods,
             n_permutations,
             significance_level,
+            test_type=test_type,
             inference_type=inference_type,
             progress_bar=progress_bar_2,
             status_text=status_text_2,
@@ -2015,6 +2023,7 @@ def run_geo_analysis(
             periods,
             n_permutations,
             significance_level,
+            test_type=test_type,
             inference_type=inference_type,
             progress_bar=progress_bar_2,
             status_text=status_text_2,

@@ -1003,9 +1003,47 @@ if file is not None:
                             deltas_range=deltas_range,
                             periods_range=periods_range,
                             multicell_config=multicell_config,
-                            inference_type=selected_test,
+                            test_type=selected_test,
+                            inference_type="iid",
                             global_optimization=enable_multicell,
                         )
+
+                    if results is None:
+                        st.error("❌ Analysis failed. The algorithm could not find valid treatment/control groups with the current settings.")
+                        
+                        # Check data quality first
+                        if cleaned["Y"].sum() == 0:
+                            st.error("🔍 **Root Cause**: Your data has no positive values in the target variable 'Y'")
+                            st.info("📊 **Data Requirements**: Ensure your data contains non-zero values in the 'Y' column")
+                        else:
+                            st.info("💡 **Possible Solutions:**")
+                            col1, col2 = st.columns(2)
+                            with col1:
+                                st.markdown("""
+                                **Configuration Adjustments:**
+                                - **Reduce Maximum Treatment Percentage** (try 20-30%)
+                                - **Exclude fewer locations** from the analysis
+                                - **Try different group sizes** (if using multi-cell mode)
+                                """)
+                            with col2:
+                                st.markdown("""
+                                **Data Quality Checks:**
+                                - Ensure sufficient time periods (≥30 periods recommended)
+                                - Check for adequate location diversity (≥8 locations)
+                                - Verify Y values are positive and meaningful
+                                """)
+                        
+                        # Show current settings for debugging
+                        with st.expander("🔧 Current Analysis Settings", expanded=False):
+                            st.write(f"**Maximum Treatment Percentage:** {maximum_treatment_percentage*100:.1f}%")
+                            st.write(f"**Excluded Locations:** {len(excluded_locations)} locations")
+                            st.write(f"**Total Locations Available:** {len(cleaned['location'].unique())} locations")
+                            st.write(f"**Time Periods:** {len(cleaned['time'].unique())} periods")
+                            st.write(f"**Total Y Sum:** {cleaned['Y'].sum():,.2f}")
+                            if enable_multicell and multicell_config:
+                                st.write(f"**Multi-cell Sizes:** {multicell_config['sizes']}")
+                                st.write(f"**Number of Cells:** {multicell_config['top_n']}")
+                        st.stop()
 
                     results_by_size = transform_results_data(
                         results["simulation_results"]
@@ -1062,13 +1100,22 @@ if file is not None:
                         # Period selection for MDE display
                         available_periods = set()
                         for size_data in sensitivity_data.values():
-                            available_periods.update(size_data.keys())
+                            if isinstance(size_data, dict):
+                                available_periods.update(size_data.keys())
                         available_periods = sorted(list(available_periods))
 
                         selected_period = None
-                        st.warning(
-                            "No sensitivity data available for period selection."
-                        )
+                        if available_periods:
+                            selected_period = st.selectbox(
+                                "Select Period for MDE/Power Display",
+                                options=available_periods,
+                                index=0,
+                                help="Choose the treatment period to display MDE, P-Value, and Power statistics"
+                            )
+                        else:
+                            st.warning(
+                                "No sensitivity data available for period selection."
+                            )
 
                     detailed_results = []
 
