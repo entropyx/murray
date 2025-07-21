@@ -5,11 +5,8 @@ import os
 import datetime
 from utils_auth import check_credentials, add_user, mark_link_as_used
 
-<<<<<<< HEAD
 # Check if authentication is required
 AUTH_REQUIRED = bool(os.getenv('MURRAY_PASSWORD'))
-=======
->>>>>>> feature/new-multicell-model
 
 st.set_page_config(
     page_title="Geo Murray", page_icon="utils/Group 105.png", layout="wide"

@@ -1195,11 +1195,6 @@ if file is not None:
 
                         df_detailed = df_detailed.sort_values(["Size", "Rank"])
 
-                        if selected_period:
-                            st.caption(
-                                f"💡 **Note:** MDE, P-Value, and Power shown for {selected_period}-day treatment period. Change the period selector above to see different results."
-                            )
-
                         # Format results for display
                         detailed_results = []
 
@@ -1326,11 +1321,6 @@ if file is not None:
                             df_detailed = pd.DataFrame(detailed_results)
                             df_detailed = df_detailed.sort_values("Cell")
 
-                            if selected_period:
-                                st.caption(
-                                    f"💡 **Note:** MDE, P-Value, and Power shown for {selected_period}-day treatment period. "
-                                    f"Each cell uses the statistical analysis for its respective size."
-                                )
 
                             st.dataframe(
                                 df_detailed,
