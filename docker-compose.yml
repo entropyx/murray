@@ -35,7 +35,7 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "8505:8501"
+      - "8505:8505"
     volumes:
       - .:/app
       - temp_updates:/app/temp_updates
@@ -43,10 +43,10 @@ services:
       - PYTHONUNBUFFERED=1
       - MURRAY_PASSWORD=${MURRAY_PASSWORD:-}
       # Remove any connection to Redis or Celery
-    command: ["streamlit", "run", "app.py", "--server.port=8501", "--server.address=0.0.0.0"]
+    command: ["streamlit", "run", "app.py", "--server.port=8505", "--server.address=0.0.0.0"]
     # No longer depends on other services
     healthcheck:
-      test: ["CMD", "curl", "--fail", "http://localhost:8501/_stcore/health"]
+      test: ["CMD", "curl", "--fail", "http://localhost:8505/_stcore/health"]
       interval: 10s
       timeout: 10s
       retries: 3
