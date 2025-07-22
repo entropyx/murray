@@ -14,7 +14,7 @@ services:
   api:
     build: .
     ports:
-      - "8005:8000"
+      - "8005:8005"
     volumes:
       - .:/app
       - temp_updates:/app/temp_updates
@@ -28,7 +28,7 @@ services:
     depends_on:
       redis:
         condition: service_healthy
-    command: ["uvicorn", "api:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "2"]
+    command: ["uvicorn", "api:app", "--host", "0.0.0.0", "--port", "8005", "--workers", "2"]
 
   app:
     build:
