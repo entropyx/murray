@@ -74,7 +74,7 @@ services:
   flower:
     build: .
     ports:
-      - "5558:5555"
+      - "5559:5559"
     environment:
       - PYTHONUNBUFFERED=1
       - REDIS_DB=${REDIS_DB}
@@ -86,8 +86,17 @@ services:
       - FLOWER_USER=${FLOWER_USER}
       - FLOWER_PASSWORD=${FLOWER_PASSWORD}
     depends_on:
-      - celery_worker
-    command: ["celery", "-A", "tasks", "flower", "--basic_auth=${FLOWER_USER}:${FLOWER_PASSWORD}"]
+      redis:
+        condition: service_healthy
+      celery_worker:
+        condition: service_started
+    command: ["celery", "-A", "tasks", "flower", "--port=5559", "--basic_auth=${FLOWER_USER}:${FLOWER_PASSWORD}", "--url_prefix=flower"]
+    # healthcheck:
+    #   test: ["CMD", "curl", "-f", "http://localhost:5559/"]
+    #   interval: 30s
+    #   timeout: 20s
+    #   retries: 3
+    #   start_period: 40s
 
 volumes:
   redis_data:    # Volume definition
