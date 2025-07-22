@@ -20,14 +20,14 @@ import httpx
 logger = logging.getLogger("murray_tasks")
 
 def convert_ndarrays(obj):
-    """Convierte objetos numpy a tipos nativos de Python de manera recursiva"""
+    """Converts numpy objects to native Python types recursively"""
     # Convert arrays
     if isinstance(obj, np.ndarray):
         return obj.tolist()
     # Convert scalars
     elif isinstance(obj, (np.generic,)):
         return obj.item()
-    # Convert dictionaries (también convierte keys si son numpy o tuplas)
+    # Convert dictionaries (also converts keys if they are numpy or tuples)
     elif isinstance(obj, dict):
         return {
             str(k) if isinstance(k, (tuple, np.ndarray, np.generic)) else convert_ndarrays(k): 
@@ -47,7 +47,7 @@ def convert_ndarrays(obj):
         return obj
 
 def find_numpy_objects(obj, path="root"):
-    """Encuentra objetos numpy que no fueron convertidos"""
+    """Finds numpy objects that were not converted"""
     found = []
     if isinstance(obj, np.ndarray):
         found.append(f"{path} (type: {type(obj)})")
@@ -65,14 +65,14 @@ def find_numpy_objects(obj, path="root"):
     return found
 
 def ensure_temp_dir():
-    """Asegura que existe el directorio temporal"""
+    """Ensures that the temporary directory exists"""
     temp_dir = "temp_updates"
     if not os.path.exists(temp_dir):
         os.makedirs(temp_dir)
     return temp_dir
 
 def save_temp_data(task_id: str, data: pd.DataFrame, prefix: str = ""):
-    """Guarda los datos en un archivo temporal"""
+    """Saves the data in a temporary file"""
     temp_dir = ensure_temp_dir()
     filename = f"{prefix}_{task_id}.csv" if prefix else f"{task_id}.csv"
     filepath = os.path.join(temp_dir, filename)
@@ -85,7 +85,7 @@ def save_temp_data(task_id: str, data: pd.DataFrame, prefix: str = ""):
         logger.error(f"[{task_id}] Error saving temporary data: {str(e)}", exc_info=True)
 
 def cleanup_temp_data(task_id: str, prefix: str = ""):
-    """Elimina los archivos temporales después de una ejecución exitosa"""
+    """Deletes the temporary files after a successful execution"""
     temp_dir = ensure_temp_dir()
     filename = f"{prefix}_{task_id}.json" if prefix else f"{task_id}.json"
     filepath = os.path.join(temp_dir, filename)
@@ -96,7 +96,7 @@ def cleanup_temp_data(task_id: str, prefix: str = ""):
             logger.info(f"[{task_id}] Cleaned up temporary data from {filepath}")
     except Exception as e:
         logger.error(f"[{task_id}] Error cleaning up temporary data: {str(e)}", exc_info=True)
-
+    
 @celery_app.task(name="analyze_design_task", track_started=True, bind=True)
 def analyze_design_task(
     self,
@@ -109,9 +109,17 @@ def analyze_design_task(
     significance_level: float,
     deltas_range: tuple,
     periods_range: tuple,
+    multicell_config: dict = None,
+    global_optimization: bool = False,
     webhook: dict = None
 ):
     task_id = self.request.id
+    
+    # Log analysis mode
+    analysis_mode = "multicell" if global_optimization and multicell_config else "single-cell"
+    logger.info(f"[{task_id}] Starting {analysis_mode} analysis")
+    if multicell_config:
+        logger.info(f"[{task_id}] Multicell config: {multicell_config}")
     
     # Notify start
     if webhook:
@@ -119,7 +127,9 @@ def analyze_design_task(
             httpx.post(webhook["url"], json={
                 "status": "started",
                 "job_id": task_id,
-                "message": "Design analysis task started",
+                "message": f"Design analysis task started ({analysis_mode} mode)",
+                "analysis_mode": analysis_mode,
+                "multicell_config": multicell_config,
                 "timestamp": datetime.now().isoformat()
             })
         except Exception as e:
@@ -134,16 +144,18 @@ def analyze_design_task(
         data = cleaned_data(df, col_target=target_column, col_locations=location_column, col_dates=date_column)
         logger.info(f"[{task_id}] Data cleaned successfully")
 
-        logger.info(f"[{task_id}] Starting geo analysis")
+        logger.info(f"[{task_id}] Starting geo analysis ({analysis_mode} mode)")
         results = run_geo_analysis_streamlit_app(
             data=data,
             excluded_locations=excluded_locations,
             maximum_treatment_percentage=maximum_treatment_percentage,
             significance_level=significance_level,
             deltas_range=deltas_range,
-            periods_range=periods_range
+            periods_range=periods_range,
+            multicell_config=multicell_config,
+            global_optimization=global_optimization
         )
-        logger.info(f"[{task_id}] Geo analysis completed")
+        logger.info(f"[{task_id}] Geo analysis completed ({analysis_mode} mode)")
 
         serializable_results = convert_ndarrays(results)
         numpy_locations = find_numpy_objects(serializable_results)
@@ -154,6 +166,14 @@ def analyze_design_task(
             logger.info(f"[{task_id}] All numpy objects converted successfully")
             cleanup_temp_data(task_id, "design_input")
             cleanup_temp_data(task_id, "design_results")
+        
+        # Add metadata about analysis mode to results
+        final_results = {
+            "analysis_mode": analysis_mode,
+            "multicell_config": multicell_config,
+            "global_optimization": global_optimization,
+            "results": serializable_results
+        }
 
         # Notify success
         if webhook:
@@ -161,13 +181,15 @@ def analyze_design_task(
                 httpx.post(webhook["url"], json={
                     "status": "completed",
                     "job_id": task_id,
-                    "result": serializable_results,
+                    "analysis_mode": analysis_mode,
+                    "multicell_config": multicell_config,
+                    "result": final_results,
                     "timestamp": datetime.now().isoformat()
                 })
             except Exception as e:
                 logger.error(f"[{task_id}] Error sending success webhook: {str(e)}")
 
-        return serializable_results
+        return final_results
 
     except Exception as e:
         logger.error(f"[{task_id}] Error in design analysis task: {str(e)}", exc_info=True)

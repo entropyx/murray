@@ -43,8 +43,8 @@ logger = logging.getLogger("murray_api")
 app = FastAPI(
     title="Murray API",
     dependencies=[Depends(check_api_key)],
-    description="API for experimental design and evaluation using Murray",
-    version="1.0.0"
+    description="API for experimental design and evaluation using Murray. Supports both single-cell and multicell analysis modes.",
+    version="1.1.0"
 )
 
 class TaskResponse(BaseModel):
@@ -116,10 +116,46 @@ async def analyze_design(
     significance_level: float = Form(0.1),
     deltas_range: str = Form("0.01,0.1,0.01"),
     periods_range: str = Form("5,15,5"),
+    enable_multicell: bool = Form(False),
+    multicell_sizes: str = Form(""),
+    multicell_cells_count: int = Form(3),
     webhook: str = Form(None)
 ):
     """
     Submit design analysis task
+    
+    Supports both single-cell and multicell analysis modes:
+    
+    **Single-cell mode (default):**
+    - Finds optimal treatment groups for each size
+    - Use when enable_multicell=False
+    
+    **Multicell mode:**
+    - Creates a single experiment with multiple cells of different sizes
+    - Use when enable_multicell=True
+    - Requires multicell_sizes (comma-separated, e.g., "2,3,4")
+    - multicell_cells_count defines total number of cells in experiment
+    
+    **Example usage:**
+    
+    Single-cell mode:
+    - enable_multicell=False (default)
+    - multicell_sizes and multicell_cells_count are ignored
+    
+    Multicell mode:
+    - enable_multicell=True
+    - multicell_sizes="2,3,4"  # Allowed cell sizes
+    - multicell_cells_count=3  # Total cells in final experiment
+    
+    **Response format:**
+    ```json
+    {
+        "analysis_mode": "single-cell" | "multicell",
+        "multicell_config": {"sizes": [2,3,4], "top_n": 3} | null,
+        "global_optimization": false | true,
+        "results": { ... }
+    }
+    ```
     """
     request_id = datetime.now().strftime("%Y%m%d_%H%M%S")
     logger.info(f"[{request_id}] Submitting design analysis task")
@@ -131,6 +167,32 @@ async def analyze_design(
         deltas_range = tuple(map(float, deltas_range.split(',')))
         periods_range = tuple(map(int, periods_range.split(',')))
         excluded_locations = tuple(map(str, excluded_locations.split(',')))
+        
+        # Process multicell parameters
+        multicell_config = None
+        if enable_multicell:
+            if not multicell_sizes.strip():
+                raise HTTPException(status_code=400, detail="multicell_sizes is required when enable_multicell=True")
+            
+            try:
+                sizes_list = list(map(int, multicell_sizes.split(',')))
+                if len(sizes_list) == 0:
+                    raise ValueError("At least one size must be specified")
+                if any(size <= 0 for size in sizes_list):
+                    raise ValueError("All sizes must be positive integers")
+                if multicell_cells_count <= 0:
+                    raise ValueError("multicell_cells_count must be positive")
+                
+                multicell_config = {
+                    "sizes": sizes_list,
+                    "top_n": multicell_cells_count
+                }
+                logger.info(f"[{request_id}] Multicell mode enabled with config: {multicell_config}")
+                
+            except ValueError as ve:
+                raise HTTPException(status_code=400, detail=f"Invalid multicell parameters: {str(ve)}")
+        else:
+            logger.info(f"[{request_id}] Single-cell mode enabled")
         
         # Prepare webhook dict if URL is provided
         webhook_dict = {"url": webhook} if webhook else None
@@ -146,6 +208,8 @@ async def analyze_design(
             significance_level=significance_level,
             deltas_range=deltas_range,
             periods_range=periods_range,
+            multicell_config=multicell_config,
+            global_optimization=enable_multicell,
             webhook=webhook_dict
         )
         

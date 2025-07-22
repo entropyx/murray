@@ -11,10 +11,10 @@ services:
     volumes:
       - redis_data:/data
 
-  web:
+  api:
     build: .
     ports:
-      - "8002:8000"
+      - "8005:8000"
     volumes:
       - .:/app
       - temp_updates:/app/temp_updates
@@ -30,12 +30,12 @@ services:
         condition: service_healthy
     command: ["uvicorn", "api:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "2"]
 
-  streamlit:
+  app:
     build:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "8501:8501"
+      - "8505:8501"
     volumes:
       - .:/app
       - temp_updates:/app/temp_updates

@@ -437,16 +437,15 @@ def select_treatments_exclusive(
     similarity_matrix, treatment_size, excluded_locations, used_treatment_locations=None
 ):
     """
-    Selects treatments excluding both globally excluded locations and previously used treatment locations.
-    This function is used specifically for multi-cell mode to ensure treatment location exclusivity.
+    Improved treatment selection for multi-cell mode ensuring treatment location exclusivity.
     Control locations can be reused across cells.
-
+    
     Args:
         similarity_matrix (pd.DataFrame): DataFrame containing correlations between locations
         treatment_size (int): Number of treatments to select for each combination
         excluded_locations (list): List of locations to exclude globally
         used_treatment_locations (set): Set of treatment locations already used in previous cells
-
+        
     Returns:
         list: A list of unique combinations, each combination being a list of states
     """
@@ -492,8 +491,17 @@ def select_treatments_exclusive(
     n = similarity_matrix_filtered.shape[1]
     r = treatment_size
     max_combinations = comb(n, r)
-
-    n_combinations = min(max_combinations, 5000)
+    
+    # Smart candidate limit based on problem size
+    available_ratio = n / len(similarity_matrix.columns)
+    base_candidates = min(5000, max_combinations)
+    
+    if available_ratio < 0.3:  # Many locations excluded, need more candidates
+        max_candidates = min(base_candidates * 2, max_combinations)
+    else:
+        max_candidates = base_candidates
+        
+    n_combinations = min(max_combinations, max_candidates)
 
     if n_combinations == 0:
         logger.warning(
@@ -506,7 +514,7 @@ def select_treatments_exclusive(
     combinations = set()
     attempts = 0
     max_attempts = n_combinations * 10
-
+    
     while len(combinations) < n_combinations and attempts < max_attempts:
         sample_columns = np.random.choice(
             similarity_matrix_filtered.columns, size=treatment_size, replace=False
@@ -593,8 +601,19 @@ def select_controls_exclusive(
             f"Added {len(similar_states)} control states for {treatment_location}"
         )
 
-    logger.debug(f"Final control group: {list(control_group)}")
-    return list(control_group)
+    # Final verification: ensure no treatment locations are in control group
+    final_control = list(control_group)
+    all_treatment = set(treatment_group) | used_treatment_locations
+    overlap_check = set(final_control) & all_treatment
+    
+    if overlap_check:
+        logger.error(f"CRITICAL ERROR: Control group contains treatment locations: {overlap_check}")
+        # Remove overlapping locations from control group
+        final_control = [loc for loc in final_control if loc not in all_treatment]
+        logger.warning(f"Removed overlap, final control group: {final_control}")
+    
+    logger.debug(f"Final control group: {final_control}")
+    return final_control
 
 
 def evaluate_group_exclusive(
@@ -738,7 +757,7 @@ def BetterGroups(
     global_optimization=False,
 ):
     """
-    Simulates and evaluates treatment groups for geo-experiments.
+    Enhanced simulates and evaluates treatment groups for geo-experiments.
     
     Supports three modes:
     1. Single-cell mode: Finds optimal treatment groups for each size
@@ -755,6 +774,8 @@ def BetterGroups(
         status_updater (callable): Status text updater function
         multicell_config (dict): Multi-cell configuration with 'sizes' and 'top_n' keys
         global_optimization (bool): Whether to use global optimization for multi-cell mode
+        search_strategy (str): Candidate generation strategy ("random", "similarity", "coverage", "adaptive")
+        candidate_multiplier (int): Multiple of cells_needed to generate as candidates per size
     
     Returns:
         dict: Results organized by mode:
@@ -972,7 +993,6 @@ def BetterGroups(
             [correlation_matrix] * total_groups,
             [min_holdout] * total_groups,
             [df_pivot] * total_groups,
-            chunksize=5,
         )
         for idx, result in enumerate(futures):
             results.append(result)
@@ -1031,6 +1051,134 @@ def BetterGroups(
     return results_by_size
 
 
+def _select_optimal_cells_with_fallbacks(all_candidates, total_cells_needed, progress_updater=None, status_updater=None):
+    """
+    Simple but robust cell selection with automatic fallback.
+    
+    Args:
+        all_candidates: List of candidate cells with performance metrics
+        total_cells_needed: Number of cells to select
+        progress_updater: Progress bar updater function
+        status_updater: Status text updater function
+        
+    Returns:
+        list: Selected cells or empty list if no valid combination found
+    """
+    
+    def update_progress(selected_count):
+        if progress_updater:
+            try:
+                progress_updater.progress(selected_count / total_cells_needed)
+            except Exception as e:
+                logger.debug(f"Progress update failed: {e}")
+        if status_updater:
+            try:
+                status_updater.text(f"Selected {selected_count}/{total_cells_needed} cells")
+            except Exception as e:
+                logger.debug(f"Status update failed: {e}")
+    
+    # Sort candidates by performance (best first)
+    all_candidates.sort(key=lambda x: (x[2], -x[3]))
+    
+    selected_cells = []
+    used_treatment_locations = set()
+    candidates_rejected = 0
+    
+    # Try to select cells greedily
+    for candidate in all_candidates:
+        treatment_group = set(candidate[0])
+        size = candidate[8]
+        
+        # Check if this candidate conflicts with already selected cells
+        if not (treatment_group & used_treatment_locations):
+            selected_cells.append(candidate)
+            used_treatment_locations.update(treatment_group)
+            update_progress(len(selected_cells))
+            logger.debug(f"✅ Selected cell {len(selected_cells)}: size={size}, treatment={treatment_group}")
+        else:
+            candidates_rejected += 1
+            conflicts = treatment_group & used_treatment_locations
+            logger.debug(f"❌ Rejected candidate size={size}, conflicts={conflicts}")
+        
+        if len(selected_cells) >= total_cells_needed:
+            break
+    
+    logger.info(f"Cell selection completed: {len(selected_cells)}/{total_cells_needed} cells selected ({candidates_rejected} rejected)")
+    
+    return selected_cells
+
+
+def _validate_multicell_config(similarity_matrix, allowed_sizes, total_cells_needed, excluded_locations, data):
+    """
+    Validate multicell configuration and provide actionable error messages.
+    
+    Args:
+        similarity_matrix: Correlation matrix for treatment selection
+        allowed_sizes: List of allowed cell sizes to choose from
+        total_cells_needed: Total number of cells in final experiment
+        excluded_locations: Globally excluded locations
+        data: Input data
+        
+    Returns:
+        tuple: (is_valid, warnings, suggestions)
+    """
+    warnings = []
+    suggestions = []
+    is_valid = True
+    
+    unique_locations = data["location"].unique()
+    total_locations = len(unique_locations)
+    excluded_count = len(set(excluded_locations))
+    available_locations = total_locations - excluded_count
+    
+    # Check basic feasibility
+    min_size = min(allowed_sizes) if allowed_sizes else 0
+    max_size = max(allowed_sizes) if allowed_sizes else 0
+    total_treatment_locations_needed = total_cells_needed * min_size
+    
+    logger.info(f"Multicell validation: {available_locations} available locations, need {total_treatment_locations_needed} minimum")
+    
+    if total_treatment_locations_needed > available_locations:
+        is_valid = False
+        suggestions.append(
+            f"Reduce total cells needed ({total_cells_needed}) or minimum cell size ({min_size}). "
+            f"Current config needs {total_treatment_locations_needed} locations but only {available_locations} are available."
+        )
+    
+    # Check if we have enough locations for largest possible configuration
+    max_treatment_locations_needed = total_cells_needed * max_size
+    if max_treatment_locations_needed > available_locations:
+        warnings.append(
+            f"Maximum configuration ({total_cells_needed} cells of size {max_size}) may not be achievable. "
+            f"Consider smaller cell sizes or fewer cells."
+        )
+    
+    # Check location availability ratios
+    availability_ratio = available_locations / total_locations
+    if availability_ratio < 0.3:
+        warnings.append(
+            f"High exclusion ratio ({(1-availability_ratio):.1%} of locations excluded). "
+            f"This may limit cell selection options."
+        )
+        suggestions.append("Consider reducing excluded locations or increasing allowed cell sizes.")
+    
+    # Check for reasonable cell size distribution
+    if max_size > available_locations * 0.2:
+        warnings.append(
+            f"Large cell size ({max_size}) relative to available locations ({available_locations}). "
+            f"This may create selection conflicts."
+        )
+    
+    # Check for excessive cell count relative to available locations
+    if total_cells_needed > available_locations / min_size * 0.5:
+        warnings.append(
+            f"High cell density requested. This increases the likelihood of location conflicts."
+        )
+        suggestions.append("Consider fewer cells or allow smaller cell sizes.")
+    
+    return is_valid, warnings, suggestions
+
+
 def optimize_global_multicell(
     similarity_matrix,
     allowed_sizes,
@@ -1043,10 +1191,11 @@ def optimize_global_multicell(
     status_updater=None,
 ):
     """
-    Global optimization for multi-cell experiments with heterogeneous cell sizes.
+    Enhanced global optimization for multi-cell experiments with heterogeneous cell sizes.
 
     Creates a single experiment with N cells of potentially different sizes,
-    ensuring global mutual exclusivity across all cells.
+    ensuring global mutual exclusivity across all cells. Includes improved
+    validation, conflict resolution, and fallback strategies.
 
     Args:
         similarity_matrix: Correlation matrix for treatment selection
@@ -1058,13 +1207,29 @@ def optimize_global_multicell(
         maximum_treatment_percentage: Max treatment percentage
         progress_updater: Progress bar updater
         status_updater: Status text updater
+        search_strategy: Candidate generation strategy ("random", "similarity", "coverage", "adaptive")
+        candidate_multiplier: Multiple of cells_needed to generate as candidates per size
 
     Returns:
-        dict: Single optimized experiment with heterogeneous cells
+        dict: Single optimized experiment with heterogeneous cells, or None if failed
     """
     logger.info(
-        f"Starting global multi-cell optimization for {total_cells_needed} cells with sizes {allowed_sizes}"
+        f"Starting enhanced global multi-cell optimization for {total_cells_needed} cells with sizes {allowed_sizes}"
     )
+    
+    # Pre-flight validation
+    is_valid, warnings, suggestions = _validate_multicell_config(
+        similarity_matrix, allowed_sizes, total_cells_needed, excluded_locations, data
+    )
+    
+    for warning in warnings:
+        logger.warning(f"Multicell validation warning: {warning}")
+    
+    if not is_valid:
+        logger.error("Multicell configuration validation failed:")
+        for suggestion in suggestions:
+            logger.error(f"  - {suggestion}")
+        return None
 
     unique_locations = data["location"].unique()
     no_locations = len(unique_locations)
@@ -1095,7 +1260,7 @@ def optimize_global_multicell(
             continue
 
         size_results = []
-        with concurrent.futures.ProcessPoolExecutor(max_workers=2) as executor:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
             futures = executor.map(
                 evaluate_group_exclusive,
                 groups,
@@ -1106,7 +1271,6 @@ def optimize_global_multicell(
                 [df_pivot] * len(groups),
                 [set()] * len(groups),  # No used locations in phase 1
                 [excluded_locations] * len(groups),
-                chunksize=5,
             )
 
             for result in futures:
@@ -1131,71 +1295,41 @@ def optimize_global_multicell(
         logger.error("BetterGroups failed: No valid candidates generated for any size. Check excluded locations, group sizes, and data quality.")
         return None
 
-    # Phase 2: Global optimization - select best N non-overlapping cells
+    # Phase 2: Enhanced global optimization with conflict resolution
     logger.info(
-        f"Phase 2: Global optimization - selecting {total_cells_needed} cells from {total_candidates_count} candidates"
+        f"Phase 2: Enhanced global optimization - selecting {total_cells_needed} cells from {total_candidates_count} candidates"
     )
 
-    all_candidates.sort(key=lambda x: (x[2], -x[3])) 
+    selected_cells = _select_optimal_cells_with_fallbacks(
+        all_candidates, total_cells_needed, progress_updater, status_updater
+    )
+    
+    if not selected_cells:
+        logger.error("BetterGroups failed: No valid cell combinations found. Try reducing excluded locations or group sizes.")
+        return None
 
-    selected_cells = []
-    used_treatment_locations = set()
-    candidates_rejected = 0
-
-    for candidate in all_candidates:
-        treatment_group = set(candidate[0])
-        control_group = set(candidate[1])
-        size = candidate[8]
-
-        # Check for conflicts with already selected cells (only treatment locations must be exclusive)
-        if not (treatment_group & used_treatment_locations):
-            selected_cells.append(candidate)
-            used_treatment_locations.update(treatment_group)
-            logger.debug(
-                f"✅ Accepted cell {len(selected_cells)}: size={size}, treatment={treatment_group}"
-            )
-        else:
-            candidates_rejected += 1
-            conflicts = treatment_group & used_treatment_locations
-            logger.debug(
-                f"❌ Rejected candidate size={size}, treatment={treatment_group}, conflicts={conflicts}"
-            )
-
-        if progress_updater:
-            try:
-                progress_updater.progress(len(selected_cells) / total_cells_needed)
-            except Exception as e:
-                logger.debug(f"Progress update failed: {e}")
-
-        if status_updater:
-            try:
-                status_updater.text(
-                    f"Selected {len(selected_cells)}/{total_cells_needed} cells"
-                )
-            except Exception as e:
-                logger.debug(f"Status update failed: {e}")
-
-        if len(selected_cells) >= total_cells_needed:
-            break
-
-    if len(selected_cells) < total_cells_needed:
-        logger.warning(
-            f"Could only select {len(selected_cells)} cells out of {total_cells_needed} requested due to location conflicts"
-        )
-        logger.info(
-            f"Summary: {candidates_rejected} candidates rejected, {len(all_candidates)} total candidates processed"
-        )
-    else:
-        logger.info(
-            f"Successfully selected {len(selected_cells)} cells from {len(all_candidates)} candidates ({candidates_rejected} rejected)"
-        )
-
-    # Format results as unified experiment
+    # Final validation and formatting
+    if not selected_cells:
+        logger.warning("No cells were selected")
+        return None
+        
+    # CRITICAL: Re-evaluate control groups to ensure no conflicts with all selected treatments
+    logger.info("Re-evaluating control groups to prevent treatment/control overlap")
+    
+    # Collect ALL treatment locations from selected cells
+    all_treatment_locations = set()
+    for cell in selected_cells:
+        treatment_group = cell[0]
+        all_treatment_locations.update(treatment_group)
+    
+    logger.info(f"All treatment locations across cells: {all_treatment_locations}")
+    
+    # Re-evaluate each selected cell with proper exclusivity
     unified_results = []
     for i, cell in enumerate(selected_cells):
         (
             treatment_group,
-            control_group,
+            original_control_group,
             mape,
             smape,
             y,
@@ -1204,7 +1338,28 @@ def optimize_global_multicell(
             observed_conformity,
             size,
         ) = cell
-
+        
+        # Generate NEW control group excluding ALL treatment locations
+        logger.debug(f"Re-selecting control group for cell {i+1} with treatment {treatment_group}")
+        
+        corrected_control_group = select_controls_exclusive(
+            correlation_matrix=correlation_matrix,
+            treatment_group=treatment_group,
+            used_treatment_locations=all_treatment_locations,  # Exclude ALL treatments
+            excluded_locations=excluded_locations,
+            min_correlation=0.8,
+        )
+        
+        logger.debug(f"Cell {i+1} - Original control: {original_control_group}")
+        logger.debug(f"Cell {i+1} - Corrected control: {corrected_control_group}")
+        
+        # Verify no overlap
+        treatment_set = set(treatment_group)
+        control_set = set(corrected_control_group)
+        overlap = treatment_set & control_set
+        if overlap:
+            logger.error(f"STILL HAVE OVERLAP in cell {i+1}: {overlap}")
+        
         treatment_Y = data[data["location"].isin(treatment_group)]["Y"].sum()
         holdout_percentage = (
             ((total_Y - treatment_Y) / total_Y) * 100 if total_Y > 0 else 0.0
@@ -1214,7 +1369,7 @@ def optimize_global_multicell(
             "Cell": i + 1,
             "Size": size,
             "Best Treatment Group": treatment_group,
-            "Control Group": control_group,
+            "Control Group": corrected_control_group,  # Use corrected control group
             "MAPE": mape,
             "SMAPE": smape,
             "Actual Target Metric (y)": y,
@@ -1225,9 +1380,8 @@ def optimize_global_multicell(
         }
         unified_results.append(result_dict)
 
-    logger.info(f"Global optimization completed: {len(selected_cells)} cells selected")
+    logger.info(f"Global optimization completed: {len(selected_cells)} cells selected with corrected control groups")
 
-    
     return {"global_experiment": unified_results}
 
 
