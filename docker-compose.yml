@@ -3,11 +3,11 @@ services:
     image: redis:latest
     ports:
       - "6382:6379"
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 5s
-      timeout: 10s
-      retries: 3
+    # healthcheck:
+    #   test: ["CMD", "redis-cli", "ping"]
+    #   interval: 5s
+    #   timeout: 10s
+    #   retries: 3
     volumes:
       - redis_data:/data
 
