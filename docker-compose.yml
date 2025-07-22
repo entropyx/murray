@@ -45,11 +45,11 @@ services:
       # Remove any connection to Redis or Celery
     command: ["streamlit", "run", "app.py", "--server.port=8505", "--server.address=0.0.0.0"]
     # No longer depends on other services
-    healthcheck:
-      test: ["CMD", "curl", "--fail", "http://localhost:8505/_stcore/health"]
-      interval: 10s
-      timeout: 10s
-      retries: 3
+    # healthcheck:
+    #   test: ["CMD", "curl", "--fail", "http://localhost:8505/_stcore/health"]
+    #   interval: 10s
+    #   timeout: 10s
+    #   retries: 3
 
 
   celery_worker:
