@@ -3,9 +3,11 @@ import hashlib
 import json
 import os
 import datetime
+from dotenv import load_dotenv
 from utils_auth import check_credentials, add_user, mark_link_as_used
 
-# Check if authentication is required
+load_dotenv()
+
 AUTH_REQUIRED = bool(os.getenv('MURRAY_PASSWORD'))
 
 st.set_page_config(
