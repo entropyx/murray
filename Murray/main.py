@@ -335,10 +335,19 @@ def smape(A, F):
 
 
 def evaluate_group(
-    treatment_group, data, total_Y, correlation_matrix, min_holdout, df_pivot
+    treatment_group, data, total_Y, correlation_matrix, min_holdout, df_pivot, treatment_period=None
 ):
     """
     Evaluates a treatment group and returns error metrics.
+    
+    Args:
+        treatment_group: List of locations in the treatment group
+        data: Input data
+        total_Y: Total sum of Y values
+        correlation_matrix: Market correlation matrix
+        min_holdout: Minimum holdout percentage required
+        df_pivot: Pivoted data with time as index
+        treatment_period: Number of periods for treatment (if None, uses 80/20 split)
     """
     logger.debug(f"Starting evaluation for treatment group: {treatment_group}")
 
@@ -380,7 +389,14 @@ def evaluate_group(
     X_scaled = scaler_x.fit_transform(X)
     y_scaled = scaler_y.fit_transform(y.reshape(-1, 1))
 
-    split_index = int(len(X_scaled) * 0.8)
+    
+    if treatment_period is not None:
+        split_index = len(X_scaled) - treatment_period
+    else:
+        default_period = min(10, len(X_scaled) // 4)
+        split_index = len(X_scaled) - default_period
+    
+    split_index = max(1, min(split_index, len(X_scaled) - 1))
 
     X_train, X_test = X_scaled[:split_index], X_scaled[split_index:]
     y_train, y_test = y_scaled[:split_index], y_scaled[split_index:]
@@ -625,6 +641,7 @@ def evaluate_group_exclusive(
     df_pivot,
     used_treatment_locations=None,
     excluded_locations=None,
+    treatment_period=None,
 ):
     """
     Evaluates a treatment group with location exclusivity for multi-cell mode.
@@ -641,6 +658,7 @@ def evaluate_group_exclusive(
         df_pivot (pd.DataFrame): Pivoted data with time as index and locations as columns
         used_treatment_locations (set): Set of locations already used as treatment in other cells
         excluded_locations (list): List of globally excluded locations
+        treatment_period (int): Number of periods for treatment (if None, uses 80/20 split)
     
     Returns:
         tuple: (treatment_group, control_group, MAPE, SMAPE, y_original, 
@@ -691,7 +709,13 @@ def evaluate_group_exclusive(
     X_scaled = scaler_x.fit_transform(X)
     y_scaled = scaler_y.fit_transform(y.reshape(-1, 1))
 
-    split_index = int(len(X_scaled) * 0.8)
+    if treatment_period is not None:
+        split_index = len(X_scaled) - treatment_period
+    else:
+        default_period = min(10, len(X_scaled) // 4)  
+        split_index = len(X_scaled) - default_period
+    
+    split_index = max(1, min(split_index, len(X_scaled) - 1))
 
     X_train, X_test = X_scaled[:split_index], X_scaled[split_index:]
     y_train, y_test = y_scaled[:split_index], y_scaled[split_index:]
@@ -786,7 +810,7 @@ def BetterGroups(
     """
     unique_locations = data["location"].unique()
     no_locations = len(unique_locations)
-    max_group_size = round(no_locations * 0.45)
+    max_group_size = round(no_locations * 0.40)
     min_elements_in_treatment = round(no_locations * 0.15)
     min_holdout = 100 - (maximum_treatment_percentage * 100)
     total_Y = data["Y"].sum()
