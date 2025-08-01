@@ -891,6 +891,21 @@ if file is not None:
                             upper_bound_value,
                             prediction_value,
                         ) = plot_impact_evaluation_report(results)
+                        lower_bound_value = (
+                            (
+                                lower_bound_value
+                                - np.sum(counterfactual[start_position_treatment:])
+                            )
+                            / np.abs(np.sum(counterfactual[start_position_treatment:]))
+                        ) * 100
+                        upper_bound_value = (
+                            (
+                                upper_bound_value
+                                - np.sum(counterfactual[start_position_treatment:])
+                            )
+                            / np.abs(np.sum(counterfactual[start_position_treatment:]))
+                        ) * 100
+
                         st.session_state.lower_bound_value = lower_bound_value
                         st.session_state.upper_bound_value = upper_bound_value
                         st.session_state.impact_graph_report = impact_graph_report
