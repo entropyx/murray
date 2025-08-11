@@ -2,6 +2,9 @@
 import streamlit as st
 import pandas as pd
 from Murray.main import run_geo_analysis_streamlit_app, transform_results_data
+from logger_config import get_logger
+
+app_logger = get_logger("experimental_design")
 from Murray.auxiliary import (
     cleaned_data,
     analyze_data_characteristics,
@@ -963,6 +966,8 @@ if file is not None:
 
             # Reset simulation state when parameters change
             if current_params != st.session_state.last_params:
+                if st.session_state.simulation_running:
+                    app_logger.info("🚫 CANCELLING SIMULATION: Parameters changed during execution")
                 st.session_state.simulation_button_clicked = False
                 st.session_state.simulation_running = False  # Cancel any running simulation
                 st.session_state.selected_point = None
@@ -1008,6 +1013,10 @@ if file is not None:
                             
                         st.session_state.is_multicell_mode = False
 
+                        # Define cancellation callback
+                        def is_cancelled():
+                            return not st.session_state.simulation_running
+                        
                         # Run main geo analysis simulation
                         results = run_geo_analysis_streamlit_app(
                             data=cleaned,
@@ -1019,11 +1028,21 @@ if file is not None:
                             multicell_config=multicell_config,
                             test_type=selected_test,
                             inference_type="iid",
+                            cancellation_callback=is_cancelled,
                         )
                         
                         if not st.session_state.simulation_running:
-                            st.info("Simulation was cancelled due to parameter changes.")
-                            st.stop()
+                            st.session_state.simulation_button_clicked = False
+                            st.warning("🚫 Simulation was cancelled due to parameter changes.")
+                            st.rerun()
+                        
+                        # Check if simulation was cancelled and results is None
+                        if results is None:
+                            app_logger.info("🚫 SIMULATION CANCELLED: Function returned None - simulation was interrupted")
+                            st.session_state.simulation_running = False
+                            st.session_state.simulation_button_clicked = False
+                            st.warning("🚫 Simulation was cancelled due to parameter changes.")
+                            st.rerun()
 
                         # Transform results for visualization
                         results_by_size = transform_results_data(
@@ -1060,6 +1079,7 @@ if file is not None:
                                 st.stop()
                         
                     st.session_state.simulation_running = False
+                    app_logger.info("✅ SIMULATION COMPLETED: Analysis finished successfully")
                     st.success("✅ Simulation completed successfully!")
                     st.rerun()
                     

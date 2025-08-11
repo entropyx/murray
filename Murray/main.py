@@ -717,6 +717,7 @@ def BetterGroups(
     progress_updater=None,
     status_updater=None,
     multicell_config=None,
+    cancellation_callback=None,
 ):
     """
     Simula posibles grupos de tratamiento y evalúa su desempeño.
@@ -786,6 +787,11 @@ def BetterGroups(
                 )
 
                 for idx, result in enumerate(futures):
+                    # Check for cancellation every 10 iterations
+                    if idx % 10 == 0 and cancellation_callback and cancellation_callback():
+                        logger.info("🚫 SIMULATION CANCELLED: During BetterGroups multi-cell evaluation")
+                        executor.shutdown(wait=False)
+                        return None
                     results.append(result)
                     current_total = groups_processed_so_far + idx + 1
                     if progress_updater:
@@ -914,6 +920,11 @@ def BetterGroups(
             chunksize=5,
         )
         for idx, result in enumerate(futures):
+            # Check for cancellation every 10 iterations
+            if idx % 10 == 0 and cancellation_callback and cancellation_callback():
+                logger.info("🚫 SIMULATION CANCELLED: During BetterGroups single-cell evaluation")
+                executor.shutdown(wait=False)
+                return None
             results.append(result)
             if progress_updater:
                 progress_updater.progress((idx + 1) / total_groups)
@@ -1360,6 +1371,7 @@ def evaluate_sensitivity(
     progress_bar=None,
     status_text=None,
     n_power_simulations=40,
+    cancellation_callback=None,
 ):
     """
     Evaluates sensitivity of results to different treatment periods and deltas using permutations.
@@ -1386,6 +1398,9 @@ def evaluate_sensitivity(
     step = 0
 
     for size, result in results_by_size.items():
+        if cancellation_callback and cancellation_callback():
+            logger.info("🚫 SIMULATION CANCELLED: During evaluate_sensitivity")
+            return None, None
 
         if isinstance(result, list):
             if not result:
@@ -1410,9 +1425,15 @@ def evaluate_sensitivity(
         results_by_period = {}
 
         for period in periods:
+            if cancellation_callback and cancellation_callback():
+                logger.info("🚫 SIMULATION CANCELLED: During period evaluation")
+                return None, None
             results = []
 
             for delta in deltas:
+                if cancellation_callback and cancellation_callback():
+                    logger.info("🚫 SIMULATION CANCELLED: During delta evaluation")
+                    return None, None
                 logger.debug(
                     f"Running simulation for size={size}, period={period}, delta={delta}"
                 )
@@ -1575,6 +1596,7 @@ def run_geo_analysis_streamlit_app(
     multicell_config=None,
     test_type="sum",
     inference_type="iid",
+    cancellation_callback=None,
 ):
     """
     Runs a complete geo analysis pipeline including market correlation, group optimization,
@@ -1608,11 +1630,17 @@ def run_geo_analysis_streamlit_app(
 
     # Step 1: Generate market correlations
     logger.info("Step 1: Generating market correlations.....")
+    if cancellation_callback and cancellation_callback():
+        logger.info("🚫 SIMULATION CANCELLED: During market correlations step")
+        return None
     correlation_matrix = market_correlations(data)
     logger.info(f"Market correlations generated successfully.")
 
     # Step 2: Find the best groups for control and treatment
     logger.info("Step 2: Finding best groups for control and treatment.....")
+    if cancellation_callback and cancellation_callback():
+        logger.info("🚫 SIMULATION CANCELLED: Before BetterGroups step")
+        return None
     simulation_results = BetterGroups(
         similarity_matrix=correlation_matrix,
         maximum_treatment_percentage=maximum_treatment_percentage,
@@ -1622,6 +1650,7 @@ def run_geo_analysis_streamlit_app(
         progress_updater=progress_bar_1,
         status_updater=status_text_1,
         multicell_config=multicell_config,
+        cancellation_callback=cancellation_callback,
     )
 
     if simulation_results is None:
@@ -1634,6 +1663,10 @@ def run_geo_analysis_streamlit_app(
 
     # Step 3: Evaluate sensitivity for different deltas and periods
     logger.info("Step 3: Evaluating sensitivity for different deltas and periods.....")
+    if cancellation_callback and cancellation_callback():
+        logger.info("🚫 SIMULATION CANCELLED: Before sensitivity evaluation step")
+        print("🚫 SIMULATION CANCELLED: Before sensitivity evaluation step")
+        return None
     sensitivity_results, series_lifts = evaluate_sensitivity(
         simulation_results,
         deltas,
@@ -1645,6 +1678,7 @@ def run_geo_analysis_streamlit_app(
         progress_bar=progress_bar_2,
         status_text=status_text_2,
         n_power_simulations=n_power_simulations,
+        cancellation_callback=cancellation_callback,
     )
 
     if sensitivity_results is not None:
