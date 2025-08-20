@@ -220,7 +220,7 @@ async def analyze_design(
             try:
                 httpx.post(webhook_dict["url"], json={
                     "status": "pending",
-                    "job_id": task.id,
+                    "task_id": task.id,
                     "message": "Task queued for processing",
                     "timestamp": datetime.now().isoformat()
                 })
@@ -280,7 +280,7 @@ async def analyze_evaluation(
             try:
                 httpx.post(webhook_dict["url"], json={
                     "status": "pending",
-                    "job_id": task.id,
+                    "task_id": task.id,
                     "message": "Task queued for processing",
                     "timestamp": datetime.now().isoformat()
                 })
