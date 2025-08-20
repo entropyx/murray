@@ -811,7 +811,7 @@ def BetterGroups(
     unique_locations = data["location"].unique()
     no_locations = len(unique_locations)
     max_group_size = round(no_locations * 0.40)
-    min_elements_in_treatment = round(no_locations * 0.15)
+    min_elements_in_treatment = round(no_locations * 0.20)
     min_holdout = 100 - (maximum_treatment_percentage * 100)
     total_Y = data["Y"].sum()
 
@@ -1551,7 +1551,7 @@ def calculate_minimum_sample_size(
                 y_control_sub,
                 delta,
                 period,
-                n_permutations=500,
+                n_permutations=200,
                 significance_level=significance_level,
                 test_type="sum",
                 inference_type=inference_type,
@@ -1595,7 +1595,7 @@ def calculate_minimum_sample_size(
             y_control[:final_size],
             delta,
             period,
-            n_permutations=500,
+            n_permutations=300,
             significance_level=significance_level,
             test_type="sum",
             inference_type=inference_type,
@@ -1629,12 +1629,12 @@ def simulate_power(
     y_control,
     delta,
     period,
-    n_permutations=1000,
+    n_permutations=800,
     significance_level=0.05,
     test_type="sum",
     inference_type="iid",
     stat_func=None,
-    n_power_simulations=100,
+    n_power_simulations=50,
     block_size=5,
 ):
     """
