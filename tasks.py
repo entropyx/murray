@@ -183,9 +183,18 @@ def analyze_design_task(
                 self.analysis_stages = analysis_stages
             
             def progress(self, value):
-                # Auto-detect stage and update progress
+                # Map the progress to the current stage range (don't let it go to 100% until final stage)
                 current_stage = getattr(self.progress_updater, 'current_stage', 'Treatment Group Optimization')
-                self.progress_updater.update_stage_progress(value, f"{current_stage}: {int(value*100)}% complete")
+                
+                # Fix: If we're in sensitivity analysis context, ensure stage_idx is 3
+                if 'Sensitivity' in current_stage and getattr(self.progress_updater, 'current_stage_index', 0) != 3:
+                    self.progress_updater.current_stage_index = 3
+                    self.progress_updater.current_stage = "Sensitivity Analysis"
+                
+                # For BetterGroups (stage 2), cap at 100% within stage (not global 100%)
+                stage_progress = min(value, 1.0)
+                
+                self.progress_updater.update_stage_progress(stage_progress, f"{current_stage}: {int(stage_progress*100)}% complete")
         
         class StatusCallback:
             def __init__(self, progress_updater, analysis_stages):
@@ -197,25 +206,26 @@ def analyze_design_task(
                 # Always log the message for debugging
                 logger.debug(f"[{task_id}] Status update: {message}")
                 
-                # Auto-detect stage based on message content and advance if needed
-                detected_stage_idx = None
+                # Controlled stage detection - only advance forward, never backwards
+                logger.debug(f"[{task_id}] Status update: {message}")
                 message_lower = message.lower()
                 
-                if any(word in message_lower for word in ['correlation', 'correlations', 'similarity']):
-                    detected_stage_idx = 1  # Market Correlation Analysis
-                elif any(word in message_lower for word in ['group', 'groups', 'treatment', 'control', 'finding', 'evaluating']):
-                    detected_stage_idx = 2  # Treatment Group Optimization
-                elif any(word in message_lower for word in ['sensitivity', 'mde', 'power', 'deltas', 'periods']):
-                    detected_stage_idx = 3  # Sensitivity Analysis
+                current_stage_idx = getattr(self.progress_updater, 'current_stage_index', 0)
+                new_stage_idx = current_stage_idx
                 
-                # Auto-advance stage if detected
-                if detected_stage_idx is not None and detected_stage_idx != self.progress_updater.current_stage_index:
-                    self.progress_updater.current_stage_index = detected_stage_idx
-                    self.progress_updater.current_stage = self.analysis_stages[detected_stage_idx]
-                    logger.info(f"[{task_id}] Auto-advanced to stage {detected_stage_idx + 1}: {self.analysis_stages[detected_stage_idx]}")
+                # Only detect stage advancement, never go backwards
+                if any(word in message_lower for word in ['sensitivity', 'mde', 'power']) and current_stage_idx <= 2:
+                    new_stage_idx = 3  # Sensitivity Analysis
                 
-                # Update with current progress and message (always update for timestamp refresh)
-                current_progress = getattr(self.progress_updater, 'stage_progress', 0.0)
+                # Only advance if moving forward
+                if new_stage_idx > current_stage_idx:
+                    self.progress_updater.current_stage_index = new_stage_idx
+                    self.progress_updater.current_stage = self.analysis_stages[new_stage_idx]
+                    # Reset stage progress to 0 when advancing to prevent jumps
+                    current_progress = 0.0
+                else:
+                    # Update with current progress and message (always update for timestamp refresh)
+                    current_progress = getattr(self.progress_updater, 'stage_progress', 0.0)
                 
                 # Force update if message changed significantly
                 force_update = message != self.last_message
@@ -238,6 +248,15 @@ def analyze_design_task(
         # Ensure we're in the right stage for group optimization
         progress_updater.current_stage_index = 2
         progress_updater.current_stage = analysis_stages[2]
+        
+        # Manual stage advancement after group optimization
+        def advance_to_sensitivity():
+            progress_updater.current_stage_index = 3
+            progress_updater.current_stage = analysis_stages[3]
+            progress_updater.update_stage_progress(0.0, "Starting sensitivity analysis")
+        
+        # Pass advancement function to callbacks
+        status_callback.advance_to_sensitivity = advance_to_sensitivity
         
         results = run_geo_analysis_streamlit_app(
             data=data,
@@ -741,23 +760,50 @@ class TaskProgressUpdater:
     
     def update_stage_progress(self, progress: float, details: str = ""):
         """
-        Update progress within current stage.
+        Update progress within current stage with continuous progression.
         
         Args:
             progress: Progress within current stage (0.0 to 1.0)
             details: Additional progress details
         """
-        # Calculate overall progress across all stages
+        # Get current overall progress to avoid backwards movement
+        current_data = self.tracker.get_progress(self.task_id)
+        current_overall = current_data.get("progress", 0.0) if current_data else 0.0
+        
+        
         if hasattr(self, 'stages') and self.total_stages > 0:
-            stage_weight = 1.0 / self.total_stages
-            overall_progress = (self.current_stage_index * stage_weight) + (progress * stage_weight)
+            # Custom stage weights for 5 stages:
+            # 0: Data Loading (0-5%)
+            # 1: Market Correlation (5-10%) 
+            # 2: Treatment Groups (10-30%)
+            # 3: Sensitivity Analysis (30-95%)
+            # 4: Results Finalization (95-100%)
+            stage_weights = [0.05, 0.05, 0.20, 0.65, 0.05]  
+            stage_starts = [0.0, 0.05, 0.10, 0.30, 0.95]
+            
+            if self.current_stage_index < len(stage_weights):
+                stage_weight = stage_weights[self.current_stage_index]
+                stage_start = stage_starts[self.current_stage_index]
+                new_overall_progress = stage_start + (progress * stage_weight)
+            else:
+                # Fallback for any unexpected stage index
+                new_overall_progress = 1.0
+
+            if (self.current_stage_index >= 2 and hasattr(self, 'current_stage') and 
+                ('Treatment' in str(getattr(self, 'current_stage', '')) or 'Sensitivity' in str(getattr(self, 'current_stage', ''))) and 
+                new_overall_progress < current_overall):
+                # Allow the calculated progress for treatment groups or sensitivity analysis
+                overall_progress = new_overall_progress
+            else:
+                # Normal forward-only protection
+                overall_progress = max(current_overall, new_overall_progress)
         else:
-            overall_progress = progress
+            overall_progress = max(current_overall, progress)
+        
         
         self.stage_progress = progress
         
         # Always update progress (this updates timestamp)
-        logger.debug(f"[{self.task_id}] Updating progress: {overall_progress:.3f} ({int(overall_progress*100)}%) - {self.current_stage}")
         self.tracker.update_progress(
             self.task_id,
             overall_progress,
@@ -810,7 +856,7 @@ class TaskProgressUpdater:
 
 
 # ============================================================================
-# WEBHOOK MANAGEMENT SYSTEM (previously webhook_manager.py)
+# WEBHOOK MANAGEMENT SYSTEM 
 # ============================================================================
 
 class WebhookManager:
@@ -1005,9 +1051,9 @@ class WebhookManager:
             True if webhook was sent, False otherwise
         """
         try:
-            logger.info(f"Attempting to send progress webhook for task {task_id} (force={force})")
             result = asyncio.run(self.send_progress_webhook(task_id, force))
-            logger.info(f"Progress webhook result for task {task_id}: {result}")
+            if result:
+                logger.info(f"Progress webhook sent successfully for task {task_id}")
             return result
         except Exception as e:
             logger.error(f"Sync progress webhook send failed for task {task_id}: {str(e)}")

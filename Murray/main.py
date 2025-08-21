@@ -83,8 +83,8 @@ def select_treatments(similarity_matrix, treatment_size, excluded_locations):
     max_combinations = comb(n, r)
 
     n_combinations = max_combinations
-    if n_combinations > 5000:
-        n_combinations = 5000
+    if n_combinations > 2000:
+        n_combinations = 2000
 
     logger.debug(f"Generating {n_combinations} combinations")
 
@@ -810,7 +810,7 @@ def BetterGroups(
     """
     unique_locations = data["location"].unique()
     no_locations = len(unique_locations)
-    max_group_size = round(no_locations * 0.40)
+    max_group_size = round(no_locations * 0.30)
     min_elements_in_treatment = round(no_locations * 0.20)
     min_holdout = 100 - (maximum_treatment_percentage * 100)
     total_Y = data["Y"].sum()
@@ -899,7 +899,7 @@ def BetterGroups(
                         )
                     if status_updater:
                         status_updater.text(
-                            f"Evaluando grupos totales: {current_total}/{total_groups_all_sizes} ({int(current_total / total_groups_all_sizes * 100)}%) ⏳"
+                            f"Evaluando grupos totales: {current_total}/{total_groups_all_sizes} ({int(current_total / total_groups_all_sizes * 100)}%)"
                         )
                     if (
                         current_total % log_interval == 0
@@ -1024,7 +1024,7 @@ def BetterGroups(
                 progress_updater.progress((idx + 1) / total_groups)
             if status_updater:
                 status_updater.text(
-                    f"Finding the best groups: {int((idx + 1) / total_groups * 100)}% complete ⏳"
+                    f"Finding the best groups: {int((idx + 1) / total_groups * 100)}% complete"
                 )
             if (idx + 1) % log_interval == 0 or idx == 0 or idx == total_groups - 1:
                 logger.info(f"Processed {idx + 1}/{total_groups} groups")
@@ -1880,15 +1880,15 @@ def evaluate_sensitivity(
                 results.append(res)
 
                 step += 1
-                if is_streamlit_context() and progress_bar:
+                if progress_bar:
                     try:
                         progress_bar.progress(min(step / total_steps, 1.0))
                     except Exception as e:
                         logger.debug(f"Progress update failed: {e}")
-                if is_streamlit_context() and status_text:
+                if status_text:
                     try:
                         status_text.text(
-                            f"Evaluating groups: {int((step / total_steps) * 100)}% complete ⏳"
+                            f"Evaluating groups: {int((step / total_steps) * 100)}% complete"
                         )
                     except Exception as e:
                         logger.debug(f"Status update failed: {e}")
@@ -2097,8 +2097,13 @@ def run_geo_analysis_streamlit_app(
 
     # Step 3: Evaluate sensitivity for different deltas and periods
     logger.info("Step 3: Evaluating sensitivity for different deltas and periods.....")
-    if progress_updater:
-        progress_updater(0.85, "Starting sensitivity analysis and MDE calculations")
+    if status_text_2:
+        status_text_2.text("Starting sensitivity analysis for different deltas and periods")
+        
+        # Also force advance the stage index directly as backup
+        if hasattr(status_text_2, 'progress_updater'):
+            status_text_2.progress_updater.current_stage_index = 3
+            status_text_2.progress_updater.current_stage = "Sensitivity Analysis"
 
     # Check if we have global optimization results
     if global_optimization:
