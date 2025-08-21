@@ -29,6 +29,12 @@ celery_app.conf.update(
     enable_utc=True,
     task_track_started=True,
     worker_send_task_events=True,
+    task_send_sent_event=True,
+    task_ignore_result=False,
+    result_expires=86400,  # Keep results for 24 hours
+    task_soft_time_limit=3600,  # 1 hour soft limit
+    task_time_limit=7200,  # 2 hours hard limit
+    worker_prefetch_multiplier=1,  # Process one task at a time for better progress tracking
 )
 
 logger = logging.getLogger(__name__)

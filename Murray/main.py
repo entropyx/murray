@@ -2024,6 +2024,7 @@ def run_geo_analysis_streamlit_app(
     test_type="sum",
     inference_type="iid",
     global_optimization=False,
+    progress_updater=None,
 ):
     """
     Runs a complete geo analysis pipeline including market correlation, group optimization,
@@ -2063,11 +2064,15 @@ def run_geo_analysis_streamlit_app(
 
     # Step 1: Generate market correlations
     logger.info("Step 1: Generating market correlations.....")
+    if progress_updater:
+        progress_updater(0.1, "Generating market correlations")
     correlation_matrix = market_correlations(data)
     logger.info(f"Market correlations generated successfully.")
 
     # Step 2: Find the best groups for control and treatment
     logger.info("Step 2: Finding best groups for control and treatment.....")
+    if progress_updater:
+        progress_updater(0.3, "Finding best treatment and control groups")
     simulation_results = BetterGroups(
         similarity_matrix=correlation_matrix,
         maximum_treatment_percentage=maximum_treatment_percentage,
@@ -2087,9 +2092,13 @@ def run_geo_analysis_streamlit_app(
     logger.info(
         f"BetterGroups completed successfully. Results for {len(simulation_results)} sizes"
     )
+    if progress_updater:
+        progress_updater(0.7, f"Group optimization completed for {len(simulation_results)} sizes")
 
     # Step 3: Evaluate sensitivity for different deltas and periods
     logger.info("Step 3: Evaluating sensitivity for different deltas and periods.....")
+    if progress_updater:
+        progress_updater(0.85, "Starting sensitivity analysis and MDE calculations")
 
     # Check if we have global optimization results
     if global_optimization:
@@ -2146,8 +2155,12 @@ def run_geo_analysis_streamlit_app(
 
     if sensitivity_results is not None:
         logger.info("Sensitivity evaluation completed successfully.")
+        if progress_updater:
+            progress_updater(1.0, "Analysis completed successfully")
     else:
         logger.warning("Sensitivity evaluation returned None")
+        if progress_updater:
+            progress_updater(0.95, "Analysis completed with warnings")
 
     logger.info("run_geo_analysis_streamlit_app completed successfully")
     return {

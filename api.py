@@ -17,6 +17,7 @@ import requests
 import redis
 from celery import current_task
 import httpx
+from tasks import progress_tracker, webhook_manager
 
 load_dotenv()
 
@@ -55,6 +56,16 @@ class TaskResponse(BaseModel):
 class AnalysisResponse(BaseModel):
     task_id: str
     results: Dict[str, Any]
+
+class ProgressResponse(BaseModel):
+    task_id: str
+    progress: float
+    progress_percentage: int
+    status: str
+    details: str
+    updated_at: str
+    webhook_url: Optional[str] = None
+    metadata: Optional[Dict[str, Any]] = None
 
 def convert_ndarrays(obj):
     # Convert arrays
@@ -339,6 +350,164 @@ async def get_task_status(task_id: str):
             status="PENDING",
             results={"message": "Task is waiting for execution"}
         )
+
+@app.get("/task/{task_id}/progress", response_model=ProgressResponse)
+async def get_task_progress(task_id: str):
+    """
+    Get detailed progress information for a running task.
+    
+    Returns real-time progress including:
+    - Progress percentage (0-100)
+    - Current operation status
+    - Detailed progress information
+    - Last update timestamp
+    - Webhook configuration
+    """
+    try:
+        progress_data = progress_tracker.get_progress(task_id)
+        
+        if not progress_data:
+            # Check if task exists in Celery
+            task_result = AsyncResult(task_id, app=celery_app)
+            if task_result.state == "PENDING":
+                raise HTTPException(
+                    status_code=404, 
+                    detail=f"No progress information found for task {task_id}. Task may not exist or may not have started yet."
+                )
+            elif task_result.state in ["SUCCESS", "FAILURE", "REVOKED"]:
+                raise HTTPException(
+                    status_code=410, 
+                    detail=f"Task {task_id} is completed. Progress information is no longer available."
+                )
+            else:
+                raise HTTPException(
+                    status_code=404, 
+                    detail=f"No progress information found for task {task_id}"
+                )
+        
+        return ProgressResponse(
+            task_id=task_id,
+            progress=progress_data.get("progress", 0.0),
+            progress_percentage=int(progress_data.get("progress", 0.0) * 100),
+            status=progress_data.get("status", "unknown"),
+            details=progress_data.get("details", ""),
+            updated_at=progress_data.get("updated_at", ""),
+            webhook_url=progress_data.get("webhook_url"),
+            metadata=progress_data.get("metadata", {})
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting progress for task {task_id}: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error while retrieving progress")
+
+@app.post("/task/{task_id}/webhook-progress")
+async def set_progress_webhook(task_id: str, webhook_url: str = Form(...)):
+    """
+    Enable progress webhook notifications for a specific task.
+    
+    Args:
+        task_id: The task identifier
+        webhook_url: URL to receive progress webhook notifications
+        
+    The webhook will receive progress updates when significant progress is made.
+    Progress webhooks are throttled to avoid excessive calls.
+    """
+    try:
+        # Validate that task exists
+        task_result = AsyncResult(task_id, app=celery_app)
+        if task_result.state == "PENDING":
+            # Task might not exist, but we'll allow webhook setup anyway
+            logger.warning(f"Setting webhook for potentially non-existent task {task_id}")
+        
+        # Set webhook URL in progress tracker
+        progress_tracker.set_webhook_url(task_id, webhook_url)
+        
+        logger.info(f"Progress webhook configured for task {task_id}: {webhook_url}")
+        
+        # Send a test webhook to confirm the URL is working
+        test_sent = False
+        try:
+            test_result = webhook_manager.send_webhook_sync(
+                webhook_url,
+                {
+                    "status": "webhook_configured",
+                    "task_id": task_id,
+                    "message": "Webhook URL configured successfully. You will receive progress updates for this task.",
+                    "timestamp": datetime.now().isoformat(),
+                    "test": True
+                }
+            )
+            test_sent = test_result
+            if test_result:
+                logger.info(f"Test webhook sent successfully to {webhook_url}")
+            else:
+                logger.warning(f"Test webhook failed to send to {webhook_url}")
+        except Exception as webhook_error:
+            logger.error(f"Failed to send test webhook: {str(webhook_error)}")
+        
+        return {
+            "message": f"Progress webhook configured successfully for task {task_id}",
+            "webhook_url": webhook_url,
+            "task_id": task_id,
+            "test_webhook_sent": test_sent,
+            "note": "A test webhook should have been sent to confirm the URL is reachable"
+        }
+        
+    except Exception as e:
+        logger.error(f"Error setting progress webhook for task {task_id}: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error while setting webhook")
+
+@app.post("/task/{task_id}/webhook-progress/test")
+async def test_progress_webhook(task_id: str):
+    """
+    Send a test progress webhook immediately for debugging purposes.
+    
+    This endpoint will force send the current progress state via webhook,
+    regardless of throttling rules. Useful for testing webhook connectivity.
+    """
+    try:
+        progress_data = progress_tracker.get_progress(task_id)
+        
+        if not progress_data:
+            raise HTTPException(
+                status_code=404, 
+                detail=f"No progress information found for task {task_id}"
+            )
+        
+        webhook_url = progress_data.get("webhook_url")
+        if not webhook_url:
+            raise HTTPException(
+                status_code=400,
+                detail=f"No webhook URL configured for task {task_id}. Use POST /task/{task_id}/webhook-progress first."
+            )
+        
+        # Force send current progress webhook
+        webhook_sent = webhook_manager.send_progress_webhook_sync(task_id, force=True)
+        
+        if webhook_sent:
+            logger.info(f"Test progress webhook sent successfully for task {task_id}")
+            return {
+                "message": "Test progress webhook sent successfully",
+                "task_id": task_id,
+                "webhook_url": webhook_url,
+                "progress": progress_data.get("progress", 0.0),
+                "status": progress_data.get("status", "unknown")
+            }
+        else:
+            return {
+                "message": "Test webhook failed to send",
+                "task_id": task_id,
+                "webhook_url": webhook_url,
+                "error": "Webhook delivery failed - check URL accessibility and logs"
+            }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error sending test webhook for task {task_id}: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error while sending test webhook")
 
 @app.get("/")
 async def root():
