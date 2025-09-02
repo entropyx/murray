@@ -1,6 +1,10 @@
+# Streamlit app for experimental design workflow: upload data, configure parameters, run simulation, generate reports
 import streamlit as st
 import pandas as pd
 from Murray.main import run_geo_analysis_streamlit_app, transform_results_data
+from logger_config import get_logger
+
+app_logger = get_logger("experimental_design")
 from Murray.auxiliary import (
     cleaned_data,
     analyze_data_characteristics,
@@ -17,12 +21,14 @@ import plotly.express as px
 import numpy as np
 
 
+# App branding and logos
 ENTROPY_LOGO = "utils/Logo Entropy Dark Gray.png"
 MURRAY_LOGO = "utils/Group 105.png"
 options = [ENTROPY_LOGO, MURRAY_LOGO]
 sidebar_logo = ENTROPY_LOGO
 main_body_logo = MURRAY_LOGO
 
+# Setup sidebar with documentation link
 st.sidebar.markdown(
     """
     <style>
@@ -43,9 +49,11 @@ st.sidebar.markdown(
 )
 
 
+# Configure app logos
 st.logo(sidebar_logo, size="large", icon_image=main_body_logo)
 
 
+# Generate PDF report with experimental design results
 def generate_pdf(
     treatment_group,
     control_group,
@@ -73,35 +81,26 @@ def generate_pdf(
     p_value=None,
     power_value=None,
 ):
-    """
-    Generates a PDF report with explanations for each aspect.
-    """
-    # Save impact graph temporarily
     temp_image_path = "temp_impact_graph.png"
     impact_graph.savefig(temp_image_path, bbox_inches="tight", dpi=100)
 
-    # Initialize PDF
     pdf = FPDF()
     pdf.set_auto_page_break(auto=True, margin=15)
     pdf.add_page()
 
-    # Add fonts
     pdf.add_font("Poppins", style="B", fname="utils/Poppins-Bold.ttf", uni=True)
     pdf.add_font("Poppins", "", "utils/Poppins-Regular.ttf", uni=True)
 
-    # Add logo and title
     pdf.image("utils/Logo Entropy Dark Gray.png", x=10, y=10, w=20)
     pdf.set_font("Poppins", style="B", size=20)
     pdf.set_text_color(27, 0, 67)
     pdf.cell(200, 10, "Geo Murray Report", ln=True, align="C")
 
-    # Add separator line
     y_actual = pdf.get_y() + 2
     pdf.line(10, y_actual, 200, y_actual)
     pdf.set_text_color(0, 0, 0)
     pdf.ln(7)
 
-    # Introduction
     pdf.set_font("Poppins", size=10)
     pdf.set_text_color(33, 31, 36)
     pdf.multi_cell(
@@ -115,7 +114,6 @@ def generate_pdf(
     )
     pdf.ln(5)
 
-    # Treatment Group Section
     pdf.set_font("Poppins", style="B", size=12)
     pdf.set_text_color(27, 0, 67)
     pdf.cell(200, 8, "Treatment Group:", ln=True)
@@ -131,7 +129,6 @@ def generate_pdf(
     pdf.multi_cell(0, 5, treatment_group)
     pdf.ln(5)
 
-    # Control Group Section
     pdf.set_font("Poppins", style="B", size=12)
     pdf.set_text_color(27, 0, 67)
     pdf.cell(200, 8, "Control Group:", ln=True)
@@ -147,7 +144,6 @@ def generate_pdf(
     pdf.multi_cell(0, 5, control_group)
     pdf.ln(5)
 
-    # MDE Section
     pdf.set_font("Poppins", style="B", size=12)
     pdf.set_text_color(27, 0, 67)
     pdf.cell(200, 8, "Minimum Detectable Effect (MDE)", ln=True)
@@ -162,7 +158,6 @@ def generate_pdf(
     )
     pdf.ln(5)
 
-    # P-Value Section (if available)
     if p_value is not None:
         pdf.set_font("Poppins", style="B", size=12)
         pdf.set_text_color(27, 0, 67)
@@ -214,7 +209,6 @@ def generate_pdf(
         pdf.multi_cell(0, 5, explanation)
         pdf.ln(5)
 
-    # Power Section (if available)
     if power_value is not None:
         pdf.set_font("Poppins", style="B", size=12)
         pdf.set_text_color(27, 0, 67)
@@ -248,7 +242,6 @@ def generate_pdf(
         pdf.multi_cell(0, 5, power_explanation)
         pdf.ln(5)
 
-    # Conversion Percentages Section
     pdf.set_font("Poppins", style="B", size=12)
     pdf.set_text_color(27, 0, 67)
     pdf.cell(200, 8, "Conversion Percentages", ln=True)
@@ -266,7 +259,6 @@ def generate_pdf(
     )
     pdf.ln(5)
 
-    # Control Locations and Weights Section
     if pdf.get_y() > 250:
         pdf.add_page()
 
@@ -274,14 +266,12 @@ def generate_pdf(
     pdf.set_text_color(27, 0, 67)
     pdf.cell(200, 10, "Control Locations and Weights:", ln=True)
 
-    # Define table styles
     col_width = 95
     row_height = 8
     header_bg = (103, 85, 130)
     alt_row_bg = (209, 204, 217)
     white_row_bg = (246, 246, 246)
 
-    # Create weights table
     pdf.set_fill_color(*header_bg)
     pdf.set_text_color(255, 255, 255)
     pdf.set_font("Poppins", style="B", size=10)
@@ -296,7 +286,6 @@ def generate_pdf(
         pdf.cell(col_width, row_height, str(row["Control Location"]), 1, 0, "C", True)
         pdf.cell(col_width, row_height, f"{row['Weights']:.4f}", 1, 1, "C", True)
 
-    # Impact Section
     pdf.ln(5)
     if pdf.get_y() > 250:
         pdf.add_page()
@@ -327,7 +316,6 @@ def generate_pdf(
     row_height = 8
     title_height = 10
 
-    # Title section with p-value or confidence level
     pdf.set_fill_color(*header_bg)
     pdf.set_text_color(255, 255, 255)
     pdf.set_font("Poppins", "B", 12)
@@ -348,7 +336,6 @@ def generate_pdf(
 
     pdf.cell(190, title_height, title_text, border=1, ln=1, align="C", fill=True)
 
-    # Results table
     pdf.set_text_color(*text_color)
     pdf.set_font("Poppins", "", 10)
 
@@ -385,7 +372,6 @@ def generate_pdf(
             fill=True,
         )
 
-    # MDE value
     pdf.ln(4)
     pdf.set_font("Poppins", size=11)
     pdf.set_text_color(33, 31, 36)
@@ -395,7 +381,6 @@ def generate_pdf(
     if pdf.get_y() > 250:
         pdf.add_page()
 
-    # Pre/Post intervention explanation
     pdf.set_font("Poppins", size=10)
     pdf.set_text_color(33, 31, 36)
     pdf.multi_cell(
@@ -412,7 +397,6 @@ def generate_pdf(
     if pdf.get_y() > 210:
         pdf.add_page()
 
-    # Pre/Post intervention table
     col_widths = [70, 60, 60]
     row_height = 8
 
@@ -422,15 +406,12 @@ def generate_pdf(
         f"Post-treatment\n({treatment_day} to {last_day})",
     ]
 
-    # Calculate maximum header height
     max_lines = max(txt.count("\n") + 1 for txt in header_texts)
     max_header_height = max_lines * row_height
 
-    # Store initial position
     x_start = pdf.get_x()
     y_start = pdf.get_y()
 
-    # Header row
     pdf.set_fill_color(*header_bg)
     pdf.set_text_color(255, 255, 255)
     pdf.set_font("Poppins", "B", 10)
@@ -457,7 +438,6 @@ def generate_pdf(
         x += col_widths[i]
         pdf.set_xy(x, y_start)
 
-    # Data rows
     pdf.set_xy(x_start, y_start + max_header_height)
     pdf.set_text_color(*text_color)
     pdf.set_font("Poppins", "", 10)
@@ -493,7 +473,6 @@ def generate_pdf(
             fill=True,
         )
 
-    # Final graph section
     pdf.ln(9)
     if pdf.get_y() > 170:
         pdf.add_page()
@@ -506,13 +485,13 @@ def generate_pdf(
     )
     pdf.image(temp_image_path, x=10, y=pdf.get_y(), w=190)
 
-    # Clean up and return
     pdf_output = "reporte.pdf"
     pdf.output(pdf_output, "F")
     os.remove(temp_image_path)
     return pdf_output
 
 
+# Global CSS styling for Streamlit components
 st.markdown(
     """
     <style>
@@ -543,9 +522,10 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
+# Main app interface starts here
 st.title("Experimental Design")
 
-# Initialize session state variables
+# Initialize all session state variables for app workflow
 if "results" not in st.session_state:
     st.session_state.results = None
 if "simulation_results" not in st.session_state:
@@ -558,16 +538,19 @@ if "current_fig" not in st.session_state:
     st.session_state.current_fig = None
 if "simulation_button_clicked" not in st.session_state:
     st.session_state.simulation_button_clicked = False
+if "simulation_running" not in st.session_state:
+    st.session_state.simulation_running = False
 if "selected_point" not in st.session_state:
     st.session_state.selected_point = None
 if "last_params" not in st.session_state:
     st.session_state.last_params = {}
 if "fig2" not in st.session_state:
     st.session_state.fig2 = None
-# --------------------------------------------------------------------------------------------------------------------------------
+# STEP 1: File upload and data validation
 st.subheader("1. Upload file")
 
 
+# Table styling helper function
 def style_table(df):
     return (
         df.style.set_table_styles(
@@ -589,8 +572,10 @@ def style_table(df):
     )
 
 
+# File uploader for CSV data
 file = st.file_uploader("Choose a file ", type=["csv"])
 
+# Main workflow when file is uploaded
 if file is not None:
     data = pd.read_csv(file)
 
@@ -618,6 +603,7 @@ if file is not None:
             unsafe_allow_html=True,
         )
 
+        # Column mapping interface for dates, locations, and target variable
         st.text("Type the name of columns for the following parameters:")
         col1, col2, col3 = st.columns(3)
 
@@ -636,6 +622,7 @@ if file is not None:
             st.session_state.current_fig = None
             st.session_state.simulation_button_clicked = False
 
+        # Auto-detect column types using keywords
         contains_date = ["date", "day", "time", "fecha", "dia", "tiempo"]
         contains_locations = [
             "location",
@@ -727,11 +714,12 @@ if file is not None:
                 except Exception as e:
                     st.error(str(e))
                     st.stop()
-            # --------------------------------------------------------------------------------------------------------------------------------
+            # STEP 2: Data visualization
             st.subheader("2. Data visualization")
             if "graph_button_clicked" not in st.session_state:
                 st.session_state.graph_button_clicked = False
 
+            # Generate geographic data visualization
             if st.button("Graph data"):
                 st.session_state.graph_button_clicked = True
 
@@ -760,7 +748,7 @@ if file is not None:
                         "displaylogo": False,
                     },
                 )
-            # --------------------------------------------------------------------------------------------------------------------------------
+            # STEP 3: Experimental design configuration
             st.subheader("3. Experimental design")
             st.text("Parameter configuration")
 
@@ -775,10 +763,12 @@ if file is not None:
             """,
                 unsafe_allow_html=True,
             )
+            # Location exclusion and test type selection
             excluded_locations = st.multiselect(
                 "Select excluded locations", cleaned["location"].unique()
             )
 
+            # Analyze data and recommend statistical test
             data_analysis = analyze_data_characteristics(cleaned, col_target="Y")
 
             recommended_test = data_analysis.get("recommended_test", "sum")
@@ -791,7 +781,6 @@ if file is not None:
             }
 
             selected_test = recommended_test
-            # st.markdown(f"**Selected Test:** {selected_test}")
 
             st.markdown(
                 """
@@ -817,6 +806,7 @@ if file is not None:
                 unsafe_allow_html=True,
             )
 
+            # Treatment percentage configuration
             maximum_treatment_percentage_pre = st.slider(
                 "Select maximum treatment percentage (%)",
                 5,
@@ -826,6 +816,7 @@ if file is not None:
             )
             maximum_treatment_percentage = maximum_treatment_percentage_pre / 100
 
+            # Statistical significance configuration
             significance_level_pre = st.number_input(
                 "Select significance level (%)",
                 min_value=1,
@@ -837,6 +828,7 @@ if file is not None:
             significance_level = significance_level_pre / 100
             if significance_level > 0.20:
                 st.warning("A high value could lead to false results")
+            # Lift range configuration (effect size)
             st.text("Select range of lifts")
             col1, col2, col3 = st.columns(3)
             with col1:
@@ -865,6 +857,7 @@ if file is not None:
                 st.stop()
             else:
                 deltas_range = (delta_min, delta_max, delta_step)
+            # Period range configuration (experiment duration)
             st.text("Select range of periods")
             col1, col2, col3 = st.columns(3)
             with col3:
@@ -899,7 +892,7 @@ if file is not None:
             else:
                 periods_range = (period_min, period_max + 1, period_step)
 
-            # Multi-cell mode
+            # Multi-cell mode toggle for advanced analysis
             enable_multicell = st.checkbox(
                 "Enable Multi-Cell Mode",
                 value=False,
@@ -959,6 +952,7 @@ if file is not None:
             if "last_params" not in st.session_state:
                 st.session_state.last_params = {}
 
+            # Track parameter changes to reset simulation state
             current_params = {
                 "excluded_locations": excluded_locations,
                 "maximum_treatment_percentage_pre": maximum_treatment_percentage_pre,
@@ -972,7 +966,10 @@ if file is not None:
 
             # Reset simulation state when parameters change
             if current_params != st.session_state.last_params:
+                if st.session_state.simulation_running:
+                    app_logger.info("🚫 CANCELLING SIMULATION: Parameters changed during execution")
                 st.session_state.simulation_button_clicked = False
+                st.session_state.simulation_running = False  # Cancel any running simulation
                 st.session_state.selected_point = None
                 st.session_state.simulation_results = None
                 st.session_state.sensitivity_results = None
@@ -983,18 +980,44 @@ if file is not None:
             if "simulation_button_clicked" not in st.session_state:
                 st.session_state.simulation_button_clicked = False
 
-            st.text("Click on the button to start simulation")
+            if st.session_state.simulation_running:
+                st.warning("⏳ Simulation in progress... Please wait or update parameters to cancel.")
+            elif st.session_state.simulation_button_clicked:
+                st.info("💡 Simulation completed! To run again, update any parameter above.")
+            else:
+                st.text("Click on the button to start simulation")
 
-            # Handle simulation execution
-            run_simulation = st.button("Run Simulation")
+            # Simulation execution control
+            run_simulation = False
+            if not st.session_state.simulation_button_clicked and not st.session_state.simulation_running:
+                run_simulation = st.button(
+                    "Run Simulation", 
+                    help="Start the simulation with current parameters",
+                    key="run_simulation_btn"
+                )
+            else:
+                st.empty()
 
-            if run_simulation or st.session_state.simulation_button_clicked:
-                if run_simulation or not st.session_state.simulation_button_clicked:
-                    st.session_state.simulation_button_clicked = True
+            if run_simulation:
+                st.session_state.simulation_button_clicked = True
+                st.session_state.simulation_running = True
+                st.rerun()
 
+            # Execute simulation with configured parameters
+            if st.session_state.simulation_running and st.session_state.simulation_button_clicked and not run_simulation:
+                try:
                     with st.spinner("Running simulation..."):
+                        if not st.session_state.simulation_running:
+                            st.info("Simulation was cancelled due to parameter changes.")
+                            st.stop()
+                            
                         st.session_state.is_multicell_mode = False
 
+                        # Define cancellation callback
+                        def is_cancelled():
+                            return not st.session_state.simulation_running
+                        
+                        # Run main geo analysis simulation
                         results = run_geo_analysis_streamlit_app(
                             data=cleaned,
                             excluded_locations=excluded_locations,
@@ -1049,33 +1072,48 @@ if file is not None:
                         results["simulation_results"]
                     )
 
-                    st.session_state.results = results
-                    st.session_state.simulation_results = results_by_size
-                    st.session_state.sensitivity_results = results[
-                        "sensitivity_results"
-                    ]
-                    st.session_state.full_results = results
-                    st.session_state.multicell_config = (
-                        multicell_config if enable_multicell else None
-                    )
-                    periods = list(np.arange(*periods_range))
+                        st.session_state.results = results
+                        st.session_state.simulation_results = results_by_size
+                        st.session_state.sensitivity_results = results[
+                            "sensitivity_results"
+                        ]
+                        st.session_state.full_results = results
+                        st.session_state.multicell_config = (
+                            multicell_config if enable_multicell else None
+                        )
+                        periods = list(np.arange(*periods_range))
 
-                    if (
-                        enable_multicell
-                        and multicell_config
-                        and st.session_state.results.get("simulation_results")
-                    ):
-                        st.session_state.is_multicell_mode = True
-                    else:
-                        st.session_state.is_multicell_mode = False
-                        try:
-                            st.session_state.fig2 = plot_mde_results(
-                                results_by_size, results["sensitivity_results"], periods
-                            )
-                        except ValueError as e:
-                            st.error(f"Error generating the heatmap: {e}")
-                            st.stop()
+                        # Determine visualization mode and generate plots
+                        if (
+                            enable_multicell
+                            and multicell_config
+                            and st.session_state.results.get("simulation_results")
+                        ):
+                            st.session_state.is_multicell_mode = True
+                        else:
+                            st.session_state.is_multicell_mode = False
+                            try:
+                                st.session_state.fig2 = plot_mde_results(
+                                    results_by_size, results["sensitivity_results"], periods
+                                )
+                            except ValueError as e:
+                                st.error(f"Error generating the heatmap: {e}")
+                                st.session_state.simulation_running = False
+                                st.stop()
+                        
+                    st.session_state.simulation_running = False
+                    app_logger.info("✅ SIMULATION COMPLETED: Analysis finished successfully")
+                    st.success("✅ Simulation completed successfully!")
+                    st.rerun()
+                    
+                except Exception as e:
+                    st.session_state.simulation_running = False
+                    st.error(f"Simulation failed: {str(e)}")
+                    st.exception(e)
+                    st.rerun()
 
+            # STEP 4: Display results based on mode (single-cell vs multi-cell)
+            if st.session_state.simulation_button_clicked and st.session_state.results:
                 if (
                     enable_multicell
                     and multicell_config
@@ -1117,6 +1155,7 @@ if file is not None:
                                 "No sensitivity data available for period selection."
                             )
 
+                    # Build detailed results table for multi-cell mode
                     detailed_results = []
 
                     for size, data in st.session_state.results[
@@ -1386,7 +1425,7 @@ if file is not None:
                             "⚠️ Legacy multi-cell mode detected. Please re-run the simulation to use the new global optimization."
                         )
 
-                # Single-cell mode
+                # Single-cell mode: interactive heatmap and point selection
                 elif st.session_state.simulation_results is not None and not getattr(
                     st.session_state, "is_multicell_mode", False
                 ):
@@ -1427,6 +1466,7 @@ if file is not None:
                             },
                         )
 
+                    # Handle heatmap point selection
                     selected_point = event.selection
 
                     if (
@@ -1438,6 +1478,7 @@ if file is not None:
                         if "x" in point and "y" in point:
                             st.session_state.selected_point = point
 
+                    # Display detailed info for selected point
                     if st.session_state.selected_point:
                         x_value, y_value = (
                             st.session_state.selected_point["x"],
@@ -1554,10 +1595,12 @@ if file is not None:
                                 treatment_states = treatment_group.split(",")
                                 length_treatment = len(treatment_states)
 
+                                # STEP 5: PDF report generation
                                 st.subheader("4. Generate report of results")
                                 st.write(
                                     "Click on the button to generate and download the PDF report."
                                 )
+                                # Generate comprehensive PDF report
                                 if st.button("Generate and Download PDF"):
                                     with st.spinner("Generating report..."):
                                         if (
@@ -1607,6 +1650,7 @@ if file is not None:
                                                         location
                                                     ]["Control Group"]
                                                 )
+                                                # Generate impact analysis plots and data
                                                 (
                                                     pre_treatment,
                                                     pre_counterfactual,
@@ -1733,6 +1777,7 @@ if file is not None:
                                                     }
                                                 )
 
+                                                # Create PDF with all experimental results
                                                 pdf_file = generate_pdf(
                                                     treatment_group,
                                                     control_group,
@@ -1766,6 +1811,7 @@ if file is not None:
                                                         file.read()
                                                     ).decode()
 
+                                                # JavaScript for PDF download
                                                 js = f"""
                                                     var link = document.createElement('a');
                                                     link.href = 'data:application/pdf;base64,{b64_pdf}';
@@ -1794,7 +1840,8 @@ if file is not None:
                         st.info(
                             "Please select a point on the heatmap to see detailed information."
                         )
-            else:
-                pass
+            elif st.session_state.simulation_button_clicked:
+                st.info("Please run the simulation with updated parameters to see results.")
     else:
+        # Error state when no file uploaded
         st.error("Please upload data first!")

@@ -107,23 +107,29 @@ def run_geo_evaluation(
 
     counterfactual_full = predictions_full.reshape(-1, 1)
     counterfactual_full = scaler_y.inverse_transform(counterfactual_full)
-    treatment = y.reshape(-1, 1)
+    treatment_full = y.reshape(-1, 1)
 
     counterfactual = counterfactual_full.flatten()
+    treatment = treatment_full.flatten()
     y_original = scaler_y.inverse_transform(y_scaled)
     y_original = y_original.flatten()
 
     logger.info("Calculating metrics...")
+    logger.info(f"Data shapes - treatment: {treatment.shape}, counterfactual: {counterfactual.shape}")
+    
     MAPE = np.mean(np.abs((y_original - counterfactual) / (y_original + 1e-10))) * 100
     SMAPE = smape(y_original, counterfactual)
 
-    percenge_lift = (
-        (
-            np.sum(treatment[start_position_treatment:])
-            - np.sum(counterfactual[start_position_treatment:])
-        )
-        / np.abs(np.sum(counterfactual[start_position_treatment:]))
-    ) * 100
+    # Calculate percentage lift
+    treatment_period_sum = np.sum(treatment[start_position_treatment:])
+    counterfactual_period_sum = np.sum(counterfactual[start_position_treatment:])
+    lift_difference = treatment_period_sum - counterfactual_period_sum
+    
+    logger.info(f"Treatment period sum: {treatment_period_sum}")
+    logger.info(f"Counterfactual period sum: {counterfactual_period_sum}")
+    logger.info(f"Lift difference (treatment - counterfactual): {lift_difference}")
+    
+    percenge_lift = (lift_difference / np.abs(counterfactual_period_sum)) * 100
 
     def compute_residuals(y_treatment, y_control):
         return y_treatment - y_control
@@ -135,7 +141,8 @@ def run_geo_evaluation(
         return np.sum(x)
 
     observed_stat = stat_func(treatment_residuals)
-    logger.info(f"Observed statistic: {observed_stat}")
+    logger.info(f"Observed statistic (sum of residuals): {observed_stat}")
+    logger.info(f"Manual verification - observed_stat should equal lift_difference: {lift_difference}")
 
     logger.info(f"Starting permutation test with {n_permutations} permutations...")
     null_stats = []

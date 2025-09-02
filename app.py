@@ -5,6 +5,9 @@ import os
 import datetime
 from dotenv import load_dotenv
 from utils_auth import check_credentials, add_user, mark_link_as_used
+from logger_config import get_logger
+
+logger = get_logger("app")
 
 load_dotenv()
 
@@ -149,7 +152,10 @@ if AUTH_REQUIRED and not st.session_state.authenticated:
                         st.error(message)
 
 
+
 if st.session_state.authenticated:
+    logger.info(f"{st.session_state.role} {st.session_state.username} logged in")
+
     pages = []
     if st.session_state.role == "admin":
         pages = {
@@ -168,7 +174,7 @@ if st.session_state.authenticated:
                 st.Page("experimental_evaluation.py", title="Experimental evaluation"),
             ]
         }
-
+        
     pg = st.navigation(pages)
     pg.run()
 

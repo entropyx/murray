@@ -1445,7 +1445,7 @@ def plot_permutation_test(results_evaluation, Significance_level=0.1):
             x=null_stats,
             nbinsx=30,
             histnorm="probability density",
-            name="Null Stats",
+            name="Null Distribution",
             marker=dict(color=blue, line=dict(color="black", width=1)),
             opacity=0.6,
         )
@@ -1467,7 +1467,7 @@ def plot_permutation_test(results_evaluation, Significance_level=0.1):
             x=[observed_stat, observed_stat],
             y=[0, max_hist_y],
             mode="lines",
-            name="Observed Stat",
+            name=f"Observed Difference: {observed_stat:.2f}",
             line=dict(color="black", dash="dash", width=1.5),
         )
     )
@@ -1507,8 +1507,8 @@ def plot_permutation_test(results_evaluation, Significance_level=0.1):
     )
 
     fig.update_layout(
-        title="Permutation Test",
-        xaxis_title="Conformity Score",
+        title="Permutation Test - Treatment vs Control Difference",
+        xaxis_title="Difference (Treatment - Control)",
         yaxis_title="Density",
         template="plotly_white",
         bargap=0,
@@ -1969,14 +1969,14 @@ def plot_permutation_test_report(results_evaluation, Significance_level=0.1):
 
     fig, ax = plt.subplots(figsize=(10, 6))
     sns.histplot(
-        null_stats, bins=30, kde=True, color=blue, alpha=0.6, label="Difference", ax=ax
+        null_stats, bins=30, kde=True, color=blue, alpha=0.6, label="Null Distribution", ax=ax
     )
     ax.axvline(
         observed_stat,
         color="black",
         linestyle="--",
         linewidth=1.5,
-        label="Observed Difference",
+        label=f"Observed Difference: {observed_stat:.2f}",
     )
     lower_bound = np.percentile(null_stats, 100 * (Significance_level / 2))
     upper_bound = np.percentile(null_stats, 100 * (1 - (Significance_level / 2)))
@@ -1994,8 +1994,9 @@ def plot_permutation_test_report(results_evaluation, Significance_level=0.1):
         alpha=0.2,
         label="Significance Zone (Upper)",
     )
-    ax.set_xlabel("Difference", fontsize=12)
+    ax.set_xlabel("Difference (Treatment - Control)", fontsize=12)
     ax.set_ylabel("Frequency", fontsize=12)
+    ax.set_title("Permutation Test - Treatment vs Control Difference")
     ax.legend()
 
     return fig
