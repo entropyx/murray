@@ -847,6 +847,11 @@ def BetterGroups(
                 )
 
                 for idx, result in enumerate(futures):
+                    # Check for cancellation every 10 iterations
+                    if idx % 10 == 0 and cancellation_callback and cancellation_callback():
+                        logger.info("🚫 SIMULATION CANCELLED: During BetterGroups multi-cell evaluation")
+                        executor.shutdown(wait=False)
+                        return None
                     results.append(result)
                     current_total = groups_processed_so_far + idx + 1
                     if progress_updater:
@@ -976,6 +981,11 @@ def BetterGroups(
             chunksize=5,
         )
         for idx, result in enumerate(futures):
+            # Check for cancellation every 10 iterations
+            if idx % 10 == 0 and cancellation_callback and cancellation_callback():
+                logger.info("🚫 SIMULATION CANCELLED: During BetterGroups single-cell evaluation")
+                executor.shutdown(wait=False)
+                return None
             results.append(result)
             if progress_updater:
                 progress_updater.progress((idx + 1) / total_groups)
@@ -1325,6 +1335,8 @@ def calculate_minimum_sample_size(
     inference_type="iid",
     max_iterations=20,
     tolerance=0.05,
+    n_permutations_sample_size=500,
+    n_power_simulations_sample_size=30,
 ):
     """
     Calculate minimum sample size needed to achieve target statistical power.
@@ -1342,6 +1354,8 @@ def calculate_minimum_sample_size(
         inference_type (str): Type of inference ("iid" or "block")
         max_iterations (int): Maximum number of iterations
         tolerance (float): Tolerance for power convergence
+        n_permutations_sample_size (int): Number of permutations per test for sample size calculation (default 500)
+        n_power_simulations_sample_size (int): Number of power simulations for sample size calculation (default 30)
 
     Returns:
         dict: Dictionary containing minimum sample size, achieved power, and iterations
@@ -1374,11 +1388,11 @@ def calculate_minimum_sample_size(
                 y_control_sub,
                 delta,
                 period,
-                n_permutations=500,
+                n_permutations_per_test=n_permutations_sample_size,
                 significance_level=significance_level,
                 test_type="sum",
                 inference_type=inference_type,
-                n_power_simulations=30,
+                n_power_simulations=n_power_simulations_sample_size,
             )
 
             logger.debug(
@@ -1418,11 +1432,11 @@ def calculate_minimum_sample_size(
             y_control[:final_size],
             delta,
             period,
-            n_permutations=500,
+            n_permutations_per_test=n_permutations_sample_size,
             significance_level=significance_level,
             test_type="sum",
             inference_type=inference_type,
-            n_power_simulations=30,
+            n_power_simulations=n_power_simulations_sample_size,
         )
 
         logger.info(
@@ -1452,12 +1466,12 @@ def simulate_power(
     y_control,
     delta,
     period,
-    n_permutations=1000,
+    n_permutations_per_test=3000,
     significance_level=0.05,
     test_type="sum",
     inference_type="iid",
     stat_func=None,
-    n_power_simulations=100,
+    n_power_simulations=40,
     block_size=5,
 ):
     """
@@ -1473,7 +1487,7 @@ def simulate_power(
         y_control (numpy array): Control metrics.
         delta (float): Effect size applied.
         period (int): Duration of the treatment period.
-        n_permutations (int): Number of permutations per test.
+        n_permutations_per_test (int): Number of permutations per test.
         significance_level (float): Significance level.
         test_type (str): Statistical test type ("sum", "mean_diff", "t_test", "median_diff").
         inference_type (str): Type of inference ("iid" or "block").
@@ -1485,7 +1499,7 @@ def simulate_power(
         tuple: Delta, statistical power, confidence interval, and sample adjusted series.
     """
     logger.debug(
-        f"Starting simulate_power: delta={delta}, period={period}, n_permutations={n_permutations}, n_power_simulations={n_power_simulations}"
+        f"Starting simulate_power: delta={delta}, period={period}, n_permutations_per_test={n_permutations_per_test}, n_power_simulations={n_power_simulations}"
     )
 
     y_real = np.array(y_real).flatten()
@@ -1530,7 +1544,7 @@ def simulate_power(
 
         # Permutation test
         null_stats = []
-        for i in range(n_permutations):
+        for i in range(n_permutations_per_test):
             if inference_type == "block":
                 # Block-based permutation for time series
                 permuted_residuals = _block_permutation(residuals, block_size)
@@ -1570,11 +1584,12 @@ def run_simulation(
     y_real,
     y_control,
     period,
-    n_permutations,
+    n_permutations_per_test,
     significance_level,
     test_type="sum",
     inference_type="iid",
     size_block=None,
+    n_power_simulations=40,
 ):
     """
     Wrapper function to run a single simulation of statistical power.
@@ -1597,7 +1612,7 @@ def run_simulation(
         dict: Dictionary containing simulation results including power, p-value, and test statistics.
     """
     logger.debug(
-        f"Starting simulation: delta={delta}, period={period}, n_permutations={n_permutations}"
+        f"Starting simulation: delta={delta}, period={period}, n_permutations_per_test={n_permutations_per_test}"
     )
 
     y_real = np.array(y_real).flatten()
@@ -1609,12 +1624,12 @@ def run_simulation(
             y_control=y_control,
             delta=delta,
             period=period,
-            n_permutations=n_permutations,
+            n_permutations_per_test=n_permutations_per_test,
             significance_level=significance_level,
             test_type=test_type,
             inference_type=inference_type,
             block_size=size_block if size_block else 5,
-            n_power_simulations=50,
+            n_power_simulations=n_power_simulations,
         )
         return result
     except Exception as e:
@@ -1626,13 +1641,15 @@ def evaluate_sensitivity(
     results_by_size,
     deltas,
     periods,
-    n_permutations,
+    n_permutations_per_test,
     significance_level=0.05,
     test_type="sum",
     inference_type="iid",
     size_block=None,
     progress_bar=None,
     status_text=None,
+    n_power_simulations=40,
+    cancellation_callback=None,
 ):
     """
     Evaluates sensitivity of results to different treatment periods and deltas using permutations.
@@ -1659,6 +1676,9 @@ def evaluate_sensitivity(
     step = 0
 
     for size, result in results_by_size.items():
+        if cancellation_callback and cancellation_callback():
+            logger.info("🚫 SIMULATION CANCELLED: During evaluate_sensitivity")
+            return None, None
 
         if isinstance(result, list):
             if not result:
@@ -1683,9 +1703,15 @@ def evaluate_sensitivity(
         results_by_period = {}
 
         for period in periods:
+            if cancellation_callback and cancellation_callback():
+                logger.info("🚫 SIMULATION CANCELLED: During period evaluation")
+                return None, None
             results = []
 
             for delta in deltas:
+                if cancellation_callback and cancellation_callback():
+                    logger.info("🚫 SIMULATION CANCELLED: During delta evaluation")
+                    return None, None
                 logger.debug(
                     f"Running simulation for size={size}, period={period}, delta={delta}"
                 )
@@ -1694,11 +1720,12 @@ def evaluate_sensitivity(
                     y_real,
                     y_control,
                     period,
-                    n_permutations,
+                    n_permutations_per_test,
                     significance_level,
                     test_type,
                     inference_type,
                     size_block,
+                    n_power_simulations,
                 )
                 results.append(res)
 
@@ -1842,7 +1869,8 @@ def run_geo_analysis_streamlit_app(
     status_text_1=None,
     progress_bar_2=None,
     status_text_2=None,
-    n_permutations=10000,
+    n_permutations_per_test=3000,
+    n_power_simulations=40,
     multicell_config=None,
     test_type="sum",
     inference_type="iid",
@@ -1886,11 +1914,17 @@ def run_geo_analysis_streamlit_app(
 
     # Step 1: Generate market correlations
     logger.info("Step 1: Generating market correlations.....")
+    if cancellation_callback and cancellation_callback():
+        logger.info("🚫 SIMULATION CANCELLED: During market correlations step")
+        return None
     correlation_matrix = market_correlations(data)
     logger.info(f"Market correlations generated successfully.")
 
     # Step 2: Find the best groups for control and treatment
     logger.info("Step 2: Finding best groups for control and treatment.....")
+    if cancellation_callback and cancellation_callback():
+        logger.info("🚫 SIMULATION CANCELLED: Before BetterGroups step")
+        return None
     simulation_results = BetterGroups(
         similarity_matrix=correlation_matrix,
         maximum_treatment_percentage=maximum_treatment_percentage,
@@ -1991,7 +2025,8 @@ def run_geo_analysis(
     status_text_1=None,
     progress_bar_2=None,
     status_text_2=None,
-    n_permutations=10000,
+    n_permutations_per_test=3000,
+    n_power_simulations=40,
     test_type="sum",
     inference_type="iid",
     global_optimization=False,

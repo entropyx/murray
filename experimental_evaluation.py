@@ -375,11 +375,15 @@ def generate_pdf(
         0,
         5,
         f"The permutation test below shows the results of the permutation test. "
-        f"It compares the treatment group with the control group over time and demonstrates the cumulative effect of the treatment."
-        f"In this case, the metric observed in the graph, called Observed difference, represents the value of the difference (increase "
-        f"or decrease) observed in the previous table. This value is {round(increment,2):,.2f}, and the graph visually indicates whether it falls"
-        f" within the significance zone, allowing us to conclude whether the result is statistically significant.",
+        f"It compares the treatment group with the control group over time and demonstrates the cumulative effect of the treatment. "
+        f"The metric 'Observed Difference' represents the actual difference between treatment and control groups during the treatment period. "
+        f"This value is {round(increment,2):,.2f} (positive values indicate treatment performed better than control, negative values indicate the opposite). "
+        f"The graph visually shows whether this observed difference falls within the significance zones, allowing us to conclude whether the result is statistically significant.",
     )
+
+    pdf.ln(2)
+    if pdf.get_y() > 250:
+        pdf.add_page()
 
     pdf.image(temp_image_path_permutation, x=10, y=pdf.get_y(), w=180, h=100)
 
@@ -891,6 +895,21 @@ if file is not None:
                             upper_bound_value,
                             prediction_value,
                         ) = plot_impact_evaluation_report(results)
+                        lower_bound_value = (
+                            (
+                                lower_bound_value
+                                - np.sum(counterfactual[start_position_treatment:])
+                            )
+                            / np.abs(np.sum(counterfactual[start_position_treatment:]))
+                        ) * 100
+                        upper_bound_value = (
+                            (
+                                upper_bound_value
+                                - np.sum(counterfactual[start_position_treatment:])
+                            )
+                            / np.abs(np.sum(counterfactual[start_position_treatment:]))
+                        ) * 100
+
                         st.session_state.lower_bound_value = lower_bound_value
                         st.session_state.upper_bound_value = upper_bound_value
                         st.session_state.impact_graph_report = impact_graph_report
