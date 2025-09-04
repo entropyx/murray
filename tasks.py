@@ -148,7 +148,7 @@ def analyze_design_task(
         try:
             httpx.post(webhook["url"], json={
                 "status": "started",
-                "job_id": task_id,
+                "task_id": task_id,
                 "message": f"Design analysis task started ({analysis_mode} mode)",
                 "analysis_mode": analysis_mode,
                 "multicell_config": multicell_config,
@@ -233,13 +233,7 @@ def analyze_design_task(
                 
                 self.progress_updater.update_stage_progress(current_progress, message)
                 
-                # Force webhook if message changed significantly  
-                if force_update:
-                    try:
-                        from webhook_manager import webhook_manager
-                        webhook_manager.send_progress_webhook_sync(task_id, force=True)
-                    except Exception as e:
-                        logger.debug(f"[{task_id}] Webhook send failed: {e}")
+                # Progress webhooks disabled - use /task/{id}/progress endpoint instead
         
         # Create callback objects for BetterGroups
         progress_callback = ProgressCallback(progress_updater, analysis_stages)
@@ -303,19 +297,12 @@ def analyze_design_task(
         progress_updater.update_stage_progress(1.0, "Analysis completed successfully!")
         progress_updater.complete("Design analysis completed with all stages successful")
 
-        # Send enhanced completion webhook via webhook manager
-        webhook_manager.send_completion_webhook_sync(
-            task_id, 
-            "completed", 
-            result=final_results
-        )
-
-        # Send traditional webhook for backward compatibility
+        # Send traditional webhook for completion
         if webhook:
             try:
                 httpx.post(webhook["url"], json={
                     "status": "completed",
-                    "job_id": task_id,
+                    "task_id": task_id,
                     "analysis_mode": analysis_mode,
                     "multicell_config": multicell_config,
                     "result": final_results,
@@ -329,19 +316,12 @@ def analyze_design_task(
     except Exception as e:
         logger.error(f"[{task_id}] Error in design analysis task: {str(e)}", exc_info=True)
         
-        # Send enhanced failure webhook via webhook manager
-        webhook_manager.send_completion_webhook_sync(
-            task_id,
-            "failed",
-            error=str(e)
-        )
-        
-        # Send traditional failure webhook for backward compatibility
+        # Send traditional failure webhook
         if webhook:
             try:
                 httpx.post(webhook["url"], json={
                     "status": "failed",
-                    "job_id": task_id,
+                    "task_id": task_id,
                     "error": str(e),
                     "timestamp": datetime.now().isoformat()
                 })
@@ -387,7 +367,7 @@ def analyze_evaluation_task(
         try:
             httpx.post(webhook["url"], json={
                 "status": "started",
-                "job_id": task_id,
+                "task_id": task_id,
                 "message": "Evaluation analysis task started",
                 "timestamp": datetime.now().isoformat()
             })
@@ -452,19 +432,12 @@ def analyze_evaluation_task(
         progress_updater.update_stage_progress(1.0, "Evaluation analysis completed successfully!")
         progress_updater.complete("Evaluation analysis completed with all stages successful")
 
-        # Send enhanced completion webhook via webhook manager
-        webhook_manager.send_completion_webhook_sync(
-            task_id,
-            "completed",
-            result=serializable_results
-        )
-
-        # Send traditional webhook for backward compatibility
+        # Send traditional webhook for completion
         if webhook:
             try:
                 httpx.post(webhook["url"], json={
                     "status": "completed",
-                    "job_id": task_id,
+                    "task_id": task_id,
                     "result": serializable_results,
                     "timestamp": datetime.now().isoformat()
                 })
@@ -476,19 +449,12 @@ def analyze_evaluation_task(
     except Exception as e:
         logger.error(f"[{task_id}] Error in evaluation analysis task: {str(e)}", exc_info=True)
         
-        # Send enhanced failure webhook via webhook manager
-        webhook_manager.send_completion_webhook_sync(
-            task_id,
-            "failed",
-            error=str(e)
-        )
-        
-        # Send traditional failure webhook for backward compatibility
+        # Send traditional failure webhook
         if webhook:
             try:
                 httpx.post(webhook["url"], json={
                     "status": "failed",
-                    "job_id": task_id,
+                    "task_id": task_id,
                     "error": str(e),
                     "timestamp": datetime.now().isoformat()
                 })
@@ -811,11 +777,7 @@ class TaskProgressUpdater:
             details
         )
         
-        # Send webhook if significant progress change or if details changed
-        try:
-            webhook_manager.send_progress_webhook_sync(self.task_id, force=False)
-        except Exception as e:
-            logger.debug(f"Webhook send failed: {e}")
+        # Progress webhooks disabled - use /task/{id}/progress endpoint instead
     
     def advance_stage(self, details: str = ""):
         """

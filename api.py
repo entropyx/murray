@@ -118,11 +118,11 @@ def truncate_large_lists(obj, max_len=10):
 
 @app.post("/analyze/design", response_model=TaskResponse)
 async def analyze_design(
-    file: UploadFile = File(...),
-    date_column: str = Form(...),
-    location_column: str = Form(...),
-    target_column: str = Form(...),
-    excluded_locations: str = Form(...),
+    file: UploadFile = File(None),
+    date_column: str = Form(None),
+    location_column: str = Form(None),
+    target_column: str = Form(None),
+    excluded_locations: str = Form(None),
     maximum_treatment_percentage: float = Form(0.3),
     significance_level: float = Form(0.1),
     deltas_range: str = Form("0.01,0.1,0.01"),
@@ -177,7 +177,11 @@ async def analyze_design(
         # Parse parameters
         deltas_range = tuple(map(float, deltas_range.split(',')))
         periods_range = tuple(map(int, periods_range.split(',')))
-        excluded_locations = tuple(map(str, excluded_locations.split(',')))
+        # Handle empty excluded_locations properly
+        if excluded_locations and excluded_locations.strip():
+            excluded_locations = tuple(map(str, excluded_locations.split(',')))
+        else:
+            excluded_locations = tuple()
         
         # Process multicell parameters
         multicell_config = None
@@ -392,8 +396,7 @@ async def get_task_progress(task_id: str):
             status=progress_data.get("status", "unknown"),
             details=progress_data.get("details", ""),
             updated_at=progress_data.get("updated_at", ""),
-            webhook_url=progress_data.get("webhook_url"),
-            metadata=progress_data.get("metadata", {})
+            webhook_url=progress_data.get("webhook_url")
         )
         
     except HTTPException:

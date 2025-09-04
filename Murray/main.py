@@ -41,6 +41,9 @@ def select_treatments(similarity_matrix, treatment_size, excluded_locations):
     Returns:
         list: A list of unique combinations, each combination being a list of states.
     """
+    # Filter out empty strings from excluded_locations
+    excluded_locations = [loc for loc in excluded_locations if loc.strip()]
+    
     logger.debug(
         f"select_treatments called: treatment_size={treatment_size}, excluded_locations={excluded_locations}"
     )
@@ -468,6 +471,8 @@ def select_treatments_exclusive(
     if used_treatment_locations is None:
         used_treatment_locations = set()
 
+    # Filter out empty strings from excluded_locations
+    excluded_locations = [loc for loc in excluded_locations if loc.strip()]
     all_excluded = set(excluded_locations) | used_treatment_locations
 
     logger.debug(
@@ -510,7 +515,7 @@ def select_treatments_exclusive(
     
     # Smart candidate limit based on problem size
     available_ratio = n / len(similarity_matrix.columns)
-    base_candidates = min(5000, max_combinations)
+    base_candidates = min(1000, max_combinations)
     
     if available_ratio < 0.3:  # Many locations excluded, need more candidates
         max_candidates = min(base_candidates * 2, max_combinations)
@@ -891,11 +896,6 @@ def BetterGroups(
                 )
 
                 for idx, result in enumerate(futures):
-                    # Check for cancellation every 10 iterations
-                    if idx % 10 == 0 and cancellation_callback and cancellation_callback():
-                        logger.info("🚫 SIMULATION CANCELLED: During BetterGroups multi-cell evaluation")
-                        executor.shutdown(wait=False)
-                        return None
                     results.append(result)
                     current_total = groups_processed_so_far + idx + 1
                     if progress_updater:
@@ -1024,11 +1024,6 @@ def BetterGroups(
             [df_pivot] * total_groups,
         )
         for idx, result in enumerate(futures):
-            # Check for cancellation every 10 iterations
-            if idx % 10 == 0 and cancellation_callback and cancellation_callback():
-                logger.info("🚫 SIMULATION CANCELLED: During BetterGroups single-cell evaluation")
-                executor.shutdown(wait=False)
-                return None
             results.append(result)
             if progress_updater:
                 progress_updater.progress((idx + 1) / total_groups)
@@ -1826,7 +1821,6 @@ def evaluate_sensitivity(
     progress_bar=None,
     status_text=None,
     n_power_simulations=40,
-    cancellation_callback=None,
 ):
     """
     Evaluates sensitivity of results to different treatment periods and deltas using permutations.
@@ -1853,10 +1847,6 @@ def evaluate_sensitivity(
     step = 0
 
     for size, result in results_by_size.items():
-        if cancellation_callback and cancellation_callback():
-            logger.info("🚫 SIMULATION CANCELLED: During evaluate_sensitivity")
-            return None, None
-
         if isinstance(result, list):
             if not result:
                 logger.warning(f"Skipping size {size} - no groups available")
@@ -1880,15 +1870,9 @@ def evaluate_sensitivity(
         results_by_period = {}
 
         for period in periods:
-            if cancellation_callback and cancellation_callback():
-                logger.info("🚫 SIMULATION CANCELLED: During period evaluation")
-                return None, None
             results = []
 
             for delta in deltas:
-                if cancellation_callback and cancellation_callback():
-                    logger.info("🚫 SIMULATION CANCELLED: During delta evaluation")
-                    return None, None
                 logger.debug(
                     f"Running simulation for size={size}, period={period}, delta={delta}"
                 )
@@ -2117,11 +2101,21 @@ def run_geo_analysis_streamlit_app(
         logger.error("BetterGroups returned None, stopping execution")
         return None
 
-    logger.info(
-        f"BetterGroups completed successfully. Results for {len(simulation_results)} sizes"
-    )
-    if progress_updater:
-        progress_updater(0.7, f"Group optimization completed for {len(simulation_results)} sizes")
+    # Improved logging for different modes
+    if global_optimization and multicell_config and "global_experiment" in simulation_results:
+        cell_count = len(simulation_results["global_experiment"])
+        logger.info(f"BetterGroups completed successfully. Global multicell experiment with {cell_count} cells")
+        if progress_updater:
+            progress_updater(0.7, f"Global multicell optimization completed with {cell_count} cells")
+    elif multicell_config:
+        total_groups = sum(len(groups) for groups in simulation_results.values())
+        logger.info(f"BetterGroups completed successfully. Multicell results for {len(simulation_results)} sizes ({total_groups} total groups)")
+        if progress_updater:
+            progress_updater(0.7, f"Multicell optimization completed for {len(simulation_results)} sizes ({total_groups} groups)")
+    else:
+        logger.info(f"BetterGroups completed successfully. Results for {len(simulation_results)} sizes")
+        if progress_updater:
+            progress_updater(0.7, f"Group optimization completed for {len(simulation_results)} sizes")
 
     # Step 3: Evaluate sensitivity for different deltas and periods
     logger.info("Step 3: Evaluating sensitivity for different deltas and periods.....")
@@ -2133,58 +2127,64 @@ def run_geo_analysis_streamlit_app(
             status_text_2.progress_updater.current_stage_index = 3
             status_text_2.progress_updater.current_stage = "Sensitivity Analysis"
 
-    # Check if we have global optimization results
-    if global_optimization:
-        logger.info(
-            "Detected global optimization results, generating sensitivity data by size"
-        )
-        # Extract sizes from global experiment and create artificial results_by_size for sensitivity analysis
-        global_experiment = simulation_results["global_experiment"]
-        results_by_size = {}
+    # Handle sensitivity analysis for different modes
+    try:
+        if global_optimization and multicell_config and "global_experiment" in simulation_results:
+            logger.info("Detected global optimization results, transforming data for sensitivity analysis")
+            # Extract sizes from global experiment and create artificial results_by_size for sensitivity analysis
+            global_experiment = simulation_results["global_experiment"]
+            results_by_size = {}
 
-        # Group cells by size to create sensitivity data
-        for cell in global_experiment:
-            size = cell["Size"]
-            if size not in results_by_size:
-                results_by_size[size] = []
+            # Group cells by size to create sensitivity data
+            for cell in global_experiment:
+                size = cell["Size"]
+                if size not in results_by_size:
+                    results_by_size[size] = []
 
-            # Create a result dict compatible with evaluate_sensitivity
-            result_dict = {
-                "Best Treatment Group": cell["Best Treatment Group"],
-                "Control Group": cell["Control Group"],
-                "MAPE": cell["MAPE"],
-                "SMAPE": cell["SMAPE"],
-                "Actual Target Metric (y)": cell["Actual Target Metric (y)"],
-                "Predictions": cell["Predictions"],
-                "Weights": cell["Weights"],
-                "observed_conformity": cell["observed_conformity"],
-            }
-            results_by_size[size].append(result_dict)
+                # Create a result dict compatible with evaluate_sensitivity
+                result_dict = {
+                    "Best Treatment Group": cell["Best Treatment Group"],
+                    "Control Group": cell["Control Group"],
+                    "MAPE": cell["MAPE"],
+                    "SMAPE": cell["SMAPE"],
+                    "Actual Target Metric (y)": cell["Actual Target Metric (y)"],
+                    "Predictions": cell["Predictions"],
+                    "Weights": cell["Weights"],
+                    "observed_conformity": cell["observed_conformity"],
+                }
+                results_by_size[size].append(result_dict)
 
-        # Run sensitivity analysis on the artificial results_by_size
-        sensitivity_results, series_lifts = evaluate_sensitivity(
-            results_by_size,
-            deltas,
-            periods,
-            n_permutations,
-            significance_level,
-            test_type=test_type,
-            inference_type=inference_type,
-            progress_bar=progress_bar_2,
-            status_text=status_text_2,
-        )
-    else:
-        sensitivity_results, series_lifts = evaluate_sensitivity(
-            simulation_results,
-            deltas,
-            periods,
-            n_permutations,
-            significance_level,
-            test_type=test_type,
-            inference_type=inference_type,
-            progress_bar=progress_bar_2,
-            status_text=status_text_2,
-        )
+            logger.info("Starting sensitivity evaluation for global optimization results")
+            # Run sensitivity analysis on the transformed results_by_size
+            sensitivity_results, series_lifts = evaluate_sensitivity(
+                results_by_size,
+                deltas,
+                periods,
+                n_permutations_per_test,
+                significance_level,
+                test_type=test_type,
+                inference_type=inference_type,
+                progress_bar=progress_bar_2,
+                status_text=status_text_2,
+            )
+        else:
+            logger.info("Starting sensitivity evaluation for standard results")
+            sensitivity_results, series_lifts = evaluate_sensitivity(
+                simulation_results,
+                deltas,
+                periods,
+                n_permutations_per_test,
+                significance_level,
+                test_type=test_type,
+                inference_type=inference_type,
+                progress_bar=progress_bar_2,
+                status_text=status_text_2,
+            )
+        logger.info("evaluate_sensitivity call completed")
+    except Exception as e:
+        logger.error(f"Error during sensitivity evaluation: {str(e)}", exc_info=True)
+        sensitivity_results = None
+        series_lifts = None
 
     if sensitivity_results is not None:
         logger.info("Sensitivity evaluation completed successfully.")
@@ -2297,7 +2297,7 @@ def run_geo_analysis(
             results_by_size,
             deltas,
             periods,
-            n_permutations,
+            n_permutations_per_test,
             significance_level,
             test_type=test_type,
             inference_type=inference_type,
@@ -2310,7 +2310,7 @@ def run_geo_analysis(
             simulation_results,
             deltas,
             periods,
-            n_permutations,
+            n_permutations_per_test,
             significance_level,
             test_type=test_type,
             inference_type=inference_type,
