@@ -303,10 +303,8 @@ def analyze_design_task(
                 httpx.post(webhook["url"], json={
                     "status": "completed",
                     "task_id": task_id,
-                    "analysis_mode": analysis_mode,
-                    "multicell_config": multicell_config,
-                    "result": final_results,
-                    "timestamp": datetime.now().isoformat()
+                    "timestamp": datetime.now().isoformat(),
+                    "result": final_results
                 })
             except Exception as e:
                 logger.error(f"[{task_id}] Error sending traditional success webhook: {str(e)}")
@@ -322,8 +320,8 @@ def analyze_design_task(
                 httpx.post(webhook["url"], json={
                     "status": "failed",
                     "task_id": task_id,
-                    "error": str(e),
-                    "timestamp": datetime.now().isoformat()
+                    "timestamp": datetime.now().isoformat(),
+                    "error": str(e)
                 })
             except Exception as webhook_error:
                 logger.error(f"[{task_id}] Error sending traditional failure webhook: {str(webhook_error)}")
@@ -455,8 +453,8 @@ def analyze_evaluation_task(
                 httpx.post(webhook["url"], json={
                     "status": "failed",
                     "task_id": task_id,
-                    "error": str(e),
-                    "timestamp": datetime.now().isoformat()
+                    "timestamp": datetime.now().isoformat(),
+                    "error": str(e)
                 })
             except Exception as webhook_error:
                 logger.error(f"[{task_id}] Error sending traditional failure webhook: {str(webhook_error)}")

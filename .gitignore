@@ -22,3 +22,4 @@ logs/
 specs/
 ai_docs/
 .claude/
+*.json
