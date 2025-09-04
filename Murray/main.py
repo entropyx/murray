@@ -515,7 +515,7 @@ def select_treatments_exclusive(
     
     # Smart candidate limit based on problem size
     available_ratio = n / len(similarity_matrix.columns)
-    base_candidates = min(1000, max_combinations)
+    base_candidates = min(5000, max_combinations)
     
     if available_ratio < 0.3:  # Many locations excluded, need more candidates
         max_candidates = min(base_candidates * 2, max_combinations)
