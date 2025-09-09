@@ -61,7 +61,8 @@ class ProgressResponse(BaseModel):
     task_id: str
     progress: float
     progress_percentage: int
-    status: str
+    status: str  # General status (pending, started, completed, failed, etc.)
+    task_status: str  # Specific task stage (Data Loading & Processing, etc.)
     details: str
     updated_at: str
     webhook_url: Optional[str] = None
@@ -362,17 +363,36 @@ async def get_task_progress(task_id: str):
     
     Returns real-time progress including:
     - Progress percentage (0-100)
-    - Current operation status
+    - General task status (pending, started, completed, etc.)
+    - Specific task stage (Data Loading & Processing, etc.)
     - Detailed progress information
     - Last update timestamp
     - Webhook configuration
     """
     try:
+        # Get Celery task status for general status
+        task_result = AsyncResult(task_id, app=celery_app)
+        
+        # Determine general status from Celery
+        if task_result.state == "PENDING":
+            general_status = "pending"
+        elif task_result.state == "STARTED":
+            general_status = "started"
+        elif task_result.state == "SUCCESS":
+            general_status = "completed"
+        elif task_result.state == "FAILURE":
+            general_status = "failed"
+        elif task_result.state == "REVOKED":
+            general_status = "revoked"
+        elif task_result.state == "RETRY":
+            general_status = "retrying"
+        else:
+            general_status = "unknown"
+        
         progress_data = progress_tracker.get_progress(task_id)
         
         if not progress_data:
-            # Check if task exists in Celery
-            task_result = AsyncResult(task_id, app=celery_app)
+            # If no progress data but task exists in Celery
             if task_result.state == "PENDING":
                 raise HTTPException(
                     status_code=404, 
@@ -393,7 +413,8 @@ async def get_task_progress(task_id: str):
             task_id=task_id,
             progress=progress_data.get("progress", 0.0),
             progress_percentage=int(progress_data.get("progress", 0.0) * 100),
-            status=progress_data.get("status", "unknown"),
+            status=general_status,  # General Celery status
+            task_status=progress_data.get("status", "unknown"),  # Specific task stage
             details=progress_data.get("details", ""),
             updated_at=progress_data.get("updated_at", ""),
             webhook_url=progress_data.get("webhook_url")
