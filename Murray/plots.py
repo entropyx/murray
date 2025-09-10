@@ -837,10 +837,7 @@ def plot_impact_evaluation_streamlit(
     treatment = np.asarray(treatment).flatten()
 
     point_difference = treatment - counterfactual
-    cumulative_effect = ([0] * (len(treatment) - period)) + (
-        np.cumsum(point_difference[len(treatment) - period :])
-    ).tolist()
-
+    
     # Use actual start/end positions if available, otherwise calculate from period
     if start_pos < len(dates) and end_pos <= len(dates):
         start_treatment_idx = start_pos
@@ -848,6 +845,14 @@ def plot_impact_evaluation_streamlit(
     else:
         start_treatment_idx = len(counterfactual) - period
         end_treatment_idx = len(counterfactual)
+    
+    # Calculate cumulative effect using the correct treatment period positions
+    cumulative_effect = ([0] * start_treatment_idx) + (
+        np.cumsum(point_difference[start_treatment_idx:end_treatment_idx])
+    ).tolist()
+    # Pad with last value for post-treatment if needed
+    if end_treatment_idx < len(treatment):
+        cumulative_effect.extend([cumulative_effect[-1]] * (len(treatment) - end_treatment_idx))
     
     y_treatment = treatment[start_treatment_idx:end_treatment_idx]
     point_difference_treatment = point_difference[start_treatment_idx:end_treatment_idx]
@@ -1149,10 +1154,7 @@ def plot_impact_evaluation(results_evaluation, significance_level=0.05):
     length_treatment = results_evaluation["length_treatment"]
 
     point_difference = treatment - counterfactual
-    cumulative_effect = ([0] * (len(treatment) - period)) + (
-        np.cumsum(point_difference[len(treatment) - period :])
-    ).tolist()
-
+    
     # Get period information from results if available
     start_pos = results_evaluation.get("start_position_treatment")
     end_pos = results_evaluation.get("end_position_treatment")
@@ -1164,6 +1166,14 @@ def plot_impact_evaluation(results_evaluation, significance_level=0.05):
     else:
         start_treatment_idx = len(counterfactual) - period
         end_treatment_idx = len(counterfactual)
+    
+    # Calculate cumulative effect using the correct treatment period positions
+    cumulative_effect = ([0] * start_treatment_idx) + (
+        np.cumsum(point_difference[start_treatment_idx:end_treatment_idx])
+    ).tolist()
+    # Pad with last value for post-treatment if needed
+    if end_treatment_idx < len(treatment):
+        cumulative_effect.extend([cumulative_effect[-1]] * (len(treatment) - end_treatment_idx))
         
     y_treatment = treatment[start_treatment_idx:end_treatment_idx]
 
