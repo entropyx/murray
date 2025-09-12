@@ -537,25 +537,27 @@ def plot_impact_streamlit_app(
         point_difference[len(treatment) - period :]
     ).tolist()
     start_treatment = len(treatment) - period
+    start_treatment_idx = start_treatment
+    end_treatment_idx = len(treatment)
 
     x_treatment = list(range(start_treatment, len(treatment)))
-    y_treatment = treatment[start_treatment:]
+    y_treatment = treatment[start_treatment_idx:end_treatment_idx]
 
     noise_scale = calculate_optimal_noise_scale(treatment, counterfactual)
     lower_bound, upper_bound = calculate_confidence_bands(
         y_treatment, noise_scale=noise_scale, ci=ci
     )
     lower_bound_pd, upper_bound_pd = calculate_confidence_bands(
-        point_difference[start_treatment:], ci=ci
+        point_difference[start_treatment_idx:end_treatment_idx], ci=ci
     )
     lower_bound_ce, upper_bound_ce = calculate_confidence_bands(
-        cumulative_effect[start_treatment:], ci=ci
+        cumulative_effect[start_treatment_idx:end_treatment_idx], ci=ci
     )
     lower_bound_value = np.sum(lower_bound)
     upper_bound_value = np.sum(upper_bound)
 
-    att = np.mean(treatment[start_treatment:] - counterfactual[start_treatment:])
-    incremental = np.sum(treatment[start_treatment:] - counterfactual[start_treatment:])
+    att = np.mean(treatment[start_treatment_idx:end_treatment_idx] - counterfactual[start_treatment_idx:end_treatment_idx])
+    incremental = np.sum(treatment[start_treatment_idx:end_treatment_idx] - counterfactual[start_treatment_idx:end_treatment_idx])
 
     fig = make_subplots(
         rows=3,
@@ -812,39 +814,67 @@ def plot_impact_evaluation_streamlit(
     """
     ci = 1 - significance_level
     dates = df["time"].dt.date.astype(str).tolist()
-    counterfactual = results_evaluation["counterfactual"]
-    treatment = results_evaluation["treatment"]
+    
+    # Use complete data if available (includes post-treatment)
+    if "counterfactual_complete" in results_evaluation:
+        counterfactual = results_evaluation["counterfactual_complete"]
+        treatment = results_evaluation["treatment_complete"]
+        # Ensure dates match the complete data length
+        if len(dates) < len(counterfactual):
+            # Extend dates if needed (this shouldn't happen but safety check)
+            dates = dates + [dates[-1]] * (len(counterfactual) - len(dates))
+        elif len(dates) > len(counterfactual):
+            dates = dates[:len(counterfactual)]
+    else:
+        counterfactual = results_evaluation["counterfactual"]
+        treatment = results_evaluation["treatment"]
+        
     period = results_evaluation["period"]
+    start_pos = results_evaluation.get("start_position_treatment", len(counterfactual) - period)
+    end_pos = results_evaluation.get("end_position_treatment", len(counterfactual))
+    
     counterfactual = np.asarray(counterfactual).flatten()
     treatment = np.asarray(treatment).flatten()
 
     point_difference = treatment - counterfactual
-    cumulative_effect = ([0] * (len(treatment) - period)) + (
-        np.cumsum(point_difference[len(treatment) - period :])
+    
+    # Use actual start/end positions if available, otherwise calculate from period
+    if start_pos < len(dates) and end_pos <= len(dates):
+        start_treatment_idx = start_pos
+        end_treatment_idx = end_pos
+    else:
+        start_treatment_idx = len(counterfactual) - period
+        end_treatment_idx = len(counterfactual)
+    
+    # Calculate cumulative effect using the correct treatment period positions
+    cumulative_effect = ([0] * start_treatment_idx) + (
+        np.cumsum(point_difference[start_treatment_idx:end_treatment_idx])
     ).tolist()
-
-    start_treatment = len(counterfactual) - period
-    y_treatment = treatment[start_treatment:]
-    point_difference_treatment = point_difference[start_treatment:]
-    cumulative_effect_treatment = cumulative_effect[start_treatment:]
+    # Pad with last value for post-treatment if needed
+    if end_treatment_idx < len(treatment):
+        cumulative_effect.extend([cumulative_effect[-1]] * (len(treatment) - end_treatment_idx))
+    
+    y_treatment = treatment[start_treatment_idx:end_treatment_idx]
+    point_difference_treatment = point_difference[start_treatment_idx:end_treatment_idx]
+    cumulative_effect_treatment = cumulative_effect[start_treatment_idx:end_treatment_idx]
 
     noise_scale = calculate_optimal_noise_scale(y_treatment, counterfactual)
     lower_bound, upper_bound = calculate_confidence_bands(
         y_treatment, noise_scale=noise_scale, ci=ci
     )
     lower_bound_pd, upper_bound_pd = calculate_confidence_bands(
-        point_difference[start_treatment:], ci=ci
+        point_difference[start_treatment_idx:end_treatment_idx], ci=ci
     )
     lower_bound_ce, upper_bound_ce = calculate_confidence_bands(
-        cumulative_effect[start_treatment:], ci=ci
+        cumulative_effect[start_treatment_idx:end_treatment_idx], ci=ci
     )
     lower_bound_value = np.sum(lower_bound)
     upper_bound_value = np.sum(upper_bound)
-    prediction_value = np.sum(treatment[start_treatment:])
+    prediction_value = np.sum(treatment[start_treatment_idx:end_treatment_idx])
 
-    att = np.mean(treatment[start_treatment:] - counterfactual[start_treatment:])
+    att = np.mean(treatment[start_treatment_idx:end_treatment_idx] - counterfactual[start_treatment_idx:end_treatment_idx])
     att = att / length_treatment
-    incremental = np.sum(treatment[start_treatment:] - counterfactual[start_treatment:])
+    incremental = np.sum(treatment[start_treatment_idx:end_treatment_idx] - counterfactual[start_treatment_idx:end_treatment_idx])
 
     fig = make_subplots(
         rows=3,
@@ -891,7 +921,7 @@ def plot_impact_evaluation_streamlit(
     # Confidence band 1
     fig.add_trace(
         go.Scatter(
-            x=dates[start_treatment:],
+            x=dates[start_treatment_idx:end_treatment_idx],
             y=upper_bound,
             mode="lines",
             name="95% CI)",
@@ -904,7 +934,7 @@ def plot_impact_evaluation_streamlit(
 
     fig.add_trace(
         go.Scatter(
-            x=dates[start_treatment:],
+            x=dates[start_treatment_idx:end_treatment_idx],
             y=lower_bound,
             mode="lines",
             name="95% CI",
@@ -916,6 +946,19 @@ def plot_impact_evaluation_streamlit(
         row=1,
         col=1,
     )
+
+    # Add shaded regions for Pre-treatment, Treatment, and Post-treatment periods to all panels
+    total_periods = len(dates)
+    
+    # Treatment period (light gray) - only show fillcolor for treatment
+    if start_treatment_idx < len(dates) and end_treatment_idx <= len(dates):
+        for panel in range(1, 4):
+            fig.add_vrect(
+                x0=dates[start_treatment_idx], x1=dates[end_treatment_idx-1],
+                # fillcolor="rgba(200, 200, 200, 0.3)",  # Light gray for treatment only
+                layer="below", line_width=0,
+                row=panel, col=1
+            )
 
     # Panel 2: Point Difference
     fig.add_trace(
@@ -936,7 +979,7 @@ def plot_impact_evaluation_streamlit(
     # Confidence band 2
     fig.add_trace(
         go.Scatter(
-            x=dates[start_treatment:],
+            x=dates[start_treatment_idx:end_treatment_idx],
             y=upper_bound_pd,
             mode="lines",
             name="95% CI)",
@@ -949,7 +992,7 @@ def plot_impact_evaluation_streamlit(
 
     fig.add_trace(
         go.Scatter(
-            x=dates[start_treatment:],
+            x=dates[start_treatment_idx:end_treatment_idx],
             y=lower_bound_pd,
             mode="lines",
             name="95% CI",
@@ -981,7 +1024,7 @@ def plot_impact_evaluation_streamlit(
     # Confidence band 3
     fig.add_trace(
         go.Scatter(
-            x=dates[start_treatment:],
+            x=dates[start_treatment_idx:end_treatment_idx],
             y=upper_bound_ce,
             mode="lines",
             name="95% CI)",
@@ -994,7 +1037,7 @@ def plot_impact_evaluation_streamlit(
 
     fig.add_trace(
         go.Scatter(
-            x=dates[start_treatment:],
+            x=dates[start_treatment_idx:end_treatment_idx],
             y=lower_bound_ce,
             mode="lines",
             name="95% CI",
@@ -1007,13 +1050,23 @@ def plot_impact_evaluation_streamlit(
         col=1,
     )
 
+    # Add vertical lines for treatment start and end
     for i in range(1, 4):
+        # Treatment start line
         fig.add_vline(
-            x=dates[start_treatment],
-            line=dict(color="black", dash="dash"),
+            x=dates[start_treatment_idx],
+            line=dict(color="black", dash="dash", width=1.5),
             row=i,
             col=1,
         )
+        # Treatment end line
+        if end_treatment_idx < len(dates):
+            fig.add_vline(
+                x=dates[end_treatment_idx-1],
+                line=dict(color="black", dash="dash", width=1.5),
+                row=i,
+                col=1,
+            )
 
     fig.update_layout(
         height=900,
@@ -1101,30 +1154,46 @@ def plot_impact_evaluation(results_evaluation, significance_level=0.05):
     length_treatment = results_evaluation["length_treatment"]
 
     point_difference = treatment - counterfactual
-    cumulative_effect = ([0] * (len(treatment) - period)) + (
-        np.cumsum(point_difference[len(treatment) - period :])
+    
+    # Get period information from results if available
+    start_pos = results_evaluation.get("start_position_treatment")
+    end_pos = results_evaluation.get("end_position_treatment")
+    
+    # Use actual start/end positions if available, otherwise calculate from period
+    if start_pos is not None and end_pos is not None:
+        start_treatment_idx = start_pos
+        end_treatment_idx = end_pos
+    else:
+        start_treatment_idx = len(counterfactual) - period
+        end_treatment_idx = len(counterfactual)
+    
+    # Calculate cumulative effect using the correct treatment period positions
+    cumulative_effect = ([0] * start_treatment_idx) + (
+        np.cumsum(point_difference[start_treatment_idx:end_treatment_idx])
     ).tolist()
-
-    start_treatment = len(counterfactual) - period
-    y_treatment = treatment[start_treatment:]
+    # Pad with last value for post-treatment if needed
+    if end_treatment_idx < len(treatment):
+        cumulative_effect.extend([cumulative_effect[-1]] * (len(treatment) - end_treatment_idx))
+        
+    y_treatment = treatment[start_treatment_idx:end_treatment_idx]
 
     noise_scale = calculate_optimal_noise_scale(y_treatment, counterfactual)
     lower_bound, upper_bound = calculate_confidence_bands(
         y_treatment, noise_scale=noise_scale, ci=ci
     )
     lower_bound_pd, upper_bound_pd = calculate_confidence_bands(
-        point_difference[start_treatment:], ci=ci
+        point_difference[start_treatment_idx:end_treatment_idx], ci=ci
     )
     lower_bound_ce, upper_bound_ce = calculate_confidence_bands(
-        cumulative_effect[start_treatment:], ci=ci
+        cumulative_effect[start_treatment_idx:end_treatment_idx], ci=ci
     )
     lower_bound_value = np.sum(lower_bound)
     upper_bound_value = np.sum(upper_bound)
-    prediction_value = np.sum(treatment[start_treatment:])
+    prediction_value = np.sum(treatment[start_treatment_idx:end_treatment_idx])
 
-    att = np.mean(treatment[start_treatment:] - counterfactual[start_treatment:])
+    att = np.mean(treatment[start_treatment_idx:end_treatment_idx] - counterfactual[start_treatment_idx:end_treatment_idx])
     att = att / length_treatment
-    incremental = np.sum(treatment[start_treatment:] - counterfactual[start_treatment:])
+    incremental = np.sum(treatment[start_treatment_idx:end_treatment_idx] - counterfactual[start_treatment_idx:end_treatment_idx])
 
     fig = make_subplots(
         rows=3,
@@ -1598,9 +1667,7 @@ def plot_metrics_report(geo_test):
     return fig
 
 
-def plot_impact_report(
-    geo_test, period, holdout_percentage, length_treatment, significance_level=0.05
-):
+def plot_impact_report(geo_test, period, holdout_percentage, length_treatment, significance_level=0.05):
     """
     Generates graphs for a specific holdout percentage in a specific period.
 
@@ -1660,29 +1727,32 @@ def plot_impact_report(
     ).tolist()
 
     start_treatment = len(treatment) - period
-    treatment_serie = treatment[start_treatment:]
+    start_treatment_idx = start_treatment
+    end_treatment_idx = len(treatment)
+    treatment_serie = treatment[start_treatment_idx:end_treatment_idx]
 
     noise_scale = calculate_optimal_noise_scale(treatment_serie, counterfactual)
     lower_bound, upper_bound = calculate_confidence_bands(
         treatment_serie, noise_scale=noise_scale, ci=ci
     )
     lower_bound_pd, upper_bound_pd = calculate_confidence_bands(
-        point_difference[start_treatment:], ci=ci
+        point_difference[start_treatment_idx:end_treatment_idx], ci=ci
     )
     lower_bound_ce, upper_bound_ce = calculate_confidence_bands(
-        cumulative_effect[start_treatment:], ci=ci
+        cumulative_effect[start_treatment_idx:end_treatment_idx], ci=ci
     )
     lower_bound_value = np.sum(lower_bound)
     upper_bound_value = np.sum(upper_bound)
-    prediction_value = np.sum(treatment[start_treatment:])
+    prediction_value = np.sum(treatment[start_treatment_idx:end_treatment_idx])
 
-    att = np.mean(treatment[start_treatment:] - counterfactual[start_treatment:])
+    att = np.mean(treatment[start_treatment_idx:end_treatment_idx] - counterfactual[start_treatment_idx:end_treatment_idx])
     att = att / length_treatment
-    incremental = np.sum(treatment[start_treatment:] - counterfactual[start_treatment:])
+    incremental = np.sum(treatment[start_treatment_idx:end_treatment_idx] - counterfactual[start_treatment_idx:end_treatment_idx])
+    start_treatment = start_treatment_idx  # For backward compatibility
     pre_treatment = treatment[start_treatment - period : start_treatment]
     pre_counterfactual = counterfactual[start_treatment - period : start_treatment]
-    post_treatment = treatment[start_treatment:]
-    post_counterfactual = counterfactual[start_treatment:]
+    post_treatment = treatment[start_treatment_idx:end_treatment_idx]
+    post_counterfactual = counterfactual[start_treatment_idx:end_treatment_idx]
 
     fig, axes = plt.subplots(3, 1, figsize=(15, 9.5), sharex=True)
 
@@ -1793,8 +1863,13 @@ def plot_impact_evaluation_report(results_evaluation, significance_level=0.05):
         treatment (array): Treatment group values
         period (int): Treatment period length
     """
-    counterfactual = results_evaluation["counterfactual"]
-    treatment = results_evaluation["treatment"]
+    # Use complete data if available (includes post-treatment), otherwise use truncated data
+    if "counterfactual_complete" in results_evaluation:
+        counterfactual = results_evaluation["counterfactual_complete"]
+        treatment = results_evaluation["treatment_complete"]
+    else:
+        counterfactual = results_evaluation["counterfactual"]
+        treatment = results_evaluation["treatment"]
     period = results_evaluation["period"]
     length_treatment = results_evaluation["length_treatment"]
     counterfactual = np.asarray(counterfactual).flatten()
@@ -1802,36 +1877,53 @@ def plot_impact_evaluation_report(results_evaluation, significance_level=0.05):
     ci = 1 - significance_level
 
     point_difference = treatment - counterfactual
-    cumulative_effect = ([0] * (len(treatment) - period)) + (
-        np.cumsum(point_difference[len(treatment) - period :])
+    
+    # Get period information from results if available
+    start_pos = results_evaluation.get("start_position_treatment")
+    end_pos = results_evaluation.get("end_position_treatment")
+    
+    # Use actual start/end positions if available, otherwise calculate from period
+    if start_pos is not None and end_pos is not None:
+        start_treatment_idx = start_pos
+        end_treatment_idx = end_pos
+    else:
+        start_treatment_idx = len(counterfactual) - period
+        end_treatment_idx = len(counterfactual)
+    
+    # Calculate cumulative effect using the correct treatment period
+    cumulative_effect = ([0] * start_treatment_idx) + (
+        np.cumsum(point_difference[start_treatment_idx:end_treatment_idx])
     ).tolist()
-    start_treatment = len(counterfactual) - period
+    # Pad with last value for post-treatment if needed
+    if end_treatment_idx < len(treatment):
+        cumulative_effect.extend([cumulative_effect[-1]] * (len(treatment) - end_treatment_idx))
 
-    treatment_serie = treatment[start_treatment:]
+    treatment_serie = treatment[start_treatment_idx:end_treatment_idx]
 
     noise_scale = calculate_optimal_noise_scale(treatment_serie, counterfactual)
     lower_bound, upper_bound = calculate_confidence_bands(
         treatment_serie, noise_scale=noise_scale, ci=ci
     )
     lower_bound_pd, upper_bound_pd = calculate_confidence_bands(
-        point_difference[start_treatment:], ci=ci
+        point_difference[start_treatment_idx:end_treatment_idx], ci=ci
     )
     lower_bound_ce, upper_bound_ce = calculate_confidence_bands(
-        cumulative_effect[start_treatment:], ci=ci
+        cumulative_effect[start_treatment_idx:end_treatment_idx], ci=ci
     )
     lower_bound_value = np.sum(lower_bound)
     upper_bound_value = np.sum(upper_bound)
-    prediction_value = np.sum(treatment[start_treatment:])
+    prediction_value = np.sum(treatment[start_treatment_idx:end_treatment_idx])
 
     # Absolute values (comparison)
+    start_treatment = start_treatment_idx  # For backward compatibility with existing code
     pre_treatment = treatment[start_treatment - period : start_treatment]
     pre_counterfactual = counterfactual[start_treatment - period : start_treatment]
-    post_treatment = treatment[start_treatment:]
-    post_counterfactual = counterfactual[start_treatment:]
+    post_treatment = treatment[start_treatment_idx:end_treatment_idx]
+    post_counterfactual = counterfactual[start_treatment_idx:end_treatment_idx]
 
-    att = np.mean(treatment[start_treatment:] - counterfactual[start_treatment:])
+    att = np.mean(treatment[start_treatment_idx:end_treatment_idx] - counterfactual[start_treatment_idx:end_treatment_idx])
     att = att / length_treatment
-    incremental = np.sum(treatment[start_treatment:] - counterfactual[start_treatment:])
+    incremental = np.sum(treatment[start_treatment_idx:end_treatment_idx] - counterfactual[start_treatment_idx:end_treatment_idx])
 
     fig, axes = plt.subplots(3, 1, figsize=(15, 9.5), sharex=True)
 
@@ -1853,9 +1945,12 @@ def plot_impact_evaluation_report(results_evaluation, significance_level=0.05):
     axes[0].plot(
         treatment, label="Treatment Group", linestyle="-", color=green, linewidth=1
     )
-    axes[0].axvline(x=start_treatment, color="black", linestyle="--", linewidth=1)
+    axes[0].axvline(x=start_treatment_idx, color="black", linestyle="--", linewidth=1, label="Treatment Start")
+    if end_treatment_idx < len(counterfactual):
+        axes[0].axvline(x=end_treatment_idx, color="black", linestyle="--", linewidth=1, label="Treatment End")
+    # Only fill treatment period with bounds (not post-treatment)
     axes[0].fill_between(
-        range((start_treatment), len(counterfactual)),
+        range(start_treatment_idx, end_treatment_idx),
         lower_bound,
         upper_bound,
         color="gray",
@@ -1875,7 +1970,7 @@ def plot_impact_evaluation_report(results_evaluation, significance_level=0.05):
         linewidth=1,
     )
     axes[1].fill_between(
-        range((start_treatment), len(counterfactual)),
+        range(start_treatment_idx, end_treatment_idx),
         lower_bound_pd,
         upper_bound_pd,
         color="gray",
@@ -1884,7 +1979,9 @@ def plot_impact_evaluation_report(results_evaluation, significance_level=0.05):
     axes[1].plot(
         [0, len(counterfactual)], [0, 0], color="gray", linestyle="--", linewidth=2
     )
-    axes[1].axvline(x=start_treatment, color="black", linestyle="--", linewidth=1)
+    axes[1].axvline(x=start_treatment_idx, color="black", linestyle="--", linewidth=1)
+    if end_treatment_idx < len(counterfactual):
+        axes[1].axvline(x=end_treatment_idx, color="black", linestyle="--", linewidth=1)
     format_ticks(axes[1], point_difference)
     axes[1].set_ylabel("Point Difference")
     axes[1].yaxis.set_label_position("right")
@@ -1894,13 +1991,15 @@ def plot_impact_evaluation_report(results_evaluation, significance_level=0.05):
     # Panel 3: Cumulative effect
     axes[2].plot(cumulative_effect, label="Cumulative Effect", color=green, linewidth=1)
     axes[2].fill_between(
-        range((start_treatment), len(counterfactual)),
+        range(start_treatment_idx, end_treatment_idx),
         lower_bound_ce,
         upper_bound_ce,
         color="gray",
         alpha=0.2,
     )
-    axes[2].axvline(x=start_treatment, color="black", linestyle="--", linewidth=1)
+    axes[2].axvline(x=start_treatment_idx, color="black", linestyle="--", linewidth=1)
+    if end_treatment_idx < len(counterfactual):
+        axes[2].axvline(x=end_treatment_idx, color="black", linestyle="--", linewidth=1)
     format_ticks(axes[2], cumulative_effect)
     axes[2].set_xlabel("Days")
     axes[2].yaxis.set_label_position("right")
