@@ -736,6 +736,7 @@ def BetterGroups(
     status_updater=None,
     multicell_config=None,
     global_optimization=False,
+    cancellation_callback=None,
 ):
     """
     Simulates and evaluates treatment groups for geo-experiments.
@@ -755,6 +756,7 @@ def BetterGroups(
         status_updater (callable): Status text updater function
         multicell_config (dict): Multi-cell configuration with 'sizes' and 'top_n' keys
         global_optimization (bool): Whether to use global optimization for multi-cell mode
+        cancellation_callback (callable): Function to check if operation should be cancelled
     
     Returns:
         dict: Results organized by mode:
@@ -796,6 +798,7 @@ def BetterGroups(
                 maximum_treatment_percentage=maximum_treatment_percentage,
                 progress_updater=progress_updater,
                 status_updater=status_updater,
+                cancellation_callback=cancellation_callback,
             )
 
         # Original multi-cell mode (per-size optimization)
@@ -1052,6 +1055,7 @@ def optimize_global_multicell(
     maximum_treatment_percentage,
     progress_updater=None,
     status_updater=None,
+    cancellation_callback=None,
 ):
     """
     Global optimization for multi-cell experiments with heterogeneous cell sizes.
@@ -1069,6 +1073,7 @@ def optimize_global_multicell(
         maximum_treatment_percentage: Max treatment percentage
         progress_updater: Progress bar updater
         status_updater: Status text updater
+        cancellation_callback: Function to check if operation should be cancelled
 
     Returns:
         dict: Single optimized experiment with heterogeneous cells
@@ -1095,6 +1100,10 @@ def optimize_global_multicell(
     logger.info("Phase 1: Generating candidates for all allowed sizes")
 
     for size in allowed_sizes:
+        if cancellation_callback and cancellation_callback():
+            logger.info("🚫 SIMULATION CANCELLED: During candidate generation in global optimization")
+            return None
+            
         logger.info(f"Generating candidates for size {size}")
 
         groups = select_treatments_exclusive(
@@ -1121,6 +1130,11 @@ def optimize_global_multicell(
             )
 
             for result in futures:
+                if cancellation_callback and cancellation_callback():
+                    logger.info("🚫 SIMULATION CANCELLED: During result processing in global optimization")
+                    executor.shutdown(wait=False)
+                    return None
+                    
                 if result is not None:
                     # Add size information to result
                     result_with_size = result + (size,)  # Append size as last element
@@ -1154,6 +1168,10 @@ def optimize_global_multicell(
     candidates_rejected = 0
 
     for candidate in all_candidates:
+        if cancellation_callback and cancellation_callback():
+            logger.info("🚫 SIMULATION CANCELLED: During global cell selection")
+            return None
+            
         treatment_group = set(candidate[0])
         control_group = set(candidate[1])
         size = candidate[8]
@@ -1658,15 +1676,20 @@ def evaluate_sensitivity(
         results_by_size (dict): Results organized by sample size.
         deltas (list): List of delta values to evaluate.
         periods (list): List of treatment periods to evaluate.
-        n_permutations (int): Number of permutations.
+        n_permutations_per_test (int): Number of permutations per test.
         significance_level (float): Significance level.
         test_type (str): Statistical test type ("sum", "mean_diff", "t_test", "median_diff").
         inference_type (str): Type of conformal inference ("iid" or "block").
         size_block (int): Size of blocks for block shuffling (if applicable).
+        progress_bar (callable): Progress bar updater function.
+        status_text (callable): Status text updater function.
+        n_power_simulations (int): Number of power simulations to run.
+        cancellation_callback (callable): Function to check if operation should be cancelled.
 
     Returns:
-        dict: Sensitivity results by size and period.
-        dict: Adjusted series for each delta and period.
+        tuple: (sensitivity_results, lift_series)
+            - sensitivity_results (dict): Sensitivity results by size and period.
+            - lift_series (dict): Adjusted series for each delta and period.
     """
 
     sensitivity_results = {}
@@ -1875,6 +1898,7 @@ def run_geo_analysis_streamlit_app(
     test_type="sum",
     inference_type="iid",
     global_optimization=False,
+    cancellation_callback=False
 ):
     """
     Runs a complete geo analysis pipeline including market correlation, group optimization,
@@ -1891,11 +1915,13 @@ def run_geo_analysis_streamlit_app(
         status_text_1 (callable): Status text updater for group optimization phase.
         progress_bar_2 (callable): Progress bar updater for sensitivity evaluation phase.
         status_text_2 (callable): Status text updater for sensitivity evaluation phase.
-        n_permutations (int): Number of permutations for sensitivity evaluation (default: 10000).
+        n_permutations_per_test (int): Number of permutations per test for sensitivity evaluation (default: 3000).
+        n_power_simulations (int): Number of power simulations to run (default: 40).
         multicell_config (dict): Configuration for multi-cell mode with 'sizes' and 'top_n' keys.
         test_type (str): Statistical test type ("sum", "mean_diff", "t_test", "median_diff").
         inference_type (str): Type of inference ("iid" or "block").
         global_optimization (bool): Whether to use global optimization for multi-cell mode.
+        cancellation_callback (callable): Function to check if operation should be cancelled.
 
     Returns:
         dict: Dictionary containing simulation results, sensitivity results, and adjusted series lifts.
@@ -1935,6 +1961,7 @@ def run_geo_analysis_streamlit_app(
         status_updater=status_text_1,
         multicell_config=multicell_config,
         global_optimization=global_optimization,
+        cancellation_callback=cancellation_callback,
     )
 
     if simulation_results is None:
@@ -1981,24 +2008,28 @@ def run_geo_analysis_streamlit_app(
             results_by_size,
             deltas,
             periods,
-            n_permutations,
+            n_permutations_per_test,
             significance_level,
             test_type=test_type,
             inference_type=inference_type,
             progress_bar=progress_bar_2,
             status_text=status_text_2,
+            n_power_simulations=n_power_simulations,
+            cancellation_callback=cancellation_callback,
         )
     else:
         sensitivity_results, series_lifts = evaluate_sensitivity(
             simulation_results,
             deltas,
             periods,
-            n_permutations,
+            n_permutations_per_test,
             significance_level,
             test_type=test_type,
             inference_type=inference_type,
             progress_bar=progress_bar_2,
             status_text=status_text_2,
+            n_power_simulations=n_power_simulations,
+            cancellation_callback=cancellation_callback,
         )
 
     if sensitivity_results is not None:

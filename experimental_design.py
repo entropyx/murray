@@ -1029,6 +1029,7 @@ if file is not None:
                             test_type=selected_test,
                             inference_type="iid",
                             global_optimization=enable_multicell,
+                            cancellation_callback=is_cancelled,
                         )
 
                     if results is None:
@@ -1072,34 +1073,34 @@ if file is not None:
                         results["simulation_results"]
                     )
 
-                        st.session_state.results = results
-                        st.session_state.simulation_results = results_by_size
-                        st.session_state.sensitivity_results = results[
+                    st.session_state.results = results
+                    st.session_state.simulation_results = results_by_size
+                    st.session_state.sensitivity_results = results[
                             "sensitivity_results"
                         ]
-                        st.session_state.full_results = results
-                        st.session_state.multicell_config = (
+                    st.session_state.full_results = results
+                    st.session_state.multicell_config = (
                             multicell_config if enable_multicell else None
                         )
-                        periods = list(np.arange(*periods_range))
+                    periods = list(np.arange(*periods_range))
 
                         # Determine visualization mode and generate plots
-                        if (
-                            enable_multicell
-                            and multicell_config
-                            and st.session_state.results.get("simulation_results")
-                        ):
-                            st.session_state.is_multicell_mode = True
-                        else:
-                            st.session_state.is_multicell_mode = False
-                            try:
-                                st.session_state.fig2 = plot_mde_results(
-                                    results_by_size, results["sensitivity_results"], periods
-                                )
-                            except ValueError as e:
-                                st.error(f"Error generating the heatmap: {e}")
-                                st.session_state.simulation_running = False
-                                st.stop()
+                    if (
+                        enable_multicell
+                        and multicell_config
+                        and st.session_state.results.get("simulation_results")
+                    ):
+                        st.session_state.is_multicell_mode = True
+                    else:
+                        st.session_state.is_multicell_mode = False
+                        try:
+                            st.session_state.fig2 = plot_mde_results(
+                                results_by_size, results["sensitivity_results"], periods
+                            )
+                        except ValueError as e:
+                            st.error(f"Error generating the heatmap: {e}")
+                            st.session_state.simulation_running = False
+                            st.stop()
                         
                     st.session_state.simulation_running = False
                     app_logger.info("✅ SIMULATION COMPLETED: Analysis finished successfully")
