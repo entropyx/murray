@@ -1029,6 +1029,7 @@ if file is not None:
                             test_type=selected_test,
                             inference_type="iid",
                             global_optimization=enable_multicell,
+                            cancellation_callback=is_cancelled,
                         )
 
                     if results is None:
@@ -1075,15 +1076,15 @@ if file is not None:
                     st.session_state.results = results
                     st.session_state.simulation_results = results_by_size
                     st.session_state.sensitivity_results = results[
-                        "sensitivity_results"
-                    ]
+                            "sensitivity_results"
+                        ]
                     st.session_state.full_results = results
                     st.session_state.multicell_config = (
-                        multicell_config if enable_multicell else None
-                    )
+                            multicell_config if enable_multicell else None
+                        )
                     periods = list(np.arange(*periods_range))
 
-                    # Determine visualization mode and generate plots
+                        # Determine visualization mode and generate plots
                     if (
                         enable_multicell
                         and multicell_config
