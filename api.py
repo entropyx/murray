@@ -68,6 +68,7 @@ class ProgressResponse(BaseModel):
     webhook_url: Optional[str] = None
     metadata: Optional[Dict[str, Any]] = None
 
+
 def convert_ndarrays(obj):
     # Convert arrays
     if isinstance(obj, np.ndarray):
@@ -304,10 +305,11 @@ async def analyze_evaluation(
                 logger.error(f"[{task.id}] Error sending pending webhook: {str(ex)}")
 
         return TaskResponse(task_id=task.id, status="PENDING", results={"message": "Task submitted"})
-        
+
     except Exception as e:
         logger.error(f"[{request_id}] Error submitting evaluation analysis task: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
+
 
 @app.get("/task/{task_id}", response_model=TaskResponse)
 async def get_task_status(task_id: str):

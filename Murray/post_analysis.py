@@ -2,6 +2,7 @@ import numpy as np
 from sklearn.preprocessing import MinMaxScaler
 from Murray.main import select_controls, SyntheticControl
 from Murray.auxiliary import market_correlations, handle_duplicates
+from Murray.plots import calculate_confidence_bands, calculate_optimal_noise_scale
 import pandas as pd
 from logger_config import get_logger
 
@@ -187,3 +188,144 @@ def run_geo_evaluation(
 
     logger.info("run_geo_evaluation completed successfully")
     return results_evaluation
+
+
+def get_evaluation_chart_data(
+    data_input,
+    start_treatment,
+    end_treatment,
+    treatment_group,
+    significance_level=0.05,
+):
+    """
+    Extract only the data needed for plotting charts from evaluation results.
+
+    Args:
+        data_input: Input dataframe
+        start_treatment: Treatment start date
+        end_treatment: Treatment end date
+        treatment_group: List of treatment locations
+        significance_level: Significance level for confidence bands
+
+    Returns:
+        dict: Dictionary containing all data needed for chart plotting
+    """
+    logger.info("Starting get_evaluation_chart_data")
+
+    # First run the evaluation to get base results
+    results = run_geo_evaluation(
+        data_input, start_treatment, end_treatment, treatment_group, spend=0
+    )
+
+    # Extract base values
+    treatment = results["treatment"]
+    counterfactual = results["counterfactual"]
+    period = results["period"]
+    length_treatment = results["length_treatment"]
+
+    # Get date information
+    random_state = data_input["location"].unique()[0]
+    filtered_data = data_input[data_input["location"] == random_state].copy()
+    filtered_data["time"] = pd.to_datetime(filtered_data["time"])
+    dates = filtered_data["time"].dt.date.astype(str).tolist()
+
+    # Calculate treatment start position
+    start_treatment = pd.to_datetime(start_treatment, dayfirst=True)
+    start_idx = (filtered_data["time"].dt.date == start_treatment.date()).idxmax()
+    start_position_treatment = filtered_data.index.get_loc(start_idx)
+
+    # Calculate derived series
+    point_difference = treatment - counterfactual
+    cumulative_effect = ([0] * (len(treatment) - period)) + (
+        np.cumsum(point_difference[len(treatment) - period:])
+    ).tolist()
+
+    # Extract treatment period data
+    y_treatment = treatment[start_position_treatment:]
+    point_difference_treatment = point_difference[start_position_treatment:]
+    cumulative_effect_treatment = cumulative_effect[start_position_treatment:]
+
+    # Calculate confidence bands
+    ci = 1 - significance_level
+    noise_scale = calculate_optimal_noise_scale(y_treatment, counterfactual)
+
+    lower_bound, upper_bound = calculate_confidence_bands(
+        y_treatment, noise_scale=noise_scale, ci=ci
+    )
+    lower_bound_pd, upper_bound_pd = calculate_confidence_bands(
+        point_difference_treatment, ci=ci
+    )
+    lower_bound_ce, upper_bound_ce = calculate_confidence_bands(
+        cumulative_effect_treatment, ci=ci
+    )
+
+    # Calculate aggregate values
+    lower_bound_value = np.sum(lower_bound)
+    upper_bound_value = np.sum(upper_bound)
+    prediction_value = np.sum(treatment[start_position_treatment:])
+
+    # Calculate ATT and incremental
+    att = np.mean(treatment[start_position_treatment:] - counterfactual[start_position_treatment:])
+    att = att / length_treatment
+    incremental = np.sum(treatment[start_position_treatment:] - counterfactual[start_position_treatment:])
+
+    # Calculate pre/post treatment data
+    pre_treatment = treatment[start_position_treatment - period : start_position_treatment]
+    pre_counterfactual = counterfactual[start_position_treatment - period : start_position_treatment]
+    post_treatment = treatment[start_position_treatment:]
+    post_counterfactual = counterfactual[start_position_treatment:]
+
+    chart_data = {
+        # Base series
+        "dates": dates,
+        "treatment": treatment.tolist(),
+        "counterfactual": counterfactual.tolist(),
+        "point_difference": point_difference.tolist(),
+        "cumulative_effect": cumulative_effect,
+
+        # Treatment period data
+        "treatment_dates": dates[start_position_treatment:],
+        "y_treatment": y_treatment.tolist(),
+        "point_difference_treatment": point_difference_treatment.tolist(),
+        "cumulative_effect_treatment": cumulative_effect_treatment,
+
+        # Confidence bands
+        "lower_bound": lower_bound.tolist(),
+        "upper_bound": upper_bound.tolist(),
+        "lower_bound_pd": lower_bound_pd.tolist(),
+        "upper_bound_pd": upper_bound_pd.tolist(),
+        "lower_bound_ce": lower_bound_ce.tolist(),
+        "upper_bound_ce": upper_bound_ce.tolist(),
+
+        # Aggregate values
+        "lower_bound_value": float(lower_bound_value),
+        "upper_bound_value": float(upper_bound_value),
+        "prediction_value": float(prediction_value),
+        "att": float(att),
+        "incremental": float(incremental),
+
+        # Pre/post treatment periods
+        "pre_treatment": pre_treatment.tolist(),
+        "pre_counterfactual": pre_counterfactual.tolist(),
+        "post_treatment": post_treatment.tolist(),
+        "post_counterfactual": post_counterfactual.tolist(),
+
+        # Metadata
+        "start_position_treatment": start_position_treatment,
+        "period": period,
+        "length_treatment": length_treatment,
+
+        # Include key metrics from original evaluation
+        "p_value": results["p_value"],
+        "power": results["power"],
+        "percenge_lift": results["percenge_lift"],
+        "MAPE": results["MAPE"],
+        "SMAPE": results["SMAPE"],
+        "observed_stat": results["observed_stat"],
+        "null_stats": results["null_stats"].tolist(),
+        "control_group": results["control_group"],
+        "weights": results["weights"],
+    }
+
+    logger.info("get_evaluation_chart_data completed successfully")
+    return chart_data

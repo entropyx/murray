@@ -1,6 +1,6 @@
 from celery_app import celery_app, redis_client
 from Murray.main import run_geo_analysis_streamlit_app
-from Murray.post_analysis import run_geo_evaluation
+from Murray.post_analysis import run_geo_evaluation, get_evaluation_chart_data
 from Murray.auxiliary import cleaned_data
 import pandas as pd
 import numpy as np
@@ -399,17 +399,35 @@ def analyze_evaluation_task(
         progress_updater.advance_stage("Starting geo evaluation analysis")
 
         # Stage 3: Geo Evaluation Analysis
-        logger.info(f"[{task_id}] Starting geo evaluation")
+        logger.info(f"[{task_id}] Starting geo evaluation with chart data generation")
         progress_updater.update_stage_progress(0.1, f"Analyzing treatment group: {treatment_group}")
-        
-        results = run_geo_evaluation(
+
+        results = get_evaluation_chart_data(
             data_input=df,
             start_treatment=treatment_start_date,
             end_treatment=treatment_end_date,
             treatment_group=treatment_group,
-            spend=spend,
+            significance_level=0.05,
         )
-        logger.info(f"[{task_id}] Geo evaluation completed")
+        logger.info(f"[{task_id}] Geo evaluation with chart data completed")
+
+        # Add MMM metrics calculation
+        progress_updater.update_stage_progress(0.9, "Calculating MMM metrics...")
+        att = results.get("att", 0)
+        incremental = results.get("incremental", 0)
+
+        if mmm_option == "iROAS":
+            mmm_metric = incremental / spend if spend > 0 else 0
+        else:  # iCPA
+            mmm_metric = spend / incremental if incremental > 0 else 0
+
+        # Add additional metrics to results
+        results.update({
+            "spend": spend,
+            "mmm_option": mmm_option,
+            "mmm_metric": mmm_metric,
+        })
+        logger.info(f"[{task_id}] MMM metrics calculated: {mmm_option} = {mmm_metric}")
         
         progress_updater.update_stage_progress(1.0, "Geo evaluation analysis completed")
         progress_updater.advance_stage("Finalizing results")
