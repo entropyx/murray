@@ -41,6 +41,9 @@ def select_treatments(similarity_matrix, treatment_size, excluded_locations):
     Returns:
         list: A list of unique combinations, each combination being a list of states.
     """
+    # Filter out empty strings from excluded_locations
+    excluded_locations = [loc for loc in excluded_locations if loc.strip()]
+    
     logger.debug(
         f"select_treatments called: treatment_size={treatment_size}, excluded_locations={excluded_locations}"
     )
@@ -335,10 +338,19 @@ def smape(A, F):
 
 
 def evaluate_group(
-    treatment_group, data, total_Y, correlation_matrix, min_holdout, df_pivot
+    treatment_group, data, total_Y, correlation_matrix, min_holdout, df_pivot, treatment_period=None
 ):
     """
     Evaluates a treatment group and returns error metrics.
+    
+    Args:
+        treatment_group: List of locations in the treatment group
+        data: Input data
+        total_Y: Total sum of Y values
+        correlation_matrix: Market correlation matrix
+        min_holdout: Minimum holdout percentage required
+        df_pivot: Pivoted data with time as index
+        treatment_period: Number of periods for treatment (if None, uses 80/20 split)
     """
     logger.debug(f"Starting evaluation for treatment group: {treatment_group}")
 
@@ -380,7 +392,14 @@ def evaluate_group(
     X_scaled = scaler_x.fit_transform(X)
     y_scaled = scaler_y.fit_transform(y.reshape(-1, 1))
 
-    split_index = int(len(X_scaled) * 0.8)
+    
+    if treatment_period is not None:
+        split_index = len(X_scaled) - treatment_period
+    else:
+        default_period = min(10, len(X_scaled) // 4)
+        split_index = len(X_scaled) - default_period
+    
+    split_index = max(1, min(split_index, len(X_scaled) - 1))
 
     X_train, X_test = X_scaled[:split_index], X_scaled[split_index:]
     y_train, y_test = y_scaled[:split_index], y_scaled[split_index:]
@@ -437,22 +456,23 @@ def select_treatments_exclusive(
     similarity_matrix, treatment_size, excluded_locations, used_treatment_locations=None
 ):
     """
-    Selects treatments excluding both globally excluded locations and previously used treatment locations.
-    This function is used specifically for multi-cell mode to ensure treatment location exclusivity.
+    Improved treatment selection for multi-cell mode ensuring treatment location exclusivity.
     Control locations can be reused across cells.
-
+    
     Args:
         similarity_matrix (pd.DataFrame): DataFrame containing correlations between locations
         treatment_size (int): Number of treatments to select for each combination
         excluded_locations (list): List of locations to exclude globally
         used_treatment_locations (set): Set of treatment locations already used in previous cells
-
+        
     Returns:
         list: A list of unique combinations, each combination being a list of states
     """
     if used_treatment_locations is None:
         used_treatment_locations = set()
 
+    # Filter out empty strings from excluded_locations
+    excluded_locations = [loc for loc in excluded_locations if loc.strip()]
     all_excluded = set(excluded_locations) | used_treatment_locations
 
     logger.debug(
@@ -492,8 +512,17 @@ def select_treatments_exclusive(
     n = similarity_matrix_filtered.shape[1]
     r = treatment_size
     max_combinations = comb(n, r)
-
-    n_combinations = min(max_combinations, 5000)
+    
+    # Smart candidate limit based on problem size
+    available_ratio = n / len(similarity_matrix.columns)
+    base_candidates = min(5000, max_combinations)
+    
+    if available_ratio < 0.3:  # Many locations excluded, need more candidates
+        max_candidates = min(base_candidates * 2, max_combinations)
+    else:
+        max_candidates = base_candidates
+        
+    n_combinations = min(max_combinations, max_candidates)
 
     if n_combinations == 0:
         logger.warning(
@@ -506,7 +535,7 @@ def select_treatments_exclusive(
     combinations = set()
     attempts = 0
     max_attempts = n_combinations * 10
-
+    
     while len(combinations) < n_combinations and attempts < max_attempts:
         sample_columns = np.random.choice(
             similarity_matrix_filtered.columns, size=treatment_size, replace=False
@@ -593,8 +622,19 @@ def select_controls_exclusive(
             f"Added {len(similar_states)} control states for {treatment_location}"
         )
 
-    logger.debug(f"Final control group: {list(control_group)}")
-    return list(control_group)
+    # Final verification: ensure no treatment locations are in control group
+    final_control = list(control_group)
+    all_treatment = set(treatment_group) | used_treatment_locations
+    overlap_check = set(final_control) & all_treatment
+    
+    if overlap_check:
+        logger.error(f"CRITICAL ERROR: Control group contains treatment locations: {overlap_check}")
+        # Remove overlapping locations from control group
+        final_control = [loc for loc in final_control if loc not in all_treatment]
+        logger.warning(f"Removed overlap, final control group: {final_control}")
+    
+    logger.debug(f"Final control group: {final_control}")
+    return final_control
 
 
 def evaluate_group_exclusive(
@@ -606,6 +646,7 @@ def evaluate_group_exclusive(
     df_pivot,
     used_treatment_locations=None,
     excluded_locations=None,
+    treatment_period=None,
 ):
     """
     Evaluates a treatment group with location exclusivity for multi-cell mode.
@@ -622,6 +663,7 @@ def evaluate_group_exclusive(
         df_pivot (pd.DataFrame): Pivoted data with time as index and locations as columns
         used_treatment_locations (set): Set of locations already used as treatment in other cells
         excluded_locations (list): List of globally excluded locations
+        treatment_period (int): Number of periods for treatment (if None, uses 80/20 split)
     
     Returns:
         tuple: (treatment_group, control_group, MAPE, SMAPE, y_original, 
@@ -672,7 +714,13 @@ def evaluate_group_exclusive(
     X_scaled = scaler_x.fit_transform(X)
     y_scaled = scaler_y.fit_transform(y.reshape(-1, 1))
 
-    split_index = int(len(X_scaled) * 0.8)
+    if treatment_period is not None:
+        split_index = len(X_scaled) - treatment_period
+    else:
+        default_period = min(10, len(X_scaled) // 4)  
+        split_index = len(X_scaled) - default_period
+    
+    split_index = max(1, min(split_index, len(X_scaled) - 1))
 
     X_train, X_test = X_scaled[:split_index], X_scaled[split_index:]
     y_train, y_test = y_scaled[:split_index], y_scaled[split_index:]
@@ -736,10 +784,9 @@ def BetterGroups(
     status_updater=None,
     multicell_config=None,
     global_optimization=False,
-    cancellation_callback=None,
 ):
     """
-    Simulates and evaluates treatment groups for geo-experiments.
+    Enhanced simulates and evaluates treatment groups for geo-experiments.
     
     Supports three modes:
     1. Single-cell mode: Finds optimal treatment groups for each size
@@ -756,7 +803,8 @@ def BetterGroups(
         status_updater (callable): Status text updater function
         multicell_config (dict): Multi-cell configuration with 'sizes' and 'top_n' keys
         global_optimization (bool): Whether to use global optimization for multi-cell mode
-        cancellation_callback (callable): Function to check if operation should be cancelled
+        search_strategy (str): Candidate generation strategy ("random", "similarity", "coverage", "adaptive")
+        candidate_multiplier (int): Multiple of cells_needed to generate as candidates per size
     
     Returns:
         dict: Results organized by mode:
@@ -798,7 +846,6 @@ def BetterGroups(
                 maximum_treatment_percentage=maximum_treatment_percentage,
                 progress_updater=progress_updater,
                 status_updater=status_updater,
-                cancellation_callback=cancellation_callback,
             )
 
         # Original multi-cell mode (per-size optimization)
@@ -835,7 +882,7 @@ def BetterGroups(
             )
             log_interval = max(1, total_groups_all_sizes // 10)
 
-            with concurrent.futures.ProcessPoolExecutor(max_workers=2) as executor:
+            with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
                 futures = executor.map(
                     evaluate_group_exclusive,
                     groups,
@@ -846,15 +893,9 @@ def BetterGroups(
                     [df_pivot] * total_groups,
                     [used_treatment_locations] * total_groups,
                     [excluded_locations] * total_groups,
-                    chunksize=5,
                 )
 
                 for idx, result in enumerate(futures):
-                    # Check for cancellation every 10 iterations
-                    if idx % 10 == 0 and cancellation_callback and cancellation_callback():
-                        logger.info("🚫 SIMULATION CANCELLED: During BetterGroups multi-cell evaluation")
-                        executor.shutdown(wait=False)
-                        return None
                     results.append(result)
                     current_total = groups_processed_so_far + idx + 1
                     if progress_updater:
@@ -863,7 +904,7 @@ def BetterGroups(
                         )
                     if status_updater:
                         status_updater.text(
-                            f"Evaluando grupos totales: {current_total}/{total_groups_all_sizes} ({int(current_total / total_groups_all_sizes * 100)}%) ⏳"
+                            f"Evaluando grupos totales: {current_total}/{total_groups_all_sizes} ({int(current_total / total_groups_all_sizes * 100)}%)"
                         )
                     if (
                         current_total % log_interval == 0
@@ -972,7 +1013,7 @@ def BetterGroups(
     total_groups = len(possible_groups)
     results = []
     log_interval = max(1, total_groups // 10)
-    with concurrent.futures.ProcessPoolExecutor(max_workers=2) as executor:
+    with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
         futures = executor.map(
             evaluate_group,
             possible_groups,
@@ -981,20 +1022,14 @@ def BetterGroups(
             [correlation_matrix] * total_groups,
             [min_holdout] * total_groups,
             [df_pivot] * total_groups,
-            chunksize=5,
         )
         for idx, result in enumerate(futures):
-            # Check for cancellation every 10 iterations
-            if idx % 10 == 0 and cancellation_callback and cancellation_callback():
-                logger.info("🚫 SIMULATION CANCELLED: During BetterGroups single-cell evaluation")
-                executor.shutdown(wait=False)
-                return None
             results.append(result)
             if progress_updater:
                 progress_updater.progress((idx + 1) / total_groups)
             if status_updater:
                 status_updater.text(
-                    f"Finding the best groups: {int((idx + 1) / total_groups * 100)}% complete ⏳"
+                    f"Finding the best groups: {int((idx + 1) / total_groups * 100)}% complete"
                 )
             if (idx + 1) % log_interval == 0 or idx == 0 or idx == total_groups - 1:
                 logger.info(f"Processed {idx + 1}/{total_groups} groups")
@@ -1045,6 +1080,134 @@ def BetterGroups(
     return results_by_size
 
 
+def _select_optimal_cells_with_fallbacks(all_candidates, total_cells_needed, progress_updater=None, status_updater=None):
+    """
+    Simple but robust cell selection with automatic fallback.
+    
+    Args:
+        all_candidates: List of candidate cells with performance metrics
+        total_cells_needed: Number of cells to select
+        progress_updater: Progress bar updater function
+        status_updater: Status text updater function
+        
+    Returns:
+        list: Selected cells or empty list if no valid combination found
+    """
+    
+    def update_progress(selected_count):
+        if progress_updater:
+            try:
+                progress_updater.progress(selected_count / total_cells_needed)
+            except Exception as e:
+                logger.debug(f"Progress update failed: {e}")
+        if status_updater:
+            try:
+                status_updater.text(f"Selected {selected_count}/{total_cells_needed} cells")
+            except Exception as e:
+                logger.debug(f"Status update failed: {e}")
+    
+    # Sort candidates by performance (best first)
+    all_candidates.sort(key=lambda x: (x[2], -x[3]))
+    
+    selected_cells = []
+    used_treatment_locations = set()
+    candidates_rejected = 0
+    
+    # Try to select cells greedily
+    for candidate in all_candidates:
+        treatment_group = set(candidate[0])
+        size = candidate[8]
+        
+        # Check if this candidate conflicts with already selected cells
+        if not (treatment_group & used_treatment_locations):
+            selected_cells.append(candidate)
+            used_treatment_locations.update(treatment_group)
+            update_progress(len(selected_cells))
+            logger.debug(f"✅ Selected cell {len(selected_cells)}: size={size}, treatment={treatment_group}")
+        else:
+            candidates_rejected += 1
+            conflicts = treatment_group & used_treatment_locations
+            logger.debug(f"❌ Rejected candidate size={size}, conflicts={conflicts}")
+        
+        if len(selected_cells) >= total_cells_needed:
+            break
+    
+    logger.info(f"Cell selection completed: {len(selected_cells)}/{total_cells_needed} cells selected ({candidates_rejected} rejected)")
+    
+    return selected_cells
+
+
+def _validate_multicell_config(similarity_matrix, allowed_sizes, total_cells_needed, excluded_locations, data):
+    """
+    Validate multicell configuration and provide actionable error messages.
+    
+    Args:
+        similarity_matrix: Correlation matrix for treatment selection
+        allowed_sizes: List of allowed cell sizes to choose from
+        total_cells_needed: Total number of cells in final experiment
+        excluded_locations: Globally excluded locations
+        data: Input data
+        
+    Returns:
+        tuple: (is_valid, warnings, suggestions)
+    """
+    warnings = []
+    suggestions = []
+    is_valid = True
+    
+    unique_locations = data["location"].unique()
+    total_locations = len(unique_locations)
+    excluded_count = len(set(excluded_locations))
+    available_locations = total_locations - excluded_count
+    
+    # Check basic feasibility
+    min_size = min(allowed_sizes) if allowed_sizes else 0
+    max_size = max(allowed_sizes) if allowed_sizes else 0
+    total_treatment_locations_needed = total_cells_needed * min_size
+    
+    logger.info(f"Multicell validation: {available_locations} available locations, need {total_treatment_locations_needed} minimum")
+    
+    if total_treatment_locations_needed > available_locations:
+        is_valid = False
+        suggestions.append(
+            f"Reduce total cells needed ({total_cells_needed}) or minimum cell size ({min_size}). "
+            f"Current config needs {total_treatment_locations_needed} locations but only {available_locations} are available."
+        )
+    
+    # Check if we have enough locations for largest possible configuration
+    max_treatment_locations_needed = total_cells_needed * max_size
+    if max_treatment_locations_needed > available_locations:
+        warnings.append(
+            f"Maximum configuration ({total_cells_needed} cells of size {max_size}) may not be achievable. "
+            f"Consider smaller cell sizes or fewer cells."
+        )
+    
+    # Check location availability ratios
+    availability_ratio = available_locations / total_locations
+    if availability_ratio < 0.3:
+        warnings.append(
+            f"High exclusion ratio ({(1-availability_ratio):.1%} of locations excluded). "
+            f"This may limit cell selection options."
+        )
+        suggestions.append("Consider reducing excluded locations or increasing allowed cell sizes.")
+    
+    # Check for reasonable cell size distribution
+    if max_size > available_locations * 0.2:
+        warnings.append(
+            f"Large cell size ({max_size}) relative to available locations ({available_locations}). "
+            f"This may create selection conflicts."
+        )
+    
+    # Check for excessive cell count relative to available locations
+    if total_cells_needed > available_locations / min_size * 0.5:
+        warnings.append(
+            f"High cell density requested. This increases the likelihood of location conflicts."
+        )
+        suggestions.append("Consider fewer cells or allow smaller cell sizes.")
+    
+    return is_valid, warnings, suggestions
+
+
 def optimize_global_multicell(
     similarity_matrix,
     allowed_sizes,
@@ -1055,13 +1218,13 @@ def optimize_global_multicell(
     maximum_treatment_percentage,
     progress_updater=None,
     status_updater=None,
-    cancellation_callback=None,
 ):
     """
-    Global optimization for multi-cell experiments with heterogeneous cell sizes.
+    Enhanced global optimization for multi-cell experiments with heterogeneous cell sizes.
 
     Creates a single experiment with N cells of potentially different sizes,
-    ensuring global mutual exclusivity across all cells.
+    ensuring global mutual exclusivity across all cells. Includes improved
+    validation, conflict resolution, and fallback strategies.
 
     Args:
         similarity_matrix: Correlation matrix for treatment selection
@@ -1073,14 +1236,29 @@ def optimize_global_multicell(
         maximum_treatment_percentage: Max treatment percentage
         progress_updater: Progress bar updater
         status_updater: Status text updater
-        cancellation_callback: Function to check if operation should be cancelled
+        search_strategy: Candidate generation strategy ("random", "similarity", "coverage", "adaptive")
+        candidate_multiplier: Multiple of cells_needed to generate as candidates per size
 
     Returns:
-        dict: Single optimized experiment with heterogeneous cells
+        dict: Single optimized experiment with heterogeneous cells, or None if failed
     """
     logger.info(
-        f"Starting global multi-cell optimization for {total_cells_needed} cells with sizes {allowed_sizes}"
+        f"Starting enhanced global multi-cell optimization for {total_cells_needed} cells with sizes {allowed_sizes}"
     )
+    
+    # Pre-flight validation
+    is_valid, warnings, suggestions = _validate_multicell_config(
+        similarity_matrix, allowed_sizes, total_cells_needed, excluded_locations, data
+    )
+    
+    for warning in warnings:
+        logger.warning(f"Multicell validation warning: {warning}")
+    
+    if not is_valid:
+        logger.error("Multicell configuration validation failed:")
+        for suggestion in suggestions:
+            logger.error(f"  - {suggestion}")
+        return None
 
     unique_locations = data["location"].unique()
     no_locations = len(unique_locations)
@@ -1100,10 +1278,6 @@ def optimize_global_multicell(
     logger.info("Phase 1: Generating candidates for all allowed sizes")
 
     for size in allowed_sizes:
-        if cancellation_callback and cancellation_callback():
-            logger.info("🚫 SIMULATION CANCELLED: During candidate generation in global optimization")
-            return None
-            
         logger.info(f"Generating candidates for size {size}")
 
         groups = select_treatments_exclusive(
@@ -1115,7 +1289,7 @@ def optimize_global_multicell(
             continue
 
         size_results = []
-        with concurrent.futures.ProcessPoolExecutor(max_workers=2) as executor:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
             futures = executor.map(
                 evaluate_group_exclusive,
                 groups,
@@ -1126,15 +1300,9 @@ def optimize_global_multicell(
                 [df_pivot] * len(groups),
                 [set()] * len(groups),  # No used locations in phase 1
                 [excluded_locations] * len(groups),
-                chunksize=5,
             )
 
             for result in futures:
-                if cancellation_callback and cancellation_callback():
-                    logger.info("🚫 SIMULATION CANCELLED: During result processing in global optimization")
-                    executor.shutdown(wait=False)
-                    return None
-                    
                 if result is not None:
                     # Add size information to result
                     result_with_size = result + (size,)  # Append size as last element
@@ -1156,75 +1324,41 @@ def optimize_global_multicell(
         logger.error("BetterGroups failed: No valid candidates generated for any size. Check excluded locations, group sizes, and data quality.")
         return None
 
-    # Phase 2: Global optimization - select best N non-overlapping cells
+    # Phase 2: Enhanced global optimization with conflict resolution
     logger.info(
-        f"Phase 2: Global optimization - selecting {total_cells_needed} cells from {total_candidates_count} candidates"
+        f"Phase 2: Enhanced global optimization - selecting {total_cells_needed} cells from {total_candidates_count} candidates"
     )
 
-    all_candidates.sort(key=lambda x: (x[2], -x[3])) 
+    selected_cells = _select_optimal_cells_with_fallbacks(
+        all_candidates, total_cells_needed, progress_updater, status_updater
+    )
+    
+    if not selected_cells:
+        logger.error("BetterGroups failed: No valid cell combinations found. Try reducing excluded locations or group sizes.")
+        return None
 
-    selected_cells = []
-    used_treatment_locations = set()
-    candidates_rejected = 0
-
-    for candidate in all_candidates:
-        if cancellation_callback and cancellation_callback():
-            logger.info("🚫 SIMULATION CANCELLED: During global cell selection")
-            return None
-            
-        treatment_group = set(candidate[0])
-        control_group = set(candidate[1])
-        size = candidate[8]
-
-        # Check for conflicts with already selected cells (only treatment locations must be exclusive)
-        if not (treatment_group & used_treatment_locations):
-            selected_cells.append(candidate)
-            used_treatment_locations.update(treatment_group)
-            logger.debug(
-                f"✅ Accepted cell {len(selected_cells)}: size={size}, treatment={treatment_group}"
-            )
-        else:
-            candidates_rejected += 1
-            conflicts = treatment_group & used_treatment_locations
-            logger.debug(
-                f"❌ Rejected candidate size={size}, treatment={treatment_group}, conflicts={conflicts}"
-            )
-
-        if progress_updater:
-            try:
-                progress_updater.progress(len(selected_cells) / total_cells_needed)
-            except Exception as e:
-                logger.debug(f"Progress update failed: {e}")
-
-        if status_updater:
-            try:
-                status_updater.text(
-                    f"Selected {len(selected_cells)}/{total_cells_needed} cells"
-                )
-            except Exception as e:
-                logger.debug(f"Status update failed: {e}")
-
-        if len(selected_cells) >= total_cells_needed:
-            break
-
-    if len(selected_cells) < total_cells_needed:
-        logger.warning(
-            f"Could only select {len(selected_cells)} cells out of {total_cells_needed} requested due to location conflicts"
-        )
-        logger.info(
-            f"Summary: {candidates_rejected} candidates rejected, {len(all_candidates)} total candidates processed"
-        )
-    else:
-        logger.info(
-            f"Successfully selected {len(selected_cells)} cells from {len(all_candidates)} candidates ({candidates_rejected} rejected)"
-        )
-
-    # Format results as unified experiment
+    # Final validation and formatting
+    if not selected_cells:
+        logger.warning("No cells were selected")
+        return None
+        
+    # CRITICAL: Re-evaluate control groups to ensure no conflicts with all selected treatments
+    logger.info("Re-evaluating control groups to prevent treatment/control overlap")
+    
+    # Collect ALL treatment locations from selected cells
+    all_treatment_locations = set()
+    for cell in selected_cells:
+        treatment_group = cell[0]
+        all_treatment_locations.update(treatment_group)
+    
+    logger.info(f"All treatment locations across cells: {all_treatment_locations}")
+    
+    # Re-evaluate each selected cell with proper exclusivity
     unified_results = []
     for i, cell in enumerate(selected_cells):
         (
             treatment_group,
-            control_group,
+            original_control_group,
             mape,
             smape,
             y,
@@ -1233,7 +1367,28 @@ def optimize_global_multicell(
             observed_conformity,
             size,
         ) = cell
-
+        
+        # Generate NEW control group excluding ALL treatment locations
+        logger.debug(f"Re-selecting control group for cell {i+1} with treatment {treatment_group}")
+        
+        corrected_control_group = select_controls_exclusive(
+            correlation_matrix=correlation_matrix,
+            treatment_group=treatment_group,
+            used_treatment_locations=all_treatment_locations,  # Exclude ALL treatments
+            excluded_locations=excluded_locations,
+            min_correlation=0.8,
+        )
+        
+        logger.debug(f"Cell {i+1} - Original control: {original_control_group}")
+        logger.debug(f"Cell {i+1} - Corrected control: {corrected_control_group}")
+        
+        # Verify no overlap
+        treatment_set = set(treatment_group)
+        control_set = set(corrected_control_group)
+        overlap = treatment_set & control_set
+        if overlap:
+            logger.error(f"STILL HAVE OVERLAP in cell {i+1}: {overlap}")
+        
         treatment_Y = data[data["location"].isin(treatment_group)]["Y"].sum()
         holdout_percentage = (
             ((total_Y - treatment_Y) / total_Y) * 100 if total_Y > 0 else 0.0
@@ -1243,7 +1398,7 @@ def optimize_global_multicell(
             "Cell": i + 1,
             "Size": size,
             "Best Treatment Group": treatment_group,
-            "Control Group": control_group,
+            "Control Group": corrected_control_group,  # Use corrected control group
             "MAPE": mape,
             "SMAPE": smape,
             "Actual Target Metric (y)": y,
@@ -1254,9 +1409,8 @@ def optimize_global_multicell(
         }
         unified_results.append(result_dict)
 
-    logger.info(f"Global optimization completed: {len(selected_cells)} cells selected")
+    logger.info(f"Global optimization completed: {len(selected_cells)} cells selected with corrected control groups")
 
-    
     return {"global_experiment": unified_results}
 
 
@@ -1667,7 +1821,6 @@ def evaluate_sensitivity(
     progress_bar=None,
     status_text=None,
     n_power_simulations=40,
-    cancellation_callback=None,
 ):
     """
     Evaluates sensitivity of results to different treatment periods and deltas using permutations.
@@ -1684,7 +1837,6 @@ def evaluate_sensitivity(
         progress_bar (callable): Progress bar updater function.
         status_text (callable): Status text updater function.
         n_power_simulations (int): Number of power simulations to run.
-        cancellation_callback (callable): Function to check if operation should be cancelled.
 
     Returns:
         tuple: (sensitivity_results, lift_series)
@@ -1699,10 +1851,6 @@ def evaluate_sensitivity(
     step = 0
 
     for size, result in results_by_size.items():
-        if cancellation_callback and cancellation_callback():
-            logger.info("🚫 SIMULATION CANCELLED: During evaluate_sensitivity")
-            return None, None
-
         if isinstance(result, list):
             if not result:
                 logger.warning(f"Skipping size {size} - no groups available")
@@ -1726,15 +1874,9 @@ def evaluate_sensitivity(
         results_by_period = {}
 
         for period in periods:
-            if cancellation_callback and cancellation_callback():
-                logger.info("🚫 SIMULATION CANCELLED: During period evaluation")
-                return None, None
             results = []
 
             for delta in deltas:
-                if cancellation_callback and cancellation_callback():
-                    logger.info("🚫 SIMULATION CANCELLED: During delta evaluation")
-                    return None, None
                 logger.debug(
                     f"Running simulation for size={size}, period={period}, delta={delta}"
                 )
@@ -1753,15 +1895,15 @@ def evaluate_sensitivity(
                 results.append(res)
 
                 step += 1
-                if is_streamlit_context() and progress_bar:
+                if progress_bar:
                     try:
                         progress_bar.progress(min(step / total_steps, 1.0))
                     except Exception as e:
                         logger.debug(f"Progress update failed: {e}")
-                if is_streamlit_context() and status_text:
+                if status_text:
                     try:
                         status_text.text(
-                            f"Evaluating groups: {int((step / total_steps) * 100)}% complete ⏳"
+                            f"Evaluating groups: {int((step / total_steps) * 100)}% complete"
                         )
                     except Exception as e:
                         logger.debug(f"Status update failed: {e}")
@@ -1898,7 +2040,7 @@ def run_geo_analysis_streamlit_app(
     test_type="sum",
     inference_type="iid",
     global_optimization=False,
-    cancellation_callback=False
+    progress_updater=None,
 ):
     """
     Runs a complete geo analysis pipeline including market correlation, group optimization,
@@ -1921,7 +2063,6 @@ def run_geo_analysis_streamlit_app(
         test_type (str): Statistical test type ("sum", "mean_diff", "t_test", "median_diff").
         inference_type (str): Type of inference ("iid" or "block").
         global_optimization (bool): Whether to use global optimization for multi-cell mode.
-        cancellation_callback (callable): Function to check if operation should be cancelled.
 
     Returns:
         dict: Dictionary containing simulation results, sensitivity results, and adjusted series lifts.
@@ -1940,17 +2081,15 @@ def run_geo_analysis_streamlit_app(
 
     # Step 1: Generate market correlations
     logger.info("Step 1: Generating market correlations.....")
-    if cancellation_callback and cancellation_callback():
-        logger.info("🚫 SIMULATION CANCELLED: During market correlations step")
-        return None
+    if progress_updater:
+        progress_updater(0.1, "Generating market correlations")
     correlation_matrix = market_correlations(data)
     logger.info(f"Market correlations generated successfully.")
 
     # Step 2: Find the best groups for control and treatment
     logger.info("Step 2: Finding best groups for control and treatment.....")
-    if cancellation_callback and cancellation_callback():
-        logger.info("🚫 SIMULATION CANCELLED: Before BetterGroups step")
-        return None
+    if progress_updater:
+        progress_updater(0.3, "Finding best treatment and control groups")
     simulation_results = BetterGroups(
         similarity_matrix=correlation_matrix,
         maximum_treatment_percentage=maximum_treatment_percentage,
@@ -1961,81 +2100,104 @@ def run_geo_analysis_streamlit_app(
         status_updater=status_text_1,
         multicell_config=multicell_config,
         global_optimization=global_optimization,
-        cancellation_callback=cancellation_callback,
     )
 
     if simulation_results is None:
         logger.error("BetterGroups returned None, stopping execution")
         return None
 
-    logger.info(
-        f"BetterGroups completed successfully. Results for {len(simulation_results)} sizes"
-    )
+    # Improved logging for different modes
+    if global_optimization and multicell_config and "global_experiment" in simulation_results:
+        cell_count = len(simulation_results["global_experiment"])
+        logger.info(f"BetterGroups completed successfully. Global multicell experiment with {cell_count} cells")
+        if progress_updater:
+            progress_updater(0.7, f"Global multicell optimization completed with {cell_count} cells")
+    elif multicell_config:
+        total_groups = sum(len(groups) for groups in simulation_results.values())
+        logger.info(f"BetterGroups completed successfully. Multicell results for {len(simulation_results)} sizes ({total_groups} total groups)")
+        if progress_updater:
+            progress_updater(0.7, f"Multicell optimization completed for {len(simulation_results)} sizes ({total_groups} groups)")
+    else:
+        logger.info(f"BetterGroups completed successfully. Results for {len(simulation_results)} sizes")
+        if progress_updater:
+            progress_updater(0.7, f"Group optimization completed for {len(simulation_results)} sizes")
 
     # Step 3: Evaluate sensitivity for different deltas and periods
     logger.info("Step 3: Evaluating sensitivity for different deltas and periods.....")
+    if status_text_2:
+        status_text_2.text("Starting sensitivity analysis for different deltas and periods")
+        
+        # Also force advance the stage index directly as backup
+        if hasattr(status_text_2, 'progress_updater'):
+            status_text_2.progress_updater.current_stage_index = 3
+            status_text_2.progress_updater.current_stage = "Sensitivity Analysis"
 
-    # Check if we have global optimization results
-    if global_optimization:
-        logger.info(
-            "Detected global optimization results, generating sensitivity data by size"
-        )
-        # Extract sizes from global experiment and create artificial results_by_size for sensitivity analysis
-        global_experiment = simulation_results["global_experiment"]
-        results_by_size = {}
+    # Handle sensitivity analysis for different modes
+    try:
+        if global_optimization and multicell_config and "global_experiment" in simulation_results:
+            logger.info("Detected global optimization results, transforming data for sensitivity analysis")
+            # Extract sizes from global experiment and create artificial results_by_size for sensitivity analysis
+            global_experiment = simulation_results["global_experiment"]
+            results_by_size = {}
 
-        # Group cells by size to create sensitivity data
-        for cell in global_experiment:
-            size = cell["Size"]
-            if size not in results_by_size:
-                results_by_size[size] = []
+            # Group cells by size to create sensitivity data
+            for cell in global_experiment:
+                size = cell["Size"]
+                if size not in results_by_size:
+                    results_by_size[size] = []
 
-            # Create a result dict compatible with evaluate_sensitivity
-            result_dict = {
-                "Best Treatment Group": cell["Best Treatment Group"],
-                "Control Group": cell["Control Group"],
-                "MAPE": cell["MAPE"],
-                "SMAPE": cell["SMAPE"],
-                "Actual Target Metric (y)": cell["Actual Target Metric (y)"],
-                "Predictions": cell["Predictions"],
-                "Weights": cell["Weights"],
-                "observed_conformity": cell["observed_conformity"],
-            }
-            results_by_size[size].append(result_dict)
+                # Create a result dict compatible with evaluate_sensitivity
+                result_dict = {
+                    "Best Treatment Group": cell["Best Treatment Group"],
+                    "Control Group": cell["Control Group"],
+                    "MAPE": cell["MAPE"],
+                    "SMAPE": cell["SMAPE"],
+                    "Actual Target Metric (y)": cell["Actual Target Metric (y)"],
+                    "Predictions": cell["Predictions"],
+                    "Weights": cell["Weights"],
+                    "observed_conformity": cell["observed_conformity"],
+                }
+                results_by_size[size].append(result_dict)
 
-        # Run sensitivity analysis on the artificial results_by_size
-        sensitivity_results, series_lifts = evaluate_sensitivity(
-            results_by_size,
-            deltas,
-            periods,
-            n_permutations_per_test,
-            significance_level,
-            test_type=test_type,
-            inference_type=inference_type,
-            progress_bar=progress_bar_2,
-            status_text=status_text_2,
-            n_power_simulations=n_power_simulations,
-            cancellation_callback=cancellation_callback,
-        )
-    else:
-        sensitivity_results, series_lifts = evaluate_sensitivity(
-            simulation_results,
-            deltas,
-            periods,
-            n_permutations_per_test,
-            significance_level,
-            test_type=test_type,
-            inference_type=inference_type,
-            progress_bar=progress_bar_2,
-            status_text=status_text_2,
-            n_power_simulations=n_power_simulations,
-            cancellation_callback=cancellation_callback,
-        )
-
+            logger.info("Starting sensitivity evaluation for global optimization results")
+            # Run sensitivity analysis on the transformed results_by_size
+            sensitivity_results, series_lifts = evaluate_sensitivity(
+                results_by_size,
+                deltas,
+                periods,
+                n_permutations_per_test,
+                significance_level,
+                test_type=test_type,
+                inference_type=inference_type,
+                progress_bar=progress_bar_2,
+                status_text=status_text_2,
+            )
+        else:
+            logger.info("Starting sensitivity evaluation for standard results")
+            sensitivity_results, series_lifts = evaluate_sensitivity(
+                simulation_results,
+                deltas,
+                periods,
+                n_permutations_per_test,
+                significance_level,
+                test_type=test_type,
+                inference_type=inference_type,
+                progress_bar=progress_bar_2,
+                status_text=status_text_2,
+            )
+        logger.info("evaluate_sensitivity call completed")
+    except Exception as e:
+        logger.error(f"Error during sensitivity evaluation: {str(e)}", exc_info=True)
+        sensitivity_results = None
+        series_lifts = None
     if sensitivity_results is not None:
         logger.info("Sensitivity evaluation completed successfully.")
+        if progress_updater:
+            progress_updater(1.0, "Analysis completed successfully")
     else:
         logger.warning("Sensitivity evaluation returned None")
+        if progress_updater:
+            progress_updater(0.95, "Analysis completed with warnings")
 
     logger.info("run_geo_analysis_streamlit_app completed successfully")
     return {
@@ -2139,7 +2301,7 @@ def run_geo_analysis(
             results_by_size,
             deltas,
             periods,
-            n_permutations,
+            n_permutations_per_test,
             significance_level,
             test_type=test_type,
             inference_type=inference_type,
@@ -2152,7 +2314,7 @@ def run_geo_analysis(
             simulation_results,
             deltas,
             periods,
-            n_permutations,
+            n_permutations_per_test,
             significance_level,
             test_type=test_type,
             inference_type=inference_type,

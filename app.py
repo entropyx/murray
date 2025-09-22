@@ -3,17 +3,21 @@ import hashlib
 import json
 import os
 import datetime
+from dotenv import load_dotenv
 from utils_auth import check_credentials, add_user, mark_link_as_used
 from logger_config import get_logger
 
 logger = get_logger("app")
 
+load_dotenv()
+
+AUTH_REQUIRED = bool(os.getenv('MURRAY_PASSWORD'))
 
 st.set_page_config(
     page_title="Geo Murray", page_icon="utils/Group 105.png", layout="wide"
 )
 
-
+# Add this function after check_credentials and before add_user
 def get_user_role(username):
     try:
         with open("traffic_metrics/users.json", "r") as f:
@@ -69,16 +73,16 @@ def validate_registration_link(token):
     except Exception as e:
         return False, None
 
-
-if "authenticated" not in st.session_state:
-    st.session_state.authenticated = False
-if "role" not in st.session_state:
+# Initialize session state for login
+if 'authenticated' not in st.session_state:
+    st.session_state.authenticated = not AUTH_REQUIRED  # Auto-authenticate if no auth required
+if 'role' not in st.session_state:
     st.session_state.role = "user"
-if "username" not in st.session_state:
-    st.session_state.username = ""
+if 'username' not in st.session_state:
+    st.session_state.username = "Guest" if not AUTH_REQUIRED else ""
 
-# Login system
-if not st.session_state.authenticated:
+# Login system - only show if authentication is required
+if AUTH_REQUIRED and not st.session_state.authenticated:
     st.title("Welcome to Geo Murray")
     st.write("Login or register.")
 

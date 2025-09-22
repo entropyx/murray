@@ -251,6 +251,13 @@ def plot_mde_results(results_by_size, sensitivity_results, periods):
     """
     Generates an interactive heatmap showing penalized MDE values that account for
     counterfactual quality and time period.
+    Args:
+        results_by_size: Dictionary containing simulation results
+        sensitivity_results: Dictionary containing sensitivity results
+        periods: List of periods to evaluate
+
+    Returns:
+        fig: Interactive heatmap figure
     """
     holdout_by_location = {
         size: data["Holdout Percentage"] for size, data in results_by_size.items()
@@ -262,39 +269,54 @@ def plot_mde_results(results_by_size, sensitivity_results, periods):
 
     def calculate_penalty_score(mde, period_idx, total_periods, size, results_by_size):
         """
-        Calculates a penalty score based on MDE, counterfactual quality, and time period.
+        Calculates a score based on MDE, counterfactual quality (MAPE, SMAPE), p-value, statistical power, and time period.
+        Longer periods are considered better as they provide more statistical confidence.
         Returns both the score and its components for hover information.
         """
         if pd.isna(mde):
-            return None, None, None, None
+            return None, None, None, None, None, None, None
 
         # Quality metrics
         mape = results_by_size[size].get("MAPE", 0)
         smape = results_by_size[size].get("SMAPE", 0)
+
+        # Statistical metrics
+        p_value = results_by_size[size].get("p_value", 1.0)  
+        power = results_by_size[size].get("power", 0.0)      
 
         # Normalize metrics
         mape_factor = min(mape / 100, 1)
         smape_factor = min(smape / 100, 1)
         quality_score = (mape_factor + smape_factor) / 2
 
-        # Time factor
-        time_score = (period_idx + 1) / total_periods
+        # Normalize p-value (lower is better)
+        p_value_score = 1 - min(p_value, 1)  
+        
+        # Normalize power (higher is better)
+        power_score = min(power, 1)
 
         # MDE factor
         mde_factor = min(mde, 1)
 
+        # Time factor - longer periods are better
+        time_score = (period_idx + 1) / total_periods  
+
         # Calculate final score
-        quality_weight = 0.85
-        time_weight = 0.05
-        mde_weight = 0.15
+        quality_weight = 0.20
+        p_value_weight = 0.15
+        power_weight = 0.55
+        mde_weight = 0.09
+        time_weight = 0.01
 
         final_score = (
             quality_weight * quality_score
-            + time_weight * (1 - time_score)
-            + mde_weight * mde_factor
+            + p_value_weight * p_value_score
+            + power_weight * power_score
+            + mde_weight * (1 - mde_factor)  
+            + time_weight * (1 - time_score)  
         )
 
-        return final_score, mde, mape, smape
+        return final_score, mde, mape, smape, p_value, power, time_score
 
     heatmap_data = pd.DataFrame()
     hover_data = []
@@ -306,17 +328,18 @@ def plot_mde_results(results_by_size, sensitivity_results, periods):
 
         for period_idx, period in enumerate(periods):
             mde = period_results.get(period, {}).get("MDE", None)
-            score, original_mde, mape, smape = calculate_penalty_score(
+            score, original_mde, mape, smape, p_value, power, time_score = calculate_penalty_score(
                 mde, period_idx, len(periods), size, results_by_size
             )
             row.append(score)
             hover_row.append(
                 {
-                    "Original MDE": (
-                        f"{original_mde:.2%}" if original_mde is not None else "N/A"
-                    ),
+                    "MDE": f"{original_mde:.2%}" if original_mde is not None else "N/A",
                     "MAPE": f"{mape:.2f}%" if mape is not None else "N/A",
                     "SMAPE": f"{smape:.2f}%" if smape is not None else "N/A",
+                    "P-Value": f"{p_value:.4f}" if p_value is not None else "N/A",
+                    "Statistical Power": f"{power:.2%}" if power is not None else "N/A",
+                    "Period Score": f"{time_score*100:.0f}%" if time_score is not None else "N/A"  
                 }
             )
         heatmap_data[size] = row
@@ -374,10 +397,13 @@ def plot_mde_results(results_by_size, sensitivity_results, periods):
             textfont={"size": 12, "color": "black"},
             hovertemplate=(
                 "Treatment size: %{customdata}<br>"
-                + "Penalty Score: %{text}<br>"
-                + "Original MDE: %{customdata:Original MDE}<br>"
+                + "Combined Score: %{text}<br>"
+                + "MDE: %{customdata:MDE}<br>"
                 + "MAPE: %{customdata:MAPE}<br>"
                 + "SMAPE: %{customdata:SMAPE}<br>"
+                + "P-Value: %{customdata:P-Value}<br>"
+                + "Statistical Power: %{customdata:Statistical Power}<br>"
+                + "Period Score: %{customdata:Period Score}<br>"
                 + "<extra></extra>"
             ),
             showscale=True,

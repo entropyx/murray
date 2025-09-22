@@ -1013,10 +1013,6 @@ if file is not None:
                             
                         st.session_state.is_multicell_mode = False
 
-                        # Define cancellation callback
-                        def is_cancelled():
-                            return not st.session_state.simulation_running
-                        
                         # Run main geo analysis simulation
                         results = run_geo_analysis_streamlit_app(
                             data=cleaned,
@@ -1029,7 +1025,6 @@ if file is not None:
                             test_type=selected_test,
                             inference_type="iid",
                             global_optimization=enable_multicell,
-                            cancellation_callback=is_cancelled,
                         )
 
                     if results is None:
@@ -1076,15 +1071,15 @@ if file is not None:
                     st.session_state.results = results
                     st.session_state.simulation_results = results_by_size
                     st.session_state.sensitivity_results = results[
-                            "sensitivity_results"
-                        ]
+                        "sensitivity_results"
+                    ]
                     st.session_state.full_results = results
                     st.session_state.multicell_config = (
-                            multicell_config if enable_multicell else None
-                        )
+                        multicell_config if enable_multicell else None
+                    )
                     periods = list(np.arange(*periods_range))
 
-                        # Determine visualization mode and generate plots
+                    # Determine visualization mode and generate plots
                     if (
                         enable_multicell
                         and multicell_config
@@ -1093,6 +1088,11 @@ if file is not None:
                         st.session_state.is_multicell_mode = True
                     else:
                         st.session_state.is_multicell_mode = False
+                    # Skip heatmap generation for multicell mode
+                    if st.session_state.is_multicell_mode:
+                        st.session_state.fig2 = None
+                        st.info("📊 Multicell mode: Heatmap visualization not applicable for global optimization results.")
+                    else:
                         try:
                             st.session_state.fig2 = plot_mde_results(
                                 results_by_size, results["sensitivity_results"], periods
@@ -1135,6 +1135,10 @@ if file is not None:
                         sensitivity_data = st.session_state.results.get(
                             "sensitivity_results", {}
                         )
+                        
+                        # Handle case where sensitivity_results is None (multicell mode)
+                        if sensitivity_data is None:
+                            sensitivity_data = {}
 
                         # Period selection for MDE display
                         available_periods = set()
@@ -1234,11 +1238,6 @@ if file is not None:
                         df_detailed = pd.DataFrame(detailed_results)
 
                         df_detailed = df_detailed.sort_values(["Size", "Rank"])
-
-                        if selected_period:
-                            st.caption(
-                                f"💡 **Note:** MDE, P-Value, and Power shown for {selected_period}-day treatment period. Change the period selector above to see different results."
-                            )
 
                         # Format results for display
                         detailed_results = []
@@ -1366,11 +1365,6 @@ if file is not None:
                             df_detailed = pd.DataFrame(detailed_results)
                             df_detailed = df_detailed.sort_values("Cell")
 
-                            if selected_period:
-                                st.caption(
-                                    f"💡 **Note:** MDE, P-Value, and Power shown for {selected_period}-day treatment period. "
-                                    f"Each cell uses the statistical analysis for its respective size."
-                                )
 
                             st.dataframe(
                                 df_detailed,
@@ -1478,10 +1472,13 @@ if file is not None:
                         )
 
                     # Handle heatmap point selection
-                    selected_point = event.selection
+                    selected_point = None
+                    if hasattr(event, 'selection') and event.selection is not None:
+                        selected_point = event.selection
 
                     if (
                         selected_point
+                        and isinstance(selected_point, dict)
                         and "points" in selected_point
                         and len(selected_point["points"]) > 0
                     ):
@@ -1561,7 +1558,9 @@ if file is not None:
                                             matching_size = size
                                             break
 
-                                    if matching_size is not None:
+                                    mde = None
+                                    power = None
+                                    if matching_size is not None and st.session_state.sensitivity_results is not None:
                                         mde = st.session_state.sensitivity_results[
                                             matching_size
                                         ][period_idx]["MDE"]
@@ -1569,9 +1568,10 @@ if file is not None:
                                             matching_size
                                         ][period_idx].get("Power", None)
 
-                                st.write(
-                                    f"- **Minimum Detectable Effect (MDE):** {round(mde*100)}%"
-                                )
+                                if mde is not None:
+                                    st.write(
+                                        f"- **Minimum Detectable Effect (MDE):** {round(mde*100)}%"
+                                    )
                                 if power is not None:
                                     st.write(
                                         f"- **Statistical Power:** {round(power*100)}%"
@@ -1732,6 +1732,7 @@ if file is not None:
                                                 if (
                                                     matching_size is not None
                                                     and period_idx is not None
+                                                    and st.session_state.sensitivity_results is not None
                                                 ):
                                                     if (
                                                         matching_size
