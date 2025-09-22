@@ -3,12 +3,12 @@ from pathlib import Path
 from loguru import logger
 from datetime import datetime
 import os
-
+import pytz
 
 log_dir = Path("logs")
 log_dir.mkdir(exist_ok=True)
 
-timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+timestamp = datetime.now(pytz.timezone('America/Mexico_City')).strftime("%Y%m%d_%H%M%S")
 log_filename = f"murray_{timestamp}.log"
 
 
