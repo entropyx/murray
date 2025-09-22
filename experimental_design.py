@@ -1025,7 +1025,6 @@ if file is not None:
                             test_type=selected_test,
                             inference_type="iid",
                             global_optimization=enable_multicell,
-                            cancellation_callback=is_cancelled,
                         )
 
                     if results is None:
@@ -1065,9 +1064,6 @@ if file is not None:
                                 st.write(f"**Number of Cells:** {multicell_config['top_n']}")
                         st.stop()
 
-                    results_by_size = transform_results_data(
-                        results["simulation_results"]
-                    )
                     results_by_size = transform_results_data(
                         results["simulation_results"]
                     )

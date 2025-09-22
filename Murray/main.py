@@ -784,7 +784,6 @@ def BetterGroups(
     status_updater=None,
     multicell_config=None,
     global_optimization=False,
-    cancellation_callback=None,
 ):
     """
     Enhanced simulates and evaluates treatment groups for geo-experiments.
@@ -847,7 +846,6 @@ def BetterGroups(
                 maximum_treatment_percentage=maximum_treatment_percentage,
                 progress_updater=progress_updater,
                 status_updater=status_updater,
-                cancellation_callback=cancellation_callback,
             )
 
         # Original multi-cell mode (per-size optimization)
@@ -1220,7 +1218,6 @@ def optimize_global_multicell(
     maximum_treatment_percentage,
     progress_updater=None,
     status_updater=None,
-    cancellation_callback=None,
 ):
     """
     Enhanced global optimization for multi-cell experiments with heterogeneous cell sizes.
@@ -1281,10 +1278,6 @@ def optimize_global_multicell(
     logger.info("Phase 1: Generating candidates for all allowed sizes")
 
     for size in allowed_sizes:
-        if cancellation_callback and cancellation_callback():
-            logger.info("🚫 SIMULATION CANCELLED: During candidate generation in global optimization")
-            return None
-            
         logger.info(f"Generating candidates for size {size}")
 
         groups = select_treatments_exclusive(
@@ -1310,11 +1303,6 @@ def optimize_global_multicell(
             )
 
             for result in futures:
-                if cancellation_callback and cancellation_callback():
-                    logger.info("🚫 SIMULATION CANCELLED: During result processing in global optimization")
-                    executor.shutdown(wait=False)
-                    return None
-                    
                 if result is not None:
                     # Add size information to result
                     result_with_size = result + (size,)  # Append size as last element
@@ -1849,7 +1837,6 @@ def evaluate_sensitivity(
         progress_bar (callable): Progress bar updater function.
         status_text (callable): Status text updater function.
         n_power_simulations (int): Number of power simulations to run.
-        cancellation_callback (callable): Function to check if operation should be cancelled.
 
     Returns:
         tuple: (sensitivity_results, lift_series)
@@ -2076,7 +2063,6 @@ def run_geo_analysis_streamlit_app(
         test_type (str): Statistical test type ("sum", "mean_diff", "t_test", "median_diff").
         inference_type (str): Type of inference ("iid" or "block").
         global_optimization (bool): Whether to use global optimization for multi-cell mode.
-        cancellation_callback (callable): Function to check if operation should be cancelled.
 
     Returns:
         dict: Dictionary containing simulation results, sensitivity results, and adjusted series lifts.
@@ -2204,35 +2190,6 @@ def run_geo_analysis_streamlit_app(
         logger.error(f"Error during sensitivity evaluation: {str(e)}", exc_info=True)
         sensitivity_results = None
         series_lifts = None
-        # Run sensitivity analysis on the artificial results_by_size
-        sensitivity_results, series_lifts = evaluate_sensitivity(
-            results_by_size,
-            deltas,
-            periods,
-            n_permutations_per_test,
-            significance_level,
-            test_type=test_type,
-            inference_type=inference_type,
-            progress_bar=progress_bar_2,
-            status_text=status_text_2,
-            n_power_simulations=n_power_simulations,
-            cancellation_callback=cancellation_callback,
-        )
-    else:
-        sensitivity_results, series_lifts = evaluate_sensitivity(
-            simulation_results,
-            deltas,
-            periods,
-            n_permutations_per_test,
-            significance_level,
-            test_type=test_type,
-            inference_type=inference_type,
-            progress_bar=progress_bar_2,
-            status_text=status_text_2,
-            n_power_simulations=n_power_simulations,
-            cancellation_callback=cancellation_callback,
-        )
-
     if sensitivity_results is not None:
         logger.info("Sensitivity evaluation completed successfully.")
         if progress_updater:
