@@ -68,17 +68,24 @@ def run_geo_evaluation(
     df_pivot = data_input.pivot(index="time", columns="location", values="Y")
     logger.info(f"Pivot table shape: {df_pivot.shape}")
 
-    X = df_pivot[control_group].values
-    y = df_pivot[treatment_group].sum(axis=1).values
-
-    time_index = np.arange(len(df_pivot))
+    # For model training, truncate data until end_treatment to avoid using future data
+    X_train_data = df_pivot[control_group].iloc[:end_position_treatment].values
+    y_train_data = df_pivot[treatment_group].iloc[:end_position_treatment].sum(axis=1).values
+    
+    # For plotting and full analysis, use complete dataset
+    X_full = df_pivot[control_group].values
+    y_full = df_pivot[treatment_group].sum(axis=1).values
+    
+    time_index = np.arange(end_position_treatment)  # Training time index
+    time_index_full = np.arange(len(df_pivot))      # Full time index for plotting
 
     logger.info("Scaling data...")
     scaler_x = MinMaxScaler()
     scaler_y = MinMaxScaler()
 
-    X_scaled = scaler_x.fit_transform(X)
-    y_scaled = scaler_y.fit_transform(y.reshape(-1, 1))
+    # Scale training data
+    X_scaled = scaler_x.fit_transform(X_train_data)
+    y_scaled = scaler_y.fit_transform(y_train_data.reshape(-1, 1))
 
     X_train, X_test = (
         X_scaled[:start_position_treatment],
@@ -99,21 +106,34 @@ def run_geo_evaluation(
 
     logger.info("Making predictions...")
     predictions_test, _ = model.predict(X_test, time_index=time_test)
-    predictions_full, weights = model.predict(X_scaled, time_index=time_index)
+    predictions_truncated, weights = model.predict(X_scaled, time_index=time_index)
+    
+    # Generate predictions for full dataset (including post-treatment)
+    X_full_scaled = scaler_x.transform(X_full)
+    predictions_full_complete, _ = model.predict(X_full_scaled, time_index=time_index_full)
 
     # Filter control group based on weights
     filtered_control_group, filtered_weights = model.filter_controls_by_weights(
         control_group, min_weight_threshold=0.001
     )
 
-    counterfactual_full = predictions_full.reshape(-1, 1)
-    counterfactual_full = scaler_y.inverse_transform(counterfactual_full)
-    treatment_full = y.reshape(-1, 1)
-
-    counterfactual = counterfactual_full.flatten()
-    treatment = treatment_full.flatten()
+    # Process truncated data (for analysis metrics)
+    counterfactual_truncated = predictions_truncated.reshape(-1, 1)
+    counterfactual_truncated = scaler_y.inverse_transform(counterfactual_truncated)
+    treatment_truncated = y_train_data.reshape(-1, 1)
+    
+    counterfactual = counterfactual_truncated.flatten()
+    treatment = treatment_truncated.flatten()
     y_original = scaler_y.inverse_transform(y_scaled)
     y_original = y_original.flatten()
+    
+    # Process complete data (for plotting with post-treatment)
+    counterfactual_full_complete = predictions_full_complete.reshape(-1, 1)
+    counterfactual_full_complete = scaler_y.inverse_transform(counterfactual_full_complete)
+    treatment_full_complete = y_full.reshape(-1, 1)
+    
+    counterfactual_complete = counterfactual_full_complete.flatten()
+    treatment_complete = treatment_full_complete.flatten()
 
     logger.info("Calculating metrics...")
     logger.info(f"Data shapes - treatment: {treatment.shape}, counterfactual: {counterfactual.shape}")
@@ -121,9 +141,9 @@ def run_geo_evaluation(
     MAPE = np.mean(np.abs((y_original - counterfactual) / (y_original + 1e-10))) * 100
     SMAPE = smape(y_original, counterfactual)
 
-    # Calculate percentage lift
-    treatment_period_sum = np.sum(treatment[start_position_treatment:])
-    counterfactual_period_sum = np.sum(counterfactual[start_position_treatment:])
+    # Calculate percentage lift (only during treatment period)
+    treatment_period_sum = np.sum(treatment[start_position_treatment:end_position_treatment])
+    counterfactual_period_sum = np.sum(counterfactual[start_position_treatment:end_position_treatment])
     lift_difference = treatment_period_sum - counterfactual_period_sum
     
     logger.info(f"Treatment period sum: {treatment_period_sum}")
@@ -136,7 +156,7 @@ def run_geo_evaluation(
         return y_treatment - y_control
 
     residuals = compute_residuals(treatment, counterfactual)
-    treatment_residuals = residuals[start_position_treatment:]
+    treatment_residuals = residuals[start_position_treatment:end_position_treatment]
 
     def stat_func(x):
         return np.sum(x)
@@ -152,7 +172,7 @@ def run_geo_evaluation(
         if i % 10000 == 0 and i > 0:
             logger.info(f"Completed {i}/{n_permutations} permutations")
         permuted_residuals = np.random.permutation(residuals)
-        permuted = permuted_residuals[start_position_treatment:]
+        permuted = permuted_residuals[start_position_treatment:end_position_treatment]
         null_stats.append(stat_func(permuted))
     null_stats = np.array(null_stats)
 
@@ -184,6 +204,14 @@ def run_geo_evaluation(
         "period": period,
         "spend": spend,
         "length_treatment": length_treatment,
+        # Complete data for plotting (including post-treatment)
+        "counterfactual_complete": counterfactual_complete,
+        "treatment_complete": treatment_complete,
+        "time_index_full": time_index_full,
+        # Period information for plotting zones
+        "start_position_treatment": start_position_treatment,
+        "end_position_treatment": end_position_treatment,
+        "total_periods": len(df_pivot),
     }
 
     logger.info("run_geo_evaluation completed successfully")
