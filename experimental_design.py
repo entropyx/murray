@@ -80,6 +80,7 @@ def generate_pdf(
     confidence_level,
     p_value=None,
     power_value=None,
+    SMAPE=None
 ):
     temp_image_path = "temp_impact_graph.png"
     impact_graph.savefig(temp_image_path, bbox_inches="tight", dpi=100)
@@ -286,6 +287,58 @@ def generate_pdf(
         pdf.cell(col_width, row_height, str(row["Control Location"]), 1, 0, "C", True)
         pdf.cell(col_width, row_height, f"{row['Weights']:.4f}", 1, 1, "C", True)
 
+
+
+    pdf.ln(5)
+    if pdf.get_y() > 250:
+        pdf.add_page()
+
+    pdf.set_font("Poppins", style="B", size=12)
+    pdf.set_text_color(27, 0, 67)
+    pdf.cell(200, 10, "Counterfactual error", ln=True)
+    pdf.set_font("Poppins", size=10)
+    pdf.set_text_color(33, 31, 36)
+
+    if SMAPE is not None:
+        smape_percentage = SMAPE * 100 if SMAPE < 1 else SMAPE
+        pdf.multi_cell(
+            0,
+            5,
+            f"The Symmetric Mean Absolute Percentage Error (SMAPE) for this experimental design is {smape_percentage:.2f}%. ",
+        )
+
+        # Excellent Counterfactual
+        if smape_percentage <= 10:
+            explanation = (
+                "This SMAPE value indicates excellent model fit. The synthetic control model demonstrates "
+                "very high accuracy in replicating the counterfactual scenario, providing strong confidence "
+                "in the experimental design and expected treatment effect estimates."
+            )
+        # Good Counterfactual    
+        elif smape_percentage <= 20:
+            explanation = (
+                "This SMAPE value indicates good model fit. The synthetic control model shows satisfactory "
+                "accuracy in creating the counterfactual, suggesting reliable experimental design with "
+                "acceptable precision for treatment effect estimation."
+            )
+        # Moderate Counterfactual
+        elif smape_percentage <= 35:
+            explanation = (
+                "This SMAPE value indicates moderate model fit. While the synthetic control provides a "
+                "reasonable approximation of the counterfactual, there is some uncertainty in the precision "
+                "of treatment effect estimates. Consider additional model validation."
+            )
+        # Bad Counterfactual    
+        else:
+            explanation = (
+                "This SMAPE value indicates bad model fit. The synthetic control model shows significant "
+                "deviation from the ideal counterfactual scenario. Exercise caution when interpreting "
+                "treatment effects and consider improving the model or using alternative approaches."
+            )
+
+        pdf.multi_cell(0, 5, explanation)
+        pdf.ln(3)
+
     pdf.ln(5)
     if pdf.get_y() > 250:
         pdf.add_page()
@@ -484,6 +537,8 @@ def generate_pdf(
         "The graph below shows the aggregate effect, the point effect, and the cumulative effect.",
     )
     pdf.image(temp_image_path, x=10, y=pdf.get_y(), w=190)
+
+   
 
     pdf_output = "reporte.pdf"
     pdf.output(pdf_output, "F")
@@ -1568,6 +1623,9 @@ if file is not None:
                                         power = st.session_state.sensitivity_results[
                                             matching_size
                                         ][period_idx].get("Power", None)
+                                        SMAPE = st.session_state.simulation_results[
+                                            matching_size
+                                        ].get("SMAPE", None)
 
                                 st.write(
                                     f"- **Minimum Detectable Effect (MDE):** {round(mde*100)}%"
@@ -1575,6 +1633,10 @@ if file is not None:
                                 if power is not None:
                                     st.write(
                                         f"- **Statistical Power:** {round(power*100)}%"
+                                    )
+                                if SMAPE is not None:
+                                    st.write (
+                                        f"- **SMAPE:** {round(SMAPE,2)}%"
                                     )
                                 random_sate = cleaned["location"].unique()[0]
                                 filtered_data = cleaned[
@@ -1815,6 +1877,7 @@ if file is not None:
                                                     confidence_level,
                                                     p_value=p_value,
                                                     power_value=power_value,
+                                                    SMAPE=SMAPE,
                                                 )
 
                                                 with open(pdf_file, "rb") as file:
