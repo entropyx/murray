@@ -2,8 +2,53 @@ import pandas as pd
 import numpy as np
 from scipy import stats
 from logger_config import get_logger
+import unicodedata
+import re
 
 logger = get_logger("auxiliary")
+
+
+def normalize_location_names(location_series):
+    """
+    Normalize location names by:
+    - Converting to lowercase
+    - Removing accents and special characters
+    - Removing apostrophes and quotes
+    - Stripping whitespace
+    - Converting multiple spaces to single spaces
+
+    Args:
+        location_series (pd.Series): Series containing location names
+
+    Returns:
+        pd.Series: Series with normalized location names
+    """
+    def normalize_single_location(text):
+        if pd.isna(text) or text == "":
+            return text
+
+        # Convert to string if not already
+        text = str(text)
+
+        # Strip whitespace and convert to lowercase
+        text = text.strip().lower()
+
+        # Remove accents using Unicode normalization
+        text = unicodedata.normalize('NFD', text)
+        text = ''.join(c for c in text if unicodedata.category(c) != 'Mn')
+
+        # Remove apostrophes, quotes, and other punctuation except hyphens and spaces
+        text = re.sub(r"[''\"`]", "", text)
+
+        # Replace multiple spaces with single space
+        text = re.sub(r'\s+', ' ', text)
+
+        # Strip again after normalization
+        text = text.strip()
+
+        return text
+
+    return location_series.apply(normalize_single_location)
 
 
 def handle_duplicates(data, subset=["time", "location"], agg_method="mean"):
@@ -76,7 +121,9 @@ def cleaned_data(data, col_target, col_locations, col_dates, fill_value=0):
         data = data[~data[col_locations].isin(invalid_values)]
         data = data.dropna(subset=[col_locations])
 
-        data[col_locations] = data[col_locations].str.strip().str.lower()
+        # Normalize location names (remove accents, apostrophes, standardize formatting)
+        data[col_locations] = normalize_location_names(data[col_locations])
+        logger.info("Location names normalized (accents and apostrophes removed, standardized formatting)")
 
         data_input = data.rename(
             columns={col_locations: "location", col_target: "Y", col_dates: "time"}

@@ -173,6 +173,13 @@ def analyze_design_task(
         progress_updater.update_stage_progress(1.0, f"Data processing completed. Shape: {data.shape}")
         progress_updater.advance_stage("Starting geo analysis pipeline")
 
+        # Normalize excluded locations to match data normalization
+        if excluded_locations:
+            from Murray.auxiliary import normalize_location_names
+            excluded_locations_series = pd.Series(excluded_locations)
+            excluded_locations = tuple(normalize_location_names(excluded_locations_series).tolist())
+            logger.info(f"[{task_id}] Excluded locations normalized: {excluded_locations}")
+
         # Stage 2-4: Main Analysis (with custom progress callbacks)
         logger.info(f"[{task_id}] Starting geo analysis ({analysis_mode} mode)")
         
@@ -397,6 +404,12 @@ def analyze_evaluation_task(
         
         progress_updater.update_stage_progress(1.0, f"Date processing completed: {treatment_start_date} to {treatment_end_date}")
         progress_updater.advance_stage("Starting geo evaluation analysis")
+
+        # Normalize treatment group location names to match data normalization
+        from Murray.auxiliary import normalize_location_names
+        treatment_group_series = pd.Series(treatment_group)
+        treatment_group = normalize_location_names(treatment_group_series).tolist()
+        logger.info(f"[{task_id}] Treatment group locations normalized: {treatment_group}")
 
         # Stage 3: Geo Evaluation Analysis
         logger.info(f"[{task_id}] Starting geo evaluation with chart data generation")
