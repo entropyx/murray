@@ -38,6 +38,7 @@ logger.add(
     colorize=True,
     backtrace=True,
     diagnose=True,
+    filter=lambda record: record.update(time=record["time"].astimezone(pytz.timezone('America/Mexico_City'))) or True,
 )
 
 
@@ -48,6 +49,7 @@ logger.add(
     level="INFO",
     backtrace=True,
     diagnose=True,
+    filter=lambda record: record.update(time=record["time"].astimezone(pytz.timezone('America/Mexico_City'))) or True,
 )
 
 
