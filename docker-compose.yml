@@ -40,6 +40,7 @@ services:
     volumes:
       - .:/app
       - temp_updates:/app/temp_updates
+      - logs_data:/app/logs
     environment:
       - PYTHONUNBUFFERED=1
       - MURRAY_PASSWORD=${MURRAY_PASSWORD:-}
@@ -101,6 +102,7 @@ services:
 volumes:
   redis_data:    # Volume definition
   temp_updates:  # Volume definition
+  logs_data:     # Volume definition
 
 
 

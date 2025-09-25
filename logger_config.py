@@ -42,7 +42,7 @@ logger.add(
 )
 
 
-# File handler - one file per execution
+# File handler - one file per execution with rotation
 logger.add(
     log_dir / log_filename,
     format=file_format,
@@ -50,6 +50,8 @@ logger.add(
     backtrace=True,
     diagnose=True,
     filter=lambda record: record.update(time=record["time"].astimezone(pytz.timezone('America/Mexico_City'))) or True,
+    retention="7 days",  # Keep logs for 7 days
+    rotation="1 day",    # Rotate daily
 )
 
 

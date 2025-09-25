@@ -17,8 +17,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy the rest of the application
 COPY . .
 
-# create directory for metrics
-RUN mkdir -p /app/traffic_metrics
+# create directory for metrics and logs
+RUN mkdir -p /app/traffic_metrics /app/logs
 
 # Define the volume
 VOLUME ["/app/traffic_metrics"]
