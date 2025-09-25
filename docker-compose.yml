@@ -2,7 +2,7 @@ services:
   redis:
     image: redis:latest
     ports:
-      - "6382:6379"
+      - "6383:6383"
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 30s
@@ -15,7 +15,7 @@ services:
   api:
     build: .
     ports:
-      - "8005:8005"
+      - "8006:8006"
     volumes:
       - .:/app
       - temp_updates:/app/temp_updates
@@ -36,7 +36,7 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "8505:8505"
+      - "8506:8506"
     volumes:
       - .:/app
       - temp_updates:/app/temp_updates
@@ -74,7 +74,7 @@ services:
   flower:
     build: .
     ports:
-      - "5559:5559"
+      - "5557:5557"
     environment:
       - PYTHONUNBUFFERED=1
       - REDIS_DB=${REDIS_DB}
