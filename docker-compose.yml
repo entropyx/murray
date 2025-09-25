@@ -29,7 +29,7 @@ services:
     depends_on:
       redis:
         condition: service_healthy
-    command: ["uvicorn", "api:app", "--host", "0.0.0.0", "--port", "8005", "--workers", "2"]
+    command: ["uvicorn", "api:app", "--host", "0.0.0.0", "--port", "8006", "--workers", "2"]
 
   app:
     build:
@@ -44,7 +44,7 @@ services:
       - PYTHONUNBUFFERED=1
       - MURRAY_PASSWORD=${MURRAY_PASSWORD:-}
       # Remove any connection to Redis or Celery
-    command: ["streamlit", "run", "app.py", "--server.port=8505", "--server.address=0.0.0.0"]
+    command: ["streamlit", "run", "app.py", "--server.port=8506", "--server.address=0.0.0.0"]
     # No longer depends on other services
     # healthcheck:
     #   test: ["CMD", "curl", "--fail", "http://localhost:8505/_stcore/health"]
@@ -90,7 +90,7 @@ services:
         condition: service_healthy
       celery_worker:
         condition: service_started
-    command: ["celery", "-A", "tasks", "flower", "--port=5559", "--basic_auth=${FLOWER_USER}:${FLOWER_PASSWORD}"]
+    command: ["celery", "-A", "tasks", "flower", "--port=5557", "--basic_auth=${FLOWER_USER}:${FLOWER_PASSWORD}"]
     # healthcheck:
     #   test: ["CMD", "curl", "-f", "http://localhost:5559/"]
     #   interval: 30s
