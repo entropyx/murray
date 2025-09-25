@@ -392,25 +392,51 @@ async def get_task_progress(task_id: str):
             general_status = "unknown"
         
         progress_data = progress_tracker.get_progress(task_id)
-        
+
         if not progress_data:
             # If no progress data but task exists in Celery
             if task_result.state == "PENDING":
                 raise HTTPException(
-                    status_code=404, 
+                    status_code=404,
                     detail=f"No progress information found for task {task_id}. Task may not exist or may not have started yet."
                 )
-            elif task_result.state in ["SUCCESS", "FAILURE", "REVOKED"]:
+            elif task_result.state == "FAILURE":
+                # Return failure status even without progress data
+                return ProgressResponse(
+                    task_id=task_id,
+                    progress=0.0,
+                    progress_percentage=0,
+                    status="failed",
+                    task_status="failed",
+                    details=f"Task failed: {str(task_result.result) if task_result.result else 'Unknown error'}",
+                    updated_at=datetime.now().isoformat(),
+                    webhook_url=None
+                )
+            elif task_result.state in ["SUCCESS", "REVOKED"]:
                 raise HTTPException(
-                    status_code=410, 
+                    status_code=410,
                     detail=f"Task {task_id} is completed. Progress information is no longer available."
                 )
             else:
                 raise HTTPException(
-                    status_code=404, 
+                    status_code=404,
                     detail=f"No progress information found for task {task_id}"
                 )
         
+        # If task failed, update details with error information
+        if general_status == "failed" and progress_data:
+            error_details = f"Task failed: {str(task_result.result) if task_result.result else 'Unknown error'}"
+            return ProgressResponse(
+                task_id=task_id,
+                progress=progress_data.get("progress", 0.0),
+                progress_percentage=int(progress_data.get("progress", 0.0) * 100),
+                status=general_status,  # General Celery status
+                task_status="failed",  # Override with failed status
+                details=error_details,  # Show actual error
+                updated_at=progress_data.get("updated_at", ""),
+                webhook_url=progress_data.get("webhook_url")
+            )
+
         return ProgressResponse(
             task_id=task_id,
             progress=progress_data.get("progress", 0.0),
