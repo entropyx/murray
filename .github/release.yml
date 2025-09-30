@@ -6,16 +6,20 @@ changelog:
     - title: Major Changes 🛠
       labels:
         - major
+
     - title: New Features 🎉
       labels:
         - enhancement
         - style
+
     - title: Bugfixes 🐛
       labels:
         - bug
+
     - title: Documentation 📖
       labels:
         - documentation
+
     - title: Maintenance 🔧
       labels:
-        - "*"
+        - "*"
