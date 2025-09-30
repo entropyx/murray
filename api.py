@@ -337,7 +337,12 @@ async def get_task_status(task_id: str):
             return TaskResponse(
                 task_id=task_id,
                 status="REVOKED",
-                results={"message": "Task was revoked"}
+                results={
+                    "message": "Task was cancelled/revoked",
+                    "details": "The task was cancelled by user request or system intervention",
+                    "cancelled_at": datetime.now().isoformat(),
+                    "final_status": "cancelled"
+                }
             )
     elif task_result.state == "RETRY":
         return TaskResponse(
@@ -362,7 +367,7 @@ async def get_task_status(task_id: str):
 async def get_task_progress(task_id: str):
     """
     Get detailed progress information for a running task.
-    
+
     Returns real-time progress including:
     - Progress percentage (0-100)
     - General task status (pending, started, completed, etc.)
@@ -374,7 +379,7 @@ async def get_task_progress(task_id: str):
     try:
         # Get Celery task status for general status
         task_result = AsyncResult(task_id, app=celery_app)
-        
+
         # Determine general status from Celery
         if task_result.state == "PENDING":
             general_status = "pending"
@@ -390,7 +395,7 @@ async def get_task_progress(task_id: str):
             general_status = "retrying"
         else:
             general_status = "unknown"
-        
+
         progress_data = progress_tracker.get_progress(task_id)
 
         if not progress_data:
@@ -412,17 +417,29 @@ async def get_task_progress(task_id: str):
                     updated_at=datetime.now().isoformat(),
                     webhook_url=None
                 )
-            elif task_result.state in ["SUCCESS", "REVOKED"]:
+            elif task_result.state == "SUCCESS":
                 raise HTTPException(
                     status_code=410,
                     detail=f"Task {task_id} is completed. Progress information is no longer available."
+                )
+            elif task_result.state == "REVOKED":
+                # Return cancellation status for revoked tasks
+                return ProgressResponse(
+                    task_id=task_id,
+                    progress=0.0,
+                    progress_percentage=0,
+                    status="revoked",
+                    task_status="cancelled",
+                    details="Task was cancelled by user request or system intervention",
+                    updated_at=datetime.now().isoformat(),
+                    webhook_url=None
                 )
             else:
                 raise HTTPException(
                     status_code=404,
                     detail=f"No progress information found for task {task_id}"
                 )
-        
+
         # If task failed, update details with error information
         if general_status == "failed" and progress_data:
             error_details = f"Task failed: {str(task_result.result) if task_result.result else 'Unknown error'}"
@@ -447,12 +464,84 @@ async def get_task_progress(task_id: str):
             updated_at=progress_data.get("updated_at", ""),
             webhook_url=progress_data.get("webhook_url")
         )
-        
+
     except HTTPException:
         raise
     except Exception as e:
         logger.error(f"Error getting progress for task {task_id}: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error while retrieving progress")
+
+@app.post("/task/{task_id}/cancel")
+async def cancel_task(task_id: str):
+    """
+    Cancel a running task
+
+    Attempts to cancel/revoke a Celery task that is currently pending or running.
+    Once cancelled, the task cannot be resumed and will show status as 'revoked'.
+
+    Returns:
+        Dictionary with cancellation status and details
+    """
+    try:
+        # Check if task exists first
+        task_result = AsyncResult(task_id, app=celery_app)
+
+        if task_result.state in ["SUCCESS", "FAILURE"]:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Cannot cancel task {task_id}: Task already completed with status {task_result.state}"
+            )
+
+        if task_result.state == "REVOKED":
+            return {
+                "task_id": task_id,
+                "status": "already_cancelled",
+                "message": "Task was already cancelled"
+            }
+
+        # Revoke the task with terminate=True to kill worker process if running
+        celery_app.control.revoke(task_id, terminate=True)
+
+        # Update progress tracker to mark as cancelled
+        current_progress_data = progress_tracker.get_progress(task_id)
+        current_progress = current_progress_data.get("progress", 0.0) if current_progress_data else 0.0
+        webhook_url = current_progress_data.get("webhook_url") if current_progress_data else None
+
+        progress_tracker.update_progress(
+            task_id,
+            current_progress,
+            "cancelled",
+            "Task was cancelled by user request"
+        )
+
+        # Send webhook notification for task cancellation
+        if webhook_url:
+            try:
+                response = httpx.post(webhook_url, json={
+                    "status": "cancelled",
+                    "task_id": task_id,
+                    "message": "Task was cancelled by user request",
+                    "progress": current_progress,
+                    "progress_percentage": int(current_progress * 100),
+                    "timestamp": datetime.now().isoformat()
+                })
+                logger.info(f"[{task_id}] Cancellation webhook sent to {webhook_url}")
+            except Exception as e:
+                logger.error(f"[{task_id}] Error sending cancellation webhook: {str(e)}")
+
+        logger.info(f"Task {task_id} cancelled successfully")
+
+        return {
+            "task_id": task_id,
+            "status": "cancelled",
+            "message": "Task cancellation requested successfully"
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error cancelling task {task_id}: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Failed to cancel task: {str(e)}")
 
 # @app.post("/task/{task_id}/webhook-progress")
 # async def set_progress_webhook(task_id: str, webhook_url: str = Form(...)):
