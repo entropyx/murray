@@ -13,7 +13,7 @@ import os
 import shutil
 from typing import Optional, Dict, Any
 from pydantic import BaseModel
-from celery.signals import task_prerun, task_postrun, task_failure
+from celery.signals import task_prerun, task_postrun, task_failure, task_revoked
 import requests
 import httpx
 import asyncio
@@ -1122,3 +1122,59 @@ class WebhookManager:
 # Global instances for easy access
 progress_tracker = ProgressTracker()
 webhook_manager = WebhookManager()
+
+
+# ============================================================================
+# CELERY SIGNAL HANDLERS
+# ============================================================================
+
+@task_revoked.connect
+def task_revoked_handler(sender=None, task_id=None, reason=None, **kwargs):
+    """
+    Handle task revocation signals to send webhook notifications.
+
+    This is triggered when a task is revoked through any means:
+    - Manual cancellation via API
+    - System-level revocation
+    - Worker timeout/shutdown
+    """
+    try:
+        logger.info(f"[{task_id}] Task revoked signal received. Reason: {reason}")
+
+        # Get current progress data to check for webhook URL
+        progress_data = progress_tracker.get_progress(task_id)
+        if not progress_data:
+            logger.debug(f"[{task_id}] No progress data found for revoked task")
+            return
+
+        webhook_url = progress_data.get("webhook_url")
+        if not webhook_url:
+            logger.debug(f"[{task_id}] No webhook URL configured for revoked task")
+            return
+
+        # Update progress to reflect cancellation
+        current_progress = progress_data.get("progress", 0.0)
+        progress_tracker.update_progress(
+            task_id,
+            current_progress,
+            "cancelled",
+            f"Task was revoked. Reason: {reason or 'Unknown'}"
+        )
+
+        # Send webhook notification
+        try:
+            response = httpx.post(webhook_url, json={
+                "status": "cancelled",
+                "task_id": task_id,
+                "message": f"Task was revoked. Reason: {reason or 'Unknown'}",
+                "progress": current_progress,
+                "progress_percentage": int(current_progress * 100),
+                "reason": reason,
+                "timestamp": datetime.now().isoformat()
+            })
+            logger.info(f"[{task_id}] Revocation webhook sent to {webhook_url}")
+        except Exception as webhook_error:
+            logger.error(f"[{task_id}] Error sending revocation webhook: {str(webhook_error)}")
+
+    except Exception as e:
+        logger.error(f"[{task_id}] Error in task revoked handler: {str(e)}", exc_info=True)
