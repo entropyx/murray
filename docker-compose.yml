@@ -1,0 +1,109 @@
+services:
+  redis:
+    image: redis:latest
+    ports:
+      - "6383:6383"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 20s
+      retries: 2
+      start_period: 40s
+    volumes:
+      - redis_data:/data
+
+  api:
+    build: .
+    ports:
+      - "8006:8006"
+    volumes:
+      - .:/app
+      - temp_updates:/app/temp_updates
+    environment:
+      - PYTHONUNBUFFERED=1
+      - REDIS_DB=${REDIS_DB}
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - CELERY_BROKER_URL=redis://redis:6379/${REDIS_DB}
+      - CELERY_RESULT_BACKEND=redis://redis:6379/${REDIS_DB}
+    depends_on:
+      redis:
+        condition: service_healthy
+    command: ["uvicorn", "api:app", "--host", "0.0.0.0", "--port", "8006", "--workers", "2"]
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8506:8506"
+    volumes:
+      - .:/app
+      - temp_updates:/app/temp_updates
+      - logs_data:/app/logs
+    environment:
+      - PYTHONUNBUFFERED=1
+      - MURRAY_PASSWORD=${MURRAY_PASSWORD:-}
+      # Remove any connection to Redis or Celery
+    command: ["streamlit", "run", "app.py", "--server.port=8506", "--server.address=0.0.0.0"]
+    # No longer depends on other services
+    # healthcheck:
+    #   test: ["CMD", "curl", "--fail", "http://localhost:8505/_stcore/health"]
+    #   interval: 10s
+    #   timeout: 10s
+    #   retries: 3
+
+
+  celery_worker:
+    build: .
+    volumes:
+      - .:/app
+      - temp_updates:/app/temp_updates
+    environment:
+      - PYTHONUNBUFFERED=1
+      - REDIS_DB=${REDIS_DB}
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - CELERY_BROKER_URL=redis://redis:6379/${REDIS_DB}
+      - CELERY_RESULT_BACKEND=redis://redis:6379/${REDIS_DB}
+    depends_on:
+      redis:
+        condition: service_healthy
+    command: ["celery", "-A", "tasks", "worker", "--loglevel=info", "--concurrency=2"]
+    shm_size: '512m'
+
+  flower:
+    build: .
+    ports:
+      - "5557:5557"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - REDIS_DB=${REDIS_DB}
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - CELERY_BROKER_URL=redis://redis:6379/${REDIS_DB}
+      - CELERY_RESULT_BACKEND=redis://redis:6379/${REDIS_DB}
+      - CELERY_EVENT_BACKEND=redis://redis:6379/${REDIS_DB}
+      - FLOWER_USER=${FLOWER_USER}
+      - FLOWER_PASSWORD=${FLOWER_PASSWORD}
+    depends_on:
+      redis:
+        condition: service_healthy
+      celery_worker:
+        condition: service_started
+    command: sh -c "celery -A tasks flower --port=5557 --basic_auth=$${FLOWER_USER}:$${FLOWER_PASSWORD}"
+    # healthcheck:
+    #   test: ["CMD", "curl", "-f", "http://localhost:5559/"]
+    #   interval: 30s
+    #   timeout: 20s
+    #   retries: 3
+    #   start_period: 40s
+
+volumes:
+  redis_data:    # Volume definition
+  temp_updates:  # Volume definition
+  logs_data:     # Volume definition
+
+
+
+      

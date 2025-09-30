@@ -1,5 +1,5 @@
 from setuptools import setup, find_packages
-import re 
+import re
 import os
 
 with open(os.path.join("Murray", "__init__.py")) as f:
@@ -18,9 +18,6 @@ setup(
         "matplotlib",
         "seaborn",
         "plotly",
-        "millify",
-        "statsmodels",
-
     ],
     author="Entropy Team",
     author_email="dev@entropy.tech",
