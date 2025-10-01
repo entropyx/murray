@@ -149,10 +149,13 @@ def analyze_design_task(
             httpx.post(webhook["url"], json={
                 "status": "started",
                 "task_id": task_id,
-                "message": f"Design analysis task started ({analysis_mode} mode)",
-                "analysis_mode": analysis_mode,
-                "multicell_config": multicell_config,
-                "timestamp": datetime.now().isoformat()
+                "timestamp": datetime.now().isoformat(),
+                "results": {
+                    "message": f"Design analysis task started ({analysis_mode} mode)",
+                    "analysis_mode": analysis_mode,
+                    "multicell_config": multicell_config,
+                    "task_type": "design"
+                }
             })
         except Exception as e:
             logger.error(f"[{task_id}] Error sending start webhook: {str(e)}")
@@ -304,7 +307,10 @@ def analyze_design_task(
                     "status": "completed",
                     "task_id": task_id,
                     "timestamp": datetime.now().isoformat(),
-                    "result": final_results
+                    "results": {
+                        "message": "Task completed successfully",
+                        "analysis_data": final_results
+                    }
                 })
             except Exception as e:
                 logger.error(f"[{task_id}] Error sending traditional success webhook: {str(e)}")
@@ -321,7 +327,10 @@ def analyze_design_task(
                     "status": "failed",
                     "task_id": task_id,
                     "timestamp": datetime.now().isoformat(),
-                    "error": str(e)
+                    "results": {
+                        "message": "Task failed with error",
+                        "error": str(e)
+                    }
                 })
             except Exception as webhook_error:
                 logger.error(f"[{task_id}] Error sending traditional failure webhook: {str(webhook_error)}")
@@ -366,8 +375,11 @@ def analyze_evaluation_task(
             httpx.post(webhook["url"], json={
                 "status": "started",
                 "task_id": task_id,
-                "message": "Evaluation analysis task started",
-                "timestamp": datetime.now().isoformat()
+                "timestamp": datetime.now().isoformat(),
+                "results": {
+                    "message": "Evaluation analysis task started",
+                    "task_type": "evaluation"
+                }
             })
         except Exception as e:
             logger.error(f"[{task_id}] Error sending start webhook: {str(e)}")
@@ -454,8 +466,11 @@ def analyze_evaluation_task(
                 httpx.post(webhook["url"], json={
                     "status": "completed",
                     "task_id": task_id,
-                    "result": serializable_results,
-                    "timestamp": datetime.now().isoformat()
+                    "timestamp": datetime.now().isoformat(),
+                    "results": {
+                        "message": "Task completed successfully",
+                        "analysis_data": serializable_results
+                    }
                 })
             except Exception as e:
                 logger.error(f"[{task_id}] Error sending traditional success webhook: {str(e)}")
@@ -472,7 +487,10 @@ def analyze_evaluation_task(
                     "status": "failed",
                     "task_id": task_id,
                     "timestamp": datetime.now().isoformat(),
-                    "error": str(e)
+                    "results": {
+                        "message": "Task failed with error",
+                        "error": str(e)
+                    }
                 })
             except Exception as webhook_error:
                 logger.error(f"[{task_id}] Error sending traditional failure webhook: {str(webhook_error)}")
@@ -1166,10 +1184,13 @@ def task_revoked_handler(sender=None, task_id=None, reason=None, **kwargs):
             response = httpx.post(webhook_url, json={
                 "status": "cancelled",
                 "task_id": task_id,
-                "message": f"Task was revoked. Reason: {reason or 'Unknown'}",
-                "progress": current_progress,
-                "progress_percentage": int(current_progress * 100),
-                "reason": reason,
+                "results": {
+                    "message": "Task was cancelled/revoked",
+                    "details": f"The task was revoked. Reason: {reason or 'Unknown'}",
+                    "cancelled_at": datetime.now().isoformat(),
+                    "final_status": "cancelled",
+                    "revocation_reason": reason
+                },
                 "timestamp": datetime.now().isoformat()
             })
             logger.info(f"[{task_id}] Revocation webhook sent to {webhook_url}")

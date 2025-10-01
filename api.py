@@ -238,8 +238,10 @@ async def analyze_design(
                 httpx.post(webhook_dict["url"], json={
                     "status": "pending",
                     "task_id": task.id,
-                    "message": "Task queued for processing",
-                    "timestamp": datetime.now().isoformat()
+                    "timestamp": datetime.now().isoformat(),
+                    "results": {
+                        "message": "Task queued for processing"
+                    }
                 })
             except Exception as ex:
                 logger.error(f"[{task.id}] Error sending pending webhook: {str(ex)}")
@@ -298,8 +300,10 @@ async def analyze_evaluation(
                 httpx.post(webhook_dict["url"], json={
                     "status": "pending",
                     "task_id": task.id,
-                    "message": "Task queued for processing",
-                    "timestamp": datetime.now().isoformat()
+                    "timestamp": datetime.now().isoformat(),
+                    "results": {
+                        "message": "Task queued for processing"
+                    }
                 })
             except Exception as ex:
                 logger.error(f"[{task.id}] Error sending pending webhook: {str(ex)}")
@@ -317,8 +321,20 @@ async def get_task_status(task_id: str):
     Get the status and results of a task
     """
     task_result = AsyncResult(task_id, app=celery_app)
-    
-    if task_result.ready():
+
+    # Check for revoked state first (revoked tasks might not be "ready")
+    if task_result.state == "REVOKED":
+        return TaskResponse(
+            task_id=task_id,
+            status="REVOKED",
+            results={
+                "message": "Task was cancelled/revoked",
+                "details": "The task was cancelled by user request or system intervention",
+                "cancelled_at": datetime.now().isoformat(),
+                "final_status": "cancelled"
+            }
+        )
+    elif task_result.ready():
         if task_result.successful():
             results = convert_ndarrays(task_result.result)
             # results = truncate_large_lists(results)
@@ -332,17 +348,6 @@ async def get_task_status(task_id: str):
                 task_id=task_id,
                 status="FAILURE",
                 results={"error": str(task_result.result)}
-            )
-        elif task_result.revoked():
-            return TaskResponse(
-                task_id=task_id,
-                status="REVOKED",
-                results={
-                    "message": "Task was cancelled/revoked",
-                    "details": "The task was cancelled by user request or system intervention",
-                    "cancelled_at": datetime.now().isoformat(),
-                    "final_status": "cancelled"
-                }
             )
     elif task_result.state == "RETRY":
         return TaskResponse(
@@ -520,9 +525,12 @@ async def cancel_task(task_id: str):
                 response = httpx.post(webhook_url, json={
                     "status": "cancelled",
                     "task_id": task_id,
-                    "message": "Task was cancelled by user request",
-                    "progress": current_progress,
-                    "progress_percentage": int(current_progress * 100),
+                    "results": {
+                        "message": "Task was cancelled/revoked",
+                        "details": "The task was cancelled by user request or system intervention",
+                        "cancelled_at": datetime.now().isoformat(),
+                        "final_status": "cancelled"
+                    },
                     "timestamp": datetime.now().isoformat()
                 })
                 logger.info(f"[{task_id}] Cancellation webhook sent to {webhook_url}")
