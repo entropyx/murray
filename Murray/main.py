@@ -86,8 +86,10 @@ def select_treatments(similarity_matrix, treatment_size, excluded_locations):
     max_combinations = comb(n, r)
 
     n_combinations = max_combinations
-    if n_combinations > 5000:
-        n_combinations = 5000
+    # if n_combinations > 5000:
+    #     n_combinations = 5000
+    if n_combinations > 2000:
+        n_combinations = 2000
 
     logger.debug(f"Generating {n_combinations} combinations")
 
@@ -515,7 +517,8 @@ def select_treatments_exclusive(
     
     # Smart candidate limit based on problem size
     available_ratio = n / len(similarity_matrix.columns)
-    base_candidates = min(5000, max_combinations)
+    # base_candidates = min(5000, max_combinations)
+    base_candidates = min(2000, max_combinations)
     
     if available_ratio < 0.3:  # Many locations excluded, need more candidates
         max_candidates = min(base_candidates * 2, max_combinations)
@@ -815,8 +818,10 @@ def BetterGroups(
     """
     unique_locations = data["location"].unique()
     no_locations = len(unique_locations)
-    max_group_size = round(no_locations * 0.45)
-    min_elements_in_treatment = round(no_locations * 0.15)
+    max_group_size = round(no_locations * 0.35)
+    min_elements_in_treatment = round(no_locations * 0.20)
+    # max_group_size = round(no_locations * 0.45)
+    # min_elements_in_treatment = round(no_locations * 0.15)
     min_holdout = 100 - (maximum_treatment_percentage * 100)
     total_Y = data["Y"].sum()
 
