@@ -51,19 +51,21 @@ def test_simulate_power(synthetic_series):
     y_real = synthetic_series.copy()
     y_control = synthetic_series.copy() * 0.95
 
-    delta, power, y_lifted, p_value = simulate_power(
+    delta, power, power_ci, y_lifted, p_value = simulate_power(
         y_real=y_real,
         y_control=y_control,
         delta=0.1,
         period=20,
-        n_permutations=100,
+        n_permutations_per_test=100,
         significance_level=0.05,
+        n_power_simulations=10,
     )
 
     assert isinstance(delta, float), "Delta must be a float"
     assert isinstance(power, float), "Statistical power must be a float"
+    assert isinstance(power_ci, tuple), "Power CI must be a tuple"
     assert isinstance(y_lifted, np.ndarray), "The adjusted series must be a NumPy array"
-    assert isinstance(p_value, float), "P-value must be a float"
+    assert isinstance(p_value, (float, np.floating)), "P-value must be a float"
     assert len(y_lifted) == len(
         y_real
     ), "The adjusted series must have the same length as the original"
@@ -74,19 +76,21 @@ def test_run_simulation(synthetic_series):
     y_real = synthetic_series.copy()
     y_control = synthetic_series.copy() * 0.98
 
-    delta, power, y_lifted, p_value = run_simulation(
+    delta, power, power_ci, y_lifted, p_value = run_simulation(
         delta=0.2,
         y_real=y_real,
         y_control=y_control,
         period=20,
-        n_permutations=100,
+        n_permutations_per_test=100,
         significance_level=0.05,
+        n_power_simulations=10,
     )
 
     assert isinstance(delta, float), "Delta must be a float"
     assert isinstance(power, float), "Statistical power must be a float"
+    assert isinstance(power_ci, tuple), "Power CI must be a tuple"
     assert isinstance(y_lifted, np.ndarray), "The adjusted series must be a NumPy array"
-    assert isinstance(p_value, float), "P-value must be a float"
+    assert isinstance(p_value, (float, np.floating)), "P-value must be a float"
     assert 0 <= p_value <= 1, "P-value must be between 0 and 1"
 
 
@@ -100,14 +104,14 @@ def test_evaluate_sensitivity():
     }
     deltas = [0.05, 0.1, 0.2]
     periods = [10, 20, 30]
-    n_permutations = 50
 
     sensitivity_results, lift_series = evaluate_sensitivity(
         results_by_size=results_by_size,
         deltas=deltas,
         periods=periods,
-        n_permutations=n_permutations,
+        n_permutations_per_test=50,
         significance_level=0.05,
+        n_power_simulations=10,
     )
 
     assert isinstance(sensitivity_results, dict), "The result must be a dictionary"

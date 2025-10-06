@@ -48,7 +48,8 @@ def test_run_geo_analysis(sample_data):
         deltas_range=(0.05, 0.2, 0.05),
         periods_range=(10, 30, 10),
         excluded_locations=["Location_1"],
-        n_permutations=100,
+        n_permutations_per_test=100,
+        n_power_simulations=10,
     )
 
     assert isinstance(results, dict), "The result must be a dictionary"
@@ -84,7 +85,8 @@ def test_run_geo_analysis_with_duplicates(sample_data_with_duplicates):
         deltas_range=(0.05, 0.15, 0.05),
         periods_range=(10, 20, 5),
         excluded_locations=[],
-        n_permutations=50,
+        n_permutations_per_test=50,
+        n_power_simulations=10,
     )
 
     assert isinstance(results, dict), "The result must be a dictionary"
@@ -103,7 +105,8 @@ def test_run_geo_analysis_no_excluded_locations(sample_data):
         deltas_range=(0.05, 0.10, 0.05),
         periods_range=(10, 15, 5),
         excluded_locations=[],
-        n_permutations=50,
+        n_permutations_per_test=50,
+        n_power_simulations=10,
     )
 
     assert isinstance(results, dict), "The result must be a dictionary"
@@ -121,7 +124,8 @@ def test_run_geo_analysis_high_treatment_percentage(sample_data):
         deltas_range=(0.05, 0.10, 0.05),
         periods_range=(10, 15, 5),
         excluded_locations=[],
-        n_permutations=50,
+        n_permutations_per_test=50,
+        n_power_simulations=10,
     )
 
     assert isinstance(results, dict), "The result must be a dictionary"
@@ -137,7 +141,8 @@ def test_run_geo_analysis_low_significance_level(sample_data):
         deltas_range=(0.05, 0.10, 0.05),
         periods_range=(10, 15, 5),
         excluded_locations=[],
-        n_permutations=50,
+        n_permutations_per_test=50,
+        n_power_simulations=10,
     )
 
     assert isinstance(results, dict), "The result must be a dictionary"
@@ -153,7 +158,8 @@ def test_run_geo_analysis_single_delta_period(sample_data):
         deltas_range=(0.10, 0.11, 0.05),
         periods_range=(15, 16, 5),
         excluded_locations=[],
-        n_permutations=30,
+        n_permutations_per_test=30,
+        n_power_simulations=10,
     )
 
     assert isinstance(results, dict), "The result must be a dictionary"
@@ -219,7 +225,8 @@ def test_run_geo_analysis_insufficient_data():
         deltas_range=(0.05, 0.10, 0.05),
         periods_range=(5, 10, 5),
         excluded_locations=[],
-        n_permutations=10,
+        n_permutations_per_test=10,
+        n_power_simulations=5,
     )
 
     assert isinstance(results, dict), "Should return dict even with insufficient data"
@@ -239,5 +246,6 @@ def test_run_geo_analysis_all_locations_excluded(sample_data):
             deltas_range=(0.05, 0.10, 0.05),
             periods_range=(10, 15, 5),
             excluded_locations=all_locations,
-            n_permutations=30,
+            n_permutations_per_test=30,
+            n_power_simulations=10,
         )
