@@ -22,6 +22,9 @@ RUN mkdir -p /app/traffic_metrics
 # Define the volume
 VOLUME ["/app/traffic_metrics"]
 
+# Ensure fork method for multiprocessing
+ENV PYTHONMULTIPROCESSING_START_METHOD=fork
+
 EXPOSE 8501
 
 # Add healthcheck

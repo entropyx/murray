@@ -8,8 +8,11 @@ import pytz
 log_dir = Path("logs")
 log_dir.mkdir(exist_ok=True)
 
-timestamp = datetime.now(pytz.timezone('America/Mexico_City')).strftime("%Y%m%d_%H%M%S")
-log_filename = f"murray_{timestamp}.log"
+def _get_log_filename():
+    timestamp = datetime.now(pytz.timezone('America/Mexico_City')).strftime("%Y%m%d_%H%M%S")
+    return f"murray_{timestamp}.log"
+
+log_filename = _get_log_filename()
 
 
 log_format = (

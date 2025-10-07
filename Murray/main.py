@@ -10,7 +10,14 @@ from sklearn.linear_model import Ridge
 from logger_config import get_logger
 import os
 import warnings
+import multiprocessing
 
+# Force fork method to prevent worker process reimports
+if __name__ != "__main__":  # Only when imported as module
+    try:
+        multiprocessing.set_start_method('fork', force=True)
+    except RuntimeError:
+        pass  # Already set
 
 warnings.filterwarnings("ignore", message=".*ScriptRunContext.*", category=UserWarning)
 

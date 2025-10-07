@@ -1,7 +1,7 @@
 [theme]
 
 # Primary accent for interactive elements
-primaryColor="#8bb0d0" 
+primaryColor="#8bb0d0"
 
 # Background color for the page
 backgroundColor="#F3F5F7"
@@ -12,3 +12,7 @@ secondaryBackgroundColor="#8BB0D0"
 # Text color for the page
 textColor="#000000"
 font="sans serif"
+
+[server]
+fileWatcherType = "none"
+runOnSave = false
