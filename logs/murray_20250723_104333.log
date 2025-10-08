@@ -1,0 +1,26 @@
+2025-07-23 10:43:42 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-07-23 10:43:44 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-07-23 10:43:50 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-07-23 10:43:53 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-07-23 10:43:54 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-07-23 10:43:57 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-07-23 10:43:59 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-07-23 10:44:01 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-07-23 10:44:03 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-07-23 10:44:05 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-07-23 10:44:07 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-07-23 10:44:07 | INFO     | Murray.main:run_geo_analysis_streamlit_app:2032 | Starting run_geo_analysis_streamlit_app............
+2025-07-23 10:44:07 | INFO     | Murray.main:run_geo_analysis_streamlit_app:2041 | Step 1: Generating market correlations.....
+2025-07-23 10:44:07 | INFO     | Murray.main:run_geo_analysis_streamlit_app:2043 | Market correlations generated successfully.
+2025-07-23 10:44:07 | INFO     | Murray.main:run_geo_analysis_streamlit_app:2046 | Step 2: Finding best groups for control and treatment.....
+2025-07-23 10:44:07 | INFO     | Murray.main:BetterGroups:974 | Starting single-cell mode
+2025-07-23 10:44:09 | INFO     | Murray.main:BetterGroups:1006 | Processed 1/40000 groups
+2025-07-23 10:45:54 | INFO     | Murray.main:BetterGroups:1006 | Processed 4000/40000 groups
+2025-07-23 10:47:41 | INFO     | Murray.main:BetterGroups:1006 | Processed 8000/40000 groups
+2025-07-23 10:49:35 | INFO     | Murray.main:BetterGroups:1006 | Processed 12000/40000 groups
+2025-07-23 10:51:20 | INFO     | Murray.main:BetterGroups:1006 | Processed 16000/40000 groups
+2025-07-23 10:53:09 | INFO     | Murray.main:BetterGroups:1006 | Processed 20000/40000 groups
+2025-07-23 10:55:01 | INFO     | Murray.main:BetterGroups:1006 | Processed 24000/40000 groups
+2025-07-23 10:56:54 | INFO     | Murray.main:BetterGroups:1006 | Processed 28000/40000 groups
+2025-07-23 10:58:46 | INFO     | Murray.main:BetterGroups:1006 | Processed 32000/40000 groups
+2025-07-23 11:00:41 | INFO     | Murray.main:BetterGroups:1006 | Processed 36000/40000 groups

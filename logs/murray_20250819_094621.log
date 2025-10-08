@@ -1,0 +1,31 @@
+2025-08-19 09:46:24 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-19 09:46:34 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-19 09:46:34 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-19 09:46:38 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-19 09:46:38 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-19 09:46:38 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-19 09:46:38 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-19 09:46:38 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-19 09:46:38 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-19 09:46:38 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-19 09:46:38 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-19 09:46:39 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-19 09:46:39 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-19 09:46:40 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-19 09:46:40 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-19 09:46:40 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-19 09:46:40 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-19 09:46:40 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-19 09:46:40 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-19 09:46:42 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-19 09:46:42 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-19 09:46:43 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-19 09:46:43 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-19 09:46:43 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-19 09:46:43 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-19 09:46:43 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1980 | Starting run_geo_analysis_streamlit_app............
+2025-08-19 09:46:43 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1989 | Step 1: Generating market correlations.....
+2025-08-19 09:46:43 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1994 | Market correlations generated successfully.
+2025-08-19 09:46:43 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1997 | Step 2: Finding best groups for control and treatment.....
+2025-08-19 09:46:43 | INFO     | Murray.main:BetterGroups:1256 | Starting single-cell mode
+2025-08-19 09:46:45 | INFO     | Murray.main:BetterGroups:1293 | Processed 1/30000 groups

@@ -1,0 +1,31 @@
+2025-07-16 23:28:59 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-07-16 23:29:04 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-07-16 23:29:08 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-07-16 23:29:09 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-07-16 23:29:09 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1812 | Starting run_geo_analysis_streamlit_app............
+2025-07-16 23:29:09 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1821 | Step 1: Generating market correlations.....
+2025-07-16 23:29:09 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1823 | Market correlations generated successfully.
+2025-07-16 23:29:09 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1826 | Step 2: Finding best groups for control and treatment.....
+2025-07-16 23:29:09 | INFO     | Murray.main:BetterGroups:745 | Starting global multi-cell optimization for 3 cells with allowed sizes [3, 4, 5, 6]
+2025-07-16 23:29:09 | INFO     | Murray.main:optimize_global_multicell:944 | Starting global multi-cell optimization for 3 cells with sizes [3, 4, 5, 6]
+2025-07-16 23:29:09 | INFO     | Murray.main:optimize_global_multicell:962 | Phase 1: Generating candidates for all allowed sizes
+2025-07-16 23:29:09 | INFO     | Murray.main:optimize_global_multicell:965 | Generating candidates for size 3
+2025-07-16 23:29:42 | INFO     | Murray.main:optimize_global_multicell:1004 | Generated 9 candidates for size 3 (out of 4830 total results)
+2025-07-16 23:29:42 | INFO     | Murray.main:optimize_global_multicell:965 | Generating candidates for size 4
+2025-07-16 23:30:14 | INFO     | Murray.main:optimize_global_multicell:1004 | Generated 9 candidates for size 4 (out of 4649 total results)
+2025-07-16 23:30:14 | INFO     | Murray.main:optimize_global_multicell:965 | Generating candidates for size 5
+2025-07-16 23:30:43 | INFO     | Murray.main:optimize_global_multicell:1004 | Generated 9 candidates for size 5 (out of 4341 total results)
+2025-07-16 23:30:43 | INFO     | Murray.main:optimize_global_multicell:965 | Generating candidates for size 6
+2025-07-16 23:31:10 | INFO     | Murray.main:optimize_global_multicell:1004 | Generated 9 candidates for size 6 (out of 4103 total results)
+2025-07-16 23:31:10 | INFO     | Murray.main:optimize_global_multicell:1013 | Phase 2: Global optimization - selecting 3 cells from 36 candidates
+2025-07-16 23:31:10 | INFO     | Murray.main:optimize_global_multicell:1067 | Successfully selected 3 cells from 36 candidates (3 rejected)
+2025-07-16 23:31:10 | INFO     | Murray.main:optimize_global_multicell:1106 | Global optimization completed: 3 cells selected
+2025-07-16 23:31:10 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1843 | BetterGroups completed successfully. Results for 1 sizes
+2025-07-16 23:31:10 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1848 | Step 3: Evaluating sensitivity for different deltas and periods.....
+2025-07-16 23:31:10 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1855 | Detected global optimization results, generating sensitivity data by size
+2025-07-16 23:32:10 | INFO     | Murray.main:evaluate_sensitivity:1690 | Period 20 completed for size 6. MDE found: 0.02 with p-value: 0.0005, power: 1.0000
+2025-07-16 23:33:10 | INFO     | Murray.main:evaluate_sensitivity:1690 | Period 25 completed for size 6. MDE found: 0.02 with p-value: 0.0033, power: 0.9800
+2025-07-16 23:34:10 | INFO     | Murray.main:evaluate_sensitivity:1690 | Period 30 completed for size 6. MDE found: 0.02 with p-value: 0.0243, power: 0.9000
+2025-07-16 23:34:10 | INFO     | Murray.main:evaluate_sensitivity:1707 | evaluate_sensitivity completed successfully.
+2025-07-16 23:34:10 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1906 | Sensitivity evaluation completed successfully.
+2025-07-16 23:34:10 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1910 | run_geo_analysis_streamlit_app completed successfully

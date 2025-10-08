@@ -1,0 +1,58 @@
+2025-09-17 18:52:38 | INFO     | Murray.post_analysis:run_geo_evaluation:21 | Starting run_geo_evaluation
+2025-09-17 18:52:38 | INFO     | Murray.post_analysis:run_geo_evaluation:22 | Input data shape: (6464, 6)
+2025-09-17 18:52:38 | INFO     | Murray.post_analysis:run_geo_evaluation:23 | Treatment group: ['baja california', 'morelos', 'jalisco']
+2025-09-17 18:52:38 | INFO     | Murray.post_analysis:run_geo_evaluation:24 | Start treatment: 2024-01-10 00:00:00, End treatment: 2024-10-26 00:00:00
+2025-09-17 18:52:38 | INFO     | Murray.post_analysis:run_geo_evaluation:25 | n_permutations: 50000, significance_level: 0.1
+2025-09-17 18:52:38 | INFO     | Murray.post_analysis:run_geo_evaluation:40 | Treatment period positions: 0 to 121
+2025-09-17 18:52:38 | INFO     | Murray.post_analysis:run_geo_evaluation:49 | Generating correlation matrix...
+2025-09-17 18:52:38 | INFO     | Murray.post_analysis:run_geo_evaluation:52 | Selecting control group...
+2025-09-17 18:52:38 | INFO     | Murray.post_analysis:run_geo_evaluation:58 | Control group selected: ['querétaro', 'sinaloa', 'sonora', 'veracruz', 'oaxaca', 'tabasco', 'guerrero', 'chihuahua', 'yucatán', 'puebla', 'chiapas', 'michoacán', 'aguascalientes', 'tamaulipas', 'quintana roo']
+2025-09-17 18:52:38 | INFO     | Murray.post_analysis:run_geo_evaluation:68 | Pivot table shape: (202, 32)
+2025-09-17 18:52:38 | INFO     | Murray.post_analysis:run_geo_evaluation:75 | Scaling data...
+2025-09-17 18:52:38 | INFO     | Murray.post_analysis:run_geo_evaluation:94 | Fitting synthetic control model...
+2025-09-17 18:53:30 | INFO     | Murray.post_analysis:run_geo_evaluation:21 | Starting run_geo_evaluation
+2025-09-17 18:53:30 | INFO     | Murray.post_analysis:run_geo_evaluation:22 | Input data shape: (6464, 6)
+2025-09-17 18:53:30 | INFO     | Murray.post_analysis:run_geo_evaluation:23 | Treatment group: ['baja california', 'morelos', 'jalisco']
+2025-09-17 18:53:30 | INFO     | Murray.post_analysis:run_geo_evaluation:24 | Start treatment: 2024-01-10 00:00:00, End treatment: 2024-10-25 00:00:00
+2025-09-17 18:53:30 | INFO     | Murray.post_analysis:run_geo_evaluation:25 | n_permutations: 50000, significance_level: 0.1
+2025-09-17 18:53:30 | INFO     | Murray.post_analysis:run_geo_evaluation:40 | Treatment period positions: 0 to 120
+2025-09-17 18:53:30 | INFO     | Murray.post_analysis:run_geo_evaluation:49 | Generating correlation matrix...
+2025-09-17 18:53:30 | INFO     | Murray.post_analysis:run_geo_evaluation:52 | Selecting control group...
+2025-09-17 18:53:30 | INFO     | Murray.post_analysis:run_geo_evaluation:58 | Control group selected: ['querétaro', 'sinaloa', 'sonora', 'veracruz', 'oaxaca', 'tabasco', 'guerrero', 'chihuahua', 'yucatán', 'puebla', 'chiapas', 'michoacán', 'aguascalientes', 'tamaulipas', 'quintana roo']
+2025-09-17 18:53:30 | INFO     | Murray.post_analysis:run_geo_evaluation:68 | Pivot table shape: (202, 32)
+2025-09-17 18:53:30 | INFO     | Murray.post_analysis:run_geo_evaluation:75 | Scaling data...
+2025-09-17 18:53:30 | INFO     | Murray.post_analysis:run_geo_evaluation:94 | Fitting synthetic control model...
+2025-09-17 18:55:11 | INFO     | Murray.post_analysis:run_geo_evaluation:21 | Starting run_geo_evaluation
+2025-09-17 18:55:11 | INFO     | Murray.post_analysis:run_geo_evaluation:22 | Input data shape: (6464, 6)
+2025-09-17 18:55:11 | INFO     | Murray.post_analysis:run_geo_evaluation:23 | Treatment group: ['baja california', 'morelos', 'jalisco']
+2025-09-17 18:55:11 | INFO     | Murray.post_analysis:run_geo_evaluation:24 | Start treatment: 2025-01-01 00:00:00, End treatment: 2025-01-15 00:00:00
+2025-09-17 18:55:11 | INFO     | Murray.post_analysis:run_geo_evaluation:25 | n_permutations: 50000, significance_level: 0.1
+2025-09-17 18:55:11 | INFO     | Murray.post_analysis:run_geo_evaluation:40 | Treatment period positions: 187 to 202
+2025-09-17 18:55:11 | INFO     | Murray.post_analysis:run_geo_evaluation:49 | Generating correlation matrix...
+2025-09-17 18:55:11 | INFO     | Murray.post_analysis:run_geo_evaluation:52 | Selecting control group...
+2025-09-17 18:55:11 | INFO     | Murray.post_analysis:run_geo_evaluation:58 | Control group selected: ['querétaro', 'sinaloa', 'sonora', 'veracruz', 'oaxaca', 'tabasco', 'guerrero', 'chihuahua', 'yucatán', 'puebla', 'chiapas', 'michoacán', 'aguascalientes', 'tamaulipas', 'quintana roo']
+2025-09-17 18:55:11 | INFO     | Murray.post_analysis:run_geo_evaluation:68 | Pivot table shape: (202, 32)
+2025-09-17 18:55:11 | INFO     | Murray.post_analysis:run_geo_evaluation:75 | Scaling data...
+2025-09-17 18:55:11 | INFO     | Murray.post_analysis:run_geo_evaluation:94 | Fitting synthetic control model...
+2025-09-17 18:55:11 | INFO     | Murray.post_analysis:run_geo_evaluation:97 | Model fitted successfully
+2025-09-17 18:55:11 | INFO     | Murray.post_analysis:run_geo_evaluation:99 | Making predictions...
+2025-09-17 18:55:11 | INFO     | Murray.post_analysis:run_geo_evaluation:117 | Calculating metrics...
+2025-09-17 18:55:11 | INFO     | Murray.post_analysis:run_geo_evaluation:118 | Data shapes - treatment: (202,), counterfactual: (202,)
+2025-09-17 18:55:11 | INFO     | Murray.post_analysis:run_geo_evaluation:128 | Treatment period sum: 2937
+2025-09-17 18:55:11 | INFO     | Murray.post_analysis:run_geo_evaluation:129 | Counterfactual period sum: 3161.6644539868757
+2025-09-17 18:55:11 | INFO     | Murray.post_analysis:run_geo_evaluation:130 | Lift difference (treatment - counterfactual): -224.66445398687574
+2025-09-17 18:55:11 | INFO     | Murray.post_analysis:run_geo_evaluation:144 | Observed statistic (sum of residuals): -224.6644539868752
+2025-09-17 18:55:11 | INFO     | Murray.post_analysis:run_geo_evaluation:145 | Manual verification - observed_stat should equal lift_difference: -224.66445398687574
+2025-09-17 18:55:11 | INFO     | Murray.post_analysis:run_geo_evaluation:147 | Starting permutation test with 50000 permutations...
+2025-09-17 18:55:11 | INFO     | Murray.post_analysis:run_geo_evaluation:152 | Completed 10000/50000 permutations
+2025-09-17 18:55:11 | INFO     | Murray.post_analysis:run_geo_evaluation:152 | Completed 20000/50000 permutations
+2025-09-17 18:55:11 | INFO     | Murray.post_analysis:run_geo_evaluation:152 | Completed 30000/50000 permutations
+2025-09-17 18:55:11 | INFO     | Murray.post_analysis:run_geo_evaluation:152 | Completed 40000/50000 permutations
+2025-09-17 18:55:11 | INFO     | Murray.post_analysis:run_geo_evaluation:158 | Permutation test completed, calculating p-value and power...
+2025-09-17 18:55:11 | INFO     | Murray.post_analysis:run_geo_evaluation:164 | Final results:
+2025-09-17 18:55:11 | INFO     | Murray.post_analysis:run_geo_evaluation:165 |   MAPE: 9.5148
+2025-09-17 18:55:11 | INFO     | Murray.post_analysis:run_geo_evaluation:166 |   SMAPE: 9.2077
+2025-09-17 18:55:11 | INFO     | Murray.post_analysis:run_geo_evaluation:167 |   Percentage lift: -7.1059%
+2025-09-17 18:55:11 | INFO     | Murray.post_analysis:run_geo_evaluation:168 |   P-value: 0.057700
+2025-09-17 18:55:11 | INFO     | Murray.post_analysis:run_geo_evaluation:169 |   Power: 1.0000
+2025-09-17 18:55:11 | INFO     | Murray.post_analysis:run_geo_evaluation:188 | run_geo_evaluation completed successfully

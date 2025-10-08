@@ -1,0 +1,42 @@
+2025-08-15 12:40:34 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-15 12:40:34 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-15 12:40:34 | WARNING  | Murray.auxiliary:analyze_data_characteristics:182 | Target column 'Ventas totales' not found in data. Available columns: ['time', 'location', 'Y', 'Pedidos']
+2025-08-15 12:40:46 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-15 12:40:48 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-15 12:40:53 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-15 12:40:53 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-15 12:40:53 | WARNING  | Murray.auxiliary:analyze_data_characteristics:182 | Target column 'Ventas totales' not found in data. Available columns: ['time', 'location', 'Y', 'Pedidos']
+2025-08-15 12:41:01 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-15 12:41:01 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-15 12:41:01 | WARNING  | Murray.auxiliary:analyze_data_characteristics:182 | Target column 'Ventas totales' not found in data. Available columns: ['time', 'location', 'Y', 'Pedidos']
+2025-08-15 12:41:06 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-15 12:41:06 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-15 12:41:06 | WARNING  | Murray.auxiliary:analyze_data_characteristics:182 | Target column 'Ventas totales' not found in data. Available columns: ['time', 'location', 'Y', 'Pedidos']
+2025-08-15 12:41:20 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-15 12:41:20 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-15 12:41:20 | WARNING  | Murray.auxiliary:analyze_data_characteristics:182 | Target column 'Ventas totales' not found in data. Available columns: ['time', 'location', 'Y', 'Pedidos']
+2025-08-15 12:41:22 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-15 12:41:23 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-15 12:41:23 | WARNING  | Murray.auxiliary:analyze_data_characteristics:182 | Target column 'Ventas totales' not found in data. Available columns: ['time', 'location', 'Y', 'Pedidos']
+2025-08-15 12:41:24 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-15 12:41:24 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-15 12:41:24 | WARNING  | Murray.auxiliary:analyze_data_characteristics:182 | Target column 'Ventas totales' not found in data. Available columns: ['time', 'location', 'Y', 'Pedidos']
+2025-08-15 12:41:26 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-15 12:41:26 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-15 12:41:26 | WARNING  | Murray.auxiliary:analyze_data_characteristics:182 | Target column 'Ventas totales' not found in data. Available columns: ['time', 'location', 'Y', 'Pedidos']
+2025-08-15 12:41:29 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-15 12:41:29 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-15 12:41:29 | WARNING  | Murray.auxiliary:analyze_data_characteristics:182 | Target column 'Ventas totales' not found in data. Available columns: ['time', 'location', 'Y', 'Pedidos']
+2025-08-15 12:41:31 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-15 12:41:31 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-15 12:41:31 | WARNING  | Murray.auxiliary:analyze_data_characteristics:182 | Target column 'Ventas totales' not found in data. Available columns: ['time', 'location', 'Y', 'Pedidos']
+2025-08-15 12:41:32 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-15 12:41:32 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-15 12:41:32 | WARNING  | Murray.auxiliary:analyze_data_characteristics:182 | Target column 'Ventas totales' not found in data. Available columns: ['time', 'location', 'Y', 'Pedidos']
+2025-08-15 12:41:35 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-15 12:41:35 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-15 12:41:35 | WARNING  | Murray.auxiliary:analyze_data_characteristics:182 | Target column 'Ventas totales' not found in data. Available columns: ['time', 'location', 'Y', 'Pedidos']
+2025-08-15 12:41:38 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-15 12:41:38 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-15 12:41:38 | WARNING  | Murray.auxiliary:analyze_data_characteristics:182 | Target column 'Ventas totales' not found in data. Available columns: ['time', 'location', 'Y', 'Pedidos']
+2025-08-15 12:41:38 | INFO     | Murray.metrics:update_metrics:59 | New record added: {'timestamp': '2025-08-15 12:41:38', 'section': 'experimental_evaluation', 'date': '2025-08-15', 'day_of_week': 'Friday', 'hour': 12}

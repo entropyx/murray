@@ -1,0 +1,20 @@
+2025-08-21 16:26:06 | INFO     | Murray.main:run_geo_analysis_streamlit_app:2057 | Starting run_geo_analysis_streamlit_app............
+2025-08-21 16:26:06 | INFO     | Murray.main:run_geo_analysis_streamlit_app:2066 | Step 1: Generating market correlations.....
+2025-08-21 16:26:06 | INFO     | Murray.main:run_geo_analysis_streamlit_app:2070 | Market correlations generated successfully.
+2025-08-21 16:26:06 | INFO     | Murray.main:run_geo_analysis_streamlit_app:2073 | Step 2: Finding best groups for control and treatment.....
+2025-08-21 16:26:06 | INFO     | Murray.main:BetterGroups:998 | Starting single-cell mode
+2025-08-21 16:26:09 | INFO     | Murray.main:BetterGroups:1030 | Processed 1/40000 groups
+2025-08-21 16:28:48 | INFO     | Murray.main:BetterGroups:1030 | Processed 4000/40000 groups
+2025-08-21 16:31:22 | INFO     | Murray.main:BetterGroups:1030 | Processed 8000/40000 groups
+2025-08-21 16:33:56 | INFO     | Murray.main:BetterGroups:1030 | Processed 12000/40000 groups
+2025-08-21 16:36:30 | INFO     | Murray.main:BetterGroups:1030 | Processed 16000/40000 groups
+2025-08-21 16:39:06 | INFO     | Murray.main:BetterGroups:1030 | Processed 20000/40000 groups
+2025-08-21 16:41:47 | INFO     | Murray.main:BetterGroups:1030 | Processed 24000/40000 groups
+2025-08-21 16:44:30 | INFO     | Murray.main:BetterGroups:1030 | Processed 28000/40000 groups
+2025-08-21 16:47:14 | INFO     | Murray.main:BetterGroups:1030 | Processed 32000/40000 groups
+2025-08-21 16:47:35 | INFO     | Murray.main:BetterGroups:1030 | Processed 36000/40000 groups
+2025-08-21 16:47:51 | INFO     | Murray.main:BetterGroups:1030 | Processed 40000/40000 groups
+2025-08-21 16:47:51 | INFO     | Murray.main:BetterGroups:1031 | All groups processed. Results count: 40000
+2025-08-21 16:47:51 | INFO     | Murray.main:run_geo_analysis_streamlit_app:2092 | BetterGroups completed successfully. Results for 8 sizes
+2025-08-21 16:47:51 | INFO     | Murray.main:run_geo_analysis_streamlit_app:2099 | Step 3: Evaluating sensitivity for different deltas and periods.....
+2025-08-21 16:48:58 | INFO     | Murray.main:evaluate_sensitivity:1928 | Period 5 completed for size 6. MDE found: None with p-value: None, power: None

@@ -1,0 +1,25 @@
+2025-09-02 09:24:12 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-09-02 09:24:21 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-09-02 09:24:21 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-09-02 09:24:24 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-09-02 09:24:24 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-09-02 09:24:31 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-09-02 09:24:31 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-09-02 09:24:31 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-09-02 09:24:31 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-09-02 09:24:31 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1907 | Starting run_geo_analysis_streamlit_app............
+2025-09-02 09:24:31 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1916 | Step 1: Generating market correlations.....
+2025-09-02 09:24:31 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-09-02 09:24:31 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-09-02 09:25:39 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-09-02 09:25:39 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-09-02 09:25:40 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-09-02 09:25:40 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-09-02 09:25:41 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-09-02 09:25:41 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-09-02 09:25:41 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1907 | Starting run_geo_analysis_streamlit_app............
+2025-09-02 09:25:41 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1916 | Step 1: Generating market correlations.....
+2025-09-02 09:25:41 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-09-02 09:25:41 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-09-02 09:26:11 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-09-02 09:26:11 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection

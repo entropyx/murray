@@ -1,0 +1,3 @@
+2025-08-13 16:19:50 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-13 16:19:50 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-13 16:19:50 | ERROR    | Murray.auxiliary:analyze_data_characteristics:280 | Error analyzing data characteristics: Target column 'transactions' not found in data

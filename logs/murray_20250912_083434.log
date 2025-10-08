@@ -1,0 +1,18 @@
+2025-09-12 08:34:34 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-09-12 08:34:34 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-09-12 08:34:36 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-09-12 08:34:36 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-09-12 08:34:37 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-09-12 08:34:38 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-09-12 08:34:38 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-09-12 08:34:38 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-09-12 08:34:38 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1909 | Starting run_geo_analysis_streamlit_app............
+2025-09-12 08:34:38 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1918 | Step 1: Generating market correlations.....
+2025-09-12 08:34:38 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1923 | Market correlations generated successfully.
+2025-09-12 08:34:38 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1926 | Step 2: Finding best groups for control and treatment.....
+2025-09-12 08:34:38 | INFO     | Murray.main:BetterGroups:960 | Starting single-cell mode
+2025-09-12 08:34:41 | INFO     | Murray.main:BetterGroups:998 | Processed 1/50000 groups
+2025-09-12 08:35:22 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-09-12 08:35:23 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-09-12 08:35:23 | INFO     | __main__:<module>:970 | 🚫 CANCELLING SIMULATION: Parameters changed during execution
+2025-09-12 08:35:27 | INFO     | Murray.main:BetterGroups:998 | Processed 5000/50000 groups

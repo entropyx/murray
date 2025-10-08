@@ -1,0 +1,30 @@
+2025-10-05 21:03:14 | INFO     | Murray.post_analysis:run_geo_evaluation:22 | Starting run_geo_evaluation
+2025-10-05 21:03:14 | INFO     | Murray.post_analysis:run_geo_evaluation:23 | Input data shape: (1000, 3)
+2025-10-05 21:03:14 | INFO     | Murray.post_analysis:run_geo_evaluation:24 | Treatment group: ['Location_0', 'Location_1']
+2025-10-05 21:03:14 | INFO     | Murray.post_analysis:run_geo_evaluation:25 | Start treatment: 01-03-2023, End treatment: 10-03-2023
+2025-10-05 21:03:14 | INFO     | Murray.post_analysis:run_geo_evaluation:26 | n_permutations: 100, significance_level: 0.05
+2025-10-05 21:03:14 | INFO     | Murray.post_analysis:run_geo_evaluation:41 | Treatment period positions: 59 to 69
+2025-10-05 21:03:14 | INFO     | Murray.post_analysis:run_geo_evaluation:50 | Generating correlation matrix...
+2025-10-05 21:03:14 | INFO     | Murray.post_analysis:run_geo_evaluation:53 | Selecting control group...
+2025-10-05 21:03:14 | INFO     | Murray.post_analysis:run_geo_evaluation:59 | Control group selected: ['Location_4', 'Location_3']
+2025-10-05 21:03:14 | INFO     | Murray.post_analysis:run_geo_evaluation:69 | Pivot table shape: (100, 10)
+2025-10-05 21:03:14 | INFO     | Murray.post_analysis:run_geo_evaluation:82 | Scaling data...
+2025-10-05 21:03:14 | INFO     | Murray.post_analysis:run_geo_evaluation:102 | Fitting synthetic control model...
+2025-10-05 21:03:14 | INFO     | Murray.post_analysis:run_geo_evaluation:105 | Model fitted successfully
+2025-10-05 21:03:14 | INFO     | Murray.post_analysis:run_geo_evaluation:107 | Making predictions...
+2025-10-05 21:03:14 | INFO     | Murray.post_analysis:run_geo_evaluation:138 | Calculating metrics...
+2025-10-05 21:03:14 | INFO     | Murray.post_analysis:run_geo_evaluation:139 | Data shapes - treatment: (69,), counterfactual: (69,)
+2025-10-05 21:03:14 | INFO     | Murray.post_analysis:run_geo_evaluation:149 | Treatment period sum: 838.3425619656709
+2025-10-05 21:03:14 | INFO     | Murray.post_analysis:run_geo_evaluation:150 | Counterfactual period sum: 1170.3472971464457
+2025-10-05 21:03:14 | INFO     | Murray.post_analysis:run_geo_evaluation:151 | Lift difference (treatment - counterfactual): -332.0047351807748
+2025-10-05 21:03:14 | INFO     | Murray.post_analysis:run_geo_evaluation:165 | Observed statistic (sum of residuals): -332.0047351807748
+2025-10-05 21:03:14 | INFO     | Murray.post_analysis:run_geo_evaluation:166 | Manual verification - observed_stat should equal lift_difference: -332.0047351807748
+2025-10-05 21:03:14 | INFO     | Murray.post_analysis:run_geo_evaluation:168 | Starting permutation test with 100 permutations...
+2025-10-05 21:03:14 | INFO     | Murray.post_analysis:run_geo_evaluation:179 | Permutation test completed, calculating p-value and power...
+2025-10-05 21:03:14 | INFO     | Murray.post_analysis:run_geo_evaluation:185 | Final results:
+2025-10-05 21:03:14 | INFO     | Murray.post_analysis:run_geo_evaluation:186 |   MAPE: 69.3935
+2025-10-05 21:03:14 | INFO     | Murray.post_analysis:run_geo_evaluation:187 |   SMAPE: 51.8033
+2025-10-05 21:03:14 | INFO     | Murray.post_analysis:run_geo_evaluation:188 |   Percentage lift: -28.3681%
+2025-10-05 21:03:14 | INFO     | Murray.post_analysis:run_geo_evaluation:189 |   P-value: 0.090000
+2025-10-05 21:03:14 | INFO     | Murray.post_analysis:run_geo_evaluation:190 |   Power: 0.0000
+2025-10-05 21:03:14 | INFO     | Murray.post_analysis:run_geo_evaluation:217 | run_geo_evaluation completed successfully

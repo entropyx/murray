@@ -1,0 +1,12 @@
+2025-09-03 19:17:09 | INFO     | __main__:<module>:157 | user isaac@entropy.tech logged in
+2025-09-03 19:17:09 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-09-03 19:17:10 | INFO     | __main__:<module>:157 | user isaac@entropy.tech logged in
+2025-09-03 19:17:10 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-09-03 19:17:10 | INFO     | __main__:<module>:157 | user isaac@entropy.tech logged in
+2025-09-03 19:17:10 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-09-03 19:17:10 | INFO     | __main__:<module>:1021 | []
+2025-09-03 19:17:10 | INFO     | Murray.main:run_geo_analysis_streamlit_app:2085 | Starting run_geo_analysis_streamlit_app............
+2025-09-03 19:17:10 | INFO     | Murray.main:run_geo_analysis_streamlit_app:2094 | Step 1: Generating market correlations.....
+2025-09-03 19:17:10 | INFO     | Murray.main:run_geo_analysis_streamlit_app:2098 | Market correlations generated successfully.
+2025-09-03 19:17:10 | INFO     | Murray.main:run_geo_analysis_streamlit_app:2101 | Step 2: Finding best groups for control and treatment.....
+2025-09-03 19:17:10 | INFO     | Murray.main:BetterGroups:1003 | Starting single-cell mode

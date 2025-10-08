@@ -1,0 +1,14 @@
+2025-07-16 10:46:11 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-07-16 10:46:14 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-07-16 10:46:14 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1529 | Starting run_geo_analysis_streamlit_app............
+2025-07-16 10:46:14 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1538 | Step 1: Generating market correlations.....
+2025-07-16 10:46:14 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1540 | Market correlations generated successfully.
+2025-07-16 10:46:14 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1543 | Step 2: Finding best groups for control and treatment.....
+2025-07-16 10:46:14 | INFO     | Murray.main:BetterGroups:893 | Starting single-cell mode
+2025-07-16 10:46:16 | INFO     | Murray.main:BetterGroups:925 | Processed 1/35000 groups
+2025-07-16 10:46:51 | INFO     | Murray.main:BetterGroups:925 | Processed 3500/35000 groups
+2025-07-16 10:47:24 | INFO     | Murray.main:BetterGroups:925 | Processed 7000/35000 groups
+2025-07-16 10:47:57 | INFO     | Murray.main:BetterGroups:925 | Processed 10500/35000 groups
+2025-07-16 10:48:33 | INFO     | Murray.main:BetterGroups:925 | Processed 14000/35000 groups
+2025-07-16 10:49:08 | INFO     | Murray.main:BetterGroups:925 | Processed 17500/35000 groups
+2025-07-16 10:49:43 | INFO     | Murray.main:BetterGroups:925 | Processed 21000/35000 groups

@@ -1,0 +1,82 @@
+2025-07-15 13:06:59 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1524 | Starting run_geo_analysis_streamlit_app............
+2025-07-15 13:06:59 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1533 | Step 1: Generating market correlations.....
+2025-07-15 13:06:59 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1535 | Market correlations generated successfully.
+2025-07-15 13:06:59 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1538 | Step 2: Finding best groups for control and treatment.....
+2025-07-15 13:06:59 | INFO     | Murray.main:BetterGroups:894 | Starting single-cell mode
+2025-07-15 13:07:00 | INFO     | Murray.main:BetterGroups:926 | Processed 1/50000 groups
+2025-07-15 13:07:24 | INFO     | Murray.main:BetterGroups:926 | Processed 5000/50000 groups
+2025-07-15 13:07:46 | INFO     | Murray.main:BetterGroups:926 | Processed 10000/50000 groups
+2025-07-15 13:08:07 | INFO     | Murray.main:BetterGroups:926 | Processed 15000/50000 groups
+2025-07-15 13:08:28 | INFO     | Murray.main:BetterGroups:926 | Processed 20000/50000 groups
+2025-07-15 13:08:46 | INFO     | Murray.main:BetterGroups:926 | Processed 25000/50000 groups
+2025-07-15 13:09:03 | INFO     | Murray.main:BetterGroups:926 | Processed 30000/50000 groups
+2025-07-15 13:09:17 | INFO     | Murray.main:BetterGroups:926 | Processed 35000/50000 groups
+2025-07-15 13:09:28 | INFO     | Murray.main:BetterGroups:926 | Processed 40000/50000 groups
+2025-07-15 13:09:38 | INFO     | Murray.main:BetterGroups:926 | Processed 45000/50000 groups
+2025-07-15 13:09:44 | INFO     | Murray.main:BetterGroups:926 | Processed 50000/50000 groups
+2025-07-15 13:09:44 | INFO     | Murray.main:BetterGroups:927 | All groups processed. Results count: 50000
+2025-07-15 13:09:44 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1554 | BetterGroups completed successfully. Results for 10 sizes
+2025-07-15 13:09:44 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1559 | Step 3: Evaluating sensitivity for different deltas and periods.....
+2025-07-15 13:10:17 | INFO     | Murray.main:evaluate_sensitivity:1408 | Period 5 completed for size 5. MDE found: 0.060000000000000005 with p-value: 0.03818, power: 0.92 and CI: (np.float64(0.8448013617144566), np.float64(0.9951986382855434))
+2025-07-15 13:10:51 | INFO     | Murray.main:evaluate_sensitivity:1408 | Period 10 completed for size 5. MDE found: 0.05 with p-value: 0.040268000000000005, power: 0.84 and CI: (np.float64(0.7383819858489648), np.float64(0.9416180141510352))
+2025-07-15 13:11:25 | INFO     | Murray.main:evaluate_sensitivity:1408 | Period 15 completed for size 5. MDE found: 0.04 with p-value: 0.056178000000000006, power: 0.88 and CI: (np.float64(0.7899252577022837), np.float64(0.9700747422977163))
+2025-07-15 13:11:59 | INFO     | Murray.main:evaluate_sensitivity:1408 | Period 20 completed for size 5. MDE found: 0.03 with p-value: 0.05203, power: 0.82 and CI: (np.float64(0.713508670775504), np.float64(0.926491329224496))
+2025-07-15 13:12:33 | INFO     | Murray.main:evaluate_sensitivity:1408 | Period 25 completed for size 5. MDE found: 0.03 with p-value: 0.02645, power: 0.94 and CI: (np.float64(0.874172005954913), 1)
+2025-07-15 13:13:06 | INFO     | Murray.main:evaluate_sensitivity:1408 | Period 30 completed for size 5. MDE found: 0.03 with p-value: 0.006914000000000001, power: 0.98 and CI: (np.float64(0.9411939798484823), 1)
+2025-07-15 13:13:39 | INFO     | Murray.main:evaluate_sensitivity:1408 | Period 5 completed for size 6. MDE found: 0.04 with p-value: 0.044654, power: 0.88 and CI: (np.float64(0.7899252577022837), np.float64(0.9700747422977163))
+2025-07-15 13:14:12 | INFO     | Murray.main:evaluate_sensitivity:1408 | Period 10 completed for size 6. MDE found: 0.03 with p-value: 0.012972000000000001, power: 0.98 and CI: (np.float64(0.9411939798484823), 1)
+2025-07-15 13:14:45 | INFO     | Murray.main:evaluate_sensitivity:1408 | Period 15 completed for size 6. MDE found: 0.02 with p-value: 0.029494, power: 0.96 and CI: (np.float64(0.9056828866746399), 1)
+2025-07-15 13:15:18 | INFO     | Murray.main:evaluate_sensitivity:1408 | Period 20 completed for size 6. MDE found: 0.02 with p-value: 0.04211199999999999, power: 0.94 and CI: (np.float64(0.874172005954913), 1)
+2025-07-15 13:15:52 | INFO     | Murray.main:evaluate_sensitivity:1408 | Period 25 completed for size 6. MDE found: 0.02 with p-value: 0.021948, power: 0.96 and CI: (np.float64(0.9056828866746399), 1)
+2025-07-15 13:16:25 | INFO     | Murray.main:evaluate_sensitivity:1408 | Period 30 completed for size 6. MDE found: 0.01 with p-value: 0.070734, power: 0.82 and CI: (np.float64(0.713508670775504), np.float64(0.926491329224496))
+2025-07-15 13:16:57 | INFO     | Murray.main:evaluate_sensitivity:1408 | Period 5 completed for size 7. MDE found: 0.05 with p-value: 0.032468, power: 0.94 and CI: (np.float64(0.874172005954913), 1)
+2025-07-15 13:17:31 | INFO     | Murray.main:evaluate_sensitivity:1408 | Period 10 completed for size 7. MDE found: 0.03 with p-value: 0.032580000000000005, power: 0.86 and CI: (np.float64(0.7638201018923393), np.float64(0.9561798981076607))
+2025-07-15 13:18:05 | INFO     | Murray.main:evaluate_sensitivity:1408 | Period 15 completed for size 7. MDE found: 0.02 with p-value: 0.055116, power: 0.82 and CI: (np.float64(0.713508670775504), np.float64(0.926491329224496))
+2025-07-15 13:18:38 | INFO     | Murray.main:evaluate_sensitivity:1408 | Period 20 completed for size 7. MDE found: 0.02 with p-value: 0.060994, power: 0.8 and CI: (np.float64(0.6891256567099494), np.float64(0.9108743432900507))
+2025-07-15 13:19:12 | INFO     | Murray.main:evaluate_sensitivity:1408 | Period 25 completed for size 7. MDE found: 0.02 with p-value: 0.070188, power: 0.8 and CI: (np.float64(0.6891256567099494), np.float64(0.9108743432900507))
+2025-07-15 13:19:46 | INFO     | Murray.main:evaluate_sensitivity:1408 | Period 30 completed for size 7. MDE found: 0.02 with p-value: 0.019012, power: 0.96 and CI: (np.float64(0.9056828866746399), 1)
+2025-07-15 13:20:20 | INFO     | Murray.main:evaluate_sensitivity:1408 | Period 5 completed for size 8. MDE found: 0.05 with p-value: 0.07728399999999999, power: 0.8 and CI: (np.float64(0.6891256567099494), np.float64(0.9108743432900507))
+2025-07-15 13:20:54 | INFO     | Murray.main:evaluate_sensitivity:1408 | Period 10 completed for size 8. MDE found: 0.03 with p-value: 0.030034, power: 0.94 and CI: (np.float64(0.874172005954913), 1)
+2025-07-15 13:21:29 | INFO     | Murray.main:evaluate_sensitivity:1408 | Period 15 completed for size 8. MDE found: 0.03 with p-value: 0.025384000000000004, power: 0.96 and CI: (np.float64(0.9056828866746399), 1)
+2025-07-15 13:22:03 | INFO     | Murray.main:evaluate_sensitivity:1408 | Period 20 completed for size 8. MDE found: 0.03 with p-value: 0.026111999999999993, power: 0.92 and CI: (np.float64(0.8448013617144566), np.float64(0.9951986382855434))
+2025-07-15 13:22:37 | INFO     | Murray.main:evaluate_sensitivity:1408 | Period 25 completed for size 8. MDE found: 0.03 with p-value: 0.022424, power: 0.94 and CI: (np.float64(0.874172005954913), 1)
+2025-07-15 13:23:10 | INFO     | Murray.main:evaluate_sensitivity:1408 | Period 30 completed for size 8. MDE found: 0.02 with p-value: 0.033892000000000005, power: 0.94 and CI: (np.float64(0.874172005954913), 1)
+2025-07-15 13:23:44 | INFO     | Murray.main:evaluate_sensitivity:1408 | Period 5 completed for size 9. MDE found: 0.04 with p-value: 0.006608, power: 1.0 and CI: (np.float64(1.0), 1)
+2025-07-15 13:24:18 | INFO     | Murray.main:evaluate_sensitivity:1408 | Period 10 completed for size 9. MDE found: 0.02 with p-value: 0.017192, power: 0.96 and CI: (np.float64(0.9056828866746399), 1)
+2025-07-15 13:24:52 | INFO     | Murray.main:evaluate_sensitivity:1408 | Period 15 completed for size 9. MDE found: 0.02 with p-value: 0.003676, power: 1.0 and CI: (np.float64(1.0), 1)
+2025-07-15 13:25:26 | INFO     | Murray.main:evaluate_sensitivity:1408 | Period 20 completed for size 9. MDE found: 0.02 with p-value: 0.02005, power: 0.96 and CI: (np.float64(0.9056828866746399), 1)
+2025-07-15 13:26:00 | INFO     | Murray.main:evaluate_sensitivity:1408 | Period 25 completed for size 9. MDE found: 0.02 with p-value: 0.027178, power: 0.94 and CI: (np.float64(0.874172005954913), 1)
+2025-07-15 13:26:33 | INFO     | Murray.main:evaluate_sensitivity:1408 | Period 30 completed for size 9. MDE found: 0.02 with p-value: 0.00431, power: 1.0 and CI: (np.float64(1.0), 1)
+2025-07-15 13:27:07 | INFO     | Murray.main:evaluate_sensitivity:1408 | Period 5 completed for size 10. MDE found: 0.03 with p-value: 0.072822, power: 0.82 and CI: (np.float64(0.713508670775504), np.float64(0.926491329224496))
+2025-07-15 13:27:40 | INFO     | Murray.main:evaluate_sensitivity:1408 | Period 10 completed for size 10. MDE found: 0.03 with p-value: 0.012012000000000002, power: 1.0 and CI: (np.float64(1.0), 1)
+2025-07-15 13:28:14 | INFO     | Murray.main:evaluate_sensitivity:1408 | Period 15 completed for size 10. MDE found: 0.02 with p-value: 0.01038, power: 1.0 and CI: (np.float64(1.0), 1)
+2025-07-15 13:28:47 | INFO     | Murray.main:evaluate_sensitivity:1408 | Period 20 completed for size 10. MDE found: 0.02 with p-value: 0.00852, power: 1.0 and CI: (np.float64(1.0), 1)
+2025-07-15 13:29:20 | INFO     | Murray.main:evaluate_sensitivity:1408 | Period 25 completed for size 10. MDE found: 0.02 with p-value: 0.017012, power: 0.96 and CI: (np.float64(0.9056828866746399), 1)
+2025-07-15 13:29:54 | INFO     | Murray.main:evaluate_sensitivity:1408 | Period 30 completed for size 10. MDE found: 0.02 with p-value: 0.00431, power: 1.0 and CI: (np.float64(1.0), 1)
+2025-07-15 13:30:27 | INFO     | Murray.main:evaluate_sensitivity:1408 | Period 5 completed for size 11. MDE found: 0.03 with p-value: 0.00771, power: 0.98 and CI: (np.float64(0.9411939798484823), 1)
+2025-07-15 13:31:00 | INFO     | Murray.main:evaluate_sensitivity:1408 | Period 10 completed for size 11. MDE found: 0.01 with p-value: 0.0403, power: 0.88 and CI: (np.float64(0.7899252577022837), np.float64(0.9700747422977163))
+2025-07-15 13:31:34 | INFO     | Murray.main:evaluate_sensitivity:1408 | Period 15 completed for size 11. MDE found: 0.01 with p-value: 0.034224000000000004, power: 0.88 and CI: (np.float64(0.7899252577022837), np.float64(0.9700747422977163))
+2025-07-15 13:32:08 | INFO     | Murray.main:evaluate_sensitivity:1408 | Period 20 completed for size 11. MDE found: 0.02 with p-value: 0.005679999999999999, power: 1.0 and CI: (np.float64(1.0), 1)
+2025-07-15 13:32:41 | INFO     | Murray.main:evaluate_sensitivity:1408 | Period 25 completed for size 11. MDE found: 0.02 with p-value: 0.02604, power: 0.98 and CI: (np.float64(0.9411939798484823), 1)
+2025-07-15 13:33:14 | INFO     | Murray.main:evaluate_sensitivity:1408 | Period 30 completed for size 11. MDE found: 0.02 with p-value: 0.009463999999999998, power: 1.0 and CI: (np.float64(1.0), 1)
+2025-07-15 13:33:49 | INFO     | Murray.main:evaluate_sensitivity:1408 | Period 5 completed for size 12. MDE found: 0.04 with p-value: 0.06593199999999999, power: 0.84 and CI: (np.float64(0.7383819858489648), np.float64(0.9416180141510352))
+2025-07-15 13:34:22 | INFO     | Murray.main:evaluate_sensitivity:1408 | Period 10 completed for size 12. MDE found: 0.03 with p-value: 0.019426, power: 0.96 and CI: (np.float64(0.9056828866746399), 1)
+2025-07-15 13:34:55 | INFO     | Murray.main:evaluate_sensitivity:1408 | Period 15 completed for size 12. MDE found: 0.03 with p-value: 0.011426, power: 0.98 and CI: (np.float64(0.9411939798484823), 1)
+2025-07-15 13:35:29 | INFO     | Murray.main:evaluate_sensitivity:1408 | Period 20 completed for size 12. MDE found: 0.03 with p-value: 0.008304, power: 0.98 and CI: (np.float64(0.9411939798484823), 1)
+2025-07-15 13:36:03 | INFO     | Murray.main:evaluate_sensitivity:1408 | Period 25 completed for size 12. MDE found: 0.03 with p-value: 0.006457999999999999, power: 1.0 and CI: (np.float64(1.0), 1)
+2025-07-15 13:36:38 | INFO     | Murray.main:evaluate_sensitivity:1408 | Period 30 completed for size 12. MDE found: 0.02 with p-value: 0.015393999999999998, power: 1.0 and CI: (np.float64(1.0), 1)
+2025-07-15 13:37:11 | INFO     | Murray.main:evaluate_sensitivity:1408 | Period 5 completed for size 13. MDE found: 0.03 with p-value: 0.024284, power: 0.96 and CI: (np.float64(0.9056828866746399), 1)
+2025-07-15 13:37:44 | INFO     | Murray.main:evaluate_sensitivity:1408 | Period 10 completed for size 13. MDE found: 0.03 with p-value: 0.029606, power: 0.92 and CI: (np.float64(0.8448013617144566), np.float64(0.9951986382855434))
+2025-07-15 13:38:18 | INFO     | Murray.main:evaluate_sensitivity:1408 | Period 15 completed for size 13. MDE found: 0.03 with p-value: 0.020097999999999998, power: 0.96 and CI: (np.float64(0.9056828866746399), 1)
+2025-07-15 13:38:51 | INFO     | Murray.main:evaluate_sensitivity:1408 | Period 20 completed for size 13. MDE found: 0.03 with p-value: 0.026074, power: 0.96 and CI: (np.float64(0.9056828866746399), 1)
+2025-07-15 13:39:25 | INFO     | Murray.main:evaluate_sensitivity:1408 | Period 25 completed for size 13. MDE found: 0.03 with p-value: 0.033766000000000004, power: 0.84 and CI: (np.float64(0.7383819858489648), np.float64(0.9416180141510352))
+2025-07-15 13:40:00 | INFO     | Murray.main:evaluate_sensitivity:1408 | Period 30 completed for size 13. MDE found: 0.03 with p-value: 0.0019679999999999997, power: 1.0 and CI: (np.float64(1.0), 1)
+2025-07-15 13:40:33 | INFO     | Murray.main:evaluate_sensitivity:1408 | Period 5 completed for size 14. MDE found: 0.05 with p-value: 0.034848, power: 0.96 and CI: (np.float64(0.9056828866746399), 1)
+2025-07-15 13:41:05 | INFO     | Murray.main:evaluate_sensitivity:1408 | Period 10 completed for size 14. MDE found: 0.03 with p-value: 0.055911999999999996, power: 0.82 and CI: (np.float64(0.713508670775504), np.float64(0.926491329224496))
+2025-07-15 13:41:37 | INFO     | Murray.main:evaluate_sensitivity:1408 | Period 15 completed for size 14. MDE found: 0.02 with p-value: 0.069804, power: 0.84 and CI: (np.float64(0.7383819858489648), np.float64(0.9416180141510352))
+2025-07-15 13:42:10 | INFO     | Murray.main:evaluate_sensitivity:1408 | Period 20 completed for size 14. MDE found: 0.03 with p-value: 0.01472, power: 0.96 and CI: (np.float64(0.9056828866746399), 1)
+2025-07-15 13:42:44 | INFO     | Murray.main:evaluate_sensitivity:1408 | Period 25 completed for size 14. MDE found: 0.02 with p-value: 0.05455399999999999, power: 0.8 and CI: (np.float64(0.6891256567099494), np.float64(0.9108743432900507))
+2025-07-15 13:43:17 | INFO     | Murray.main:evaluate_sensitivity:1408 | Period 30 completed for size 14. MDE found: 0.02 with p-value: 0.007612000000000001, power: 1.0 and CI: (np.float64(1.0), 1)
+2025-07-15 13:43:17 | INFO     | Murray.main:evaluate_sensitivity:1422 | evaluate_sensitivity completed successfully.
+2025-07-15 13:43:17 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1571 | Sensitivity evaluation completed successfully.
+2025-07-15 13:43:17 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1575 | run_geo_analysis_streamlit_app completed successfully

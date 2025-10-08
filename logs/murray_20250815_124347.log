@@ -1,0 +1,3 @@
+2025-08-15 12:43:47 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-15 12:43:47 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-15 12:43:47 | WARNING  | Murray.auxiliary:analyze_data_characteristics:182 | Target column 'Ventas totales' not found in data. Available columns: ['time', 'location', 'Y', 'Pedidos']

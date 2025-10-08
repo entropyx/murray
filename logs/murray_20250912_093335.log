@@ -1,0 +1,175 @@
+2025-09-12 09:33:35 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-09-12 09:33:35 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-09-12 09:33:39 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-09-12 09:33:40 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-09-12 09:33:40 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-09-12 09:33:42 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-09-12 09:33:42 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-09-12 09:33:42 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-09-12 09:33:42 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-09-12 09:33:43 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-09-12 09:33:43 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-09-12 09:33:43 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-09-12 09:33:44 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-09-12 09:33:45 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-09-12 09:33:45 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-09-12 09:33:45 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-09-12 09:33:45 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1933 | Starting run_geo_analysis_streamlit_app............
+2025-09-12 09:33:45 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1942 | Step 1: Generating market correlations.....
+2025-09-12 09:33:45 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1947 | Market correlations generated successfully.
+2025-09-12 09:33:45 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1950 | Step 2: Finding best groups for control and treatment.....
+2025-09-12 09:33:45 | INFO     | Murray.main:BetterGroups:962 | Starting single-cell mode
+2025-09-12 09:33:48 | INFO     | Murray.main:BetterGroups:1000 | Processed 1/50000 groups
+2025-09-12 09:34:42 | INFO     | Murray.main:BetterGroups:1000 | Processed 5000/50000 groups
+2025-09-12 09:35:34 | INFO     | Murray.main:BetterGroups:1000 | Processed 10000/50000 groups
+2025-09-12 09:36:24 | INFO     | Murray.main:BetterGroups:1000 | Processed 15000/50000 groups
+2025-09-12 09:37:12 | INFO     | Murray.main:BetterGroups:1000 | Processed 20000/50000 groups
+2025-09-12 09:37:54 | INFO     | Murray.main:BetterGroups:1000 | Processed 25000/50000 groups
+2025-09-12 09:38:33 | INFO     | Murray.main:BetterGroups:1000 | Processed 30000/50000 groups
+2025-09-12 09:39:06 | INFO     | Murray.main:BetterGroups:1000 | Processed 35000/50000 groups
+2025-09-12 09:39:34 | INFO     | Murray.main:BetterGroups:1000 | Processed 40000/50000 groups
+2025-09-12 09:39:53 | INFO     | Murray.main:BetterGroups:1000 | Processed 45000/50000 groups
+2025-09-12 09:40:09 | INFO     | Murray.main:BetterGroups:1000 | Processed 50000/50000 groups
+2025-09-12 09:40:09 | INFO     | Murray.main:BetterGroups:1001 | All groups processed. Results count: 50000
+2025-09-12 09:40:09 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1971 | BetterGroups completed successfully. Results for 10 sizes
+2025-09-12 09:40:09 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1976 | Step 3: Evaluating sensitivity for different deltas and periods.....
+2025-09-12 09:40:41 | INFO     | Murray.main:evaluate_sensitivity:1801 | Period 5 completed for size 5. MDE found: 0.08 with p-value: 0.0167, power: 0.9250
+2025-09-12 09:41:11 | INFO     | Murray.main:evaluate_sensitivity:1801 | Period 10 completed for size 5. MDE found: 0.05 with p-value: 0.0123, power: 0.9500
+2025-09-12 09:41:39 | INFO     | Murray.main:evaluate_sensitivity:1801 | Period 15 completed for size 5. MDE found: 0.03 with p-value: 0.0095, power: 0.9500
+2025-09-12 09:42:09 | INFO     | Murray.main:evaluate_sensitivity:1801 | Period 20 completed for size 5. MDE found: 0.03 with p-value: 0.0387, power: 0.8250
+2025-09-12 09:42:39 | INFO     | Murray.main:evaluate_sensitivity:1801 | Period 5 completed for size 6. MDE found: 0.06999999999999999 with p-value: 0.0345, power: 0.8250
+2025-09-12 09:43:07 | INFO     | Murray.main:evaluate_sensitivity:1801 | Period 10 completed for size 6. MDE found: 0.05 with p-value: 0.0383, power: 0.8750
+2025-09-12 09:43:36 | INFO     | Murray.main:evaluate_sensitivity:1801 | Period 15 completed for size 6. MDE found: 0.04 with p-value: 0.0150, power: 0.9500
+2025-09-12 09:44:07 | INFO     | Murray.main:evaluate_sensitivity:1801 | Period 20 completed for size 6. MDE found: 0.04 with p-value: 0.0095, power: 0.9500
+2025-09-12 09:44:40 | INFO     | Murray.main:evaluate_sensitivity:1801 | Period 5 completed for size 7. MDE found: 0.08 with p-value: 0.0164, power: 0.9000
+2025-09-12 09:45:13 | INFO     | Murray.main:evaluate_sensitivity:1801 | Period 10 completed for size 7. MDE found: 0.05 with p-value: 0.0070, power: 0.9750
+2025-09-12 09:45:46 | INFO     | Murray.main:evaluate_sensitivity:1801 | Period 15 completed for size 7. MDE found: 0.04 with p-value: 0.0142, power: 0.9250
+2025-09-12 09:46:19 | INFO     | Murray.main:evaluate_sensitivity:1801 | Period 20 completed for size 7. MDE found: 0.04 with p-value: 0.0128, power: 0.9500
+2025-09-12 09:46:47 | INFO     | Murray.main:evaluate_sensitivity:1801 | Period 5 completed for size 8. MDE found: 0.06999999999999999 with p-value: 0.0256, power: 0.9250
+2025-09-12 09:47:16 | INFO     | Murray.main:evaluate_sensitivity:1801 | Period 10 completed for size 8. MDE found: 0.04 with p-value: 0.0226, power: 0.9000
+2025-09-12 09:47:46 | INFO     | Murray.main:evaluate_sensitivity:1801 | Period 15 completed for size 8. MDE found: 0.04 with p-value: 0.0139, power: 0.8750
+2025-09-12 09:48:13 | INFO     | Murray.main:evaluate_sensitivity:1801 | Period 20 completed for size 8. MDE found: 0.04 with p-value: 0.0162, power: 0.9000
+2025-09-12 09:48:44 | INFO     | Murray.main:evaluate_sensitivity:1801 | Period 5 completed for size 9. MDE found: 0.04 with p-value: 0.0117, power: 0.9750
+2025-09-12 09:49:17 | INFO     | Murray.main:evaluate_sensitivity:1801 | Period 10 completed for size 9. MDE found: 0.02 with p-value: 0.0246, power: 0.8500
+2025-09-12 09:50:03 | INFO     | Murray.main:evaluate_sensitivity:1801 | Period 15 completed for size 9. MDE found: 0.02 with p-value: 0.0085, power: 0.9500
+2025-09-12 09:50:48 | INFO     | Murray.main:evaluate_sensitivity:1801 | Period 20 completed for size 9. MDE found: 0.02 with p-value: 0.0184, power: 0.9000
+2025-09-12 09:51:33 | INFO     | Murray.main:evaluate_sensitivity:1801 | Period 5 completed for size 10. MDE found: 0.060000000000000005 with p-value: 0.0382, power: 0.8500
+2025-09-12 09:52:19 | INFO     | Murray.main:evaluate_sensitivity:1801 | Period 10 completed for size 10. MDE found: 0.04 with p-value: 0.0152, power: 0.8750
+2025-09-12 09:53:03 | INFO     | Murray.main:evaluate_sensitivity:1801 | Period 15 completed for size 10. MDE found: 0.03 with p-value: 0.0247, power: 0.8750
+2025-09-12 09:53:49 | INFO     | Murray.main:evaluate_sensitivity:1801 | Period 20 completed for size 10. MDE found: 0.03 with p-value: 0.0254, power: 0.9000
+2025-09-12 09:54:34 | INFO     | Murray.main:evaluate_sensitivity:1801 | Period 5 completed for size 11. MDE found: 0.06999999999999999 with p-value: 0.0137, power: 0.9000
+2025-09-12 09:55:17 | INFO     | Murray.main:evaluate_sensitivity:1801 | Period 10 completed for size 11. MDE found: 0.05 with p-value: 0.0059, power: 0.9750
+2025-09-12 09:55:59 | INFO     | Murray.main:evaluate_sensitivity:1801 | Period 15 completed for size 11. MDE found: 0.03 with p-value: 0.0259, power: 0.8250
+2025-09-12 09:56:34 | INFO     | Murray.main:evaluate_sensitivity:1801 | Period 20 completed for size 11. MDE found: 0.03 with p-value: 0.0158, power: 0.9500
+2025-09-12 09:57:07 | INFO     | Murray.main:evaluate_sensitivity:1801 | Period 5 completed for size 12. MDE found: 0.060000000000000005 with p-value: 0.0598, power: 0.8000
+2025-09-12 09:57:42 | INFO     | Murray.main:evaluate_sensitivity:1801 | Period 10 completed for size 12. MDE found: 0.05 with p-value: 0.0120, power: 0.9250
+2025-09-12 09:58:14 | INFO     | Murray.main:evaluate_sensitivity:1801 | Period 15 completed for size 12. MDE found: 0.04 with p-value: 0.0235, power: 0.9000
+2025-09-12 09:58:46 | INFO     | Murray.main:evaluate_sensitivity:1801 | Period 20 completed for size 12. MDE found: 0.05 with p-value: 0.0041, power: 1.0000
+2025-09-12 09:59:18 | INFO     | Murray.main:evaluate_sensitivity:1801 | Period 5 completed for size 13. MDE found: 0.04 with p-value: 0.0420, power: 0.8500
+2025-09-12 09:59:52 | INFO     | Murray.main:evaluate_sensitivity:1801 | Period 10 completed for size 13. MDE found: 0.04 with p-value: 0.0094, power: 0.9500
+2025-09-12 10:00:26 | INFO     | Murray.main:evaluate_sensitivity:1801 | Period 15 completed for size 13. MDE found: 0.04 with p-value: 0.0048, power: 0.9750
+2025-09-12 10:01:02 | INFO     | Murray.main:evaluate_sensitivity:1801 | Period 20 completed for size 13. MDE found: 0.03 with p-value: 0.0257, power: 0.8750
+2025-09-12 10:01:34 | INFO     | Murray.main:evaluate_sensitivity:1801 | Period 5 completed for size 14. MDE found: 0.060000000000000005 with p-value: 0.0172, power: 0.9250
+2025-09-12 10:02:06 | INFO     | Murray.main:evaluate_sensitivity:1801 | Period 10 completed for size 14. MDE found: 0.04 with p-value: 0.0270, power: 0.8500
+2025-09-12 10:02:40 | INFO     | Murray.main:evaluate_sensitivity:1801 | Period 15 completed for size 14. MDE found: 0.04 with p-value: 0.0050, power: 1.0000
+2025-09-12 10:03:09 | INFO     | Murray.main:evaluate_sensitivity:1801 | Period 20 completed for size 14. MDE found: 0.03 with p-value: 0.0232, power: 0.8750
+2025-09-12 10:03:09 | INFO     | Murray.main:evaluate_sensitivity:1818 | evaluate_sensitivity completed successfully.
+2025-09-12 10:03:09 | INFO     | Murray.main:run_geo_analysis_streamlit_app:2036 | Sensitivity evaluation completed successfully.
+2025-09-12 10:03:09 | INFO     | Murray.main:run_geo_analysis_streamlit_app:2040 | run_geo_analysis_streamlit_app completed successfully
+2025-09-12 10:03:09 | INFO     | __main__:<module>:1106 | ✅ SIMULATION COMPLETED: Analysis finished successfully
+2025-09-12 10:03:09 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-09-12 10:03:10 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-09-12 10:03:16 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-09-12 10:03:16 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-09-12 10:03:18 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-09-12 10:03:18 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-09-12 10:03:20 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-09-12 10:03:20 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-09-12 10:03:28 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-09-12 10:03:29 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-09-12 10:03:31 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-09-12 10:03:31 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-09-12 10:03:39 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-09-12 10:03:39 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-09-12 10:03:42 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-09-12 10:03:42 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-09-12 10:24:06 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-09-12 10:24:08 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-09-12 10:24:15 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-09-12 10:24:16 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-09-12 10:24:16 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-09-12 10:24:17 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-09-12 10:24:18 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-09-12 10:24:18 | INFO     | Murray.metrics:update_metrics:59 | New record added: {'timestamp': '2025-09-12 10:24:18', 'section': 'experimental_evaluation', 'date': '2025-09-12', 'day_of_week': 'Friday', 'hour': 10}
+2025-09-12 10:24:18 | INFO     | Murray.post_analysis:run_geo_evaluation:21 | Starting run_geo_evaluation
+2025-09-12 10:24:18 | INFO     | Murray.post_analysis:run_geo_evaluation:22 | Input data shape: (12704, 8)
+2025-09-12 10:24:18 | INFO     | Murray.post_analysis:run_geo_evaluation:23 | Treatment group: ['aguascalientes', 'jalisco', 'nuevo leon']
+2025-09-12 10:24:18 | INFO     | Murray.post_analysis:run_geo_evaluation:24 | Start treatment: 2025-01-01 00:00:00, End treatment: 2025-01-31 00:00:00
+2025-09-12 10:24:18 | INFO     | Murray.post_analysis:run_geo_evaluation:25 | n_permutations: 50000, significance_level: 0.1
+2025-09-12 10:24:18 | INFO     | Murray.post_analysis:run_geo_evaluation:40 | Treatment period positions: 366 to 397
+2025-09-12 10:24:18 | INFO     | Murray.post_analysis:run_geo_evaluation:49 | Generating correlation matrix...
+2025-09-12 10:24:18 | INFO     | Murray.post_analysis:run_geo_evaluation:52 | Selecting control group...
+2025-09-12 10:24:18 | INFO     | Murray.post_analysis:run_geo_evaluation:58 | Control group selected: ['queretaro', 'yucatan', 'puebla', 'veracruz', 'michoacan', 'coahuila', 'tamaulipas', 'quintana roo', 'san luis potosi', 'chihuahua', 'tabasco', 'mexico city', 'morelos', 'guanajuato', 'state of mexico']
+2025-09-12 10:24:18 | INFO     | Murray.post_analysis:run_geo_evaluation:68 | Pivot table shape: (397, 32)
+2025-09-12 10:24:18 | INFO     | Murray.post_analysis:run_geo_evaluation:75 | Scaling data...
+2025-09-12 10:24:18 | INFO     | Murray.post_analysis:run_geo_evaluation:94 | Fitting synthetic control model...
+2025-09-12 10:24:18 | INFO     | Murray.post_analysis:run_geo_evaluation:97 | Model fitted successfully
+2025-09-12 10:24:18 | INFO     | Murray.post_analysis:run_geo_evaluation:99 | Making predictions...
+2025-09-12 10:24:18 | INFO     | Murray.post_analysis:run_geo_evaluation:117 | Calculating metrics...
+2025-09-12 10:24:18 | INFO     | Murray.post_analysis:run_geo_evaluation:118 | Data shapes - treatment: (397,), counterfactual: (397,)
+2025-09-12 10:24:18 | INFO     | Murray.post_analysis:run_geo_evaluation:128 | Treatment period sum: 3241
+2025-09-12 10:24:18 | INFO     | Murray.post_analysis:run_geo_evaluation:129 | Counterfactual period sum: 3238.1944355085275
+2025-09-12 10:24:18 | INFO     | Murray.post_analysis:run_geo_evaluation:130 | Lift difference (treatment - counterfactual): 2.8055644914725235
+2025-09-12 10:24:18 | INFO     | Murray.post_analysis:run_geo_evaluation:144 | Observed statistic (sum of residuals): 2.805564491472552
+2025-09-12 10:24:18 | INFO     | Murray.post_analysis:run_geo_evaluation:145 | Manual verification - observed_stat should equal lift_difference: 2.8055644914725235
+2025-09-12 10:24:18 | INFO     | Murray.post_analysis:run_geo_evaluation:147 | Starting permutation test with 50000 permutations...
+2025-09-12 10:24:18 | INFO     | Murray.post_analysis:run_geo_evaluation:152 | Completed 10000/50000 permutations
+2025-09-12 10:24:18 | INFO     | Murray.post_analysis:run_geo_evaluation:152 | Completed 20000/50000 permutations
+2025-09-12 10:24:18 | INFO     | Murray.post_analysis:run_geo_evaluation:152 | Completed 30000/50000 permutations
+2025-09-12 10:24:18 | INFO     | Murray.post_analysis:run_geo_evaluation:152 | Completed 40000/50000 permutations
+2025-09-12 10:24:18 | INFO     | Murray.post_analysis:run_geo_evaluation:158 | Permutation test completed, calculating p-value and power...
+2025-09-12 10:24:18 | INFO     | Murray.post_analysis:run_geo_evaluation:164 | Final results:
+2025-09-12 10:24:18 | INFO     | Murray.post_analysis:run_geo_evaluation:165 |   MAPE: 51225810734.7962
+2025-09-12 10:24:18 | INFO     | Murray.post_analysis:run_geo_evaluation:166 |   SMAPE: 12.1668
+2025-09-12 10:24:18 | INFO     | Murray.post_analysis:run_geo_evaluation:167 |   Percentage lift: 0.0866%
+2025-09-12 10:24:18 | INFO     | Murray.post_analysis:run_geo_evaluation:168 |   P-value: 0.970080
+2025-09-12 10:24:18 | INFO     | Murray.post_analysis:run_geo_evaluation:169 |   Power: 0.0000
+2025-09-12 10:24:18 | INFO     | Murray.post_analysis:run_geo_evaluation:188 | run_geo_evaluation completed successfully
+2025-09-12 10:24:25 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-09-12 10:24:40 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-09-12 10:24:41 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-09-12 10:24:41 | INFO     | Murray.metrics:update_metrics:59 | New record added: {'timestamp': '2025-09-12 10:24:41', 'section': 'experimental_evaluation', 'date': '2025-09-12', 'day_of_week': 'Friday', 'hour': 10}
+2025-09-12 10:24:41 | INFO     | Murray.post_analysis:run_geo_evaluation:21 | Starting run_geo_evaluation
+2025-09-12 10:24:41 | INFO     | Murray.post_analysis:run_geo_evaluation:22 | Input data shape: (12704, 8)
+2025-09-12 10:24:41 | INFO     | Murray.post_analysis:run_geo_evaluation:23 | Treatment group: ['aguascalientes', 'jalisco', 'nuevo leon']
+2025-09-12 10:24:41 | INFO     | Murray.post_analysis:run_geo_evaluation:24 | Start treatment: 2025-01-01 00:00:00, End treatment: 2025-01-16 00:00:00
+2025-09-12 10:24:41 | INFO     | Murray.post_analysis:run_geo_evaluation:25 | n_permutations: 50000, significance_level: 0.1
+2025-09-12 10:24:41 | INFO     | Murray.post_analysis:run_geo_evaluation:40 | Treatment period positions: 366 to 382
+2025-09-12 10:24:41 | INFO     | Murray.post_analysis:run_geo_evaluation:49 | Generating correlation matrix...
+2025-09-12 10:24:41 | INFO     | Murray.post_analysis:run_geo_evaluation:52 | Selecting control group...
+2025-09-12 10:24:41 | INFO     | Murray.post_analysis:run_geo_evaluation:58 | Control group selected: ['queretaro', 'yucatan', 'puebla', 'veracruz', 'michoacan', 'coahuila', 'tamaulipas', 'quintana roo', 'san luis potosi', 'chihuahua', 'tabasco', 'mexico city', 'morelos', 'guanajuato', 'state of mexico']
+2025-09-12 10:24:41 | INFO     | Murray.post_analysis:run_geo_evaluation:68 | Pivot table shape: (397, 32)
+2025-09-12 10:24:41 | INFO     | Murray.post_analysis:run_geo_evaluation:75 | Scaling data...
+2025-09-12 10:24:41 | INFO     | Murray.post_analysis:run_geo_evaluation:94 | Fitting synthetic control model...
+2025-09-12 10:24:41 | INFO     | Murray.post_analysis:run_geo_evaluation:97 | Model fitted successfully
+2025-09-12 10:24:41 | INFO     | Murray.post_analysis:run_geo_evaluation:99 | Making predictions...
+2025-09-12 10:24:41 | INFO     | Murray.post_analysis:run_geo_evaluation:117 | Calculating metrics...
+2025-09-12 10:24:41 | INFO     | Murray.post_analysis:run_geo_evaluation:118 | Data shapes - treatment: (397,), counterfactual: (397,)
+2025-09-12 10:24:41 | INFO     | Murray.post_analysis:run_geo_evaluation:128 | Treatment period sum: 3241
+2025-09-12 10:24:41 | INFO     | Murray.post_analysis:run_geo_evaluation:129 | Counterfactual period sum: 3238.1944355085275
+2025-09-12 10:24:41 | INFO     | Murray.post_analysis:run_geo_evaluation:130 | Lift difference (treatment - counterfactual): 2.8055644914725235
+2025-09-12 10:24:41 | INFO     | Murray.post_analysis:run_geo_evaluation:144 | Observed statistic (sum of residuals): 2.805564491472552
+2025-09-12 10:24:41 | INFO     | Murray.post_analysis:run_geo_evaluation:145 | Manual verification - observed_stat should equal lift_difference: 2.8055644914725235
+2025-09-12 10:24:41 | INFO     | Murray.post_analysis:run_geo_evaluation:147 | Starting permutation test with 50000 permutations...
+2025-09-12 10:24:41 | INFO     | Murray.post_analysis:run_geo_evaluation:152 | Completed 10000/50000 permutations
+2025-09-12 10:24:41 | INFO     | Murray.post_analysis:run_geo_evaluation:152 | Completed 20000/50000 permutations
+2025-09-12 10:24:41 | INFO     | Murray.post_analysis:run_geo_evaluation:152 | Completed 30000/50000 permutations
+2025-09-12 10:24:41 | INFO     | Murray.post_analysis:run_geo_evaluation:152 | Completed 40000/50000 permutations
+2025-09-12 10:24:41 | INFO     | Murray.post_analysis:run_geo_evaluation:158 | Permutation test completed, calculating p-value and power...
+2025-09-12 10:24:41 | INFO     | Murray.post_analysis:run_geo_evaluation:164 | Final results:
+2025-09-12 10:24:41 | INFO     | Murray.post_analysis:run_geo_evaluation:165 |   MAPE: 51225810734.7962
+2025-09-12 10:24:41 | INFO     | Murray.post_analysis:run_geo_evaluation:166 |   SMAPE: 12.1668
+2025-09-12 10:24:41 | INFO     | Murray.post_analysis:run_geo_evaluation:167 |   Percentage lift: 0.0866%
+2025-09-12 10:24:41 | INFO     | Murray.post_analysis:run_geo_evaluation:168 |   P-value: 0.970100
+2025-09-12 10:24:41 | INFO     | Murray.post_analysis:run_geo_evaluation:169 |   Power: 0.0000
+2025-09-12 10:24:41 | INFO     | Murray.post_analysis:run_geo_evaluation:188 | run_geo_evaluation completed successfully

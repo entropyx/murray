@@ -1,0 +1,45 @@
+2025-07-13 11:58:25 | INFO     | Murray.metrics:update_metrics:57 | New record added: {'timestamp': '2025-07-13 11:58:24', 'section': 'experimental_design', 'date': '2025-07-13', 'day_of_week': 'Sunday', 'hour': 11}
+2025-07-13 11:58:25 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1022 | Starting run_geo_analysis_streamlit_app............
+2025-07-13 11:58:25 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1031 | Step 1: Generating market correlations.....
+2025-07-13 11:58:25 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1033 | Market correlations generated successfully.
+2025-07-13 11:58:25 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1036 | Step 2: Finding best groups for control and treatment.....
+2025-07-13 11:58:25 | INFO     | Murray.main:BetterGroups:408 | Number of locations: 32
+2025-07-13 11:58:25 | INFO     | Murray.main:BetterGroups:410 | Maximum treatment group size: 10
+2025-07-13 11:58:25 | INFO     | Murray.main:BetterGroups:412 | Minimum treatment group size: 5
+2025-07-13 11:58:25 | INFO     | Murray.main:BetterGroups:429 | Generating possible treatment groups...
+2025-07-13 11:58:25 | INFO     | Murray.main:BetterGroups:433 | Generated 5000 groups for size 5
+2025-07-13 11:58:25 | INFO     | Murray.main:BetterGroups:433 | Generated 5000 groups for size 6
+2025-07-13 11:58:25 | INFO     | Murray.main:BetterGroups:433 | Generated 5000 groups for size 7
+2025-07-13 11:58:25 | INFO     | Murray.main:BetterGroups:433 | Generated 5000 groups for size 8
+2025-07-13 11:58:25 | INFO     | Murray.main:BetterGroups:433 | Generated 5000 groups for size 9
+2025-07-13 11:58:25 | INFO     | Murray.main:BetterGroups:433 | Generated 5000 groups for size 10
+2025-07-13 11:58:25 | INFO     | Murray.main:BetterGroups:435 | Total possible groups generated: 30000
+2025-07-13 11:58:26 | INFO     | Murray.main:BetterGroups:455 | Tasks submitted, starting to collect results...
+2025-07-13 11:58:26 | INFO     | Murray.main:BetterGroups:477 | Processed 1/30000 groups
+2025-07-13 11:58:55 | INFO     | Murray.main:BetterGroups:477 | Processed 3000/30000 groups
+2025-07-13 11:59:23 | INFO     | Murray.main:BetterGroups:477 | Processed 6000/30000 groups
+2025-07-13 11:59:50 | INFO     | Murray.main:BetterGroups:477 | Processed 9000/30000 groups
+2025-07-13 12:00:19 | INFO     | Murray.main:BetterGroups:477 | Processed 12000/30000 groups
+2025-07-13 12:00:44 | INFO     | Murray.main:BetterGroups:477 | Processed 15000/30000 groups
+2025-07-13 12:01:06 | INFO     | Murray.main:BetterGroups:477 | Processed 18000/30000 groups
+2025-07-13 12:01:27 | INFO     | Murray.main:BetterGroups:477 | Processed 21000/30000 groups
+2025-07-13 12:01:50 | INFO     | Murray.main:BetterGroups:477 | Processed 24000/30000 groups
+2025-07-13 12:02:08 | INFO     | Murray.main:BetterGroups:477 | Processed 27000/30000 groups
+2025-07-13 12:02:25 | INFO     | Murray.main:BetterGroups:477 | Processed 30000/30000 groups
+2025-07-13 12:02:25 | INFO     | Murray.main:BetterGroups:479 | All groups processed. Results count: 30000
+2025-07-13 12:02:25 | INFO     | Murray.main:BetterGroups:482 | Organizing results by size...
+2025-07-13 12:02:25 | INFO     | Murray.main:BetterGroups:509 | Best result for size 5: MAPE=1.8858, SMAPE=1.8959, Holdout=92.81%
+2025-07-13 12:02:25 | INFO     | Murray.main:BetterGroups:509 | Best result for size 6: MAPE=1.7445, SMAPE=1.7441, Holdout=91.26%
+2025-07-13 12:02:25 | INFO     | Murray.main:BetterGroups:509 | Best result for size 7: MAPE=1.6530, SMAPE=1.6469, Holdout=87.31%
+2025-07-13 12:02:25 | INFO     | Murray.main:BetterGroups:509 | Best result for size 8: MAPE=1.7808, SMAPE=1.8007, Holdout=85.86%
+2025-07-13 12:02:25 | INFO     | Murray.main:BetterGroups:509 | Best result for size 9: MAPE=1.6098, SMAPE=1.5994, Holdout=80.85%
+2025-07-13 12:02:25 | INFO     | Murray.main:BetterGroups:509 | Best result for size 10: MAPE=1.7545, SMAPE=1.7558, Holdout=85.09%
+2025-07-13 12:02:25 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1051 | BetterGroups completed successfully. Results for 6 sizes
+2025-07-13 12:02:25 | INFO     | Murray.main:determine_best_statistical_test:799 | Test selection results: inference_type=block, stat_func_name=median_diff
+2025-07-13 12:02:25 | INFO     | Murray.main:determine_best_statistical_test:800 | Explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 12:02:25 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1063 | Statistical test determination:
+2025-07-13 12:02:25 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1064 | Inference type: block
+2025-07-13 12:02:25 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1065 | Statistical test: median_diff
+2025-07-13 12:02:25 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1066 | Explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 12:02:25 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1079 | Step 3: Evaluating sensitivity for different deltas and periods.....
+2025-07-13 12:02:25 | ERROR    | Murray.main:run_simulation:891 | Simulation failed for delta=0.01, period=5: simulate_power() got an unexpected keyword argument 'is_time_series'

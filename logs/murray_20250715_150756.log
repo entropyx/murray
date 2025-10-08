@@ -1,0 +1,22 @@
+2025-07-15 15:07:56 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-07-15 15:08:34 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-07-15 15:08:50 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-07-15 15:08:50 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1524 | Starting run_geo_analysis_streamlit_app............
+2025-07-15 15:08:50 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1533 | Step 1: Generating market correlations.....
+2025-07-15 15:08:50 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1535 | Market correlations generated successfully.
+2025-07-15 15:08:50 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1538 | Step 2: Finding best groups for control and treatment.....
+2025-07-15 15:08:50 | INFO     | Murray.main:BetterGroups:893 | Starting single-cell mode
+2025-07-15 15:08:51 | INFO     | Murray.main:BetterGroups:925 | Processed 1/35000 groups
+2025-07-15 15:09:03 | INFO     | Murray.main:BetterGroups:925 | Processed 3500/35000 groups
+2025-07-15 15:09:16 | INFO     | Murray.main:BetterGroups:925 | Processed 7000/35000 groups
+2025-07-15 15:09:31 | INFO     | Murray.main:BetterGroups:925 | Processed 10500/35000 groups
+2025-07-15 15:09:43 | INFO     | Murray.main:BetterGroups:925 | Processed 14000/35000 groups
+2025-07-15 15:09:55 | INFO     | Murray.main:BetterGroups:925 | Processed 17500/35000 groups
+2025-07-15 15:10:06 | INFO     | Murray.main:BetterGroups:925 | Processed 21000/35000 groups
+2025-07-15 15:10:19 | INFO     | Murray.main:BetterGroups:925 | Processed 24500/35000 groups
+2025-07-15 15:10:32 | INFO     | Murray.main:BetterGroups:925 | Processed 28000/35000 groups
+2025-07-15 15:10:43 | INFO     | Murray.main:BetterGroups:925 | Processed 31500/35000 groups
+2025-07-15 15:10:53 | INFO     | Murray.main:BetterGroups:925 | Processed 35000/35000 groups
+2025-07-15 15:10:53 | INFO     | Murray.main:BetterGroups:926 | All groups processed. Results count: 35000
+2025-07-15 15:10:54 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1554 | BetterGroups completed successfully. Results for 7 sizes
+2025-07-15 15:10:54 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1559 | Step 3: Evaluating sensitivity for different deltas and periods.....

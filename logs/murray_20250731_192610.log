@@ -1,0 +1,41 @@
+2025-07-31 19:26:32 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-07-31 19:26:36 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-07-31 19:27:41 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-07-31 19:27:43 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-07-31 19:27:45 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-07-31 19:27:48 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-07-31 19:27:54 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-07-31 19:27:56 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-07-31 19:28:00 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-07-31 19:28:02 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-07-31 19:28:05 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-07-31 19:29:11 | INFO     | Murray.metrics:update_metrics:59 | New record added: {'timestamp': '2025-07-31 19:29:11', 'section': 'experimental_evaluation', 'date': '2025-07-31', 'day_of_week': 'Thursday', 'hour': 19}
+2025-07-31 19:29:11 | INFO     | Murray.post_analysis:run_geo_evaluation:21 | Starting run_geo_evaluation
+2025-07-31 19:29:11 | INFO     | Murray.post_analysis:run_geo_evaluation:22 | Input data shape: (3904, 5)
+2025-07-31 19:29:11 | INFO     | Murray.post_analysis:run_geo_evaluation:23 | Treatment group: ['aguascalientes', 'campeche', 'jalisco', 'morelos', 'nayarit', 'puebla', 'oaxaca', 'querétaro', 'sonora']
+2025-07-31 19:29:11 | INFO     | Murray.post_analysis:run_geo_evaluation:24 | Start treatment: 2025-06-28 00:00:00, End treatment: 2025-07-29 00:00:00
+2025-07-31 19:29:11 | INFO     | Murray.post_analysis:run_geo_evaluation:25 | n_permutations: 50000, significance_level: 0.1
+2025-07-31 19:29:11 | INFO     | Murray.post_analysis:run_geo_evaluation:40 | Treatment period positions: 90 to 122
+2025-07-31 19:29:11 | INFO     | Murray.post_analysis:run_geo_evaluation:49 | Generating correlation matrix...
+2025-07-31 19:29:11 | INFO     | Murray.post_analysis:run_geo_evaluation:52 | Selecting control group...
+2025-07-31 19:29:11 | INFO     | Murray.post_analysis:run_geo_evaluation:58 | Control group selected: ['ciudad de méxico', 'méxico', 'guanajuato', 'nuevo león']
+2025-07-31 19:29:11 | INFO     | Murray.post_analysis:run_geo_evaluation:68 | Pivot table shape: (122, 32)
+2025-07-31 19:29:11 | INFO     | Murray.post_analysis:run_geo_evaluation:75 | Scaling data...
+2025-07-31 19:29:11 | INFO     | Murray.post_analysis:run_geo_evaluation:94 | Fitting synthetic control model...
+2025-07-31 19:29:11 | INFO     | Murray.post_analysis:run_geo_evaluation:97 | Model fitted successfully
+2025-07-31 19:29:11 | INFO     | Murray.post_analysis:run_geo_evaluation:99 | Making predictions...
+2025-07-31 19:29:11 | INFO     | Murray.post_analysis:run_geo_evaluation:116 | Calculating metrics...
+2025-07-31 19:29:11 | INFO     | Murray.post_analysis:run_geo_evaluation:138 | Observed statistic: -37233.518907574995
+2025-07-31 19:29:11 | INFO     | Murray.post_analysis:run_geo_evaluation:140 | Starting permutation test with 50000 permutations...
+2025-07-31 19:29:11 | INFO     | Murray.post_analysis:run_geo_evaluation:145 | Completed 10000/50000 permutations
+2025-07-31 19:29:11 | INFO     | Murray.post_analysis:run_geo_evaluation:145 | Completed 20000/50000 permutations
+2025-07-31 19:29:12 | INFO     | Murray.post_analysis:run_geo_evaluation:145 | Completed 30000/50000 permutations
+2025-07-31 19:29:12 | INFO     | Murray.post_analysis:run_geo_evaluation:145 | Completed 40000/50000 permutations
+2025-07-31 19:29:12 | INFO     | Murray.post_analysis:run_geo_evaluation:151 | Permutation test completed, calculating p-value and power...
+2025-07-31 19:29:12 | INFO     | Murray.post_analysis:run_geo_evaluation:157 | Final results:
+2025-07-31 19:29:12 | INFO     | Murray.post_analysis:run_geo_evaluation:158 |   MAPE: 14.9376
+2025-07-31 19:29:12 | INFO     | Murray.post_analysis:run_geo_evaluation:159 |   SMAPE: 14.9954
+2025-07-31 19:29:12 | INFO     | Murray.post_analysis:run_geo_evaluation:160 |   Percentage lift: 9.9565%
+2025-07-31 19:29:12 | INFO     | Murray.post_analysis:run_geo_evaluation:161 |   P-value: 0.041120
+2025-07-31 19:29:12 | INFO     | Murray.post_analysis:run_geo_evaluation:162 |   Power: 1.0000
+2025-07-31 19:29:12 | INFO     | Murray.post_analysis:run_geo_evaluation:181 | run_geo_evaluation completed successfully

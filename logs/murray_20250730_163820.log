@@ -1,0 +1,145 @@
+2025-07-30 16:38:36 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-07-30 16:38:38 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-07-30 16:38:51 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-07-30 16:38:58 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-07-30 16:39:04 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-07-30 16:39:04 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-07-30 16:39:04 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-07-30 16:39:04 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-07-30 16:39:05 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-07-30 16:39:06 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-07-30 16:39:07 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-07-30 16:39:07 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-07-30 16:39:07 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-07-30 16:39:10 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-07-30 16:39:10 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-07-30 16:39:11 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-07-30 16:39:11 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-07-30 16:39:13 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-07-30 16:39:14 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-07-30 16:39:16 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-07-30 16:39:16 | INFO     | Murray.main:run_geo_analysis_streamlit_app:2056 | Starting run_geo_analysis_streamlit_app............
+2025-07-30 16:39:16 | INFO     | Murray.main:run_geo_analysis_streamlit_app:2065 | Step 1: Generating market correlations.....
+2025-07-30 16:39:16 | INFO     | Murray.main:run_geo_analysis_streamlit_app:2067 | Market correlations generated successfully.
+2025-07-30 16:39:16 | INFO     | Murray.main:run_geo_analysis_streamlit_app:2070 | Step 2: Finding best groups for control and treatment.....
+2025-07-30 16:39:16 | INFO     | Murray.main:BetterGroups:998 | Starting single-cell mode
+2025-07-30 16:39:17 | INFO     | Murray.main:BetterGroups:1030 | Processed 1/45000 groups
+2025-07-30 16:40:16 | INFO     | Murray.main:BetterGroups:1030 | Processed 4500/45000 groups
+2025-07-30 16:41:16 | INFO     | Murray.main:BetterGroups:1030 | Processed 9000/45000 groups
+2025-07-30 16:42:16 | INFO     | Murray.main:BetterGroups:1030 | Processed 13500/45000 groups
+2025-07-30 16:43:15 | INFO     | Murray.main:BetterGroups:1030 | Processed 18000/45000 groups
+2025-07-30 16:44:11 | INFO     | Murray.main:BetterGroups:1030 | Processed 22500/45000 groups
+2025-07-30 16:45:03 | INFO     | Murray.main:BetterGroups:1030 | Processed 27000/45000 groups
+2025-07-30 16:45:52 | INFO     | Murray.main:BetterGroups:1030 | Processed 31500/45000 groups
+2025-07-30 16:46:36 | INFO     | Murray.main:BetterGroups:1030 | Processed 36000/45000 groups
+2025-07-30 16:47:14 | INFO     | Murray.main:BetterGroups:1030 | Processed 40500/45000 groups
+2025-07-30 16:47:48 | INFO     | Murray.main:BetterGroups:1030 | Processed 45000/45000 groups
+2025-07-30 16:47:48 | INFO     | Murray.main:BetterGroups:1031 | All groups processed. Results count: 45000
+2025-07-30 16:47:48 | INFO     | Murray.main:run_geo_analysis_streamlit_app:2087 | BetterGroups completed successfully. Results for 9 sizes
+2025-07-30 16:47:48 | INFO     | Murray.main:run_geo_analysis_streamlit_app:2092 | Step 3: Evaluating sensitivity for different deltas and periods.....
+2025-07-30 16:48:39 | INFO     | Murray.main:evaluate_sensitivity:1928 | Period 20 completed for size 5. MDE found: None with p-value: None, power: None
+2025-07-30 16:49:29 | INFO     | Murray.main:evaluate_sensitivity:1928 | Period 25 completed for size 5. MDE found: None with p-value: None, power: None
+2025-07-30 16:50:21 | INFO     | Murray.main:evaluate_sensitivity:1928 | Period 30 completed for size 5. MDE found: None with p-value: None, power: None
+2025-07-30 16:51:12 | INFO     | Murray.main:evaluate_sensitivity:1928 | Period 35 completed for size 5. MDE found: None with p-value: None, power: None
+2025-07-30 16:52:03 | INFO     | Murray.main:evaluate_sensitivity:1928 | Period 20 completed for size 6. MDE found: 0.11000000000000001 with p-value: 0.0736, power: 0.8800
+2025-07-30 16:52:52 | INFO     | Murray.main:evaluate_sensitivity:1928 | Period 25 completed for size 6. MDE found: None with p-value: None, power: None
+2025-07-30 16:53:44 | INFO     | Murray.main:evaluate_sensitivity:1928 | Period 30 completed for size 6. MDE found: 0.14 with p-value: 0.0777, power: 0.8400
+2025-07-30 16:54:34 | INFO     | Murray.main:evaluate_sensitivity:1928 | Period 35 completed for size 6. MDE found: None with p-value: None, power: None
+2025-07-30 16:55:25 | INFO     | Murray.main:evaluate_sensitivity:1928 | Period 20 completed for size 7. MDE found: None with p-value: None, power: None
+2025-07-30 16:56:15 | INFO     | Murray.main:evaluate_sensitivity:1928 | Period 25 completed for size 7. MDE found: None with p-value: None, power: None
+2025-07-30 16:57:08 | INFO     | Murray.main:evaluate_sensitivity:1928 | Period 30 completed for size 7. MDE found: 0.12000000000000001 with p-value: 0.0888, power: 0.8000
+2025-07-30 16:57:58 | INFO     | Murray.main:evaluate_sensitivity:1928 | Period 35 completed for size 7. MDE found: None with p-value: None, power: None
+2025-07-30 16:58:49 | INFO     | Murray.main:evaluate_sensitivity:1928 | Period 20 completed for size 8. MDE found: 0.14 with p-value: 0.0634, power: 0.9200
+2025-07-30 16:59:39 | INFO     | Murray.main:evaluate_sensitivity:1928 | Period 25 completed for size 8. MDE found: None with p-value: None, power: None
+2025-07-30 17:00:30 | INFO     | Murray.main:evaluate_sensitivity:1928 | Period 30 completed for size 8. MDE found: 0.13 with p-value: 0.0614, power: 0.8800
+2025-07-30 17:01:21 | INFO     | Murray.main:evaluate_sensitivity:1928 | Period 35 completed for size 8. MDE found: None with p-value: None, power: None
+2025-07-30 17:02:12 | INFO     | Murray.main:evaluate_sensitivity:1928 | Period 20 completed for size 9. MDE found: 0.12000000000000001 with p-value: 0.0767, power: 0.8800
+2025-07-30 17:03:02 | INFO     | Murray.main:evaluate_sensitivity:1928 | Period 25 completed for size 9. MDE found: None with p-value: None, power: None
+2025-07-30 17:03:54 | INFO     | Murray.main:evaluate_sensitivity:1928 | Period 30 completed for size 9. MDE found: 0.12000000000000001 with p-value: 0.0720, power: 0.9000
+2025-07-30 17:04:45 | INFO     | Murray.main:evaluate_sensitivity:1928 | Period 35 completed for size 9. MDE found: None with p-value: None, power: None
+2025-07-30 17:05:35 | INFO     | Murray.main:evaluate_sensitivity:1928 | Period 20 completed for size 10. MDE found: 0.11000000000000001 with p-value: 0.0534, power: 0.9400
+2025-07-30 17:06:26 | INFO     | Murray.main:evaluate_sensitivity:1928 | Period 25 completed for size 10. MDE found: 0.13 with p-value: 0.0696, power: 0.8400
+2025-07-30 17:07:17 | INFO     | Murray.main:evaluate_sensitivity:1928 | Period 30 completed for size 10. MDE found: 0.09000000000000001 with p-value: 0.0548, power: 0.9600
+2025-07-30 17:08:09 | INFO     | Murray.main:evaluate_sensitivity:1928 | Period 35 completed for size 10. MDE found: 0.13 with p-value: 0.0718, power: 0.8600
+2025-07-30 17:09:01 | INFO     | Murray.main:evaluate_sensitivity:1928 | Period 20 completed for size 11. MDE found: 0.08000000000000002 with p-value: 0.0650, power: 0.9000
+2025-07-30 17:09:55 | INFO     | Murray.main:evaluate_sensitivity:1928 | Period 25 completed for size 11. MDE found: 0.09000000000000001 with p-value: 0.0643, power: 0.8200
+2025-07-30 17:10:47 | INFO     | Murray.main:evaluate_sensitivity:1928 | Period 30 completed for size 11. MDE found: 0.07 with p-value: 0.0595, power: 0.8400
+2025-07-30 17:11:41 | INFO     | Murray.main:evaluate_sensitivity:1928 | Period 35 completed for size 11. MDE found: 0.09000000000000001 with p-value: 0.0636, power: 0.9200
+2025-07-30 17:12:33 | INFO     | Murray.main:evaluate_sensitivity:1928 | Period 20 completed for size 12. MDE found: 0.13 with p-value: 0.0752, power: 0.8400
+2025-07-30 17:13:27 | INFO     | Murray.main:evaluate_sensitivity:1928 | Period 25 completed for size 12. MDE found: None with p-value: None, power: None
+2025-07-30 17:14:21 | INFO     | Murray.main:evaluate_sensitivity:1928 | Period 30 completed for size 12. MDE found: 0.11000000000000001 with p-value: 0.0676, power: 0.8400
+2025-07-30 17:15:14 | INFO     | Murray.main:evaluate_sensitivity:1928 | Period 35 completed for size 12. MDE found: 0.13 with p-value: 0.0738, power: 0.8400
+2025-07-30 17:16:08 | INFO     | Murray.main:evaluate_sensitivity:1928 | Period 20 completed for size 13. MDE found: None with p-value: None, power: None
+2025-07-30 17:17:00 | INFO     | Murray.main:evaluate_sensitivity:1928 | Period 25 completed for size 13. MDE found: None with p-value: None, power: None
+2025-07-30 17:17:54 | INFO     | Murray.main:evaluate_sensitivity:1928 | Period 30 completed for size 13. MDE found: 0.14 with p-value: 0.0731, power: 0.8400
+2025-07-30 17:18:48 | INFO     | Murray.main:evaluate_sensitivity:1928 | Period 35 completed for size 13. MDE found: None with p-value: None, power: None
+2025-07-30 17:18:48 | INFO     | Murray.main:evaluate_sensitivity:1945 | evaluate_sensitivity completed successfully.
+2025-07-30 17:18:48 | INFO     | Murray.main:run_geo_analysis_streamlit_app:2148 | Sensitivity evaluation completed successfully.
+2025-07-30 17:18:48 | INFO     | Murray.main:run_geo_analysis_streamlit_app:2152 | run_geo_analysis_streamlit_app completed successfully
+2025-07-30 17:18:54 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-07-30 17:18:58 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-07-30 17:20:49 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-07-30 17:20:50 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-07-30 17:20:50 | INFO     | Murray.main:run_geo_analysis_streamlit_app:2056 | Starting run_geo_analysis_streamlit_app............
+2025-07-30 17:20:50 | INFO     | Murray.main:run_geo_analysis_streamlit_app:2065 | Step 1: Generating market correlations.....
+2025-07-30 17:20:50 | INFO     | Murray.main:run_geo_analysis_streamlit_app:2067 | Market correlations generated successfully.
+2025-07-30 17:20:50 | INFO     | Murray.main:run_geo_analysis_streamlit_app:2070 | Step 2: Finding best groups for control and treatment.....
+2025-07-30 17:20:50 | INFO     | Murray.main:BetterGroups:831 | Starting global multi-cell optimization for 3 cells with allowed sizes [2, 3, 4]
+2025-07-30 17:20:50 | INFO     | Murray.main:optimize_global_multicell:1240 | Starting enhanced global multi-cell optimization for 3 cells with sizes [2, 3, 4]
+2025-07-30 17:20:50 | INFO     | Murray.main:_validate_multicell_config:1163 | Multicell validation: 31 available locations, need 6 minimum
+2025-07-30 17:20:50 | INFO     | Murray.main:optimize_global_multicell:1273 | Phase 1: Generating candidates for all allowed sizes
+2025-07-30 17:20:50 | INFO     | Murray.main:optimize_global_multicell:1276 | Generating candidates for size 2
+2025-07-30 17:20:56 | INFO     | Murray.main:optimize_global_multicell:1314 | Generated 9 candidates for size 2 (out of 465 total results)
+2025-07-30 17:20:56 | INFO     | Murray.main:optimize_global_multicell:1276 | Generating candidates for size 3
+2025-07-30 17:21:50 | INFO     | Murray.main:optimize_global_multicell:1314 | Generated 9 candidates for size 3 (out of 4492 total results)
+2025-07-30 17:21:50 | INFO     | Murray.main:optimize_global_multicell:1276 | Generating candidates for size 4
+2025-07-30 17:22:52 | INFO     | Murray.main:optimize_global_multicell:1314 | Generated 9 candidates for size 4 (out of 4962 total results)
+2025-07-30 17:22:52 | INFO     | Murray.main:optimize_global_multicell:1323 | Phase 2: Enhanced global optimization - selecting 3 cells from 27 candidates
+2025-07-30 17:22:52 | INFO     | Murray.main:_select_optimal_cells_with_fallbacks:1130 | Cell selection completed: 2/3 cells selected (25 rejected)
+2025-07-30 17:22:52 | INFO     | Murray.main:optimize_global_multicell:1341 | Re-evaluating control groups to prevent treatment/control overlap
+2025-07-30 17:22:52 | INFO     | Murray.main:optimize_global_multicell:1349 | All treatment locations across cells: {'tlaxcala', 'veracruz', 'morelos', 'quintana roo', 'jalisco', 'tabasco', 'san luis potosí', 'yucatán'}
+2025-07-30 17:22:52 | INFO     | Murray.main:optimize_global_multicell:1407 | Global optimization completed: 2 cells selected with corrected control groups
+2025-07-30 17:22:52 | INFO     | Murray.main:run_geo_analysis_streamlit_app:2087 | BetterGroups completed successfully. Results for 1 sizes
+2025-07-30 17:22:52 | INFO     | Murray.main:run_geo_analysis_streamlit_app:2092 | Step 3: Evaluating sensitivity for different deltas and periods.....
+2025-07-30 17:22:52 | INFO     | Murray.main:run_geo_analysis_streamlit_app:2096 | Detected global optimization results, generating sensitivity data by size
+2025-07-30 17:23:43 | INFO     | Murray.main:evaluate_sensitivity:1928 | Period 20 completed for size 4. MDE found: None with p-value: None, power: None
+2025-07-30 17:24:36 | INFO     | Murray.main:evaluate_sensitivity:1928 | Period 25 completed for size 4. MDE found: None with p-value: None, power: None
+2025-07-30 17:25:26 | INFO     | Murray.main:evaluate_sensitivity:1928 | Period 30 completed for size 4. MDE found: None with p-value: None, power: None
+2025-07-30 17:26:19 | INFO     | Murray.main:evaluate_sensitivity:1928 | Period 35 completed for size 4. MDE found: None with p-value: None, power: None
+2025-07-30 17:26:19 | INFO     | Murray.main:evaluate_sensitivity:1945 | evaluate_sensitivity completed successfully.
+2025-07-30 17:26:19 | INFO     | Murray.main:run_geo_analysis_streamlit_app:2148 | Sensitivity evaluation completed successfully.
+2025-07-30 17:26:19 | INFO     | Murray.main:run_geo_analysis_streamlit_app:2152 | run_geo_analysis_streamlit_app completed successfully
+2025-07-30 17:26:26 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-07-30 17:26:28 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-07-30 17:26:31 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-07-30 17:26:34 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-07-30 17:27:04 | INFO     | Murray.metrics:update_metrics:59 | New record added: {'timestamp': '2025-07-30 17:27:04', 'section': 'experimental_evaluation', 'date': '2025-07-30', 'day_of_week': 'Wednesday', 'hour': 17}
+2025-07-30 17:27:04 | INFO     | Murray.post_analysis:run_geo_evaluation:21 | Starting run_geo_evaluation
+2025-07-30 17:27:04 | INFO     | Murray.post_analysis:run_geo_evaluation:22 | Input data shape: (6464, 6)
+2025-07-30 17:27:04 | INFO     | Murray.post_analysis:run_geo_evaluation:23 | Treatment group: ['san luis potosí', 'sinaloa', 'zacatecas', 'morelos', 'coahuila']
+2025-07-30 17:27:04 | INFO     | Murray.post_analysis:run_geo_evaluation:24 | Start treatment: 2025-01-01 00:00:00, End treatment: 2025-01-15 00:00:00
+2025-07-30 17:27:04 | INFO     | Murray.post_analysis:run_geo_evaluation:25 | n_permutations: 50000, significance_level: 0.1
+2025-07-30 17:27:04 | INFO     | Murray.post_analysis:run_geo_evaluation:40 | Treatment period positions: 187 to 202
+2025-07-30 17:27:04 | INFO     | Murray.post_analysis:run_geo_evaluation:49 | Generating correlation matrix...
+2025-07-30 17:27:04 | INFO     | Murray.post_analysis:run_geo_evaluation:52 | Selecting control group...
+2025-07-30 17:27:04 | INFO     | Murray.post_analysis:run_geo_evaluation:58 | Control group selected: ['michoacán', 'tamaulipas', 'jalisco', 'tlaxcala', 'veracruz', 'chihuahua', 'hidalgo', 'chiapas', 'tabasco', 'mexico city', 'nayarit', 'nuevo león', 'baja california sur', 'colima', 'sonora', 'aguascalientes', 'oaxaca', 'querétaro', 'guerrero', 'baja california', 'campeche', 'puebla', 'quintana roo', 'yucatán']
+2025-07-30 17:27:04 | INFO     | Murray.post_analysis:run_geo_evaluation:68 | Pivot table shape: (202, 32)
+2025-07-30 17:27:04 | INFO     | Murray.post_analysis:run_geo_evaluation:75 | Scaling data...
+2025-07-30 17:27:04 | INFO     | Murray.post_analysis:run_geo_evaluation:94 | Fitting synthetic control model...
+2025-07-30 17:27:04 | INFO     | Murray.post_analysis:run_geo_evaluation:97 | Model fitted successfully
+2025-07-30 17:27:04 | INFO     | Murray.post_analysis:run_geo_evaluation:99 | Making predictions...
+2025-07-30 17:27:04 | INFO     | Murray.post_analysis:run_geo_evaluation:116 | Calculating metrics...
+2025-07-30 17:27:04 | INFO     | Murray.post_analysis:run_geo_evaluation:138 | Observed statistic: -1729347.5745710202
+2025-07-30 17:27:04 | INFO     | Murray.post_analysis:run_geo_evaluation:140 | Starting permutation test with 50000 permutations...
+2025-07-30 17:27:04 | INFO     | Murray.post_analysis:run_geo_evaluation:145 | Completed 10000/50000 permutations
+2025-07-30 17:27:04 | INFO     | Murray.post_analysis:run_geo_evaluation:145 | Completed 20000/50000 permutations
+2025-07-30 17:27:05 | INFO     | Murray.post_analysis:run_geo_evaluation:145 | Completed 30000/50000 permutations
+2025-07-30 17:27:05 | INFO     | Murray.post_analysis:run_geo_evaluation:145 | Completed 40000/50000 permutations
+2025-07-30 17:27:05 | INFO     | Murray.post_analysis:run_geo_evaluation:151 | Permutation test completed, calculating p-value and power...
+2025-07-30 17:27:05 | INFO     | Murray.post_analysis:run_geo_evaluation:157 | Final results:
+2025-07-30 17:27:05 | INFO     | Murray.post_analysis:run_geo_evaluation:158 |   MAPE: 3.8319
+2025-07-30 17:27:05 | INFO     | Murray.post_analysis:run_geo_evaluation:159 |   SMAPE: 3.7620
+2025-07-30 17:27:05 | INFO     | Murray.post_analysis:run_geo_evaluation:160 |   Percentage lift: -3.0654%
+2025-07-30 17:27:05 | INFO     | Murray.post_analysis:run_geo_evaluation:161 |   P-value: 0.432920
+2025-07-30 17:27:05 | INFO     | Murray.post_analysis:run_geo_evaluation:162 |   Power: 0.0000
+2025-07-30 17:27:05 | INFO     | Murray.post_analysis:run_geo_evaluation:181 | run_geo_evaluation completed successfully

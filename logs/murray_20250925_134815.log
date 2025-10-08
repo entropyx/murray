@@ -1,0 +1,15 @@
+2025-09-25 13:54:32 | INFO     | Murray.post_analysis:get_evaluation_chart_data:241 | Starting get_evaluation_chart_data
+2025-09-25 13:54:32 | INFO     | Murray.post_analysis:run_geo_evaluation:22 | Starting run_geo_evaluation
+2025-09-25 13:54:32 | INFO     | Murray.post_analysis:run_geo_evaluation:23 | Input data shape: (6464, 6)
+2025-09-25 13:54:32 | INFO     | Murray.post_analysis:run_geo_evaluation:24 | Treatment group: ['puebla', 'veracruz']
+2025-09-25 13:54:32 | INFO     | Murray.post_analysis:run_geo_evaluation:25 | Start treatment: 2025-10-09 00:00:00, End treatment: 2025-01-10 00:00:00
+2025-09-25 13:54:32 | INFO     | Murray.post_analysis:run_geo_evaluation:26 | n_permutations: 50000, significance_level: 0.1
+2025-09-25 13:54:32 | INFO     | Murray.post_analysis:run_geo_evaluation:41 | Treatment period positions: 0 to 197
+2025-09-25 13:54:32 | INFO     | Murray.post_analysis:run_geo_evaluation:50 | Generating correlation matrix...
+2025-09-25 13:54:32 | INFO     | Murray.post_analysis:run_geo_evaluation:53 | Selecting control group...
+2025-09-25 13:54:32 | INFO     | Murray.post_analysis:run_geo_evaluation:59 | Control group selected: ['nayarit', 'quintana roo', 'querétaro', 'oaxaca', 'guerrero', 'chiapas', 'baja california sur', 'jalisco', 'zacatecas', 'nuevo león', 'aguascalientes', 'mexico city', 'tabasco', 'michoacán', 'sinaloa', 'morelos', 'san luis potosí', 'chihuahua', 'hidalgo', 'baja california', 'sonora', 'yucatán', 'tamaulipas']
+2025-09-25 13:54:32 | INFO     | Murray.post_analysis:run_geo_evaluation:69 | Pivot table shape: (202, 32)
+2025-09-25 13:54:32 | INFO     | Murray.post_analysis:run_geo_evaluation:82 | Scaling data...
+2025-09-25 13:54:32 | INFO     | Murray.post_analysis:run_geo_evaluation:102 | Fitting synthetic control model...
+2025-09-25 13:58:23 | ERROR    | Murray.auxiliary:cleaned_data:138 | Data Cleaning Error: Missing required columns: target, location, date
+2025-09-25 13:58:43 | ERROR    | Murray.auxiliary:cleaned_data:138 | Data Cleaning Error: Missing required columns: target, location, date

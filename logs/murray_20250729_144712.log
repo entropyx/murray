@@ -1,0 +1,48 @@
+2025-07-29 14:47:12 | WARNING  | Murray.auxiliary:handle_duplicates:32 | Found 22903 duplicate entries in the data. Aggregating by mean.
+2025-07-29 14:47:12 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-07-29 14:47:13 | WARNING  | Murray.auxiliary:handle_duplicates:32 | Found 22903 duplicate entries in the data. Aggregating by mean.
+2025-07-29 14:47:13 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-07-29 14:47:13 | INFO     | Murray.main:run_geo_analysis_streamlit_app:2056 | Starting run_geo_analysis_streamlit_app............
+2025-07-29 14:47:13 | INFO     | Murray.main:run_geo_analysis_streamlit_app:2065 | Step 1: Generating market correlations.....
+2025-07-29 14:47:13 | INFO     | Murray.main:run_geo_analysis_streamlit_app:2067 | Market correlations generated successfully.
+2025-07-29 14:47:13 | INFO     | Murray.main:run_geo_analysis_streamlit_app:2070 | Step 2: Finding best groups for control and treatment.....
+2025-07-29 14:47:13 | INFO     | Murray.main:BetterGroups:998 | Starting single-cell mode
+2025-07-29 14:47:15 | INFO     | Murray.main:BetterGroups:1030 | Processed 1/35000 groups
+2025-07-29 14:48:27 | INFO     | Murray.main:BetterGroups:1030 | Processed 3500/35000 groups
+2025-07-29 14:49:39 | INFO     | Murray.main:BetterGroups:1030 | Processed 7000/35000 groups
+2025-07-29 14:50:51 | INFO     | Murray.main:BetterGroups:1030 | Processed 10500/35000 groups
+2025-07-29 14:52:06 | INFO     | Murray.main:BetterGroups:1030 | Processed 14000/35000 groups
+2025-07-29 14:53:19 | INFO     | Murray.main:BetterGroups:1030 | Processed 17500/35000 groups
+2025-07-29 14:54:33 | INFO     | Murray.main:BetterGroups:1030 | Processed 21000/35000 groups
+2025-07-29 14:55:46 | INFO     | Murray.main:BetterGroups:1030 | Processed 24500/35000 groups
+2025-07-29 14:56:43 | INFO     | Murray.main:BetterGroups:1030 | Processed 28000/35000 groups
+2025-07-29 14:57:25 | INFO     | Murray.main:BetterGroups:1030 | Processed 31500/35000 groups
+2025-07-29 14:57:51 | INFO     | Murray.main:BetterGroups:1030 | Processed 35000/35000 groups
+2025-07-29 14:57:51 | INFO     | Murray.main:BetterGroups:1031 | All groups processed. Results count: 35000
+2025-07-29 14:57:51 | INFO     | Murray.main:run_geo_analysis_streamlit_app:2087 | BetterGroups completed successfully. Results for 7 sizes
+2025-07-29 14:57:51 | INFO     | Murray.main:run_geo_analysis_streamlit_app:2092 | Step 3: Evaluating sensitivity for different deltas and periods.....
+2025-07-29 15:00:18 | INFO     | Murray.main:evaluate_sensitivity:1928 | Period 30 completed for size 7. MDE found: None with p-value: None, power: None
+2025-07-29 15:02:46 | INFO     | Murray.main:evaluate_sensitivity:1928 | Period 45 completed for size 7. MDE found: None with p-value: None, power: None
+2025-07-29 15:05:23 | INFO     | Murray.main:evaluate_sensitivity:1928 | Period 60 completed for size 7. MDE found: None with p-value: None, power: None
+2025-07-29 15:07:56 | INFO     | Murray.main:evaluate_sensitivity:1928 | Period 30 completed for size 8. MDE found: None with p-value: None, power: None
+2025-07-29 15:10:27 | INFO     | Murray.main:evaluate_sensitivity:1928 | Period 45 completed for size 8. MDE found: None with p-value: None, power: None
+2025-07-29 15:13:02 | INFO     | Murray.main:evaluate_sensitivity:1928 | Period 60 completed for size 8. MDE found: None with p-value: None, power: None
+2025-07-29 15:15:30 | INFO     | Murray.main:evaluate_sensitivity:1928 | Period 30 completed for size 9. MDE found: None with p-value: None, power: None
+2025-07-29 15:18:08 | INFO     | Murray.main:evaluate_sensitivity:1928 | Period 45 completed for size 9. MDE found: None with p-value: None, power: None
+2025-07-29 15:20:51 | INFO     | Murray.main:evaluate_sensitivity:1928 | Period 60 completed for size 9. MDE found: None with p-value: None, power: None
+2025-07-29 15:23:27 | INFO     | Murray.main:evaluate_sensitivity:1928 | Period 30 completed for size 10. MDE found: None with p-value: None, power: None
+2025-07-29 15:26:07 | INFO     | Murray.main:evaluate_sensitivity:1928 | Period 45 completed for size 10. MDE found: None with p-value: None, power: None
+2025-07-29 15:28:48 | INFO     | Murray.main:evaluate_sensitivity:1928 | Period 60 completed for size 10. MDE found: None with p-value: None, power: None
+2025-07-29 15:31:27 | INFO     | Murray.main:evaluate_sensitivity:1928 | Period 30 completed for size 11. MDE found: None with p-value: None, power: None
+2025-07-29 15:34:17 | INFO     | Murray.main:evaluate_sensitivity:1928 | Period 45 completed for size 11. MDE found: None with p-value: None, power: None
+2025-07-29 15:36:59 | INFO     | Murray.main:evaluate_sensitivity:1928 | Period 60 completed for size 11. MDE found: None with p-value: None, power: None
+2025-07-29 15:39:31 | INFO     | Murray.main:evaluate_sensitivity:1928 | Period 30 completed for size 12. MDE found: None with p-value: None, power: None
+2025-07-29 15:42:07 | INFO     | Murray.main:evaluate_sensitivity:1928 | Period 45 completed for size 12. MDE found: None with p-value: None, power: None
+2025-07-29 15:44:52 | INFO     | Murray.main:evaluate_sensitivity:1928 | Period 60 completed for size 12. MDE found: None with p-value: None, power: None
+2025-07-29 15:47:45 | INFO     | Murray.main:evaluate_sensitivity:1928 | Period 30 completed for size 13. MDE found: None with p-value: None, power: None
+2025-07-29 15:50:15 | INFO     | Murray.main:evaluate_sensitivity:1928 | Period 45 completed for size 13. MDE found: None with p-value: None, power: None
+2025-07-29 15:52:46 | INFO     | Murray.main:evaluate_sensitivity:1928 | Period 60 completed for size 13. MDE found: None with p-value: None, power: None
+2025-07-29 15:52:46 | INFO     | Murray.main:evaluate_sensitivity:1945 | evaluate_sensitivity completed successfully.
+2025-07-29 15:52:46 | INFO     | Murray.main:run_geo_analysis_streamlit_app:2148 | Sensitivity evaluation completed successfully.
+2025-07-29 15:52:46 | INFO     | Murray.main:run_geo_analysis_streamlit_app:2152 | run_geo_analysis_streamlit_app completed successfully
+2025-07-29 15:52:46 | ERROR    | Murray.plots:plot_mde_results:353 | No satisfactory results found. The heatmap does not contain values (MDE) with the entered data.

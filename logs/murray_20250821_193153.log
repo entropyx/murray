@@ -1,0 +1,26 @@
+2025-08-21 19:32:30 | INFO     | Murray.main:run_geo_analysis_streamlit_app:2057 | Starting run_geo_analysis_streamlit_app............
+2025-08-21 19:32:30 | INFO     | Murray.main:run_geo_analysis_streamlit_app:2066 | Step 1: Generating market correlations.....
+2025-08-21 19:32:30 | INFO     | Murray.main:run_geo_analysis_streamlit_app:2070 | Market correlations generated successfully.
+2025-08-21 19:32:30 | INFO     | Murray.main:run_geo_analysis_streamlit_app:2073 | Step 2: Finding best groups for control and treatment.....
+2025-08-21 19:32:30 | INFO     | Murray.main:BetterGroups:998 | Starting single-cell mode
+2025-08-21 19:32:30 | INFO     | Murray.main:BetterGroups:1030 | Processed 1/10000 groups
+2025-08-21 19:33:01 | INFO     | Murray.main:BetterGroups:1030 | Processed 1000/10000 groups
+2025-08-21 19:33:32 | INFO     | Murray.main:BetterGroups:1030 | Processed 2000/10000 groups
+2025-08-21 19:34:04 | INFO     | Murray.main:BetterGroups:1030 | Processed 3000/10000 groups
+2025-08-21 19:34:36 | INFO     | Murray.main:BetterGroups:1030 | Processed 4000/10000 groups
+2025-08-21 19:35:09 | INFO     | Murray.main:BetterGroups:1030 | Processed 5000/10000 groups
+2025-08-21 19:35:41 | INFO     | Murray.main:BetterGroups:1030 | Processed 6000/10000 groups
+2025-08-21 19:36:15 | INFO     | Murray.main:BetterGroups:1030 | Processed 7000/10000 groups
+2025-08-21 19:36:39 | INFO     | Murray.main:BetterGroups:1030 | Processed 8000/10000 groups
+2025-08-21 19:36:43 | INFO     | Murray.main:BetterGroups:1030 | Processed 9000/10000 groups
+2025-08-21 19:36:47 | INFO     | Murray.main:BetterGroups:1030 | Processed 10000/10000 groups
+2025-08-21 19:36:47 | INFO     | Murray.main:BetterGroups:1031 | All groups processed. Results count: 10000
+2025-08-21 19:36:47 | INFO     | Murray.main:run_geo_analysis_streamlit_app:2092 | BetterGroups completed successfully. Results for 5 sizes
+2025-08-21 19:36:47 | INFO     | Murray.main:run_geo_analysis_streamlit_app:2099 | Step 3: Evaluating sensitivity for different deltas and periods.....
+2025-08-21 19:36:47 | INFO     | Murray.main:run_geo_analysis_streamlit_app:2101 | About to send 'Starting sensitivity analysis' to status_text_2
+2025-08-21 19:36:47 | INFO     | Murray.main:run_geo_analysis_streamlit_app:2103 | Successfully sent message to status_text_2
+2025-08-21 19:36:47 | INFO     | Murray.main:run_geo_analysis_streamlit_app:2107 | Forcing stage advance from 3 to Sensitivity Analysis (stage 3)
+2025-08-21 19:37:19 | INFO     | Murray.main:evaluate_sensitivity:1928 | Period 5 completed for size 6. MDE found: None with p-value: None, power: None
+2025-08-21 19:37:52 | INFO     | Murray.main:evaluate_sensitivity:1928 | Period 10 completed for size 6. MDE found: None with p-value: None, power: None
+2025-08-21 19:38:23 | INFO     | Murray.main:evaluate_sensitivity:1928 | Period 5 completed for size 7. MDE found: 0.09 with p-value: 0.0634, power: 0.8000
+2025-08-21 19:38:57 | INFO     | Murray.main:evaluate_sensitivity:1928 | Period 10 completed for size 7. MDE found: 0.06999999999999999 with p-value: 0.0546, power: 0.8600

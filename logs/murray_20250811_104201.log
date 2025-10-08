@@ -1,0 +1,15 @@
+2025-08-11 10:42:01 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-11 10:42:02 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-11 10:42:03 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-11 10:42:03 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-11 10:42:03 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-11 10:42:03 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-11 10:42:03 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1623 | Starting run_geo_analysis_streamlit_app............
+2025-08-11 10:42:03 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1632 | Step 1: Generating market correlations.....
+2025-08-11 10:42:03 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1637 | Market correlations generated successfully.
+2025-08-11 10:42:03 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1640 | Step 2: Finding best groups for control and treatment.....
+2025-08-11 10:42:03 | INFO     | Murray.main:BetterGroups:899 | Starting single-cell mode
+2025-08-11 10:42:05 | INFO     | Murray.main:BetterGroups:936 | Processed 1/50000 groups
+2025-08-11 10:42:07 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-11 10:42:07 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-11 10:42:07 | INFO     | __main__:<module>:970 | 🚫 CANCELLING SIMULATION: Parameters changed during execution

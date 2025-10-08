@@ -1,0 +1,43 @@
+2025-09-03 20:02:09 | INFO     | __main__:<module>:157 | user isaac@entropy.tech logged in
+2025-09-03 20:02:15 | INFO     | __main__:<module>:157 | user isaac@entropy.tech logged in
+2025-09-03 20:02:15 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-09-03 20:02:17 | INFO     | __main__:<module>:157 | user isaac@entropy.tech logged in
+2025-09-03 20:02:17 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-09-03 20:02:17 | INFO     | __main__:<module>:157 | user isaac@entropy.tech logged in
+2025-09-03 20:02:17 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-09-03 20:02:17 | INFO     | __main__:<module>:157 | user isaac@entropy.tech logged in
+2025-09-03 20:02:17 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-09-03 20:02:18 | INFO     | __main__:<module>:157 | user isaac@entropy.tech logged in
+2025-09-03 20:02:18 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-09-03 20:02:18 | INFO     | __main__:<module>:157 | user isaac@entropy.tech logged in
+2025-09-03 20:02:18 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-09-03 20:02:18 | INFO     | __main__:<module>:157 | user isaac@entropy.tech logged in
+2025-09-03 20:02:18 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-09-03 20:02:18 | INFO     | __main__:<module>:157 | user isaac@entropy.tech logged in
+2025-09-03 20:02:18 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-09-03 20:02:19 | INFO     | __main__:<module>:157 | user isaac@entropy.tech logged in
+2025-09-03 20:02:19 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-09-03 20:02:19 | INFO     | __main__:<module>:157 | user isaac@entropy.tech logged in
+2025-09-03 20:02:19 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-09-03 20:02:19 | INFO     | __main__:<module>:157 | user isaac@entropy.tech logged in
+2025-09-03 20:02:19 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-09-03 20:02:20 | INFO     | __main__:<module>:157 | user isaac@entropy.tech logged in
+2025-09-03 20:02:20 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-09-03 20:02:20 | INFO     | __main__:<module>:157 | user isaac@entropy.tech logged in
+2025-09-03 20:02:20 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-09-03 20:02:22 | INFO     | __main__:<module>:157 | user isaac@entropy.tech logged in
+2025-09-03 20:02:22 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-09-03 20:02:22 | INFO     | __main__:<module>:157 | user isaac@entropy.tech logged in
+2025-09-03 20:02:22 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-09-03 20:02:22 | INFO     | __main__:<module>:157 | user isaac@entropy.tech logged in
+2025-09-03 20:02:23 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-09-03 20:02:24 | INFO     | __main__:<module>:157 | user isaac@entropy.tech logged in
+2025-09-03 20:02:24 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-09-03 20:02:24 | INFO     | __main__:<module>:157 | user isaac@entropy.tech logged in
+2025-09-03 20:02:24 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-09-03 20:02:24 | INFO     | Murray.main:run_geo_analysis_streamlit_app:2091 | Starting run_geo_analysis_streamlit_app............
+2025-09-03 20:02:24 | INFO     | Murray.main:run_geo_analysis_streamlit_app:2100 | Step 1: Generating market correlations.....
+2025-09-03 20:02:24 | INFO     | Murray.main:run_geo_analysis_streamlit_app:2104 | Market correlations generated successfully.
+2025-09-03 20:02:24 | INFO     | Murray.main:run_geo_analysis_streamlit_app:2107 | Step 2: Finding best groups for control and treatment.....
+2025-09-03 20:02:24 | INFO     | __main__:<module>:157 | user isaac@entropy.tech logged in
+2025-09-03 20:02:24 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection

@@ -1,0 +1,40 @@
+2025-09-25 13:42:41 | INFO     | Murray.post_analysis:get_evaluation_chart_data:241 | Starting get_evaluation_chart_data
+2025-09-25 13:42:41 | INFO     | Murray.post_analysis:run_geo_evaluation:22 | Starting run_geo_evaluation
+2025-09-25 13:42:41 | INFO     | Murray.post_analysis:run_geo_evaluation:23 | Input data shape: (6464, 6)
+2025-09-25 13:42:41 | INFO     | Murray.post_analysis:run_geo_evaluation:24 | Treatment group: ['puebla', ' veracruz', 'jalisco']
+2025-09-25 13:42:41 | INFO     | Murray.post_analysis:run_geo_evaluation:25 | Start treatment: 2025-10-09 00:00:00, End treatment: 2025-10-10 00:00:00
+2025-09-25 13:42:41 | INFO     | Murray.post_analysis:run_geo_evaluation:26 | n_permutations: 50000, significance_level: 0.1
+2025-09-25 13:42:41 | INFO     | Murray.post_analysis:run_geo_evaluation:41 | Treatment period positions: 0 to 1
+2025-09-25 13:42:41 | INFO     | Murray.post_analysis:run_geo_evaluation:50 | Generating correlation matrix...
+2025-09-25 13:42:41 | INFO     | Murray.post_analysis:run_geo_evaluation:53 | Selecting control group...
+2025-09-25 13:42:41 | WARNING  | Murray.main:select_controls:131 | Treatment location  veracruz not found in correlation matrix
+2025-09-25 13:42:41 | INFO     | Murray.post_analysis:run_geo_evaluation:59 | Control group selected: ['tabasco', 'michoacán', 'quintana roo', 'zacatecas', 'hidalgo', 'guerrero', 'baja california sur', 'yucatán', 'chihuahua', 'campeche', 'sinaloa', 'oaxaca', 'nayarit', 'chiapas', 'morelos', 'colima', 'san luis potosí', 'baja california', 'tamaulipas', 'mexico city', 'veracruz', 'sonora', 'querétaro', 'aguascalientes']
+2025-09-25 13:42:41 | INFO     | Murray.post_analysis:run_geo_evaluation:69 | Pivot table shape: (202, 32)
+2025-09-25 13:43:05 | INFO     | Murray.post_analysis:get_evaluation_chart_data:241 | Starting get_evaluation_chart_data
+2025-09-25 13:43:05 | INFO     | Murray.post_analysis:run_geo_evaluation:22 | Starting run_geo_evaluation
+2025-09-25 13:43:05 | INFO     | Murray.post_analysis:run_geo_evaluation:23 | Input data shape: (6464, 6)
+2025-09-25 13:43:05 | INFO     | Murray.post_analysis:run_geo_evaluation:24 | Treatment group: ['puebla', 'veracruz', 'jalisco']
+2025-09-25 13:43:05 | INFO     | Murray.post_analysis:run_geo_evaluation:25 | Start treatment: 2025-10-09 00:00:00, End treatment: 2025-10-10 00:00:00
+2025-09-25 13:43:05 | INFO     | Murray.post_analysis:run_geo_evaluation:26 | n_permutations: 50000, significance_level: 0.1
+2025-09-25 13:43:05 | INFO     | Murray.post_analysis:run_geo_evaluation:41 | Treatment period positions: 0 to 1
+2025-09-25 13:43:05 | INFO     | Murray.post_analysis:run_geo_evaluation:50 | Generating correlation matrix...
+2025-09-25 13:43:05 | INFO     | Murray.post_analysis:run_geo_evaluation:53 | Selecting control group...
+2025-09-25 13:43:05 | INFO     | Murray.post_analysis:run_geo_evaluation:59 | Control group selected: ['tabasco', 'michoacán', 'quintana roo', 'zacatecas', 'hidalgo', 'guerrero', 'baja california sur', 'yucatán', 'nuevo león', 'chihuahua', 'campeche', 'sinaloa', 'oaxaca', 'nayarit', 'chiapas', 'morelos', 'colima', 'san luis potosí', 'baja california', 'tamaulipas', 'mexico city', 'sonora', 'querétaro', 'aguascalientes']
+2025-09-25 13:43:05 | INFO     | Murray.post_analysis:run_geo_evaluation:69 | Pivot table shape: (202, 32)
+2025-09-25 13:43:05 | INFO     | Murray.post_analysis:run_geo_evaluation:82 | Scaling data...
+2025-09-25 13:43:05 | INFO     | Murray.post_analysis:run_geo_evaluation:102 | Fitting synthetic control model...
+2025-09-25 13:44:39 | INFO     | Murray.post_analysis:get_evaluation_chart_data:241 | Starting get_evaluation_chart_data
+2025-09-25 13:44:39 | INFO     | Murray.post_analysis:run_geo_evaluation:22 | Starting run_geo_evaluation
+2025-09-25 13:44:39 | INFO     | Murray.post_analysis:run_geo_evaluation:23 | Input data shape: (6464, 6)
+2025-09-25 13:44:39 | INFO     | Murray.post_analysis:run_geo_evaluation:24 | Treatment group: ['puebla', 'veracruz', 'jalisco']
+2025-09-25 13:44:39 | INFO     | Murray.post_analysis:run_geo_evaluation:25 | Start treatment: 2025-01-09 00:00:00, End treatment: 2025-06-09 00:00:00
+2025-09-25 13:44:39 | INFO     | Murray.post_analysis:run_geo_evaluation:26 | n_permutations: 50000, significance_level: 0.1
+2025-09-25 13:44:39 | INFO     | Murray.post_analysis:run_geo_evaluation:41 | Treatment period positions: 195 to 1
+2025-09-25 13:44:39 | INFO     | Murray.post_analysis:run_geo_evaluation:50 | Generating correlation matrix...
+2025-09-25 13:44:39 | INFO     | Murray.post_analysis:run_geo_evaluation:53 | Selecting control group...
+2025-09-25 13:44:39 | INFO     | Murray.post_analysis:run_geo_evaluation:59 | Control group selected: ['tabasco', 'michoacán', 'quintana roo', 'zacatecas', 'hidalgo', 'guerrero', 'baja california sur', 'yucatán', 'nuevo león', 'chihuahua', 'campeche', 'sinaloa', 'oaxaca', 'nayarit', 'chiapas', 'morelos', 'colima', 'san luis potosí', 'baja california', 'tamaulipas', 'mexico city', 'sonora', 'querétaro', 'aguascalientes']
+2025-09-25 13:44:39 | INFO     | Murray.post_analysis:run_geo_evaluation:69 | Pivot table shape: (202, 32)
+2025-09-25 13:44:39 | INFO     | Murray.post_analysis:run_geo_evaluation:82 | Scaling data...
+2025-09-25 13:44:39 | INFO     | Murray.post_analysis:run_geo_evaluation:102 | Fitting synthetic control model...
+2025-09-25 13:44:39 | INFO     | Murray.post_analysis:run_geo_evaluation:105 | Model fitted successfully
+2025-09-25 13:44:39 | INFO     | Murray.post_analysis:run_geo_evaluation:107 | Making predictions...

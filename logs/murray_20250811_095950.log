@@ -1,0 +1,3 @@
+2025-08-11 09:59:54 | INFO     | __main__:<module>:171 | User isaac@entropy.tech logged in
+2025-08-11 09:59:54 | INFO     | __main__:<module>:172 | User isaac@entropy.tech role: user
+2025-08-11 09:59:54 | INFO     | __main__:<module>:173 | User isaac@entropy.tech pages: {'Hello isaac@entropy.tech': [<streamlit.navigation.page.StreamlitPage object at 0x7ff44a26b380>, <streamlit.navigation.page.StreamlitPage object at 0x7ff44ac840e0>]}

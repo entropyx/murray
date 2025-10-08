@@ -1,0 +1,57 @@
+2025-09-25 11:14:15 | INFO     | Murray.main:run_geo_analysis_streamlit_app:2074 | Starting run_geo_analysis_streamlit_app............
+2025-09-25 11:14:15 | INFO     | Murray.main:run_geo_analysis_streamlit_app:2083 | Step 1: Generating market correlations.....
+2025-09-25 11:14:15 | INFO     | Murray.main:run_geo_analysis_streamlit_app:2087 | Market correlations generated successfully.
+2025-09-25 11:14:15 | INFO     | Murray.main:run_geo_analysis_streamlit_app:2090 | Step 2: Finding best groups for control and treatment.....
+2025-09-25 11:14:15 | INFO     | Murray.main:BetterGroups:1003 | Starting single-cell mode
+2025-09-25 11:14:20 | INFO     | Murray.main:BetterGroups:1035 | Processed 1/50000 groups
+2025-09-25 11:17:03 | INFO     | Murray.main:BetterGroups:1035 | Processed 5000/50000 groups
+2025-09-25 11:19:42 | INFO     | Murray.main:BetterGroups:1035 | Processed 10000/50000 groups
+2025-09-25 11:22:18 | INFO     | Murray.main:BetterGroups:1035 | Processed 15000/50000 groups
+2025-09-25 11:24:48 | INFO     | Murray.main:BetterGroups:1035 | Processed 20000/50000 groups
+2025-09-25 11:27:02 | INFO     | Murray.main:BetterGroups:1035 | Processed 25000/50000 groups
+2025-09-25 11:29:09 | INFO     | Murray.main:BetterGroups:1035 | Processed 30000/50000 groups
+2025-09-25 11:31:11 | INFO     | Murray.main:BetterGroups:1035 | Processed 35000/50000 groups
+2025-09-25 11:32:56 | INFO     | Murray.main:BetterGroups:1035 | Processed 40000/50000 groups
+2025-09-25 11:34:25 | INFO     | Murray.main:BetterGroups:1035 | Processed 45000/50000 groups
+2025-09-25 11:35:33 | INFO     | Murray.main:BetterGroups:1035 | Processed 50000/50000 groups
+2025-09-25 11:35:33 | INFO     | Murray.main:BetterGroups:1036 | All groups processed. Results count: 50000
+2025-09-25 11:35:34 | INFO     | Murray.main:run_geo_analysis_streamlit_app:2121 | BetterGroups completed successfully. Results for 10 sizes
+2025-09-25 11:35:34 | INFO     | Murray.main:run_geo_analysis_streamlit_app:2126 | Step 3: Evaluating sensitivity for different deltas and periods.....
+2025-09-25 11:35:34 | INFO     | Murray.main:run_geo_analysis_streamlit_app:2176 | Starting sensitivity evaluation for standard results
+2025-09-25 11:35:49 | INFO     | Murray.main:evaluate_sensitivity:1943 | Period 5 completed for size 5. MDE found: None with p-value: None, power: None
+2025-09-25 11:36:05 | INFO     | Murray.main:evaluate_sensitivity:1943 | Period 10 completed for size 5. MDE found: 0.06999999999999999 with p-value: 0.0439, power: 0.9250
+2025-09-25 11:36:19 | INFO     | Murray.main:evaluate_sensitivity:1943 | Period 5 completed for size 6. MDE found: None with p-value: None, power: None
+2025-09-25 11:36:36 | INFO     | Murray.main:evaluate_sensitivity:1943 | Period 10 completed for size 6. MDE found: 0.06999999999999999 with p-value: 0.0641, power: 0.8500
+2025-09-25 11:36:51 | INFO     | Murray.main:evaluate_sensitivity:1943 | Period 5 completed for size 7. MDE found: None with p-value: None, power: None
+2025-09-25 11:37:09 | INFO     | Murray.main:evaluate_sensitivity:1943 | Period 10 completed for size 7. MDE found: 0.09 with p-value: 0.0362, power: 0.9250
+2025-09-25 11:37:24 | INFO     | Murray.main:evaluate_sensitivity:1943 | Period 5 completed for size 8. MDE found: 0.08 with p-value: 0.0356, power: 0.9500
+2025-09-25 11:37:41 | INFO     | Murray.main:evaluate_sensitivity:1943 | Period 10 completed for size 8. MDE found: 0.05 with p-value: 0.0416, power: 0.8750
+2025-09-25 11:37:56 | INFO     | Murray.main:evaluate_sensitivity:1943 | Period 5 completed for size 9. MDE found: None with p-value: None, power: None
+2025-09-25 11:38:13 | INFO     | Murray.main:evaluate_sensitivity:1943 | Period 10 completed for size 9. MDE found: 0.08 with p-value: 0.0695, power: 0.8500
+2025-09-25 11:38:28 | INFO     | Murray.main:evaluate_sensitivity:1943 | Period 5 completed for size 10. MDE found: 0.09 with p-value: 0.0593, power: 0.8250
+2025-09-25 11:38:45 | INFO     | Murray.main:evaluate_sensitivity:1943 | Period 10 completed for size 10. MDE found: 0.05 with p-value: 0.0552, power: 0.8750
+2025-09-25 11:38:59 | INFO     | Murray.main:evaluate_sensitivity:1943 | Period 5 completed for size 11. MDE found: 0.09 with p-value: 0.0227, power: 1.0000
+2025-09-25 11:39:16 | INFO     | Murray.main:evaluate_sensitivity:1943 | Period 10 completed for size 11. MDE found: 0.060000000000000005 with p-value: 0.0544, power: 0.9000
+2025-09-25 11:39:31 | INFO     | Murray.main:evaluate_sensitivity:1943 | Period 5 completed for size 12. MDE found: None with p-value: None, power: None
+2025-09-25 11:39:47 | INFO     | Murray.main:evaluate_sensitivity:1943 | Period 10 completed for size 12. MDE found: 0.08 with p-value: 0.0416, power: 0.8750
+2025-09-25 11:40:02 | INFO     | Murray.main:evaluate_sensitivity:1943 | Period 5 completed for size 13. MDE found: None with p-value: None, power: None
+2025-09-25 11:40:19 | INFO     | Murray.main:evaluate_sensitivity:1943 | Period 10 completed for size 13. MDE found: 0.060000000000000005 with p-value: 0.0257, power: 0.9750
+2025-09-25 11:40:34 | INFO     | Murray.main:evaluate_sensitivity:1943 | Period 5 completed for size 14. MDE found: 0.05 with p-value: 0.0707, power: 0.8000
+2025-09-25 11:40:51 | INFO     | Murray.main:evaluate_sensitivity:1943 | Period 10 completed for size 14. MDE found: 0.04 with p-value: 0.0599, power: 0.8500
+2025-09-25 11:40:51 | INFO     | Murray.main:evaluate_sensitivity:1960 | evaluate_sensitivity completed successfully.
+2025-09-25 11:40:51 | INFO     | Murray.main:run_geo_analysis_streamlit_app:2188 | evaluate_sensitivity call completed
+2025-09-25 11:40:51 | INFO     | Murray.main:run_geo_analysis_streamlit_app:2194 | Sensitivity evaluation completed successfully.
+2025-09-25 11:40:51 | INFO     | Murray.main:run_geo_analysis_streamlit_app:2202 | run_geo_analysis_streamlit_app completed successfully
+2025-09-25 12:31:34 | INFO     | Murray.post_analysis:get_evaluation_chart_data:241 | Starting get_evaluation_chart_data
+2025-09-25 12:31:34 | INFO     | Murray.post_analysis:run_geo_evaluation:22 | Starting run_geo_evaluation
+2025-09-25 12:31:34 | INFO     | Murray.post_analysis:run_geo_evaluation:23 | Input data shape: (6464, 6)
+2025-09-25 12:31:34 | INFO     | Murray.post_analysis:run_geo_evaluation:24 | Treatment group: ['puebla', 'veracruz', 'jalisco']
+2025-09-25 12:31:34 | INFO     | Murray.post_analysis:run_geo_evaluation:25 | Start treatment: 2025-10-09 00:00:00, End treatment: 2025-01-10 00:00:00
+2025-09-25 12:31:34 | INFO     | Murray.post_analysis:run_geo_evaluation:26 | n_permutations: 50000, significance_level: 0.1
+2025-09-25 12:31:34 | INFO     | Murray.post_analysis:run_geo_evaluation:41 | Treatment period positions: 0 to 197
+2025-09-25 12:31:34 | INFO     | Murray.post_analysis:run_geo_evaluation:50 | Generating correlation matrix...
+2025-09-25 12:31:34 | INFO     | Murray.post_analysis:run_geo_evaluation:53 | Selecting control group...
+2025-09-25 12:31:34 | INFO     | Murray.post_analysis:run_geo_evaluation:59 | Control group selected: ['tamaulipas', 'baja california sur', 'sonora', 'tabasco', 'colima', 'aguascalientes', 'querétaro', 'nuevo león', 'chihuahua', 'campeche', 'mexico city', 'quintana roo', 'zacatecas', 'san luis potosí', 'michoacán', 'chiapas', 'guerrero', 'sinaloa', 'oaxaca', 'baja california', 'yucatán', 'nayarit', 'morelos', 'hidalgo']
+2025-09-25 12:31:34 | INFO     | Murray.post_analysis:run_geo_evaluation:69 | Pivot table shape: (202, 32)
+2025-09-25 12:31:34 | INFO     | Murray.post_analysis:run_geo_evaluation:82 | Scaling data...
+2025-09-25 12:31:34 | INFO     | Murray.post_analysis:run_geo_evaluation:102 | Fitting synthetic control model...

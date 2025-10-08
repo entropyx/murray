@@ -1,0 +1,412 @@
+2025-09-18 16:23:55 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-09-18 16:23:59 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-09-18 16:24:01 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-09-18 16:24:01 | INFO     | Murray.metrics:update_metrics:59 | New record added: {'timestamp': '2025-09-18 16:24:01', 'section': 'experimental_evaluation', 'date': '2025-09-18', 'day_of_week': 'Thursday', 'hour': 16}
+2025-09-18 16:24:01 | INFO     | Murray.post_analysis:run_geo_evaluation:21 | Starting run_geo_evaluation
+2025-09-18 16:24:01 | INFO     | Murray.post_analysis:run_geo_evaluation:22 | Input data shape: (11712, 4)
+2025-09-18 16:24:01 | INFO     | Murray.post_analysis:run_geo_evaluation:23 | Treatment group: ['aguascalientes', 'campeche', 'chihuahua', 'guanajuato', 'jalisco', 'oaxaca', 'tabasco', 'yucatan', 'quintana roo']
+2025-09-18 16:24:01 | INFO     | Murray.post_analysis:run_geo_evaluation:24 | Start treatment: 2025-07-16 00:00:00, End treatment: 2025-09-06 00:00:00
+2025-09-18 16:24:01 | INFO     | Murray.post_analysis:run_geo_evaluation:25 | n_permutations: 1000000, significance_level: 0.1
+2025-09-18 16:24:01 | INFO     | Murray.post_analysis:run_geo_evaluation:40 | Treatment period positions: 302 to 355
+2025-09-18 16:24:01 | INFO     | Murray.post_analysis:run_geo_evaluation:49 | Generating correlation matrix...
+2025-09-18 16:24:01 | INFO     | Murray.post_analysis:run_geo_evaluation:52 | Selecting control group...
+2025-09-18 16:24:01 | INFO     | Murray.post_analysis:run_geo_evaluation:58 | Control group selected: ['nuevo leon', 'morelos', 'tamaulipas', 'state of mexico', 'mexico city']
+2025-09-18 16:24:01 | INFO     | Murray.post_analysis:run_geo_evaluation:68 | Pivot table shape: (366, 32)
+2025-09-18 16:24:01 | INFO     | Murray.post_analysis:run_geo_evaluation:81 | Scaling data...
+2025-09-18 16:24:01 | INFO     | Murray.post_analysis:run_geo_evaluation:101 | Fitting synthetic control model...
+2025-09-18 16:24:01 | INFO     | Murray.post_analysis:run_geo_evaluation:104 | Model fitted successfully
+2025-09-18 16:24:01 | INFO     | Murray.post_analysis:run_geo_evaluation:106 | Making predictions...
+2025-09-18 16:24:01 | INFO     | Murray.post_analysis:run_geo_evaluation:137 | Calculating metrics...
+2025-09-18 16:24:01 | INFO     | Murray.post_analysis:run_geo_evaluation:138 | Data shapes - treatment: (355,), counterfactual: (355,)
+2025-09-18 16:24:01 | INFO     | Murray.post_analysis:run_geo_evaluation:148 | Treatment period sum: 68916.0
+2025-09-18 16:24:01 | INFO     | Murray.post_analysis:run_geo_evaluation:149 | Counterfactual period sum: 72494.3603684567
+2025-09-18 16:24:01 | INFO     | Murray.post_analysis:run_geo_evaluation:150 | Lift difference (treatment - counterfactual): -3578.360368456706
+2025-09-18 16:24:01 | INFO     | Murray.post_analysis:run_geo_evaluation:176 | Observed statistic (enhanced weighted): 15498.542886233416
+2025-09-18 16:24:01 | INFO     | Murray.post_analysis:run_geo_evaluation:177 | Treatment residuals mean: -67.51623336710809
+2025-09-18 16:24:01 | INFO     | Murray.post_analysis:run_geo_evaluation:178 | Treatment residuals sum: -3578.3603684567283
+2025-09-18 16:24:01 | INFO     | Murray.post_analysis:run_geo_evaluation:179 | Positive residuals count: 26/53
+2025-09-18 16:24:01 | INFO     | Murray.post_analysis:run_geo_evaluation:182 | Starting block permutation test with 1000000 permutations...
+2025-09-18 16:24:02 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 10000/1000000 permutations
+2025-09-18 16:24:03 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 20000/1000000 permutations
+2025-09-18 16:24:04 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 30000/1000000 permutations
+2025-09-18 16:24:05 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 40000/1000000 permutations
+2025-09-18 16:24:06 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 50000/1000000 permutations
+2025-09-18 16:24:07 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 60000/1000000 permutations
+2025-09-18 16:24:08 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 70000/1000000 permutations
+2025-09-18 16:24:09 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 80000/1000000 permutations
+2025-09-18 16:24:10 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 90000/1000000 permutations
+2025-09-18 16:24:11 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 100000/1000000 permutations
+2025-09-18 16:24:12 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 110000/1000000 permutations
+2025-09-18 16:24:13 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 120000/1000000 permutations
+2025-09-18 16:24:14 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 130000/1000000 permutations
+2025-09-18 16:24:15 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 140000/1000000 permutations
+2025-09-18 16:24:17 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 150000/1000000 permutations
+2025-09-18 16:24:18 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 160000/1000000 permutations
+2025-09-18 16:24:19 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 170000/1000000 permutations
+2025-09-18 16:24:20 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 180000/1000000 permutations
+2025-09-18 16:24:21 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 190000/1000000 permutations
+2025-09-18 16:24:24 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 200000/1000000 permutations
+2025-09-18 16:24:25 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 210000/1000000 permutations
+2025-09-18 16:24:26 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 220000/1000000 permutations
+2025-09-18 16:24:27 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 230000/1000000 permutations
+2025-09-18 16:24:28 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 240000/1000000 permutations
+2025-09-18 16:24:29 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 250000/1000000 permutations
+2025-09-18 16:24:30 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 260000/1000000 permutations
+2025-09-18 16:24:31 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 270000/1000000 permutations
+2025-09-18 16:24:31 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 280000/1000000 permutations
+2025-09-18 16:24:33 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 290000/1000000 permutations
+2025-09-18 16:24:34 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 300000/1000000 permutations
+2025-09-18 16:24:35 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 310000/1000000 permutations
+2025-09-18 16:24:36 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 320000/1000000 permutations
+2025-09-18 16:24:37 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 330000/1000000 permutations
+2025-09-18 16:24:38 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 340000/1000000 permutations
+2025-09-18 16:24:39 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 350000/1000000 permutations
+2025-09-18 16:24:40 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 360000/1000000 permutations
+2025-09-18 16:24:41 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 370000/1000000 permutations
+2025-09-18 16:24:42 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 380000/1000000 permutations
+2025-09-18 16:24:43 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 390000/1000000 permutations
+2025-09-18 16:24:44 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 400000/1000000 permutations
+2025-09-18 16:24:45 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 410000/1000000 permutations
+2025-09-18 16:24:46 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 420000/1000000 permutations
+2025-09-18 16:24:47 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 430000/1000000 permutations
+2025-09-18 16:24:48 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 440000/1000000 permutations
+2025-09-18 16:24:50 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 450000/1000000 permutations
+2025-09-18 16:24:50 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 460000/1000000 permutations
+2025-09-18 16:24:51 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 470000/1000000 permutations
+2025-09-18 16:24:53 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 480000/1000000 permutations
+2025-09-18 16:24:53 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 490000/1000000 permutations
+2025-09-18 16:24:56 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 500000/1000000 permutations
+2025-09-18 16:24:57 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 510000/1000000 permutations
+2025-09-18 16:24:59 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 520000/1000000 permutations
+2025-09-18 16:25:00 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 530000/1000000 permutations
+2025-09-18 16:25:01 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 540000/1000000 permutations
+2025-09-18 16:25:02 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 550000/1000000 permutations
+2025-09-18 16:25:03 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 560000/1000000 permutations
+2025-09-18 16:25:04 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 570000/1000000 permutations
+2025-09-18 16:25:05 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 580000/1000000 permutations
+2025-09-18 16:25:06 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 590000/1000000 permutations
+2025-09-18 16:25:07 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 600000/1000000 permutations
+2025-09-18 16:25:08 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 610000/1000000 permutations
+2025-09-18 16:25:09 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 620000/1000000 permutations
+2025-09-18 16:25:10 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 630000/1000000 permutations
+2025-09-18 16:25:11 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 640000/1000000 permutations
+2025-09-18 16:25:13 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 650000/1000000 permutations
+2025-09-18 16:25:14 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 660000/1000000 permutations
+2025-09-18 16:25:15 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 670000/1000000 permutations
+2025-09-18 16:25:16 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 680000/1000000 permutations
+2025-09-18 16:25:17 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 690000/1000000 permutations
+2025-09-18 16:25:18 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 700000/1000000 permutations
+2025-09-18 16:25:19 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 710000/1000000 permutations
+2025-09-18 16:25:20 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 720000/1000000 permutations
+2025-09-18 16:25:21 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 730000/1000000 permutations
+2025-09-18 16:25:22 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 740000/1000000 permutations
+2025-09-18 16:25:23 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 750000/1000000 permutations
+2025-09-18 16:25:24 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 760000/1000000 permutations
+2025-09-18 16:25:25 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 770000/1000000 permutations
+2025-09-18 16:25:28 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 780000/1000000 permutations
+2025-09-18 16:25:29 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 790000/1000000 permutations
+2025-09-18 16:25:30 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 800000/1000000 permutations
+2025-09-18 16:25:31 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 810000/1000000 permutations
+2025-09-18 16:25:33 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 820000/1000000 permutations
+2025-09-18 16:25:34 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 830000/1000000 permutations
+2025-09-18 16:25:35 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 840000/1000000 permutations
+2025-09-18 16:25:36 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 850000/1000000 permutations
+2025-09-18 16:25:37 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 860000/1000000 permutations
+2025-09-18 16:25:38 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 870000/1000000 permutations
+2025-09-18 16:25:39 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 880000/1000000 permutations
+2025-09-18 16:25:40 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 890000/1000000 permutations
+2025-09-18 16:25:41 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 900000/1000000 permutations
+2025-09-18 16:25:42 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 910000/1000000 permutations
+2025-09-18 16:25:43 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 920000/1000000 permutations
+2025-09-18 16:25:44 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 930000/1000000 permutations
+2025-09-18 16:25:45 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 940000/1000000 permutations
+2025-09-18 16:25:46 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 950000/1000000 permutations
+2025-09-18 16:25:47 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 960000/1000000 permutations
+2025-09-18 16:25:48 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 970000/1000000 permutations
+2025-09-18 16:25:49 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 980000/1000000 permutations
+2025-09-18 16:25:50 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 990000/1000000 permutations
+2025-09-18 16:25:51 | INFO     | Murray.post_analysis:run_geo_evaluation:208 | Permutation test completed, calculating p-value...
+2025-09-18 16:25:51 | INFO     | Murray.post_analysis:run_geo_evaluation:209 | Observed stat: 15498.542886233416
+2025-09-18 16:25:51 | INFO     | Murray.post_analysis:run_geo_evaluation:210 | Null stats - Mean: 15873.9389, Std: 415.0231
+2025-09-18 16:25:51 | INFO     | Murray.post_analysis:run_geo_evaluation:211 | Null stats - 95th percentile: 16345.4442
+2025-09-18 16:25:51 | INFO     | Murray.post_analysis:run_geo_evaluation:227 | Final results:
+2025-09-18 16:25:51 | INFO     | Murray.post_analysis:run_geo_evaluation:228 |   MAPE: 35.2851
+2025-09-18 16:25:51 | INFO     | Murray.post_analysis:run_geo_evaluation:229 |   SMAPE: 29.9994
+2025-09-18 16:25:51 | INFO     | Murray.post_analysis:run_geo_evaluation:230 |   Percentage lift: -4.9361%
+2025-09-18 16:25:51 | INFO     | Murray.post_analysis:run_geo_evaluation:231 |   P-value: 0.098018
+2025-09-18 16:25:51 | INFO     | Murray.post_analysis:run_geo_evaluation:232 |   Power: 1.0000
+2025-09-18 16:25:51 | INFO     | Murray.post_analysis:run_geo_evaluation:259 | run_geo_evaluation completed successfully
+2025-09-18 16:26:41 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-09-18 16:26:43 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-09-18 16:26:43 | INFO     | Murray.metrics:update_metrics:59 | New record added: {'timestamp': '2025-09-18 16:26:43', 'section': 'experimental_evaluation', 'date': '2025-09-18', 'day_of_week': 'Thursday', 'hour': 16}
+2025-09-18 16:26:43 | INFO     | Murray.post_analysis:run_geo_evaluation:21 | Starting run_geo_evaluation
+2025-09-18 16:26:43 | INFO     | Murray.post_analysis:run_geo_evaluation:22 | Input data shape: (11712, 4)
+2025-09-18 16:26:43 | INFO     | Murray.post_analysis:run_geo_evaluation:23 | Treatment group: ['aguascalientes', 'campeche', 'chihuahua', 'guanajuato', 'jalisco', 'oaxaca', 'tabasco', 'yucatan', 'quintana roo']
+2025-09-18 16:26:43 | INFO     | Murray.post_analysis:run_geo_evaluation:24 | Start treatment: 2025-07-16 00:00:00, End treatment: 2025-09-17 00:00:00
+2025-09-18 16:26:43 | INFO     | Murray.post_analysis:run_geo_evaluation:25 | n_permutations: 1000000, significance_level: 0.1
+2025-09-18 16:26:43 | INFO     | Murray.post_analysis:run_geo_evaluation:40 | Treatment period positions: 302 to 366
+2025-09-18 16:26:43 | INFO     | Murray.post_analysis:run_geo_evaluation:49 | Generating correlation matrix...
+2025-09-18 16:26:43 | INFO     | Murray.post_analysis:run_geo_evaluation:52 | Selecting control group...
+2025-09-18 16:26:43 | INFO     | Murray.post_analysis:run_geo_evaluation:58 | Control group selected: ['nuevo leon', 'morelos', 'tamaulipas', 'state of mexico', 'mexico city']
+2025-09-18 16:26:43 | INFO     | Murray.post_analysis:run_geo_evaluation:68 | Pivot table shape: (366, 32)
+2025-09-18 16:26:43 | INFO     | Murray.post_analysis:run_geo_evaluation:81 | Scaling data...
+2025-09-18 16:26:43 | INFO     | Murray.post_analysis:run_geo_evaluation:101 | Fitting synthetic control model...
+2025-09-18 16:26:43 | INFO     | Murray.post_analysis:run_geo_evaluation:104 | Model fitted successfully
+2025-09-18 16:26:43 | INFO     | Murray.post_analysis:run_geo_evaluation:106 | Making predictions...
+2025-09-18 16:26:43 | INFO     | Murray.post_analysis:run_geo_evaluation:137 | Calculating metrics...
+2025-09-18 16:26:43 | INFO     | Murray.post_analysis:run_geo_evaluation:138 | Data shapes - treatment: (366,), counterfactual: (366,)
+2025-09-18 16:26:43 | INFO     | Murray.post_analysis:run_geo_evaluation:148 | Treatment period sum: 80587.0
+2025-09-18 16:26:43 | INFO     | Murray.post_analysis:run_geo_evaluation:149 | Counterfactual period sum: 82882.6371774697
+2025-09-18 16:26:43 | INFO     | Murray.post_analysis:run_geo_evaluation:150 | Lift difference (treatment - counterfactual): -2295.6371774697036
+2025-09-18 16:26:43 | INFO     | Murray.post_analysis:run_geo_evaluation:176 | Observed statistic (enhanced weighted): 19500.697174240308
+2025-09-18 16:26:43 | INFO     | Murray.post_analysis:run_geo_evaluation:177 | Treatment residuals mean: -35.869330897964055
+2025-09-18 16:26:43 | INFO     | Murray.post_analysis:run_geo_evaluation:178 | Treatment residuals sum: -2295.6371774696995
+2025-09-18 16:26:43 | INFO     | Murray.post_analysis:run_geo_evaluation:179 | Positive residuals count: 33/64
+2025-09-18 16:26:43 | INFO     | Murray.post_analysis:run_geo_evaluation:182 | Starting block permutation test with 1000000 permutations...
+2025-09-18 16:26:44 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 10000/1000000 permutations
+2025-09-18 16:26:45 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 20000/1000000 permutations
+2025-09-18 16:26:46 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 30000/1000000 permutations
+2025-09-18 16:26:47 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 40000/1000000 permutations
+2025-09-18 16:26:48 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 50000/1000000 permutations
+2025-09-18 16:26:49 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 60000/1000000 permutations
+2025-09-18 16:26:50 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 70000/1000000 permutations
+2025-09-18 16:26:51 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 80000/1000000 permutations
+2025-09-18 16:26:52 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 90000/1000000 permutations
+2025-09-18 16:26:52 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 100000/1000000 permutations
+2025-09-18 16:26:53 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 110000/1000000 permutations
+2025-09-18 16:26:54 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 120000/1000000 permutations
+2025-09-18 16:26:55 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 130000/1000000 permutations
+2025-09-18 16:26:56 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 140000/1000000 permutations
+2025-09-18 16:26:57 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 150000/1000000 permutations
+2025-09-18 16:26:58 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 160000/1000000 permutations
+2025-09-18 16:26:59 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 170000/1000000 permutations
+2025-09-18 16:27:00 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 180000/1000000 permutations
+2025-09-18 16:27:01 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 190000/1000000 permutations
+2025-09-18 16:27:02 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 200000/1000000 permutations
+2025-09-18 16:27:05 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 210000/1000000 permutations
+2025-09-18 16:27:05 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 220000/1000000 permutations
+2025-09-18 16:27:06 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 230000/1000000 permutations
+2025-09-18 16:27:07 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 240000/1000000 permutations
+2025-09-18 16:27:08 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 250000/1000000 permutations
+2025-09-18 16:27:09 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 260000/1000000 permutations
+2025-09-18 16:27:10 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 270000/1000000 permutations
+2025-09-18 16:27:11 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 280000/1000000 permutations
+2025-09-18 16:27:12 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 290000/1000000 permutations
+2025-09-18 16:27:13 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 300000/1000000 permutations
+2025-09-18 16:27:14 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 310000/1000000 permutations
+2025-09-18 16:27:14 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 320000/1000000 permutations
+2025-09-18 16:27:15 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 330000/1000000 permutations
+2025-09-18 16:27:16 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 340000/1000000 permutations
+2025-09-18 16:27:17 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 350000/1000000 permutations
+2025-09-18 16:27:18 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 360000/1000000 permutations
+2025-09-18 16:27:19 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 370000/1000000 permutations
+2025-09-18 16:27:20 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 380000/1000000 permutations
+2025-09-18 16:27:21 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 390000/1000000 permutations
+2025-09-18 16:27:21 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 400000/1000000 permutations
+2025-09-18 16:27:22 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 410000/1000000 permutations
+2025-09-18 16:27:23 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 420000/1000000 permutations
+2025-09-18 16:27:24 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 430000/1000000 permutations
+2025-09-18 16:27:25 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 440000/1000000 permutations
+2025-09-18 16:27:26 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 450000/1000000 permutations
+2025-09-18 16:27:27 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 460000/1000000 permutations
+2025-09-18 16:27:28 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 470000/1000000 permutations
+2025-09-18 16:27:28 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 480000/1000000 permutations
+2025-09-18 16:27:30 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 490000/1000000 permutations
+2025-09-18 16:27:30 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 500000/1000000 permutations
+2025-09-18 16:27:31 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 510000/1000000 permutations
+2025-09-18 16:27:32 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 520000/1000000 permutations
+2025-09-18 16:27:33 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 530000/1000000 permutations
+2025-09-18 16:27:36 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 540000/1000000 permutations
+2025-09-18 16:27:37 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 550000/1000000 permutations
+2025-09-18 16:27:38 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 560000/1000000 permutations
+2025-09-18 16:27:39 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 570000/1000000 permutations
+2025-09-18 16:27:40 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 580000/1000000 permutations
+2025-09-18 16:27:41 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 590000/1000000 permutations
+2025-09-18 16:27:42 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 600000/1000000 permutations
+2025-09-18 16:27:43 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 610000/1000000 permutations
+2025-09-18 16:27:44 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 620000/1000000 permutations
+2025-09-18 16:27:45 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 630000/1000000 permutations
+2025-09-18 16:27:45 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 640000/1000000 permutations
+2025-09-18 16:27:46 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 650000/1000000 permutations
+2025-09-18 16:27:47 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 660000/1000000 permutations
+2025-09-18 16:27:48 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 670000/1000000 permutations
+2025-09-18 16:27:49 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 680000/1000000 permutations
+2025-09-18 16:27:50 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 690000/1000000 permutations
+2025-09-18 16:27:51 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 700000/1000000 permutations
+2025-09-18 16:27:52 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 710000/1000000 permutations
+2025-09-18 16:27:53 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 720000/1000000 permutations
+2025-09-18 16:27:54 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 730000/1000000 permutations
+2025-09-18 16:27:55 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 740000/1000000 permutations
+2025-09-18 16:27:56 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 750000/1000000 permutations
+2025-09-18 16:27:57 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 760000/1000000 permutations
+2025-09-18 16:27:58 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 770000/1000000 permutations
+2025-09-18 16:27:59 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 780000/1000000 permutations
+2025-09-18 16:28:00 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 790000/1000000 permutations
+2025-09-18 16:28:01 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 800000/1000000 permutations
+2025-09-18 16:28:02 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 810000/1000000 permutations
+2025-09-18 16:28:03 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 820000/1000000 permutations
+2025-09-18 16:28:03 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 830000/1000000 permutations
+2025-09-18 16:28:04 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 840000/1000000 permutations
+2025-09-18 16:28:05 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 850000/1000000 permutations
+2025-09-18 16:28:07 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 860000/1000000 permutations
+2025-09-18 16:28:09 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 870000/1000000 permutations
+2025-09-18 16:28:10 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 880000/1000000 permutations
+2025-09-18 16:28:11 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 890000/1000000 permutations
+2025-09-18 16:28:12 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 900000/1000000 permutations
+2025-09-18 16:28:12 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 910000/1000000 permutations
+2025-09-18 16:28:13 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 920000/1000000 permutations
+2025-09-18 16:28:14 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 930000/1000000 permutations
+2025-09-18 16:28:15 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 940000/1000000 permutations
+2025-09-18 16:28:16 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 950000/1000000 permutations
+2025-09-18 16:28:17 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 960000/1000000 permutations
+2025-09-18 16:28:18 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 970000/1000000 permutations
+2025-09-18 16:28:19 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 980000/1000000 permutations
+2025-09-18 16:28:20 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 990000/1000000 permutations
+2025-09-18 16:28:21 | INFO     | Murray.post_analysis:run_geo_evaluation:208 | Permutation test completed, calculating p-value...
+2025-09-18 16:28:21 | INFO     | Murray.post_analysis:run_geo_evaluation:209 | Observed stat: 19500.697174240308
+2025-09-18 16:28:21 | INFO     | Murray.post_analysis:run_geo_evaluation:210 | Null stats - Mean: 19873.5698, Std: 570.6703
+2025-09-18 16:28:21 | INFO     | Murray.post_analysis:run_geo_evaluation:211 | Null stats - 95th percentile: 20948.8415
+2025-09-18 16:28:21 | INFO     | Murray.post_analysis:run_geo_evaluation:227 | Final results:
+2025-09-18 16:28:21 | INFO     | Murray.post_analysis:run_geo_evaluation:228 |   MAPE: 34.9964
+2025-09-18 16:28:21 | INFO     | Murray.post_analysis:run_geo_evaluation:229 |   SMAPE: 29.8889
+2025-09-18 16:28:21 | INFO     | Murray.post_analysis:run_geo_evaluation:230 |   Percentage lift: -2.7697%
+2025-09-18 16:28:21 | INFO     | Murray.post_analysis:run_geo_evaluation:231 |   P-value: 0.050159
+2025-09-18 16:28:21 | INFO     | Murray.post_analysis:run_geo_evaluation:232 |   Power: 1.0000
+2025-09-18 16:28:21 | INFO     | Murray.post_analysis:run_geo_evaluation:259 | run_geo_evaluation completed successfully
+2025-09-18 16:34:50 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-09-18 16:34:52 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-09-18 16:34:52 | INFO     | Murray.metrics:update_metrics:59 | New record added: {'timestamp': '2025-09-18 16:34:52', 'section': 'experimental_evaluation', 'date': '2025-09-18', 'day_of_week': 'Thursday', 'hour': 16}
+2025-09-18 16:34:52 | INFO     | Murray.post_analysis:run_geo_evaluation:21 | Starting run_geo_evaluation
+2025-09-18 16:34:52 | INFO     | Murray.post_analysis:run_geo_evaluation:22 | Input data shape: (7968, 6)
+2025-09-18 16:34:52 | INFO     | Murray.post_analysis:run_geo_evaluation:23 | Treatment group: ['aguascalientes', 'campeche', 'chihuahua', 'guanajuato', 'jalisco', 'oaxaca', 'quintana roo', 'tabasco', 'yucatan']
+2025-09-18 16:34:52 | INFO     | Murray.post_analysis:run_geo_evaluation:24 | Start treatment: 2025-07-16 00:00:00, End treatment: 2025-09-06 00:00:00
+2025-09-18 16:34:52 | INFO     | Murray.post_analysis:run_geo_evaluation:25 | n_permutations: 1000000, significance_level: 0.1
+2025-09-18 16:34:52 | INFO     | Murray.post_analysis:run_geo_evaluation:40 | Treatment period positions: 196 to 249
+2025-09-18 16:34:52 | INFO     | Murray.post_analysis:run_geo_evaluation:49 | Generating correlation matrix...
+2025-09-18 16:34:52 | INFO     | Murray.post_analysis:run_geo_evaluation:52 | Selecting control group...
+2025-09-18 16:34:52 | INFO     | Murray.post_analysis:run_geo_evaluation:58 | Control group selected: ['nuevo leon', 'tamaulipas', 'state of mexico', 'baja california', 'mexico city', 'michoacan']
+2025-09-18 16:34:52 | INFO     | Murray.post_analysis:run_geo_evaluation:68 | Pivot table shape: (249, 32)
+2025-09-18 16:34:52 | INFO     | Murray.post_analysis:run_geo_evaluation:81 | Scaling data...
+2025-09-18 16:34:52 | INFO     | Murray.post_analysis:run_geo_evaluation:101 | Fitting synthetic control model...
+2025-09-18 16:34:52 | INFO     | Murray.post_analysis:run_geo_evaluation:104 | Model fitted successfully
+2025-09-18 16:34:52 | INFO     | Murray.post_analysis:run_geo_evaluation:106 | Making predictions...
+2025-09-18 16:34:52 | INFO     | Murray.post_analysis:run_geo_evaluation:137 | Calculating metrics...
+2025-09-18 16:34:52 | INFO     | Murray.post_analysis:run_geo_evaluation:138 | Data shapes - treatment: (249,), counterfactual: (249,)
+2025-09-18 16:34:52 | INFO     | Murray.post_analysis:run_geo_evaluation:148 | Treatment period sum: 261089522.39199
+2025-09-18 16:34:52 | INFO     | Murray.post_analysis:run_geo_evaluation:149 | Counterfactual period sum: 323252536.016042
+2025-09-18 16:34:52 | INFO     | Murray.post_analysis:run_geo_evaluation:150 | Lift difference (treatment - counterfactual): -62163013.62405199
+2025-09-18 16:34:52 | INFO     | Murray.post_analysis:run_geo_evaluation:176 | Observed statistic (enhanced weighted): 95078121.45441031
+2025-09-18 16:34:52 | INFO     | Murray.post_analysis:run_geo_evaluation:177 | Treatment residuals mean: -1172887.0495104147
+2025-09-18 16:34:52 | INFO     | Murray.post_analysis:run_geo_evaluation:178 | Treatment residuals sum: -62163013.62405198
+2025-09-18 16:34:52 | INFO     | Murray.post_analysis:run_geo_evaluation:179 | Positive residuals count: 14/53
+2025-09-18 16:34:52 | INFO     | Murray.post_analysis:run_geo_evaluation:182 | Starting block permutation test with 1000000 permutations...
+2025-09-18 16:34:53 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 10000/1000000 permutations
+2025-09-18 16:34:54 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 20000/1000000 permutations
+2025-09-18 16:34:55 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 30000/1000000 permutations
+2025-09-18 16:34:56 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 40000/1000000 permutations
+2025-09-18 16:34:57 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 50000/1000000 permutations
+2025-09-18 16:34:58 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 60000/1000000 permutations
+2025-09-18 16:34:58 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 70000/1000000 permutations
+2025-09-18 16:34:59 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 80000/1000000 permutations
+2025-09-18 16:35:00 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 90000/1000000 permutations
+2025-09-18 16:35:01 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 100000/1000000 permutations
+2025-09-18 16:35:02 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 110000/1000000 permutations
+2025-09-18 16:35:02 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 120000/1000000 permutations
+2025-09-18 16:35:03 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 130000/1000000 permutations
+2025-09-18 16:35:06 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 140000/1000000 permutations
+2025-09-18 16:35:07 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 150000/1000000 permutations
+2025-09-18 16:35:08 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 160000/1000000 permutations
+2025-09-18 16:35:08 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 170000/1000000 permutations
+2025-09-18 16:35:09 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 180000/1000000 permutations
+2025-09-18 16:35:10 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 190000/1000000 permutations
+2025-09-18 16:35:11 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 200000/1000000 permutations
+2025-09-18 16:35:11 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 210000/1000000 permutations
+2025-09-18 16:35:12 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 220000/1000000 permutations
+2025-09-18 16:35:13 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 230000/1000000 permutations
+2025-09-18 16:35:14 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 240000/1000000 permutations
+2025-09-18 16:35:14 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 250000/1000000 permutations
+2025-09-18 16:35:15 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 260000/1000000 permutations
+2025-09-18 16:35:16 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 270000/1000000 permutations
+2025-09-18 16:35:17 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 280000/1000000 permutations
+2025-09-18 16:35:17 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 290000/1000000 permutations
+2025-09-18 16:35:18 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 300000/1000000 permutations
+2025-09-18 16:35:19 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 310000/1000000 permutations
+2025-09-18 16:35:20 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 320000/1000000 permutations
+2025-09-18 16:35:21 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 330000/1000000 permutations
+2025-09-18 16:35:22 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 340000/1000000 permutations
+2025-09-18 16:35:23 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 350000/1000000 permutations
+2025-09-18 16:35:23 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 360000/1000000 permutations
+2025-09-18 16:35:24 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 370000/1000000 permutations
+2025-09-18 16:35:25 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 380000/1000000 permutations
+2025-09-18 16:35:26 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 390000/1000000 permutations
+2025-09-18 16:35:27 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 400000/1000000 permutations
+2025-09-18 16:35:28 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 410000/1000000 permutations
+2025-09-18 16:35:28 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 420000/1000000 permutations
+2025-09-18 16:35:29 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 430000/1000000 permutations
+2025-09-18 16:35:30 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 440000/1000000 permutations
+2025-09-18 16:35:31 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 450000/1000000 permutations
+2025-09-18 16:35:32 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 460000/1000000 permutations
+2025-09-18 16:35:33 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 470000/1000000 permutations
+2025-09-18 16:35:33 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 480000/1000000 permutations
+2025-09-18 16:35:34 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 490000/1000000 permutations
+2025-09-18 16:35:35 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 500000/1000000 permutations
+2025-09-18 16:35:38 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 510000/1000000 permutations
+2025-09-18 16:35:39 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 520000/1000000 permutations
+2025-09-18 16:35:40 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 530000/1000000 permutations
+2025-09-18 16:35:40 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 540000/1000000 permutations
+2025-09-18 16:35:41 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 550000/1000000 permutations
+2025-09-18 16:35:42 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 560000/1000000 permutations
+2025-09-18 16:35:43 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 570000/1000000 permutations
+2025-09-18 16:35:44 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 580000/1000000 permutations
+2025-09-18 16:35:45 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 590000/1000000 permutations
+2025-09-18 16:35:46 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 600000/1000000 permutations
+2025-09-18 16:35:46 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 610000/1000000 permutations
+2025-09-18 16:35:47 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 620000/1000000 permutations
+2025-09-18 16:35:48 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 630000/1000000 permutations
+2025-09-18 16:35:49 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 640000/1000000 permutations
+2025-09-18 16:35:49 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 650000/1000000 permutations
+2025-09-18 16:35:50 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 660000/1000000 permutations
+2025-09-18 16:35:51 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 670000/1000000 permutations
+2025-09-18 16:35:52 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 680000/1000000 permutations
+2025-09-18 16:35:53 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 690000/1000000 permutations
+2025-09-18 16:35:54 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 700000/1000000 permutations
+2025-09-18 16:35:55 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 710000/1000000 permutations
+2025-09-18 16:35:55 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 720000/1000000 permutations
+2025-09-18 16:35:56 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 730000/1000000 permutations
+2025-09-18 16:35:57 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 740000/1000000 permutations
+2025-09-18 16:35:58 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 750000/1000000 permutations
+2025-09-18 16:35:59 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 760000/1000000 permutations
+2025-09-18 16:36:00 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 770000/1000000 permutations
+2025-09-18 16:36:00 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 780000/1000000 permutations
+2025-09-18 16:36:01 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 790000/1000000 permutations
+2025-09-18 16:36:02 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 800000/1000000 permutations
+2025-09-18 16:36:03 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 810000/1000000 permutations
+2025-09-18 16:36:04 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 820000/1000000 permutations
+2025-09-18 16:36:05 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 830000/1000000 permutations
+2025-09-18 16:36:05 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 840000/1000000 permutations
+2025-09-18 16:36:06 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 850000/1000000 permutations
+2025-09-18 16:36:07 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 860000/1000000 permutations
+2025-09-18 16:36:10 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 870000/1000000 permutations
+2025-09-18 16:36:11 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 880000/1000000 permutations
+2025-09-18 16:36:11 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 890000/1000000 permutations
+2025-09-18 16:36:12 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 900000/1000000 permutations
+2025-09-18 16:36:13 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 910000/1000000 permutations
+2025-09-18 16:36:14 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 920000/1000000 permutations
+2025-09-18 16:36:14 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 930000/1000000 permutations
+2025-09-18 16:36:15 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 940000/1000000 permutations
+2025-09-18 16:36:16 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 950000/1000000 permutations
+2025-09-18 16:36:17 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 960000/1000000 permutations
+2025-09-18 16:36:17 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 970000/1000000 permutations
+2025-09-18 16:36:18 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 980000/1000000 permutations
+2025-09-18 16:36:19 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 990000/1000000 permutations
+2025-09-18 16:36:20 | INFO     | Murray.post_analysis:run_geo_evaluation:208 | Permutation test completed, calculating p-value...
+2025-09-18 16:36:20 | INFO     | Murray.post_analysis:run_geo_evaluation:209 | Observed stat: 95078121.45441031
+2025-09-18 16:36:20 | INFO     | Murray.post_analysis:run_geo_evaluation:210 | Null stats - Mean: 102594849.9712, Std: 6102815.8295
+2025-09-18 16:36:20 | INFO     | Murray.post_analysis:run_geo_evaluation:211 | Null stats - 95th percentile: 105624069.3848
+2025-09-18 16:36:20 | INFO     | Murray.post_analysis:run_geo_evaluation:227 | Final results:
+2025-09-18 16:36:20 | INFO     | Murray.post_analysis:run_geo_evaluation:228 |   MAPE: 116.5303
+2025-09-18 16:36:20 | INFO     | Murray.post_analysis:run_geo_evaluation:229 |   SMAPE: 56.3602
+2025-09-18 16:36:20 | INFO     | Murray.post_analysis:run_geo_evaluation:230 |   Percentage lift: -19.2305%
+2025-09-18 16:36:20 | INFO     | Murray.post_analysis:run_geo_evaluation:231 |   P-value: 0.230750
+2025-09-18 16:36:20 | INFO     | Murray.post_analysis:run_geo_evaluation:232 |   Power: 0.0000
+2025-09-18 16:36:20 | INFO     | Murray.post_analysis:run_geo_evaluation:259 | run_geo_evaluation completed successfully

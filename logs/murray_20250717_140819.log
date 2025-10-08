@@ -1,0 +1,15 @@
+2025-07-17 14:08:26 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-07-17 14:08:28 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-07-17 14:08:30 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-07-17 14:08:30 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1878 | Starting run_geo_analysis_streamlit_app............
+2025-07-17 14:08:30 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1887 | Step 1: Generating market correlations.....
+2025-07-17 14:08:30 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1889 | Market correlations generated successfully.
+2025-07-17 14:08:30 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1892 | Step 2: Finding best groups for control and treatment.....
+2025-07-17 14:08:30 | INFO     | Murray.main:BetterGroups:786 | Starting global multi-cell optimization for 3 cells with allowed sizes [2, 3, 4]
+2025-07-17 14:08:30 | INFO     | Murray.main:optimize_global_multicell:1065 | Starting global multi-cell optimization for 3 cells with sizes [2, 3, 4]
+2025-07-17 14:08:30 | INFO     | Murray.main:optimize_global_multicell:1084 | Phase 1: Generating candidates for all allowed sizes
+2025-07-17 14:08:30 | INFO     | Murray.main:optimize_global_multicell:1087 | Generating candidates for size 2
+2025-07-17 14:08:32 | INFO     | Murray.main:optimize_global_multicell:1126 | Generated 9 candidates for size 2 (out of 495 total results)
+2025-07-17 14:08:32 | INFO     | Murray.main:optimize_global_multicell:1087 | Generating candidates for size 3
+2025-07-17 14:08:53 | INFO     | Murray.main:optimize_global_multicell:1126 | Generated 9 candidates for size 3 (out of 4913 total results)
+2025-07-17 14:08:53 | INFO     | Murray.main:optimize_global_multicell:1087 | Generating candidates for size 4

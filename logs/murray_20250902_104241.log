@@ -1,0 +1,163 @@
+2025-09-02 10:42:41 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-09-02 10:42:41 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-09-02 10:42:45 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-09-02 10:42:45 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-09-02 10:42:46 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-09-02 10:42:46 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-09-02 10:42:46 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-09-02 10:42:47 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-09-02 10:42:47 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1900 | Starting run_geo_analysis_streamlit_app............
+2025-09-02 10:42:47 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1909 | Step 1: Generating market correlations.....
+2025-09-02 10:42:47 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1911 | Market correlations generated successfully.
+2025-09-02 10:42:47 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1914 | Step 2: Finding best groups for control and treatment.....
+2025-09-02 10:42:47 | INFO     | Murray.main:BetterGroups:953 | Starting single-cell mode
+2025-09-02 10:42:48 | INFO     | Murray.main:BetterGroups:986 | Processed 1/50000 groups
+2025-09-02 10:43:12 | INFO     | Murray.main:BetterGroups:986 | Processed 5000/50000 groups
+2025-09-02 10:43:35 | INFO     | Murray.main:BetterGroups:986 | Processed 10000/50000 groups
+2025-09-02 10:43:56 | INFO     | Murray.main:BetterGroups:986 | Processed 15000/50000 groups
+2025-09-02 10:44:16 | INFO     | Murray.main:BetterGroups:986 | Processed 20000/50000 groups
+2025-09-02 10:44:35 | INFO     | Murray.main:BetterGroups:986 | Processed 25000/50000 groups
+2025-09-02 10:44:51 | INFO     | Murray.main:BetterGroups:986 | Processed 30000/50000 groups
+2025-09-02 10:45:06 | INFO     | Murray.main:BetterGroups:986 | Processed 35000/50000 groups
+2025-09-02 10:45:17 | INFO     | Murray.main:BetterGroups:986 | Processed 40000/50000 groups
+2025-09-02 10:45:27 | INFO     | Murray.main:BetterGroups:986 | Processed 45000/50000 groups
+2025-09-02 10:45:34 | INFO     | Murray.main:BetterGroups:986 | Processed 50000/50000 groups
+2025-09-02 10:45:34 | INFO     | Murray.main:BetterGroups:987 | All groups processed. Results count: 50000
+2025-09-02 10:45:34 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1931 | BetterGroups completed successfully. Results for 10 sizes
+2025-09-02 10:45:34 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1936 | Step 3: Evaluating sensitivity for different deltas and periods.....
+2025-09-02 10:45:34 | INFO     | Murray.main:evaluate_sensitivity:1667 | 🔍 DEBUG: Starting evaluation for size 5
+2025-09-02 10:45:34 | INFO     | Murray.main:evaluate_sensitivity:1696 | 🔍 DEBUG: Evaluating period 5 for size 5
+2025-09-02 10:45:52 | INFO     | Murray.main:evaluate_sensitivity:1771 | Period 5 completed for size 5. MDE found: 0.060000000000000005 with p-value: 0.0190, power: 0.9250
+2025-09-02 10:45:52 | INFO     | Murray.main:evaluate_sensitivity:1696 | 🔍 DEBUG: Evaluating period 10 for size 5
+2025-09-02 10:46:12 | INFO     | Murray.main:evaluate_sensitivity:1771 | Period 10 completed for size 5. MDE found: 0.05 with p-value: 0.0079, power: 0.9750
+2025-09-02 10:46:12 | INFO     | Murray.main:evaluate_sensitivity:1696 | 🔍 DEBUG: Evaluating period 15 for size 5
+2025-09-02 10:46:31 | INFO     | Murray.main:evaluate_sensitivity:1771 | Period 15 completed for size 5. MDE found: 0.04 with p-value: 0.0185, power: 0.9000
+2025-09-02 10:46:31 | INFO     | Murray.main:evaluate_sensitivity:1696 | 🔍 DEBUG: Evaluating period 20 for size 5
+2025-09-02 10:46:50 | INFO     | Murray.main:evaluate_sensitivity:1771 | Period 20 completed for size 5. MDE found: 0.04 with p-value: 0.0118, power: 0.9250
+2025-09-02 10:46:50 | INFO     | Murray.main:evaluate_sensitivity:1696 | 🔍 DEBUG: Evaluating period 25 for size 5
+2025-09-02 10:47:10 | INFO     | Murray.main:evaluate_sensitivity:1771 | Period 25 completed for size 5. MDE found: 0.04 with p-value: 0.0068, power: 0.9500
+2025-09-02 10:47:10 | INFO     | Murray.main:evaluate_sensitivity:1696 | 🔍 DEBUG: Evaluating period 30 for size 5
+2025-09-02 10:47:30 | INFO     | Murray.main:evaluate_sensitivity:1771 | Period 30 completed for size 5. MDE found: 0.03 with p-value: 0.0138, power: 0.9250
+2025-09-02 10:47:30 | INFO     | Murray.main:evaluate_sensitivity:1667 | 🔍 DEBUG: Starting evaluation for size 6
+2025-09-02 10:47:30 | INFO     | Murray.main:evaluate_sensitivity:1696 | 🔍 DEBUG: Evaluating period 5 for size 6
+2025-09-02 10:47:49 | INFO     | Murray.main:evaluate_sensitivity:1771 | Period 5 completed for size 6. MDE found: 0.06999999999999999 with p-value: 0.0243, power: 0.9000
+2025-09-02 10:47:49 | INFO     | Murray.main:evaluate_sensitivity:1696 | 🔍 DEBUG: Evaluating period 10 for size 6
+2025-09-02 10:48:09 | INFO     | Murray.main:evaluate_sensitivity:1771 | Period 10 completed for size 6. MDE found: 0.05 with p-value: 0.0148, power: 0.9250
+2025-09-02 10:48:09 | INFO     | Murray.main:evaluate_sensitivity:1696 | 🔍 DEBUG: Evaluating period 15 for size 6
+2025-09-02 10:48:28 | INFO     | Murray.main:evaluate_sensitivity:1771 | Period 15 completed for size 6. MDE found: 0.03 with p-value: 0.0335, power: 0.8250
+2025-09-02 10:48:28 | INFO     | Murray.main:evaluate_sensitivity:1696 | 🔍 DEBUG: Evaluating period 20 for size 6
+2025-09-02 10:48:48 | INFO     | Murray.main:evaluate_sensitivity:1771 | Period 20 completed for size 6. MDE found: 0.03 with p-value: 0.0248, power: 0.9000
+2025-09-02 10:48:48 | INFO     | Murray.main:evaluate_sensitivity:1696 | 🔍 DEBUG: Evaluating period 25 for size 6
+2025-09-02 10:49:07 | INFO     | Murray.main:evaluate_sensitivity:1771 | Period 25 completed for size 6. MDE found: 0.03 with p-value: 0.0210, power: 0.8500
+2025-09-02 10:49:07 | INFO     | Murray.main:evaluate_sensitivity:1696 | 🔍 DEBUG: Evaluating period 30 for size 6
+2025-09-02 10:49:27 | INFO     | Murray.main:evaluate_sensitivity:1771 | Period 30 completed for size 6. MDE found: 0.02 with p-value: 0.0286, power: 0.9000
+2025-09-02 10:49:27 | INFO     | Murray.main:evaluate_sensitivity:1667 | 🔍 DEBUG: Starting evaluation for size 7
+2025-09-02 10:49:27 | INFO     | Murray.main:evaluate_sensitivity:1696 | 🔍 DEBUG: Evaluating period 5 for size 7
+2025-09-02 10:49:46 | INFO     | Murray.main:evaluate_sensitivity:1771 | Period 5 completed for size 7. MDE found: 0.06999999999999999 with p-value: 0.0201, power: 0.8750
+2025-09-02 10:49:46 | INFO     | Murray.main:evaluate_sensitivity:1696 | 🔍 DEBUG: Evaluating period 10 for size 7
+2025-09-02 10:50:05 | INFO     | Murray.main:evaluate_sensitivity:1771 | Period 10 completed for size 7. MDE found: 0.05 with p-value: 0.0170, power: 0.9500
+2025-09-02 10:50:05 | INFO     | Murray.main:evaluate_sensitivity:1696 | 🔍 DEBUG: Evaluating period 15 for size 7
+2025-09-02 10:50:25 | INFO     | Murray.main:evaluate_sensitivity:1771 | Period 15 completed for size 7. MDE found: 0.04 with p-value: 0.0080, power: 0.9500
+2025-09-02 10:50:25 | INFO     | Murray.main:evaluate_sensitivity:1696 | 🔍 DEBUG: Evaluating period 20 for size 7
+2025-09-02 10:50:44 | INFO     | Murray.main:evaluate_sensitivity:1771 | Period 20 completed for size 7. MDE found: 0.04 with p-value: 0.0032, power: 1.0000
+2025-09-02 10:50:44 | INFO     | Murray.main:evaluate_sensitivity:1696 | 🔍 DEBUG: Evaluating period 25 for size 7
+2025-09-02 10:51:04 | INFO     | Murray.main:evaluate_sensitivity:1771 | Period 25 completed for size 7. MDE found: 0.03 with p-value: 0.0194, power: 0.8750
+2025-09-02 10:51:04 | INFO     | Murray.main:evaluate_sensitivity:1696 | 🔍 DEBUG: Evaluating period 30 for size 7
+2025-09-02 10:51:24 | INFO     | Murray.main:evaluate_sensitivity:1771 | Period 30 completed for size 7. MDE found: 0.03 with p-value: 0.0075, power: 0.9750
+2025-09-02 10:51:24 | INFO     | Murray.main:evaluate_sensitivity:1667 | 🔍 DEBUG: Starting evaluation for size 8
+2025-09-02 10:51:24 | INFO     | Murray.main:evaluate_sensitivity:1696 | 🔍 DEBUG: Evaluating period 5 for size 8
+2025-09-02 10:51:42 | INFO     | Murray.main:evaluate_sensitivity:1771 | Period 5 completed for size 8. MDE found: 0.06999999999999999 with p-value: 0.0136, power: 0.9500
+2025-09-02 10:51:42 | INFO     | Murray.main:evaluate_sensitivity:1696 | 🔍 DEBUG: Evaluating period 10 for size 8
+2025-09-02 10:52:02 | INFO     | Murray.main:evaluate_sensitivity:1771 | Period 10 completed for size 8. MDE found: 0.05 with p-value: 0.0059, power: 1.0000
+2025-09-02 10:52:02 | INFO     | Murray.main:evaluate_sensitivity:1696 | 🔍 DEBUG: Evaluating period 15 for size 8
+2025-09-02 10:52:22 | INFO     | Murray.main:evaluate_sensitivity:1771 | Period 15 completed for size 8. MDE found: 0.04 with p-value: 0.0228, power: 0.8500
+2025-09-02 10:52:22 | INFO     | Murray.main:evaluate_sensitivity:1696 | 🔍 DEBUG: Evaluating period 20 for size 8
+2025-09-02 10:52:41 | INFO     | Murray.main:evaluate_sensitivity:1771 | Period 20 completed for size 8. MDE found: 0.04 with p-value: 0.0153, power: 0.9250
+2025-09-02 10:52:41 | INFO     | Murray.main:evaluate_sensitivity:1696 | 🔍 DEBUG: Evaluating period 25 for size 8
+2025-09-02 10:53:01 | INFO     | Murray.main:evaluate_sensitivity:1771 | Period 25 completed for size 8. MDE found: 0.04 with p-value: 0.0161, power: 0.9250
+2025-09-02 10:53:01 | INFO     | Murray.main:evaluate_sensitivity:1696 | 🔍 DEBUG: Evaluating period 30 for size 8
+2025-09-02 10:53:21 | INFO     | Murray.main:evaluate_sensitivity:1771 | Period 30 completed for size 8. MDE found: 0.03 with p-value: 0.0103, power: 0.9500
+2025-09-02 10:53:21 | INFO     | Murray.main:evaluate_sensitivity:1667 | 🔍 DEBUG: Starting evaluation for size 9
+2025-09-02 10:53:21 | INFO     | Murray.main:evaluate_sensitivity:1696 | 🔍 DEBUG: Evaluating period 5 for size 9
+2025-09-02 10:53:40 | INFO     | Murray.main:evaluate_sensitivity:1771 | Period 5 completed for size 9. MDE found: 0.060000000000000005 with p-value: 0.0288, power: 0.9000
+2025-09-02 10:53:40 | INFO     | Murray.main:evaluate_sensitivity:1696 | 🔍 DEBUG: Evaluating period 10 for size 9
+2025-09-02 10:53:59 | INFO     | Murray.main:evaluate_sensitivity:1771 | Period 10 completed for size 9. MDE found: 0.03 with p-value: 0.0599, power: 0.8250
+2025-09-02 10:53:59 | INFO     | Murray.main:evaluate_sensitivity:1696 | 🔍 DEBUG: Evaluating period 15 for size 9
+2025-09-02 10:54:18 | INFO     | Murray.main:evaluate_sensitivity:1771 | Period 15 completed for size 9. MDE found: 0.03 with p-value: 0.0158, power: 0.9000
+2025-09-02 10:54:18 | INFO     | Murray.main:evaluate_sensitivity:1696 | 🔍 DEBUG: Evaluating period 20 for size 9
+2025-09-02 10:54:38 | INFO     | Murray.main:evaluate_sensitivity:1771 | Period 20 completed for size 9. MDE found: 0.03 with p-value: 0.0103, power: 0.9250
+2025-09-02 10:54:38 | INFO     | Murray.main:evaluate_sensitivity:1696 | 🔍 DEBUG: Evaluating period 25 for size 9
+2025-09-02 10:54:57 | INFO     | Murray.main:evaluate_sensitivity:1771 | Period 25 completed for size 9. MDE found: 0.03 with p-value: 0.0192, power: 0.9000
+2025-09-02 10:54:57 | INFO     | Murray.main:evaluate_sensitivity:1696 | 🔍 DEBUG: Evaluating period 30 for size 9
+2025-09-02 10:55:16 | INFO     | Murray.main:evaluate_sensitivity:1771 | Period 30 completed for size 9. MDE found: 0.03 with p-value: 0.0039, power: 1.0000
+2025-09-02 10:55:16 | INFO     | Murray.main:evaluate_sensitivity:1667 | 🔍 DEBUG: Starting evaluation for size 10
+2025-09-02 10:55:16 | INFO     | Murray.main:evaluate_sensitivity:1696 | 🔍 DEBUG: Evaluating period 5 for size 10
+2025-09-02 10:55:35 | INFO     | Murray.main:evaluate_sensitivity:1771 | Period 5 completed for size 10. MDE found: 0.060000000000000005 with p-value: 0.0367, power: 0.8250
+2025-09-02 10:55:35 | INFO     | Murray.main:evaluate_sensitivity:1696 | 🔍 DEBUG: Evaluating period 10 for size 10
+2025-09-02 10:55:54 | INFO     | Murray.main:evaluate_sensitivity:1771 | Period 10 completed for size 10. MDE found: 0.05 with p-value: 0.0085, power: 1.0000
+2025-09-02 10:55:54 | INFO     | Murray.main:evaluate_sensitivity:1696 | 🔍 DEBUG: Evaluating period 15 for size 10
+2025-09-02 10:56:14 | INFO     | Murray.main:evaluate_sensitivity:1771 | Period 15 completed for size 10. MDE found: 0.04 with p-value: 0.0103, power: 0.9750
+2025-09-02 10:56:14 | INFO     | Murray.main:evaluate_sensitivity:1696 | 🔍 DEBUG: Evaluating period 20 for size 10
+2025-09-02 10:56:33 | INFO     | Murray.main:evaluate_sensitivity:1771 | Period 20 completed for size 10. MDE found: 0.04 with p-value: 0.0093, power: 0.9750
+2025-09-02 10:56:33 | INFO     | Murray.main:evaluate_sensitivity:1696 | 🔍 DEBUG: Evaluating period 25 for size 10
+2025-09-02 10:56:52 | INFO     | Murray.main:evaluate_sensitivity:1771 | Period 25 completed for size 10. MDE found: 0.03 with p-value: 0.0328, power: 0.8500
+2025-09-02 10:56:52 | INFO     | Murray.main:evaluate_sensitivity:1696 | 🔍 DEBUG: Evaluating period 30 for size 10
+2025-09-02 10:57:12 | INFO     | Murray.main:evaluate_sensitivity:1771 | Period 30 completed for size 10. MDE found: 0.03 with p-value: 0.0126, power: 0.9500
+2025-09-02 10:57:12 | INFO     | Murray.main:evaluate_sensitivity:1667 | 🔍 DEBUG: Starting evaluation for size 11
+2025-09-02 10:57:12 | INFO     | Murray.main:evaluate_sensitivity:1696 | 🔍 DEBUG: Evaluating period 5 for size 11
+2025-09-02 10:57:31 | INFO     | Murray.main:evaluate_sensitivity:1771 | Period 5 completed for size 11. MDE found: 0.060000000000000005 with p-value: 0.0283, power: 0.8250
+2025-09-02 10:57:31 | INFO     | Murray.main:evaluate_sensitivity:1696 | 🔍 DEBUG: Evaluating period 10 for size 11
+2025-09-02 10:57:49 | INFO     | Murray.main:evaluate_sensitivity:1771 | Period 10 completed for size 11. MDE found: 0.04 with p-value: 0.0183, power: 0.9250
+2025-09-02 10:57:49 | INFO     | Murray.main:evaluate_sensitivity:1696 | 🔍 DEBUG: Evaluating period 15 for size 11
+2025-09-02 10:58:09 | INFO     | Murray.main:evaluate_sensitivity:1771 | Period 15 completed for size 11. MDE found: 0.03 with p-value: 0.0145, power: 0.9250
+2025-09-02 10:58:09 | INFO     | Murray.main:evaluate_sensitivity:1696 | 🔍 DEBUG: Evaluating period 20 for size 11
+2025-09-02 10:58:28 | INFO     | Murray.main:evaluate_sensitivity:1771 | Period 20 completed for size 11. MDE found: 0.03 with p-value: 0.0165, power: 0.9250
+2025-09-02 10:58:28 | INFO     | Murray.main:evaluate_sensitivity:1696 | 🔍 DEBUG: Evaluating period 25 for size 11
+2025-09-02 10:58:48 | INFO     | Murray.main:evaluate_sensitivity:1771 | Period 25 completed for size 11. MDE found: 0.03 with p-value: 0.0133, power: 0.9750
+2025-09-02 10:58:48 | INFO     | Murray.main:evaluate_sensitivity:1696 | 🔍 DEBUG: Evaluating period 30 for size 11
+2025-09-02 10:59:07 | INFO     | Murray.main:evaluate_sensitivity:1771 | Period 30 completed for size 11. MDE found: 0.02 with p-value: 0.0286, power: 0.9000
+2025-09-02 10:59:07 | INFO     | Murray.main:evaluate_sensitivity:1667 | 🔍 DEBUG: Starting evaluation for size 12
+2025-09-02 10:59:07 | INFO     | Murray.main:evaluate_sensitivity:1696 | 🔍 DEBUG: Evaluating period 5 for size 12
+2025-09-02 10:59:25 | INFO     | Murray.main:evaluate_sensitivity:1771 | Period 5 completed for size 12. MDE found: 0.05 with p-value: 0.0186, power: 0.8750
+2025-09-02 10:59:25 | INFO     | Murray.main:evaluate_sensitivity:1696 | 🔍 DEBUG: Evaluating period 10 for size 12
+2025-09-02 10:59:45 | INFO     | Murray.main:evaluate_sensitivity:1771 | Period 10 completed for size 12. MDE found: 0.03 with p-value: 0.0211, power: 0.9000
+2025-09-02 10:59:45 | INFO     | Murray.main:evaluate_sensitivity:1696 | 🔍 DEBUG: Evaluating period 15 for size 12
+2025-09-02 11:00:04 | INFO     | Murray.main:evaluate_sensitivity:1771 | Period 15 completed for size 12. MDE found: 0.03 with p-value: 0.0070, power: 0.9750
+2025-09-02 11:00:04 | INFO     | Murray.main:evaluate_sensitivity:1696 | 🔍 DEBUG: Evaluating period 20 for size 12
+2025-09-02 11:00:24 | INFO     | Murray.main:evaluate_sensitivity:1771 | Period 20 completed for size 12. MDE found: 0.03 with p-value: 0.0127, power: 0.9500
+2025-09-02 11:00:24 | INFO     | Murray.main:evaluate_sensitivity:1696 | 🔍 DEBUG: Evaluating period 25 for size 12
+2025-09-02 11:00:43 | INFO     | Murray.main:evaluate_sensitivity:1771 | Period 25 completed for size 12. MDE found: 0.03 with p-value: 0.0192, power: 0.9250
+2025-09-02 11:00:43 | INFO     | Murray.main:evaluate_sensitivity:1696 | 🔍 DEBUG: Evaluating period 30 for size 12
+2025-09-02 11:01:02 | INFO     | Murray.main:evaluate_sensitivity:1771 | Period 30 completed for size 12. MDE found: 0.02 with p-value: 0.0176, power: 0.9000
+2025-09-02 11:01:02 | INFO     | Murray.main:evaluate_sensitivity:1667 | 🔍 DEBUG: Starting evaluation for size 13
+2025-09-02 11:01:02 | INFO     | Murray.main:evaluate_sensitivity:1696 | 🔍 DEBUG: Evaluating period 5 for size 13
+2025-09-02 11:01:21 | INFO     | Murray.main:evaluate_sensitivity:1771 | Period 5 completed for size 13. MDE found: 0.03 with p-value: 0.0105, power: 0.9500
+2025-09-02 11:01:21 | INFO     | Murray.main:evaluate_sensitivity:1696 | 🔍 DEBUG: Evaluating period 10 for size 13
+2025-09-02 11:01:40 | INFO     | Murray.main:evaluate_sensitivity:1771 | Period 10 completed for size 13. MDE found: 0.02 with p-value: 0.0025, power: 1.0000
+2025-09-02 11:01:40 | INFO     | Murray.main:evaluate_sensitivity:1696 | 🔍 DEBUG: Evaluating period 15 for size 13
+2025-09-02 11:02:00 | INFO     | Murray.main:evaluate_sensitivity:1771 | Period 15 completed for size 13. MDE found: 0.01 with p-value: 0.0396, power: 0.8500
+2025-09-02 11:02:00 | INFO     | Murray.main:evaluate_sensitivity:1696 | 🔍 DEBUG: Evaluating period 20 for size 13
+2025-09-02 11:02:19 | INFO     | Murray.main:evaluate_sensitivity:1771 | Period 20 completed for size 13. MDE found: 0.02 with p-value: 0.0181, power: 0.8500
+2025-09-02 11:02:19 | INFO     | Murray.main:evaluate_sensitivity:1696 | 🔍 DEBUG: Evaluating period 25 for size 13
+2025-09-02 11:02:38 | INFO     | Murray.main:evaluate_sensitivity:1771 | Period 25 completed for size 13. MDE found: 0.02 with p-value: 0.0304, power: 0.8750
+2025-09-02 11:02:38 | INFO     | Murray.main:evaluate_sensitivity:1696 | 🔍 DEBUG: Evaluating period 30 for size 13
+2025-09-02 11:02:58 | INFO     | Murray.main:evaluate_sensitivity:1771 | Period 30 completed for size 13. MDE found: 0.02 with p-value: 0.0159, power: 0.8750
+2025-09-02 11:02:58 | INFO     | Murray.main:evaluate_sensitivity:1667 | 🔍 DEBUG: Starting evaluation for size 14
+2025-09-02 11:02:58 | INFO     | Murray.main:evaluate_sensitivity:1696 | 🔍 DEBUG: Evaluating period 5 for size 14
+2025-09-02 11:03:17 | INFO     | Murray.main:evaluate_sensitivity:1771 | Period 5 completed for size 14. MDE found: 0.06999999999999999 with p-value: 0.0226, power: 0.9250
+2025-09-02 11:03:17 | INFO     | Murray.main:evaluate_sensitivity:1696 | 🔍 DEBUG: Evaluating period 10 for size 14
+2025-09-02 11:03:36 | INFO     | Murray.main:evaluate_sensitivity:1771 | Period 10 completed for size 14. MDE found: 0.05 with p-value: 0.0104, power: 0.9750
+2025-09-02 11:03:36 | INFO     | Murray.main:evaluate_sensitivity:1696 | 🔍 DEBUG: Evaluating period 15 for size 14
+2025-09-02 11:03:55 | INFO     | Murray.main:evaluate_sensitivity:1771 | Period 15 completed for size 14. MDE found: 0.05 with p-value: 0.0062, power: 0.9750
+2025-09-02 11:03:55 | INFO     | Murray.main:evaluate_sensitivity:1696 | 🔍 DEBUG: Evaluating period 20 for size 14
+2025-09-02 11:04:14 | INFO     | Murray.main:evaluate_sensitivity:1771 | Period 20 completed for size 14. MDE found: 0.05 with p-value: 0.0023, power: 1.0000
+2025-09-02 11:04:14 | INFO     | Murray.main:evaluate_sensitivity:1696 | 🔍 DEBUG: Evaluating period 25 for size 14
+2025-09-02 11:04:35 | INFO     | Murray.main:evaluate_sensitivity:1771 | Period 25 completed for size 14. MDE found: 0.05 with p-value: 0.0106, power: 0.9750
+2025-09-02 11:04:35 | INFO     | Murray.main:evaluate_sensitivity:1696 | 🔍 DEBUG: Evaluating period 30 for size 14
+2025-09-02 11:04:55 | INFO     | Murray.main:evaluate_sensitivity:1771 | Period 30 completed for size 14. MDE found: 0.04 with p-value: 0.0080, power: 0.9500
+2025-09-02 11:04:55 | INFO     | Murray.main:evaluate_sensitivity:1788 | evaluate_sensitivity completed successfully.
+2025-09-02 11:04:55 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1993 | Sensitivity evaluation completed successfully.
+2025-09-02 11:04:55 | INFO     | Murray.main:run_geo_analysis_streamlit_app:2003 | run_geo_analysis_streamlit_app completed successfully
+2025-09-02 11:04:55 | INFO     | __main__:<module>:1094 | ✅ SIMULATION COMPLETED: Analysis finished successfully
+2025-09-02 11:04:55 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-09-02 11:04:55 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection

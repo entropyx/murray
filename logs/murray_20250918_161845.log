@@ -1,0 +1,140 @@
+2025-09-18 16:18:45 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-09-18 16:18:47 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-09-18 16:18:49 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-09-18 16:18:49 | INFO     | Murray.metrics:update_metrics:59 | New record added: {'timestamp': '2025-09-18 16:18:49', 'section': 'experimental_evaluation', 'date': '2025-09-18', 'day_of_week': 'Thursday', 'hour': 16}
+2025-09-18 16:18:49 | INFO     | Murray.post_analysis:run_geo_evaluation:21 | Starting run_geo_evaluation
+2025-09-18 16:18:49 | INFO     | Murray.post_analysis:run_geo_evaluation:22 | Input data shape: (7968, 6)
+2025-09-18 16:18:49 | INFO     | Murray.post_analysis:run_geo_evaluation:23 | Treatment group: ['aguascalientes', 'campeche', 'guanajuato', 'jalisco', 'oaxaca', 'quintana roo', 'tabasco', 'yucatan']
+2025-09-18 16:18:49 | INFO     | Murray.post_analysis:run_geo_evaluation:24 | Start treatment: 2025-07-16 00:00:00, End treatment: 2025-09-06 00:00:00
+2025-09-18 16:18:49 | INFO     | Murray.post_analysis:run_geo_evaluation:25 | n_permutations: 50000, significance_level: 0.1
+2025-09-18 16:18:49 | INFO     | Murray.post_analysis:run_geo_evaluation:40 | Treatment period positions: 196 to 249
+2025-09-18 16:18:49 | INFO     | Murray.post_analysis:run_geo_evaluation:49 | Generating correlation matrix...
+2025-09-18 16:18:49 | INFO     | Murray.post_analysis:run_geo_evaluation:52 | Selecting control group...
+2025-09-18 16:18:49 | INFO     | Murray.post_analysis:run_geo_evaluation:58 | Control group selected: ['chiapas', 'state of mexico', 'mexico city', 'queretaro', 'nayarit']
+2025-09-18 16:18:49 | INFO     | Murray.post_analysis:run_geo_evaluation:68 | Pivot table shape: (249, 32)
+2025-09-18 16:18:49 | INFO     | Murray.post_analysis:run_geo_evaluation:81 | Scaling data...
+2025-09-18 16:18:49 | INFO     | Murray.post_analysis:run_geo_evaluation:101 | Fitting synthetic control model...
+2025-09-18 16:18:49 | INFO     | Murray.post_analysis:run_geo_evaluation:104 | Model fitted successfully
+2025-09-18 16:18:49 | INFO     | Murray.post_analysis:run_geo_evaluation:106 | Making predictions...
+2025-09-18 16:18:49 | INFO     | Murray.post_analysis:run_geo_evaluation:137 | Calculating metrics...
+2025-09-18 16:18:49 | INFO     | Murray.post_analysis:run_geo_evaluation:138 | Data shapes - treatment: (249,), counterfactual: (249,)
+2025-09-18 16:18:49 | INFO     | Murray.post_analysis:run_geo_evaluation:148 | Treatment period sum: 369066
+2025-09-18 16:18:49 | INFO     | Murray.post_analysis:run_geo_evaluation:149 | Counterfactual period sum: 384818.51480799203
+2025-09-18 16:18:49 | INFO     | Murray.post_analysis:run_geo_evaluation:150 | Lift difference (treatment - counterfactual): -15752.514807992033
+2025-09-18 16:18:49 | INFO     | Murray.post_analysis:run_geo_evaluation:176 | Observed statistic (enhanced weighted): 51081.070392225636
+2025-09-18 16:18:49 | INFO     | Murray.post_analysis:run_geo_evaluation:177 | Treatment residuals mean: -297.2172605281508
+2025-09-18 16:18:49 | INFO     | Murray.post_analysis:run_geo_evaluation:178 | Treatment residuals sum: -15752.514807991993
+2025-09-18 16:18:49 | INFO     | Murray.post_analysis:run_geo_evaluation:179 | Positive residuals count: 23/53
+2025-09-18 16:18:49 | INFO     | Murray.post_analysis:run_geo_evaluation:182 | Starting block permutation test with 50000 permutations...
+2025-09-18 16:18:50 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 10000/50000 permutations
+2025-09-18 16:18:50 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 20000/50000 permutations
+2025-09-18 16:18:51 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 30000/50000 permutations
+2025-09-18 16:18:52 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 40000/50000 permutations
+2025-09-18 16:18:53 | INFO     | Murray.post_analysis:run_geo_evaluation:208 | Permutation test completed, calculating p-value...
+2025-09-18 16:18:53 | INFO     | Murray.post_analysis:run_geo_evaluation:209 | Observed stat: 51081.070392225636
+2025-09-18 16:18:53 | INFO     | Murray.post_analysis:run_geo_evaluation:210 | Null stats - Mean: 53323.7098, Std: 2660.7754
+2025-09-18 16:18:53 | INFO     | Murray.post_analysis:run_geo_evaluation:211 | Null stats - 95th percentile: 54901.4138
+2025-09-18 16:18:53 | INFO     | Murray.post_analysis:run_geo_evaluation:227 | Final results:
+2025-09-18 16:18:53 | INFO     | Murray.post_analysis:run_geo_evaluation:228 |   MAPE: 19.9769
+2025-09-18 16:18:53 | INFO     | Murray.post_analysis:run_geo_evaluation:229 |   SMAPE: 18.9980
+2025-09-18 16:18:53 | INFO     | Murray.post_analysis:run_geo_evaluation:230 |   Percentage lift: -4.0935%
+2025-09-18 16:18:53 | INFO     | Murray.post_analysis:run_geo_evaluation:231 |   P-value: 0.268830
+2025-09-18 16:18:53 | INFO     | Murray.post_analysis:run_geo_evaluation:232 |   Power: 0.0000
+2025-09-18 16:18:53 | INFO     | Murray.post_analysis:run_geo_evaluation:259 | run_geo_evaluation completed successfully
+2025-09-18 16:19:03 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-09-18 16:19:08 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-09-18 16:19:10 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-09-18 16:19:11 | INFO     | Murray.metrics:update_metrics:59 | New record added: {'timestamp': '2025-09-18 16:19:11', 'section': 'experimental_evaluation', 'date': '2025-09-18', 'day_of_week': 'Thursday', 'hour': 16}
+2025-09-18 16:19:11 | INFO     | Murray.post_analysis:run_geo_evaluation:21 | Starting run_geo_evaluation
+2025-09-18 16:19:11 | INFO     | Murray.post_analysis:run_geo_evaluation:22 | Input data shape: (11712, 4)
+2025-09-18 16:19:11 | INFO     | Murray.post_analysis:run_geo_evaluation:23 | Treatment group: ['aguascalientes', 'campeche', 'chihuahua', 'guanajuato', 'jalisco', 'oaxaca', 'tabasco', 'yucatan', 'quintana roo']
+2025-09-18 16:19:11 | INFO     | Murray.post_analysis:run_geo_evaluation:24 | Start treatment: 2025-07-16 00:00:00, End treatment: 2025-09-06 00:00:00
+2025-09-18 16:19:11 | INFO     | Murray.post_analysis:run_geo_evaluation:25 | n_permutations: 50000, significance_level: 0.1
+2025-09-18 16:19:11 | INFO     | Murray.post_analysis:run_geo_evaluation:40 | Treatment period positions: 302 to 355
+2025-09-18 16:19:11 | INFO     | Murray.post_analysis:run_geo_evaluation:49 | Generating correlation matrix...
+2025-09-18 16:19:11 | INFO     | Murray.post_analysis:run_geo_evaluation:52 | Selecting control group...
+2025-09-18 16:19:11 | INFO     | Murray.post_analysis:run_geo_evaluation:58 | Control group selected: ['nuevo leon', 'morelos', 'tamaulipas', 'state of mexico', 'mexico city']
+2025-09-18 16:19:11 | INFO     | Murray.post_analysis:run_geo_evaluation:68 | Pivot table shape: (366, 32)
+2025-09-18 16:19:11 | INFO     | Murray.post_analysis:run_geo_evaluation:81 | Scaling data...
+2025-09-18 16:19:11 | INFO     | Murray.post_analysis:run_geo_evaluation:101 | Fitting synthetic control model...
+2025-09-18 16:19:11 | INFO     | Murray.post_analysis:run_geo_evaluation:104 | Model fitted successfully
+2025-09-18 16:19:11 | INFO     | Murray.post_analysis:run_geo_evaluation:106 | Making predictions...
+2025-09-18 16:19:11 | INFO     | Murray.post_analysis:run_geo_evaluation:137 | Calculating metrics...
+2025-09-18 16:19:11 | INFO     | Murray.post_analysis:run_geo_evaluation:138 | Data shapes - treatment: (355,), counterfactual: (355,)
+2025-09-18 16:19:11 | INFO     | Murray.post_analysis:run_geo_evaluation:148 | Treatment period sum: 68916.0
+2025-09-18 16:19:11 | INFO     | Murray.post_analysis:run_geo_evaluation:149 | Counterfactual period sum: 72494.3603684567
+2025-09-18 16:19:11 | INFO     | Murray.post_analysis:run_geo_evaluation:150 | Lift difference (treatment - counterfactual): -3578.360368456706
+2025-09-18 16:19:11 | INFO     | Murray.post_analysis:run_geo_evaluation:176 | Observed statistic (enhanced weighted): 15498.542886233416
+2025-09-18 16:19:11 | INFO     | Murray.post_analysis:run_geo_evaluation:177 | Treatment residuals mean: -67.51623336710809
+2025-09-18 16:19:11 | INFO     | Murray.post_analysis:run_geo_evaluation:178 | Treatment residuals sum: -3578.3603684567283
+2025-09-18 16:19:11 | INFO     | Murray.post_analysis:run_geo_evaluation:179 | Positive residuals count: 26/53
+2025-09-18 16:19:11 | INFO     | Murray.post_analysis:run_geo_evaluation:182 | Starting block permutation test with 50000 permutations...
+2025-09-18 16:19:12 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 10000/50000 permutations
+2025-09-18 16:19:13 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 20000/50000 permutations
+2025-09-18 16:19:14 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 30000/50000 permutations
+2025-09-18 16:19:16 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 40000/50000 permutations
+2025-09-18 16:19:17 | INFO     | Murray.post_analysis:run_geo_evaluation:208 | Permutation test completed, calculating p-value...
+2025-09-18 16:19:17 | INFO     | Murray.post_analysis:run_geo_evaluation:209 | Observed stat: 15498.542886233416
+2025-09-18 16:19:17 | INFO     | Murray.post_analysis:run_geo_evaluation:210 | Null stats - Mean: 15873.1638, Std: 415.3777
+2025-09-18 16:19:17 | INFO     | Murray.post_analysis:run_geo_evaluation:211 | Null stats - 95th percentile: 16345.4442
+2025-09-18 16:19:17 | INFO     | Murray.post_analysis:run_geo_evaluation:227 | Final results:
+2025-09-18 16:19:17 | INFO     | Murray.post_analysis:run_geo_evaluation:228 |   MAPE: 35.2851
+2025-09-18 16:19:17 | INFO     | Murray.post_analysis:run_geo_evaluation:229 |   SMAPE: 29.9994
+2025-09-18 16:19:17 | INFO     | Murray.post_analysis:run_geo_evaluation:230 |   Percentage lift: -4.9361%
+2025-09-18 16:19:17 | INFO     | Murray.post_analysis:run_geo_evaluation:231 |   P-value: 0.096940
+2025-09-18 16:19:17 | INFO     | Murray.post_analysis:run_geo_evaluation:232 |   Power: 1.0000
+2025-09-18 16:19:17 | INFO     | Murray.post_analysis:run_geo_evaluation:259 | run_geo_evaluation completed successfully
+2025-09-18 16:20:01 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-09-18 16:20:18 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-09-18 16:20:21 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-09-18 16:20:27 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-09-18 16:20:30 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-09-18 16:20:33 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-09-18 16:20:34 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-09-18 16:20:39 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-09-18 16:20:40 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-09-18 16:20:42 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-09-18 16:20:43 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-09-18 16:20:44 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-09-18 16:20:45 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-09-18 16:20:47 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-09-18 16:20:47 | INFO     | Murray.metrics:update_metrics:59 | New record added: {'timestamp': '2025-09-18 16:20:47', 'section': 'experimental_evaluation', 'date': '2025-09-18', 'day_of_week': 'Thursday', 'hour': 16}
+2025-09-18 16:20:47 | INFO     | Murray.post_analysis:run_geo_evaluation:21 | Starting run_geo_evaluation
+2025-09-18 16:20:47 | INFO     | Murray.post_analysis:run_geo_evaluation:22 | Input data shape: (8320, 4)
+2025-09-18 16:20:47 | INFO     | Murray.post_analysis:run_geo_evaluation:23 | Treatment group: ['aguascalientes', 'campeche', 'chihuahua', 'guanajuato', 'jalisco', 'oaxaca', 'quintana roo', 'tabasco', 'yucatan']
+2025-09-18 16:20:47 | INFO     | Murray.post_analysis:run_geo_evaluation:24 | Start treatment: 2025-07-16 00:00:00, End treatment: 2025-09-17 00:00:00
+2025-09-18 16:20:47 | INFO     | Murray.post_analysis:run_geo_evaluation:25 | n_permutations: 50000, significance_level: 0.1
+2025-09-18 16:20:47 | INFO     | Murray.post_analysis:run_geo_evaluation:40 | Treatment period positions: 196 to 260
+2025-09-18 16:20:47 | INFO     | Murray.post_analysis:run_geo_evaluation:49 | Generating correlation matrix...
+2025-09-18 16:20:47 | INFO     | Murray.post_analysis:run_geo_evaluation:52 | Selecting control group...
+2025-09-18 16:20:47 | INFO     | Murray.post_analysis:run_geo_evaluation:58 | Control group selected: ['nuevo leon', 'coahuila', 'tamaulipas', 'state of mexico', 'mexico city']
+2025-09-18 16:20:47 | INFO     | Murray.post_analysis:run_geo_evaluation:68 | Pivot table shape: (260, 32)
+2025-09-18 16:20:47 | INFO     | Murray.post_analysis:run_geo_evaluation:81 | Scaling data...
+2025-09-18 16:20:47 | INFO     | Murray.post_analysis:run_geo_evaluation:101 | Fitting synthetic control model...
+2025-09-18 16:20:47 | INFO     | Murray.post_analysis:run_geo_evaluation:104 | Model fitted successfully
+2025-09-18 16:20:47 | INFO     | Murray.post_analysis:run_geo_evaluation:106 | Making predictions...
+2025-09-18 16:20:47 | INFO     | Murray.post_analysis:run_geo_evaluation:137 | Calculating metrics...
+2025-09-18 16:20:47 | INFO     | Murray.post_analysis:run_geo_evaluation:138 | Data shapes - treatment: (260,), counterfactual: (260,)
+2025-09-18 16:20:47 | INFO     | Murray.post_analysis:run_geo_evaluation:148 | Treatment period sum: 80587.0
+2025-09-18 16:20:47 | INFO     | Murray.post_analysis:run_geo_evaluation:149 | Counterfactual period sum: 92793.26012930674
+2025-09-18 16:20:47 | INFO     | Murray.post_analysis:run_geo_evaluation:150 | Lift difference (treatment - counterfactual): -12206.260129306742
+2025-09-18 16:20:47 | INFO     | Murray.post_analysis:run_geo_evaluation:176 | Observed statistic (enhanced weighted): 10761.1120093436
+2025-09-18 16:20:47 | INFO     | Murray.post_analysis:run_geo_evaluation:177 | Treatment residuals mean: -190.7228145204178
+2025-09-18 16:20:47 | INFO     | Murray.post_analysis:run_geo_evaluation:178 | Treatment residuals sum: -12206.26012930674
+2025-09-18 16:20:47 | INFO     | Murray.post_analysis:run_geo_evaluation:179 | Positive residuals count: 21/64
+2025-09-18 16:20:47 | INFO     | Murray.post_analysis:run_geo_evaluation:182 | Starting block permutation test with 50000 permutations...
+2025-09-18 16:20:48 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 10000/50000 permutations
+2025-09-18 16:20:49 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 20000/50000 permutations
+2025-09-18 16:20:49 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 30000/50000 permutations
+2025-09-18 16:20:50 | INFO     | Murray.post_analysis:run_geo_evaluation:191 | Completed 40000/50000 permutations
+2025-09-18 16:20:51 | INFO     | Murray.post_analysis:run_geo_evaluation:208 | Permutation test completed, calculating p-value...
+2025-09-18 16:20:51 | INFO     | Murray.post_analysis:run_geo_evaluation:209 | Observed stat: 10761.1120093436
+2025-09-18 16:20:51 | INFO     | Murray.post_analysis:run_geo_evaluation:210 | Null stats - Mean: 10473.2848, Std: 274.1861
+2025-09-18 16:20:51 | INFO     | Murray.post_analysis:run_geo_evaluation:211 | Null stats - 95th percentile: 10769.2342
+2025-09-18 16:20:51 | INFO     | Murray.post_analysis:run_geo_evaluation:227 | Final results:
+2025-09-18 16:20:51 | INFO     | Murray.post_analysis:run_geo_evaluation:228 |   MAPE: 38.1009
+2025-09-18 16:20:51 | INFO     | Murray.post_analysis:run_geo_evaluation:229 |   SMAPE: 30.9372
+2025-09-18 16:20:51 | INFO     | Murray.post_analysis:run_geo_evaluation:230 |   Percentage lift: -13.1543%
+2025-09-18 16:20:51 | INFO     | Murray.post_analysis:run_geo_evaluation:231 |   P-value: 0.126330
+2025-09-18 16:20:51 | INFO     | Murray.post_analysis:run_geo_evaluation:232 |   Power: 0.0000
+2025-09-18 16:20:51 | INFO     | Murray.post_analysis:run_geo_evaluation:259 | run_geo_evaluation completed successfully

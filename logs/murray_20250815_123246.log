@@ -1,0 +1,6 @@
+2025-08-15 12:32:46 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-15 12:32:46 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-15 12:32:46 | ERROR    | Murray.auxiliary:analyze_data_characteristics:280 | Error analyzing data characteristics: Target column 'Ventas totales' not found in data
+2025-08-15 12:32:47 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-15 12:32:47 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-15 12:32:47 | ERROR    | Murray.auxiliary:analyze_data_characteristics:280 | Error analyzing data characteristics: Target column 'Ventas totales' not found in data

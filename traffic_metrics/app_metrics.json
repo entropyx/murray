@@ -1,0 +1,1355 @@
+{
+  "history": [
+    {
+      "timestamp": "2025-07-06 15:04:47",
+      "section": "experimental_design",
+      "date": "2025-07-06",
+      "day_of_week": "Sunday",
+      "hour": 15
+    },
+    {
+      "timestamp": "2025-07-06 15:43:47",
+      "section": "experimental_design",
+      "date": "2025-07-06",
+      "day_of_week": "Sunday",
+      "hour": 15
+    },
+    {
+      "timestamp": "2025-07-06 16:37:52",
+      "section": "experimental_design",
+      "date": "2025-07-06",
+      "day_of_week": "Sunday",
+      "hour": 16
+    },
+    {
+      "timestamp": "2025-07-06 20:09:18",
+      "section": "experimental_design",
+      "date": "2025-07-06",
+      "day_of_week": "Sunday",
+      "hour": 20
+    },
+    {
+      "timestamp": "2025-07-07 00:00:30",
+      "section": "experimental_design",
+      "date": "2025-07-07",
+      "day_of_week": "Monday",
+      "hour": 0
+    },
+    {
+      "timestamp": "2025-07-07 00:38:31",
+      "section": "experimental_design",
+      "date": "2025-07-07",
+      "day_of_week": "Monday",
+      "hour": 0
+    },
+    {
+      "timestamp": "2025-07-07 22:17:41",
+      "section": "experimental_design",
+      "date": "2025-07-07",
+      "day_of_week": "Monday",
+      "hour": 22
+    },
+    {
+      "timestamp": "2025-07-07 23:21:10",
+      "section": "experimental_design",
+      "date": "2025-07-07",
+      "day_of_week": "Monday",
+      "hour": 23
+    },
+    {
+      "timestamp": "2025-07-07 23:24:45",
+      "section": "experimental_design",
+      "date": "2025-07-07",
+      "day_of_week": "Monday",
+      "hour": 23
+    },
+    {
+      "timestamp": "2025-07-08 11:21:19",
+      "section": "experimental_design",
+      "date": "2025-07-08",
+      "day_of_week": "Tuesday",
+      "hour": 11
+    },
+    {
+      "timestamp": "2025-07-08 22:35:57",
+      "section": "experimental_evaluation",
+      "date": "2025-07-08",
+      "day_of_week": "Tuesday",
+      "hour": 22
+    },
+    {
+      "timestamp": "2025-07-08 22:36:19",
+      "section": "experimental_evaluation",
+      "date": "2025-07-08",
+      "day_of_week": "Tuesday",
+      "hour": 22
+    },
+    {
+      "timestamp": "2025-07-08 22:38:49",
+      "section": "experimental_evaluation",
+      "date": "2025-07-08",
+      "day_of_week": "Tuesday",
+      "hour": 22
+    },
+    {
+      "timestamp": "2025-07-08 22:39:06",
+      "section": "experimental_evaluation",
+      "date": "2025-07-08",
+      "day_of_week": "Tuesday",
+      "hour": 22
+    },
+    {
+      "timestamp": "2025-07-13 11:16:57",
+      "section": "experimental_design",
+      "date": "2025-07-13",
+      "day_of_week": "Sunday",
+      "hour": 11
+    },
+    {
+      "timestamp": "2025-07-13 11:23:57",
+      "section": "experimental_design",
+      "date": "2025-07-13",
+      "day_of_week": "Sunday",
+      "hour": 11
+    },
+    {
+      "timestamp": "2025-07-13 11:58:24",
+      "section": "experimental_design",
+      "date": "2025-07-13",
+      "day_of_week": "Sunday",
+      "hour": 11
+    },
+    {
+      "timestamp": "2025-07-15 09:00:09",
+      "section": "experimental_design",
+      "date": "2025-07-15",
+      "day_of_week": "Tuesday",
+      "hour": 9
+    },
+    {
+      "timestamp": "2025-07-15 09:07:22",
+      "section": "experimental_design",
+      "date": "2025-07-15",
+      "day_of_week": "Tuesday",
+      "hour": 9
+    },
+    {
+      "timestamp": "2025-07-30 17:27:04",
+      "section": "experimental_evaluation",
+      "date": "2025-07-30",
+      "day_of_week": "Wednesday",
+      "hour": 17
+    },
+    {
+      "timestamp": "2025-07-31 17:05:22",
+      "section": "experimental_evaluation",
+      "date": "2025-07-31",
+      "day_of_week": "Thursday",
+      "hour": 17
+    },
+    {
+      "timestamp": "2025-07-31 17:05:56",
+      "section": "experimental_evaluation",
+      "date": "2025-07-31",
+      "day_of_week": "Thursday",
+      "hour": 17
+    },
+    {
+      "timestamp": "2025-07-31 17:07:22",
+      "section": "experimental_evaluation",
+      "date": "2025-07-31",
+      "day_of_week": "Thursday",
+      "hour": 17
+    },
+    {
+      "timestamp": "2025-07-31 17:07:35",
+      "section": "experimental_evaluation",
+      "date": "2025-07-31",
+      "day_of_week": "Thursday",
+      "hour": 17
+    },
+    {
+      "timestamp": "2025-07-31 17:08:00",
+      "section": "experimental_evaluation",
+      "date": "2025-07-31",
+      "day_of_week": "Thursday",
+      "hour": 17
+    },
+    {
+      "timestamp": "2025-07-31 17:12:51",
+      "section": "experimental_evaluation",
+      "date": "2025-07-31",
+      "day_of_week": "Thursday",
+      "hour": 17
+    },
+    {
+      "timestamp": "2025-07-31 17:17:02",
+      "section": "experimental_evaluation",
+      "date": "2025-07-31",
+      "day_of_week": "Thursday",
+      "hour": 17
+    },
+    {
+      "timestamp": "2025-07-31 17:17:48",
+      "section": "experimental_evaluation",
+      "date": "2025-07-31",
+      "day_of_week": "Thursday",
+      "hour": 17
+    },
+    {
+      "timestamp": "2025-07-31 17:18:09",
+      "section": "experimental_evaluation",
+      "date": "2025-07-31",
+      "day_of_week": "Thursday",
+      "hour": 17
+    },
+    {
+      "timestamp": "2025-07-31 17:19:30",
+      "section": "experimental_evaluation",
+      "date": "2025-07-31",
+      "day_of_week": "Thursday",
+      "hour": 17
+    },
+    {
+      "timestamp": "2025-07-31 17:21:11",
+      "section": "experimental_evaluation",
+      "date": "2025-07-31",
+      "day_of_week": "Thursday",
+      "hour": 17
+    },
+    {
+      "timestamp": "2025-07-31 17:22:05",
+      "section": "experimental_evaluation",
+      "date": "2025-07-31",
+      "day_of_week": "Thursday",
+      "hour": 17
+    },
+    {
+      "timestamp": "2025-07-31 17:27:34",
+      "section": "experimental_evaluation",
+      "date": "2025-07-31",
+      "day_of_week": "Thursday",
+      "hour": 17
+    },
+    {
+      "timestamp": "2025-07-31 17:28:21",
+      "section": "experimental_evaluation",
+      "date": "2025-07-31",
+      "day_of_week": "Thursday",
+      "hour": 17
+    },
+    {
+      "timestamp": "2025-07-31 17:35:54",
+      "section": "experimental_evaluation",
+      "date": "2025-07-31",
+      "day_of_week": "Thursday",
+      "hour": 17
+    },
+    {
+      "timestamp": "2025-07-31 17:39:21",
+      "section": "experimental_evaluation",
+      "date": "2025-07-31",
+      "day_of_week": "Thursday",
+      "hour": 17
+    },
+    {
+      "timestamp": "2025-07-31 17:40:57",
+      "section": "experimental_evaluation",
+      "date": "2025-07-31",
+      "day_of_week": "Thursday",
+      "hour": 17
+    },
+    {
+      "timestamp": "2025-07-31 17:44:10",
+      "section": "experimental_evaluation",
+      "date": "2025-07-31",
+      "day_of_week": "Thursday",
+      "hour": 17
+    },
+    {
+      "timestamp": "2025-07-31 19:29:11",
+      "section": "experimental_evaluation",
+      "date": "2025-07-31",
+      "day_of_week": "Thursday",
+      "hour": 19
+    },
+    {
+      "timestamp": "2025-07-31 19:32:09",
+      "section": "experimental_evaluation",
+      "date": "2025-07-31",
+      "day_of_week": "Thursday",
+      "hour": 19
+    },
+    {
+      "timestamp": "2025-08-01 08:40:57",
+      "section": "experimental_evaluation",
+      "date": "2025-08-01",
+      "day_of_week": "Friday",
+      "hour": 8
+    },
+    {
+      "timestamp": "2025-08-01 08:42:25",
+      "section": "experimental_evaluation",
+      "date": "2025-08-01",
+      "day_of_week": "Friday",
+      "hour": 8
+    },
+    {
+      "timestamp": "2025-08-15 12:32:23",
+      "section": "experimental_evaluation",
+      "date": "2025-08-15",
+      "day_of_week": "Friday",
+      "hour": 12
+    },
+    {
+      "timestamp": "2025-08-15 12:41:38",
+      "section": "experimental_evaluation",
+      "date": "2025-08-15",
+      "day_of_week": "Friday",
+      "hour": 12
+    },
+    {
+      "timestamp": "2025-08-15 12:48:33",
+      "section": "experimental_evaluation",
+      "date": "2025-08-15",
+      "day_of_week": "Friday",
+      "hour": 12
+    },
+    {
+      "timestamp": "2025-08-15 12:51:20",
+      "section": "experimental_evaluation",
+      "date": "2025-08-15",
+      "day_of_week": "Friday",
+      "hour": 12
+    },
+    {
+      "timestamp": "2025-08-15 12:52:59",
+      "section": "experimental_evaluation",
+      "date": "2025-08-15",
+      "day_of_week": "Friday",
+      "hour": 12
+    },
+    {
+      "timestamp": "2025-08-17 22:12:39",
+      "section": "experimental_evaluation",
+      "date": "2025-08-17",
+      "day_of_week": "Sunday",
+      "hour": 22
+    },
+    {
+      "timestamp": "2025-09-08 23:24:08",
+      "section": "experimental_evaluation",
+      "date": "2025-09-08",
+      "day_of_week": "Monday",
+      "hour": 23
+    },
+    {
+      "timestamp": "2025-09-08 23:26:08",
+      "section": "experimental_evaluation",
+      "date": "2025-09-08",
+      "day_of_week": "Monday",
+      "hour": 23
+    },
+    {
+      "timestamp": "2025-09-08 23:26:19",
+      "section": "experimental_evaluation",
+      "date": "2025-09-08",
+      "day_of_week": "Monday",
+      "hour": 23
+    },
+    {
+      "timestamp": "2025-09-08 23:27:40",
+      "section": "experimental_evaluation",
+      "date": "2025-09-08",
+      "day_of_week": "Monday",
+      "hour": 23
+    },
+    {
+      "timestamp": "2025-09-08 23:35:07",
+      "section": "experimental_evaluation",
+      "date": "2025-09-08",
+      "day_of_week": "Monday",
+      "hour": 23
+    },
+    {
+      "timestamp": "2025-09-08 23:35:24",
+      "section": "experimental_evaluation",
+      "date": "2025-09-08",
+      "day_of_week": "Monday",
+      "hour": 23
+    },
+    {
+      "timestamp": "2025-09-08 23:36:09",
+      "section": "experimental_evaluation",
+      "date": "2025-09-08",
+      "day_of_week": "Monday",
+      "hour": 23
+    },
+    {
+      "timestamp": "2025-09-09 08:31:42",
+      "section": "experimental_evaluation",
+      "date": "2025-09-09",
+      "day_of_week": "Tuesday",
+      "hour": 8
+    },
+    {
+      "timestamp": "2025-09-09 08:32:26",
+      "section": "experimental_evaluation",
+      "date": "2025-09-09",
+      "day_of_week": "Tuesday",
+      "hour": 8
+    },
+    {
+      "timestamp": "2025-09-09 08:34:24",
+      "section": "experimental_evaluation",
+      "date": "2025-09-09",
+      "day_of_week": "Tuesday",
+      "hour": 8
+    },
+    {
+      "timestamp": "2025-09-09 08:35:04",
+      "section": "experimental_evaluation",
+      "date": "2025-09-09",
+      "day_of_week": "Tuesday",
+      "hour": 8
+    },
+    {
+      "timestamp": "2025-09-09 08:35:19",
+      "section": "experimental_evaluation",
+      "date": "2025-09-09",
+      "day_of_week": "Tuesday",
+      "hour": 8
+    },
+    {
+      "timestamp": "2025-09-09 08:35:36",
+      "section": "experimental_evaluation",
+      "date": "2025-09-09",
+      "day_of_week": "Tuesday",
+      "hour": 8
+    },
+    {
+      "timestamp": "2025-09-09 08:36:07",
+      "section": "experimental_evaluation",
+      "date": "2025-09-09",
+      "day_of_week": "Tuesday",
+      "hour": 8
+    },
+    {
+      "timestamp": "2025-09-09 08:36:31",
+      "section": "experimental_evaluation",
+      "date": "2025-09-09",
+      "day_of_week": "Tuesday",
+      "hour": 8
+    },
+    {
+      "timestamp": "2025-09-09 08:36:41",
+      "section": "experimental_evaluation",
+      "date": "2025-09-09",
+      "day_of_week": "Tuesday",
+      "hour": 8
+    },
+    {
+      "timestamp": "2025-09-09 08:36:50",
+      "section": "experimental_evaluation",
+      "date": "2025-09-09",
+      "day_of_week": "Tuesday",
+      "hour": 8
+    },
+    {
+      "timestamp": "2025-09-09 08:37:06",
+      "section": "experimental_evaluation",
+      "date": "2025-09-09",
+      "day_of_week": "Tuesday",
+      "hour": 8
+    },
+    {
+      "timestamp": "2025-09-09 08:37:52",
+      "section": "experimental_evaluation",
+      "date": "2025-09-09",
+      "day_of_week": "Tuesday",
+      "hour": 8
+    },
+    {
+      "timestamp": "2025-09-09 08:41:51",
+      "section": "experimental_evaluation",
+      "date": "2025-09-09",
+      "day_of_week": "Tuesday",
+      "hour": 8
+    },
+    {
+      "timestamp": "2025-09-09 10:27:05",
+      "section": "experimental_evaluation",
+      "date": "2025-09-09",
+      "day_of_week": "Tuesday",
+      "hour": 10
+    },
+    {
+      "timestamp": "2025-09-09 13:31:46",
+      "section": "experimental_evaluation",
+      "date": "2025-09-09",
+      "day_of_week": "Tuesday",
+      "hour": 13
+    },
+    {
+      "timestamp": "2025-09-09 13:43:03",
+      "section": "experimental_evaluation",
+      "date": "2025-09-09",
+      "day_of_week": "Tuesday",
+      "hour": 13
+    },
+    {
+      "timestamp": "2025-09-09 13:43:50",
+      "section": "experimental_evaluation",
+      "date": "2025-09-09",
+      "day_of_week": "Tuesday",
+      "hour": 13
+    },
+    {
+      "timestamp": "2025-09-09 13:44:49",
+      "section": "experimental_evaluation",
+      "date": "2025-09-09",
+      "day_of_week": "Tuesday",
+      "hour": 13
+    },
+    {
+      "timestamp": "2025-09-09 13:44:59",
+      "section": "experimental_evaluation",
+      "date": "2025-09-09",
+      "day_of_week": "Tuesday",
+      "hour": 13
+    },
+    {
+      "timestamp": "2025-09-09 13:45:09",
+      "section": "experimental_evaluation",
+      "date": "2025-09-09",
+      "day_of_week": "Tuesday",
+      "hour": 13
+    },
+    {
+      "timestamp": "2025-09-09 13:50:56",
+      "section": "experimental_evaluation",
+      "date": "2025-09-09",
+      "day_of_week": "Tuesday",
+      "hour": 13
+    },
+    {
+      "timestamp": "2025-09-09 13:51:42",
+      "section": "experimental_evaluation",
+      "date": "2025-09-09",
+      "day_of_week": "Tuesday",
+      "hour": 13
+    },
+    {
+      "timestamp": "2025-09-09 13:51:55",
+      "section": "experimental_evaluation",
+      "date": "2025-09-09",
+      "day_of_week": "Tuesday",
+      "hour": 13
+    },
+    {
+      "timestamp": "2025-09-09 13:55:24",
+      "section": "experimental_evaluation",
+      "date": "2025-09-09",
+      "day_of_week": "Tuesday",
+      "hour": 13
+    },
+    {
+      "timestamp": "2025-09-09 13:58:03",
+      "section": "experimental_evaluation",
+      "date": "2025-09-09",
+      "day_of_week": "Tuesday",
+      "hour": 13
+    },
+    {
+      "timestamp": "2025-09-09 14:00:59",
+      "section": "experimental_evaluation",
+      "date": "2025-09-09",
+      "day_of_week": "Tuesday",
+      "hour": 14
+    },
+    {
+      "timestamp": "2025-09-09 14:05:07",
+      "section": "experimental_evaluation",
+      "date": "2025-09-09",
+      "day_of_week": "Tuesday",
+      "hour": 14
+    },
+    {
+      "timestamp": "2025-09-09 14:05:35",
+      "section": "experimental_evaluation",
+      "date": "2025-09-09",
+      "day_of_week": "Tuesday",
+      "hour": 14
+    },
+    {
+      "timestamp": "2025-09-09 14:08:51",
+      "section": "experimental_evaluation",
+      "date": "2025-09-09",
+      "day_of_week": "Tuesday",
+      "hour": 14
+    },
+    {
+      "timestamp": "2025-09-09 18:36:30",
+      "section": "experimental_evaluation",
+      "date": "2025-09-09",
+      "day_of_week": "Tuesday",
+      "hour": 18
+    },
+    {
+      "timestamp": "2025-09-09 19:30:48",
+      "section": "experimental_evaluation",
+      "date": "2025-09-09",
+      "day_of_week": "Tuesday",
+      "hour": 19
+    },
+    {
+      "timestamp": "2025-09-09 19:41:59",
+      "section": "experimental_evaluation",
+      "date": "2025-09-09",
+      "day_of_week": "Tuesday",
+      "hour": 19
+    },
+    {
+      "timestamp": "2025-09-09 19:45:15",
+      "section": "experimental_evaluation",
+      "date": "2025-09-09",
+      "day_of_week": "Tuesday",
+      "hour": 19
+    },
+    {
+      "timestamp": "2025-09-09 19:45:56",
+      "section": "experimental_evaluation",
+      "date": "2025-09-09",
+      "day_of_week": "Tuesday",
+      "hour": 19
+    },
+    {
+      "timestamp": "2025-09-09 19:46:24",
+      "section": "experimental_evaluation",
+      "date": "2025-09-09",
+      "day_of_week": "Tuesday",
+      "hour": 19
+    },
+    {
+      "timestamp": "2025-09-09 19:46:47",
+      "section": "experimental_evaluation",
+      "date": "2025-09-09",
+      "day_of_week": "Tuesday",
+      "hour": 19
+    },
+    {
+      "timestamp": "2025-09-09 19:50:53",
+      "section": "experimental_evaluation",
+      "date": "2025-09-09",
+      "day_of_week": "Tuesday",
+      "hour": 19
+    },
+    {
+      "timestamp": "2025-09-09 19:53:23",
+      "section": "experimental_evaluation",
+      "date": "2025-09-09",
+      "day_of_week": "Tuesday",
+      "hour": 19
+    },
+    {
+      "timestamp": "2025-09-09 19:54:45",
+      "section": "experimental_evaluation",
+      "date": "2025-09-09",
+      "day_of_week": "Tuesday",
+      "hour": 19
+    },
+    {
+      "timestamp": "2025-09-09 19:55:41",
+      "section": "experimental_evaluation",
+      "date": "2025-09-09",
+      "day_of_week": "Tuesday",
+      "hour": 19
+    },
+    {
+      "timestamp": "2025-09-09 19:58:42",
+      "section": "experimental_evaluation",
+      "date": "2025-09-09",
+      "day_of_week": "Tuesday",
+      "hour": 19
+    },
+    {
+      "timestamp": "2025-09-09 23:08:48",
+      "section": "experimental_evaluation",
+      "date": "2025-09-09",
+      "day_of_week": "Tuesday",
+      "hour": 23
+    },
+    {
+      "timestamp": "2025-09-09 23:10:45",
+      "section": "experimental_evaluation",
+      "date": "2025-09-09",
+      "day_of_week": "Tuesday",
+      "hour": 23
+    },
+    {
+      "timestamp": "2025-09-12 10:24:18",
+      "section": "experimental_evaluation",
+      "date": "2025-09-12",
+      "day_of_week": "Friday",
+      "hour": 10
+    },
+    {
+      "timestamp": "2025-09-12 10:24:41",
+      "section": "experimental_evaluation",
+      "date": "2025-09-12",
+      "day_of_week": "Friday",
+      "hour": 10
+    },
+    {
+      "timestamp": "2025-09-12 10:43:49",
+      "section": "experimental_evaluation",
+      "date": "2025-09-12",
+      "day_of_week": "Friday",
+      "hour": 10
+    },
+    {
+      "timestamp": "2025-09-12 13:33:40",
+      "section": "experimental_evaluation",
+      "date": "2025-09-12",
+      "day_of_week": "Friday",
+      "hour": 13
+    },
+    {
+      "timestamp": "2025-09-12 13:34:59",
+      "section": "experimental_evaluation",
+      "date": "2025-09-12",
+      "day_of_week": "Friday",
+      "hour": 13
+    },
+    {
+      "timestamp": "2025-09-12 13:36:02",
+      "section": "experimental_evaluation",
+      "date": "2025-09-12",
+      "day_of_week": "Friday",
+      "hour": 13
+    },
+    {
+      "timestamp": "2025-09-12 13:36:15",
+      "section": "experimental_evaluation",
+      "date": "2025-09-12",
+      "day_of_week": "Friday",
+      "hour": 13
+    },
+    {
+      "timestamp": "2025-09-12 13:37:36",
+      "section": "experimental_evaluation",
+      "date": "2025-09-12",
+      "day_of_week": "Friday",
+      "hour": 13
+    },
+    {
+      "timestamp": "2025-09-12 13:38:40",
+      "section": "experimental_evaluation",
+      "date": "2025-09-12",
+      "day_of_week": "Friday",
+      "hour": 13
+    },
+    {
+      "timestamp": "2025-09-12 13:39:17",
+      "section": "experimental_evaluation",
+      "date": "2025-09-12",
+      "day_of_week": "Friday",
+      "hour": 13
+    },
+    {
+      "timestamp": "2025-09-12 13:41:22",
+      "section": "experimental_evaluation",
+      "date": "2025-09-12",
+      "day_of_week": "Friday",
+      "hour": 13
+    },
+    {
+      "timestamp": "2025-09-12 13:41:35",
+      "section": "experimental_evaluation",
+      "date": "2025-09-12",
+      "day_of_week": "Friday",
+      "hour": 13
+    },
+    {
+      "timestamp": "2025-09-12 13:42:00",
+      "section": "experimental_evaluation",
+      "date": "2025-09-12",
+      "day_of_week": "Friday",
+      "hour": 13
+    },
+    {
+      "timestamp": "2025-09-12 13:42:28",
+      "section": "experimental_evaluation",
+      "date": "2025-09-12",
+      "day_of_week": "Friday",
+      "hour": 13
+    },
+    {
+      "timestamp": "2025-09-12 14:07:39",
+      "section": "experimental_evaluation",
+      "date": "2025-09-12",
+      "day_of_week": "Friday",
+      "hour": 14
+    },
+    {
+      "timestamp": "2025-09-12 14:08:00",
+      "section": "experimental_evaluation",
+      "date": "2025-09-12",
+      "day_of_week": "Friday",
+      "hour": 14
+    },
+    {
+      "timestamp": "2025-09-12 14:08:27",
+      "section": "experimental_evaluation",
+      "date": "2025-09-12",
+      "day_of_week": "Friday",
+      "hour": 14
+    },
+    {
+      "timestamp": "2025-09-12 14:11:35",
+      "section": "experimental_evaluation",
+      "date": "2025-09-12",
+      "day_of_week": "Friday",
+      "hour": 14
+    },
+    {
+      "timestamp": "2025-09-12 14:13:03",
+      "section": "experimental_evaluation",
+      "date": "2025-09-12",
+      "day_of_week": "Friday",
+      "hour": 14
+    },
+    {
+      "timestamp": "2025-09-12 14:23:41",
+      "section": "experimental_evaluation",
+      "date": "2025-09-12",
+      "day_of_week": "Friday",
+      "hour": 14
+    },
+    {
+      "timestamp": "2025-09-12 14:26:59",
+      "section": "experimental_evaluation",
+      "date": "2025-09-12",
+      "day_of_week": "Friday",
+      "hour": 14
+    },
+    {
+      "timestamp": "2025-09-12 14:27:44",
+      "section": "experimental_evaluation",
+      "date": "2025-09-12",
+      "day_of_week": "Friday",
+      "hour": 14
+    },
+    {
+      "timestamp": "2025-09-12 14:28:07",
+      "section": "experimental_evaluation",
+      "date": "2025-09-12",
+      "day_of_week": "Friday",
+      "hour": 14
+    },
+    {
+      "timestamp": "2025-09-12 14:28:32",
+      "section": "experimental_evaluation",
+      "date": "2025-09-12",
+      "day_of_week": "Friday",
+      "hour": 14
+    },
+    {
+      "timestamp": "2025-09-12 16:30:45",
+      "section": "experimental_evaluation",
+      "date": "2025-09-12",
+      "day_of_week": "Friday",
+      "hour": 16
+    },
+    {
+      "timestamp": "2025-09-17 22:51:40",
+      "section": "experimental_evaluation",
+      "date": "2025-09-17",
+      "day_of_week": "Wednesday",
+      "hour": 22
+    },
+    {
+      "timestamp": "2025-09-17 22:51:56",
+      "section": "experimental_evaluation",
+      "date": "2025-09-17",
+      "day_of_week": "Wednesday",
+      "hour": 22
+    },
+    {
+      "timestamp": "2025-09-17 22:52:11",
+      "section": "experimental_evaluation",
+      "date": "2025-09-17",
+      "day_of_week": "Wednesday",
+      "hour": 22
+    },
+    {
+      "timestamp": "2025-09-17 22:52:31",
+      "section": "experimental_evaluation",
+      "date": "2025-09-17",
+      "day_of_week": "Wednesday",
+      "hour": 22
+    },
+    {
+      "timestamp": "2025-09-17 22:52:47",
+      "section": "experimental_evaluation",
+      "date": "2025-09-17",
+      "day_of_week": "Wednesday",
+      "hour": 22
+    },
+    {
+      "timestamp": "2025-09-17 22:54:02",
+      "section": "experimental_evaluation",
+      "date": "2025-09-17",
+      "day_of_week": "Wednesday",
+      "hour": 22
+    },
+    {
+      "timestamp": "2025-09-17 22:54:45",
+      "section": "experimental_evaluation",
+      "date": "2025-09-17",
+      "day_of_week": "Wednesday",
+      "hour": 22
+    },
+    {
+      "timestamp": "2025-09-17 23:08:39",
+      "section": "experimental_evaluation",
+      "date": "2025-09-17",
+      "day_of_week": "Wednesday",
+      "hour": 23
+    },
+    {
+      "timestamp": "2025-09-18 07:56:48",
+      "section": "experimental_evaluation",
+      "date": "2025-09-18",
+      "day_of_week": "Thursday",
+      "hour": 7
+    },
+    {
+      "timestamp": "2025-09-18 08:05:42",
+      "section": "experimental_evaluation",
+      "date": "2025-09-18",
+      "day_of_week": "Thursday",
+      "hour": 8
+    },
+    {
+      "timestamp": "2025-09-18 08:06:16",
+      "section": "experimental_evaluation",
+      "date": "2025-09-18",
+      "day_of_week": "Thursday",
+      "hour": 8
+    },
+    {
+      "timestamp": "2025-09-18 08:07:09",
+      "section": "experimental_evaluation",
+      "date": "2025-09-18",
+      "day_of_week": "Thursday",
+      "hour": 8
+    },
+    {
+      "timestamp": "2025-09-18 08:08:08",
+      "section": "experimental_evaluation",
+      "date": "2025-09-18",
+      "day_of_week": "Thursday",
+      "hour": 8
+    },
+    {
+      "timestamp": "2025-09-18 08:08:37",
+      "section": "experimental_evaluation",
+      "date": "2025-09-18",
+      "day_of_week": "Thursday",
+      "hour": 8
+    },
+    {
+      "timestamp": "2025-09-18 08:08:57",
+      "section": "experimental_evaluation",
+      "date": "2025-09-18",
+      "day_of_week": "Thursday",
+      "hour": 8
+    },
+    {
+      "timestamp": "2025-09-18 08:10:22",
+      "section": "experimental_evaluation",
+      "date": "2025-09-18",
+      "day_of_week": "Thursday",
+      "hour": 8
+    },
+    {
+      "timestamp": "2025-09-18 08:10:48",
+      "section": "experimental_evaluation",
+      "date": "2025-09-18",
+      "day_of_week": "Thursday",
+      "hour": 8
+    },
+    {
+      "timestamp": "2025-09-18 08:13:09",
+      "section": "experimental_evaluation",
+      "date": "2025-09-18",
+      "day_of_week": "Thursday",
+      "hour": 8
+    },
+    {
+      "timestamp": "2025-09-18 08:41:07",
+      "section": "experimental_evaluation",
+      "date": "2025-09-18",
+      "day_of_week": "Thursday",
+      "hour": 8
+    },
+    {
+      "timestamp": "2025-09-18 08:48:06",
+      "section": "experimental_evaluation",
+      "date": "2025-09-18",
+      "day_of_week": "Thursday",
+      "hour": 8
+    },
+    {
+      "timestamp": "2025-09-18 08:48:34",
+      "section": "experimental_evaluation",
+      "date": "2025-09-18",
+      "day_of_week": "Thursday",
+      "hour": 8
+    },
+    {
+      "timestamp": "2025-09-18 08:48:50",
+      "section": "experimental_evaluation",
+      "date": "2025-09-18",
+      "day_of_week": "Thursday",
+      "hour": 8
+    },
+    {
+      "timestamp": "2025-09-18 08:49:21",
+      "section": "experimental_evaluation",
+      "date": "2025-09-18",
+      "day_of_week": "Thursday",
+      "hour": 8
+    },
+    {
+      "timestamp": "2025-09-18 13:22:19",
+      "section": "experimental_evaluation",
+      "date": "2025-09-18",
+      "day_of_week": "Thursday",
+      "hour": 13
+    },
+    {
+      "timestamp": "2025-09-18 13:29:49",
+      "section": "experimental_evaluation",
+      "date": "2025-09-18",
+      "day_of_week": "Thursday",
+      "hour": 13
+    },
+    {
+      "timestamp": "2025-09-18 13:30:08",
+      "section": "experimental_evaluation",
+      "date": "2025-09-18",
+      "day_of_week": "Thursday",
+      "hour": 13
+    },
+    {
+      "timestamp": "2025-09-18 13:30:33",
+      "section": "experimental_evaluation",
+      "date": "2025-09-18",
+      "day_of_week": "Thursday",
+      "hour": 13
+    },
+    {
+      "timestamp": "2025-09-18 13:30:37",
+      "section": "experimental_evaluation",
+      "date": "2025-09-18",
+      "day_of_week": "Thursday",
+      "hour": 13
+    },
+    {
+      "timestamp": "2025-09-18 13:38:47",
+      "section": "experimental_evaluation",
+      "date": "2025-09-18",
+      "day_of_week": "Thursday",
+      "hour": 13
+    },
+    {
+      "timestamp": "2025-09-18 13:38:55",
+      "section": "experimental_evaluation",
+      "date": "2025-09-18",
+      "day_of_week": "Thursday",
+      "hour": 13
+    },
+    {
+      "timestamp": "2025-09-18 14:16:07",
+      "section": "experimental_evaluation",
+      "date": "2025-09-18",
+      "day_of_week": "Thursday",
+      "hour": 14
+    },
+    {
+      "timestamp": "2025-09-18 14:16:21",
+      "section": "experimental_evaluation",
+      "date": "2025-09-18",
+      "day_of_week": "Thursday",
+      "hour": 14
+    },
+    {
+      "timestamp": "2025-09-18 14:16:52",
+      "section": "experimental_evaluation",
+      "date": "2025-09-18",
+      "day_of_week": "Thursday",
+      "hour": 14
+    },
+    {
+      "timestamp": "2025-09-18 14:56:59",
+      "section": "experimental_evaluation",
+      "date": "2025-09-18",
+      "day_of_week": "Thursday",
+      "hour": 14
+    },
+    {
+      "timestamp": "2025-09-18 14:57:08",
+      "section": "experimental_evaluation",
+      "date": "2025-09-18",
+      "day_of_week": "Thursday",
+      "hour": 14
+    },
+    {
+      "timestamp": "2025-09-18 15:10:26",
+      "section": "experimental_evaluation",
+      "date": "2025-09-18",
+      "day_of_week": "Thursday",
+      "hour": 15
+    },
+    {
+      "timestamp": "2025-09-18 15:11:23",
+      "section": "experimental_evaluation",
+      "date": "2025-09-18",
+      "day_of_week": "Thursday",
+      "hour": 15
+    },
+    {
+      "timestamp": "2025-09-18 15:51:06",
+      "section": "experimental_evaluation",
+      "date": "2025-09-18",
+      "day_of_week": "Thursday",
+      "hour": 15
+    },
+    {
+      "timestamp": "2025-09-18 15:51:27",
+      "section": "experimental_evaluation",
+      "date": "2025-09-18",
+      "day_of_week": "Thursday",
+      "hour": 15
+    },
+    {
+      "timestamp": "2025-09-18 15:51:43",
+      "section": "experimental_evaluation",
+      "date": "2025-09-18",
+      "day_of_week": "Thursday",
+      "hour": 15
+    },
+    {
+      "timestamp": "2025-09-18 15:52:17",
+      "section": "experimental_evaluation",
+      "date": "2025-09-18",
+      "day_of_week": "Thursday",
+      "hour": 15
+    },
+    {
+      "timestamp": "2025-09-18 15:53:00",
+      "section": "experimental_evaluation",
+      "date": "2025-09-18",
+      "day_of_week": "Thursday",
+      "hour": 15
+    },
+    {
+      "timestamp": "2025-09-18 15:53:35",
+      "section": "experimental_evaluation",
+      "date": "2025-09-18",
+      "day_of_week": "Thursday",
+      "hour": 15
+    },
+    {
+      "timestamp": "2025-09-18 15:53:43",
+      "section": "experimental_evaluation",
+      "date": "2025-09-18",
+      "day_of_week": "Thursday",
+      "hour": 15
+    },
+    {
+      "timestamp": "2025-09-18 15:54:06",
+      "section": "experimental_evaluation",
+      "date": "2025-09-18",
+      "day_of_week": "Thursday",
+      "hour": 15
+    },
+    {
+      "timestamp": "2025-09-18 15:58:40",
+      "section": "experimental_evaluation",
+      "date": "2025-09-18",
+      "day_of_week": "Thursday",
+      "hour": 15
+    },
+    {
+      "timestamp": "2025-09-18 15:58:59",
+      "section": "experimental_evaluation",
+      "date": "2025-09-18",
+      "day_of_week": "Thursday",
+      "hour": 15
+    },
+    {
+      "timestamp": "2025-09-18 15:59:11",
+      "section": "experimental_evaluation",
+      "date": "2025-09-18",
+      "day_of_week": "Thursday",
+      "hour": 15
+    },
+    {
+      "timestamp": "2025-09-18 16:01:37",
+      "section": "experimental_evaluation",
+      "date": "2025-09-18",
+      "day_of_week": "Thursday",
+      "hour": 16
+    },
+    {
+      "timestamp": "2025-09-18 16:04:18",
+      "section": "experimental_evaluation",
+      "date": "2025-09-18",
+      "day_of_week": "Thursday",
+      "hour": 16
+    },
+    {
+      "timestamp": "2025-09-18 16:05:58",
+      "section": "experimental_evaluation",
+      "date": "2025-09-18",
+      "day_of_week": "Thursday",
+      "hour": 16
+    },
+    {
+      "timestamp": "2025-09-18 16:07:09",
+      "section": "experimental_evaluation",
+      "date": "2025-09-18",
+      "day_of_week": "Thursday",
+      "hour": 16
+    },
+    {
+      "timestamp": "2025-09-18 16:07:31",
+      "section": "experimental_evaluation",
+      "date": "2025-09-18",
+      "day_of_week": "Thursday",
+      "hour": 16
+    },
+    {
+      "timestamp": "2025-09-18 16:07:47",
+      "section": "experimental_evaluation",
+      "date": "2025-09-18",
+      "day_of_week": "Thursday",
+      "hour": 16
+    },
+    {
+      "timestamp": "2025-09-18 16:08:01",
+      "section": "experimental_evaluation",
+      "date": "2025-09-18",
+      "day_of_week": "Thursday",
+      "hour": 16
+    },
+    {
+      "timestamp": "2025-09-18 16:09:09",
+      "section": "experimental_evaluation",
+      "date": "2025-09-18",
+      "day_of_week": "Thursday",
+      "hour": 16
+    },
+    {
+      "timestamp": "2025-09-18 16:16:52",
+      "section": "experimental_evaluation",
+      "date": "2025-09-18",
+      "day_of_week": "Thursday",
+      "hour": 16
+    },
+    {
+      "timestamp": "2025-09-18 16:18:49",
+      "section": "experimental_evaluation",
+      "date": "2025-09-18",
+      "day_of_week": "Thursday",
+      "hour": 16
+    },
+    {
+      "timestamp": "2025-09-18 16:19:11",
+      "section": "experimental_evaluation",
+      "date": "2025-09-18",
+      "day_of_week": "Thursday",
+      "hour": 16
+    },
+    {
+      "timestamp": "2025-09-18 16:20:47",
+      "section": "experimental_evaluation",
+      "date": "2025-09-18",
+      "day_of_week": "Thursday",
+      "hour": 16
+    },
+    {
+      "timestamp": "2025-09-18 16:22:58",
+      "section": "experimental_evaluation",
+      "date": "2025-09-18",
+      "day_of_week": "Thursday",
+      "hour": 16
+    },
+    {
+      "timestamp": "2025-09-18 16:23:12",
+      "section": "experimental_evaluation",
+      "date": "2025-09-18",
+      "day_of_week": "Thursday",
+      "hour": 16
+    },
+    {
+      "timestamp": "2025-09-18 16:23:27",
+      "section": "experimental_evaluation",
+      "date": "2025-09-18",
+      "day_of_week": "Thursday",
+      "hour": 16
+    },
+    {
+      "timestamp": "2025-09-18 16:23:42",
+      "section": "experimental_evaluation",
+      "date": "2025-09-18",
+      "day_of_week": "Thursday",
+      "hour": 16
+    },
+    {
+      "timestamp": "2025-09-18 16:24:01",
+      "section": "experimental_evaluation",
+      "date": "2025-09-18",
+      "day_of_week": "Thursday",
+      "hour": 16
+    },
+    {
+      "timestamp": "2025-09-18 16:26:43",
+      "section": "experimental_evaluation",
+      "date": "2025-09-18",
+      "day_of_week": "Thursday",
+      "hour": 16
+    },
+    {
+      "timestamp": "2025-09-18 16:34:52",
+      "section": "experimental_evaluation",
+      "date": "2025-09-18",
+      "day_of_week": "Thursday",
+      "hour": 16
+    },
+    {
+      "timestamp": "2025-09-18 16:37:00",
+      "section": "experimental_evaluation",
+      "date": "2025-09-18",
+      "day_of_week": "Thursday",
+      "hour": 16
+    },
+    {
+      "timestamp": "2025-09-18 16:37:21",
+      "section": "experimental_evaluation",
+      "date": "2025-09-18",
+      "day_of_week": "Thursday",
+      "hour": 16
+    },
+    {
+      "timestamp": "2025-09-21 21:21:08",
+      "section": "experimental_evaluation",
+      "date": "2025-09-21",
+      "day_of_week": "Sunday",
+      "hour": 21
+    }
+  ]
+}

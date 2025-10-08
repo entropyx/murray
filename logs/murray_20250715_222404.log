@@ -1,0 +1,30 @@
+2025-07-15 22:24:04 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-07-15 22:24:06 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-07-15 22:24:07 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-07-15 22:24:08 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1711 | Starting run_geo_analysis_streamlit_app............
+2025-07-15 22:24:08 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1720 | Step 1: Generating market correlations.....
+2025-07-15 22:24:08 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1722 | Market correlations generated successfully.
+2025-07-15 22:24:08 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1725 | Step 2: Finding best groups for control and treatment.....
+2025-07-15 22:24:08 | INFO     | Murray.main:BetterGroups:745 | Starting global multi-cell optimization for 3 cells with allowed sizes [3, 4, 5, 6]
+2025-07-15 22:24:08 | INFO     | Murray.main:optimize_global_multicell:941 | Starting global multi-cell optimization for 3 cells with sizes [3, 4, 5, 6]
+2025-07-15 22:24:08 | INFO     | Murray.main:optimize_global_multicell:957 | Phase 1: Generating candidates for all allowed sizes
+2025-07-15 22:24:08 | INFO     | Murray.main:optimize_global_multicell:960 | Generating candidates for size 3
+2025-07-15 22:24:30 | INFO     | Murray.main:optimize_global_multicell:1001 | Generated 9 candidates for size 3
+2025-07-15 22:24:30 | INFO     | Murray.main:optimize_global_multicell:960 | Generating candidates for size 4
+2025-07-15 22:25:03 | INFO     | Murray.main:optimize_global_multicell:1001 | Generated 9 candidates for size 4
+2025-07-15 22:25:03 | INFO     | Murray.main:optimize_global_multicell:960 | Generating candidates for size 5
+2025-07-15 22:25:37 | INFO     | Murray.main:optimize_global_multicell:1001 | Generated 9 candidates for size 5
+2025-07-15 22:25:37 | INFO     | Murray.main:optimize_global_multicell:960 | Generating candidates for size 6
+2025-07-15 22:26:10 | INFO     | Murray.main:optimize_global_multicell:1001 | Generated 9 candidates for size 6
+2025-07-15 22:26:10 | INFO     | Murray.main:optimize_global_multicell:1008 | Phase 2: Global optimization - selecting 3 cells from 36 candidates
+2025-07-15 22:26:10 | WARNING  | Murray.main:optimize_global_multicell:1043 | Could only select 2 cells out of 3 requested due to location conflicts
+2025-07-15 22:26:10 | INFO     | Murray.main:optimize_global_multicell:1068 | Global optimization completed: 2 cells selected
+2025-07-15 22:26:10 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1742 | BetterGroups completed successfully. Results for 1 sizes
+2025-07-15 22:26:10 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1747 | Step 3: Evaluating sensitivity for different deltas and periods.....
+2025-07-15 22:26:10 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1751 | Detected global optimization results, generating sensitivity data by size
+2025-07-15 22:27:44 | INFO     | Murray.main:evaluate_sensitivity:1592 | Period 20 completed for size 6. MDE found: 0.01 with p-value: 0.0197, power: 0.8800 and CI: (0.7904 - 0.9696)
+2025-07-15 22:29:19 | INFO     | Murray.main:evaluate_sensitivity:1592 | Period 25 completed for size 6. MDE found: 0.01 with p-value: 0.0389, power: 0.8200 and CI: (0.7141 - 0.9259)
+2025-07-15 22:30:55 | INFO     | Murray.main:evaluate_sensitivity:1592 | Period 30 completed for size 6. MDE found: 0.02 with p-value: 0.0004, power: 1.0000 and CI: (1.0000 - 1.0000)
+2025-07-15 22:30:55 | INFO     | Murray.main:evaluate_sensitivity:1607 | evaluate_sensitivity completed successfully.
+2025-07-15 22:30:55 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1800 | Sensitivity evaluation completed successfully.
+2025-07-15 22:30:55 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1804 | run_geo_analysis_streamlit_app completed successfully

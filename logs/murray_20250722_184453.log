@@ -1,0 +1,17 @@
+2025-07-22 18:44:54 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-07-22 18:44:57 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-07-22 18:44:57 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-07-22 18:44:57 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-07-22 18:44:57 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-07-22 18:44:57 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-07-22 18:44:57 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-07-22 18:44:58 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-07-22 18:44:59 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-07-22 18:44:59 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-07-22 18:44:59 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-07-22 18:45:01 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-07-22 18:45:01 | INFO     | Murray.main:run_geo_analysis_streamlit_app:2035 | Starting run_geo_analysis_streamlit_app............
+2025-07-22 18:45:01 | INFO     | Murray.main:run_geo_analysis_streamlit_app:2044 | Step 1: Generating market correlations.....
+2025-07-22 18:45:01 | INFO     | Murray.main:run_geo_analysis_streamlit_app:2046 | Market correlations generated successfully.
+2025-07-22 18:45:01 | INFO     | Murray.main:run_geo_analysis_streamlit_app:2049 | Step 2: Finding best groups for control and treatment.....
+2025-07-22 18:45:01 | INFO     | Murray.main:BetterGroups:975 | Starting single-cell mode

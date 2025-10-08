@@ -26,6 +26,7 @@ yarn-error.log*
 #Virtual Enviroment
 .venv/
 .env
+env/
 *.pdf 
 __pycache__/
 venv/

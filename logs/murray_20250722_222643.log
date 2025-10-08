@@ -1,0 +1,65 @@
+2025-07-22 22:26:43 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-07-22 22:26:46 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-07-22 22:26:48 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-07-22 22:26:48 | INFO     | Murray.main:run_geo_analysis_streamlit_app:2032 | Starting run_geo_analysis_streamlit_app............
+2025-07-22 22:26:48 | INFO     | Murray.main:run_geo_analysis_streamlit_app:2041 | Step 1: Generating market correlations.....
+2025-07-22 22:26:48 | INFO     | Murray.main:run_geo_analysis_streamlit_app:2043 | Market correlations generated successfully.
+2025-07-22 22:26:48 | INFO     | Murray.main:run_geo_analysis_streamlit_app:2046 | Step 2: Finding best groups for control and treatment.....
+2025-07-22 22:26:48 | INFO     | Murray.main:BetterGroups:974 | Starting single-cell mode
+2025-07-22 22:26:50 | INFO     | Murray.main:BetterGroups:1006 | Processed 1/40000 groups
+2025-07-22 22:27:45 | INFO     | Murray.main:BetterGroups:1006 | Processed 4000/40000 groups
+2025-07-22 22:28:36 | INFO     | Murray.main:BetterGroups:1006 | Processed 8000/40000 groups
+2025-07-22 22:29:28 | INFO     | Murray.main:BetterGroups:1006 | Processed 12000/40000 groups
+2025-07-22 22:30:15 | INFO     | Murray.main:BetterGroups:1006 | Processed 16000/40000 groups
+2025-07-22 22:30:58 | INFO     | Murray.main:BetterGroups:1006 | Processed 20000/40000 groups
+2025-07-22 22:31:37 | INFO     | Murray.main:BetterGroups:1006 | Processed 24000/40000 groups
+2025-07-22 22:32:15 | INFO     | Murray.main:BetterGroups:1006 | Processed 28000/40000 groups
+2025-07-22 22:32:43 | INFO     | Murray.main:BetterGroups:1006 | Processed 32000/40000 groups
+2025-07-22 22:33:08 | INFO     | Murray.main:BetterGroups:1006 | Processed 36000/40000 groups
+2025-07-22 22:33:31 | INFO     | Murray.main:BetterGroups:1006 | Processed 40000/40000 groups
+2025-07-22 22:33:31 | INFO     | Murray.main:BetterGroups:1007 | All groups processed. Results count: 40000
+2025-07-22 22:33:31 | INFO     | Murray.main:run_geo_analysis_streamlit_app:2063 | BetterGroups completed successfully. Results for 8 sizes
+2025-07-22 22:33:31 | INFO     | Murray.main:run_geo_analysis_streamlit_app:2068 | Step 3: Evaluating sensitivity for different deltas and periods.....
+2025-07-22 22:34:22 | INFO     | Murray.main:evaluate_sensitivity:1904 | Period 25 completed for size 6. MDE found: 0.03 with p-value: 0.0317, power: 0.8400
+2025-07-22 22:35:14 | INFO     | Murray.main:evaluate_sensitivity:1904 | Period 30 completed for size 6. MDE found: 0.02 with p-value: 0.0268, power: 0.8800
+2025-07-22 22:36:04 | INFO     | Murray.main:evaluate_sensitivity:1904 | Period 35 completed for size 6. MDE found: 0.02 with p-value: 0.0077, power: 0.9600
+2025-07-22 22:36:58 | INFO     | Murray.main:evaluate_sensitivity:1904 | Period 40 completed for size 6. MDE found: 0.01 with p-value: 0.0314, power: 0.8800
+2025-07-22 22:37:49 | INFO     | Murray.main:evaluate_sensitivity:1904 | Period 45 completed for size 6. MDE found: 0.02 with p-value: 0.0016, power: 1.0000
+2025-07-22 22:38:42 | INFO     | Murray.main:evaluate_sensitivity:1904 | Period 25 completed for size 7. MDE found: 0.03 with p-value: 0.0081, power: 0.9400
+2025-07-22 22:39:32 | INFO     | Murray.main:evaluate_sensitivity:1904 | Period 30 completed for size 7. MDE found: 0.02 with p-value: 0.0466, power: 0.8000
+2025-07-22 22:40:25 | INFO     | Murray.main:evaluate_sensitivity:1904 | Period 35 completed for size 7. MDE found: 0.02 with p-value: 0.0111, power: 0.9600
+2025-07-22 22:41:16 | INFO     | Murray.main:evaluate_sensitivity:1904 | Period 40 completed for size 7. MDE found: 0.02 with p-value: 0.0082, power: 0.9800
+2025-07-22 22:42:09 | INFO     | Murray.main:evaluate_sensitivity:1904 | Period 45 completed for size 7. MDE found: 0.02 with p-value: 0.0344, power: 0.8000
+2025-07-22 22:43:00 | INFO     | Murray.main:evaluate_sensitivity:1904 | Period 25 completed for size 8. MDE found: 0.03 with p-value: 0.0288, power: 0.8600
+2025-07-22 22:43:53 | INFO     | Murray.main:evaluate_sensitivity:1904 | Period 30 completed for size 8. MDE found: 0.03 with p-value: 0.0200, power: 0.9200
+2025-07-22 22:44:47 | INFO     | Murray.main:evaluate_sensitivity:1904 | Period 35 completed for size 8. MDE found: 0.02 with p-value: 0.0157, power: 0.9400
+2025-07-22 22:45:39 | INFO     | Murray.main:evaluate_sensitivity:1904 | Period 40 completed for size 8. MDE found: 0.02 with p-value: 0.0154, power: 0.9000
+2025-07-22 22:46:33 | INFO     | Murray.main:evaluate_sensitivity:1904 | Period 45 completed for size 8. MDE found: 0.02 with p-value: 0.0133, power: 0.9400
+2025-07-22 22:47:24 | INFO     | Murray.main:evaluate_sensitivity:1904 | Period 25 completed for size 9. MDE found: 0.04 with p-value: 0.0029, power: 1.0000
+2025-07-22 22:48:19 | INFO     | Murray.main:evaluate_sensitivity:1904 | Period 30 completed for size 9. MDE found: 0.03 with p-value: 0.0094, power: 0.9600
+2025-07-22 22:49:11 | INFO     | Murray.main:evaluate_sensitivity:1904 | Period 35 completed for size 9. MDE found: 0.03 with p-value: 0.0060, power: 0.9800
+2025-07-22 22:50:07 | INFO     | Murray.main:evaluate_sensitivity:1904 | Period 40 completed for size 9. MDE found: 0.03 with p-value: 0.0054, power: 1.0000
+2025-07-22 22:51:03 | INFO     | Murray.main:evaluate_sensitivity:1904 | Period 45 completed for size 9. MDE found: 0.03 with p-value: 0.0077, power: 0.9600
+2025-07-22 22:51:56 | INFO     | Murray.main:evaluate_sensitivity:1904 | Period 25 completed for size 10. MDE found: 0.03 with p-value: 0.0089, power: 0.9800
+2025-07-22 22:52:52 | INFO     | Murray.main:evaluate_sensitivity:1904 | Period 30 completed for size 10. MDE found: 0.02 with p-value: 0.0176, power: 0.9400
+2025-07-22 22:53:45 | INFO     | Murray.main:evaluate_sensitivity:1904 | Period 35 completed for size 10. MDE found: 0.02 with p-value: 0.0138, power: 0.9400
+2025-07-22 22:54:41 | INFO     | Murray.main:evaluate_sensitivity:1904 | Period 40 completed for size 10. MDE found: 0.02 with p-value: 0.0095, power: 0.9600
+2025-07-22 22:55:37 | INFO     | Murray.main:evaluate_sensitivity:1904 | Period 45 completed for size 10. MDE found: 0.03 with p-value: 0.0016, power: 1.0000
+2025-07-22 22:56:30 | INFO     | Murray.main:evaluate_sensitivity:1904 | Period 25 completed for size 11. MDE found: 0.04 with p-value: 0.0045, power: 1.0000
+2025-07-22 22:57:25 | INFO     | Murray.main:evaluate_sensitivity:1904 | Period 30 completed for size 11. MDE found: 0.03 with p-value: 0.0078, power: 0.9800
+2025-07-22 22:58:19 | INFO     | Murray.main:evaluate_sensitivity:1904 | Period 35 completed for size 11. MDE found: 0.02 with p-value: 0.0166, power: 0.9400
+2025-07-22 22:59:15 | INFO     | Murray.main:evaluate_sensitivity:1904 | Period 40 completed for size 11. MDE found: 0.02 with p-value: 0.0093, power: 0.9200
+2025-07-22 23:00:08 | INFO     | Murray.main:evaluate_sensitivity:1904 | Period 45 completed for size 11. MDE found: 0.02 with p-value: 0.0136, power: 0.9800
+2025-07-22 23:01:03 | INFO     | Murray.main:evaluate_sensitivity:1904 | Period 25 completed for size 12. MDE found: 0.04 with p-value: 0.0022, power: 1.0000
+2025-07-22 23:01:59 | INFO     | Murray.main:evaluate_sensitivity:1904 | Period 30 completed for size 12. MDE found: 0.02 with p-value: 0.0345, power: 0.8200
+2025-07-22 23:02:52 | INFO     | Murray.main:evaluate_sensitivity:1904 | Period 35 completed for size 12. MDE found: 0.02 with p-value: 0.0093, power: 0.9400
+2025-07-22 23:03:48 | INFO     | Murray.main:evaluate_sensitivity:1904 | Period 40 completed for size 12. MDE found: 0.02 with p-value: 0.0033, power: 1.0000
+2025-07-22 23:04:42 | INFO     | Murray.main:evaluate_sensitivity:1904 | Period 45 completed for size 12. MDE found: 0.02 with p-value: 0.0180, power: 0.9200
+2025-07-22 23:05:37 | INFO     | Murray.main:evaluate_sensitivity:1904 | Period 25 completed for size 13. MDE found: 0.03 with p-value: 0.0121, power: 0.9200
+2025-07-22 23:06:33 | INFO     | Murray.main:evaluate_sensitivity:1904 | Period 30 completed for size 13. MDE found: 0.02 with p-value: 0.0195, power: 0.9000
+2025-07-22 23:07:26 | INFO     | Murray.main:evaluate_sensitivity:1904 | Period 35 completed for size 13. MDE found: 0.02 with p-value: 0.0040, power: 0.9800
+2025-07-22 23:08:22 | INFO     | Murray.main:evaluate_sensitivity:1904 | Period 40 completed for size 13. MDE found: 0.02 with p-value: 0.0061, power: 0.9600
+2025-07-22 23:09:16 | INFO     | Murray.main:evaluate_sensitivity:1904 | Period 45 completed for size 13. MDE found: 0.03 with p-value: 0.0013, power: 1.0000
+2025-07-22 23:09:16 | INFO     | Murray.main:evaluate_sensitivity:1921 | evaluate_sensitivity completed successfully.
+2025-07-22 23:09:16 | INFO     | Murray.main:run_geo_analysis_streamlit_app:2124 | Sensitivity evaluation completed successfully.
+2025-07-22 23:09:16 | INFO     | Murray.main:run_geo_analysis_streamlit_app:2128 | run_geo_analysis_streamlit_app completed successfully

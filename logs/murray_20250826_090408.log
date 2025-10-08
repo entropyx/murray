@@ -1,0 +1,226 @@
+2025-08-26 09:04:12 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-26 09:04:16 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-26 09:04:16 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-26 09:04:16 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-26 09:04:16 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-26 09:04:19 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-26 09:04:20 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-26 09:04:30 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-26 09:04:31 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-26 09:04:35 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-26 09:04:35 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-26 09:04:36 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-26 09:04:36 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-26 09:04:37 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-26 09:04:37 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-26 09:04:37 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-26 09:04:37 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-26 09:04:37 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-26 09:04:37 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-26 09:04:39 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-26 09:04:39 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-26 09:04:39 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-26 09:04:39 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-26 09:04:41 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-26 09:04:41 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-26 09:04:41 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-26 09:04:41 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-26 09:04:41 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-26 09:04:42 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-26 09:04:42 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-26 09:04:42 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-26 09:04:43 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-26 09:04:43 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-26 09:04:46 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-26 09:04:46 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-26 09:04:46 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-26 09:04:46 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-26 09:04:46 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1623 | Starting run_geo_analysis_streamlit_app............
+2025-08-26 09:04:46 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1632 | Step 1: Generating market correlations.....
+2025-08-26 09:04:46 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1637 | Market correlations generated successfully.
+2025-08-26 09:04:46 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1640 | Step 2: Finding best groups for control and treatment.....
+2025-08-26 09:04:46 | INFO     | Murray.main:BetterGroups:899 | Starting single-cell mode
+2025-08-26 09:04:47 | INFO     | Murray.main:BetterGroups:936 | Processed 1/35000 groups
+2025-08-26 09:05:09 | INFO     | Murray.main:BetterGroups:936 | Processed 3500/35000 groups
+2025-08-26 09:05:29 | INFO     | Murray.main:BetterGroups:936 | Processed 7000/35000 groups
+2025-08-26 09:05:51 | INFO     | Murray.main:BetterGroups:936 | Processed 10500/35000 groups
+2025-08-26 09:06:16 | INFO     | Murray.main:BetterGroups:936 | Processed 14000/35000 groups
+2025-08-26 09:06:40 | INFO     | Murray.main:BetterGroups:936 | Processed 17500/35000 groups
+2025-08-26 09:07:04 | INFO     | Murray.main:BetterGroups:936 | Processed 21000/35000 groups
+2025-08-26 09:07:30 | INFO     | Murray.main:BetterGroups:936 | Processed 24500/35000 groups
+2025-08-26 09:07:57 | INFO     | Murray.main:BetterGroups:936 | Processed 28000/35000 groups
+2025-08-26 09:08:24 | INFO     | Murray.main:BetterGroups:936 | Processed 31500/35000 groups
+2025-08-26 09:08:52 | INFO     | Murray.main:BetterGroups:936 | Processed 35000/35000 groups
+2025-08-26 09:08:52 | INFO     | Murray.main:BetterGroups:937 | All groups processed. Results count: 35000
+2025-08-26 09:08:52 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1660 | BetterGroups completed successfully. Results for 7 sizes
+2025-08-26 09:08:52 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1665 | Step 3: Evaluating sensitivity for different deltas and periods.....
+2025-08-26 09:09:53 | INFO     | Murray.main:evaluate_sensitivity:1500 | Period 30 completed for size 4. MDE found: 0.08 with p-value: 0.0254, power: 0.9400
+2025-08-26 09:10:54 | INFO     | Murray.main:evaluate_sensitivity:1500 | Period 35 completed for size 4. MDE found: 0.11 with p-value: 0.0266, power: 0.9000
+2025-08-26 09:11:55 | INFO     | Murray.main:evaluate_sensitivity:1500 | Period 40 completed for size 4. MDE found: 0.09 with p-value: 0.0268, power: 0.9000
+2025-08-26 09:12:56 | INFO     | Murray.main:evaluate_sensitivity:1500 | Period 45 completed for size 4. MDE found: 0.08 with p-value: 0.0285, power: 0.8800
+2025-08-26 09:13:58 | INFO     | Murray.main:evaluate_sensitivity:1500 | Period 50 completed for size 4. MDE found: 0.08 with p-value: 0.0228, power: 0.9800
+2025-08-26 09:14:59 | INFO     | Murray.main:evaluate_sensitivity:1500 | Period 55 completed for size 4. MDE found: 0.09 with p-value: 0.0258, power: 0.9000
+2025-08-26 09:16:01 | INFO     | Murray.main:evaluate_sensitivity:1500 | Period 60 completed for size 4. MDE found: 0.08 with p-value: 0.0219, power: 1.0000
+2025-08-26 09:17:01 | INFO     | Murray.main:evaluate_sensitivity:1500 | Period 30 completed for size 5. MDE found: 0.09 with p-value: 0.0284, power: 0.8800
+2025-08-26 09:18:02 | INFO     | Murray.main:evaluate_sensitivity:1500 | Period 35 completed for size 5. MDE found: 0.12 with p-value: 0.0179, power: 0.9400
+2025-08-26 09:19:03 | INFO     | Murray.main:evaluate_sensitivity:1500 | Period 40 completed for size 5. MDE found: 0.09 with p-value: 0.0312, power: 0.8000
+2025-08-26 09:20:05 | INFO     | Murray.main:evaluate_sensitivity:1500 | Period 45 completed for size 5. MDE found: 0.09999999999999999 with p-value: 0.0181, power: 0.9600
+2025-08-26 09:21:10 | INFO     | Murray.main:evaluate_sensitivity:1500 | Period 50 completed for size 5. MDE found: 0.08 with p-value: 0.0322, power: 0.8200
+2025-08-26 09:22:13 | INFO     | Murray.main:evaluate_sensitivity:1500 | Period 55 completed for size 5. MDE found: 0.09 with p-value: 0.0273, power: 0.9200
+2025-08-26 09:23:13 | INFO     | Murray.main:evaluate_sensitivity:1500 | Period 60 completed for size 5. MDE found: 0.09 with p-value: 0.0187, power: 0.9400
+2025-08-26 09:24:15 | INFO     | Murray.main:evaluate_sensitivity:1500 | Period 30 completed for size 6. MDE found: 0.04 with p-value: 0.0365, power: 0.8000
+2025-08-26 09:25:16 | INFO     | Murray.main:evaluate_sensitivity:1500 | Period 35 completed for size 6. MDE found: 0.09 with p-value: 0.0285, power: 0.8600
+2025-08-26 09:26:18 | INFO     | Murray.main:evaluate_sensitivity:1500 | Period 40 completed for size 6. MDE found: 0.06999999999999999 with p-value: 0.0255, power: 0.9000
+2025-08-26 09:27:19 | INFO     | Murray.main:evaluate_sensitivity:1500 | Period 45 completed for size 6. MDE found: 0.060000000000000005 with p-value: 0.0287, power: 0.8600
+2025-08-26 09:28:21 | INFO     | Murray.main:evaluate_sensitivity:1500 | Period 50 completed for size 6. MDE found: 0.06999999999999999 with p-value: 0.0204, power: 0.9600
+2025-08-26 09:29:23 | INFO     | Murray.main:evaluate_sensitivity:1500 | Period 55 completed for size 6. MDE found: 0.09999999999999999 with p-value: 0.0275, power: 0.8800
+2025-08-26 09:30:25 | INFO     | Murray.main:evaluate_sensitivity:1500 | Period 60 completed for size 6. MDE found: 0.08 with p-value: 0.0193, power: 0.9800
+2025-08-26 09:31:26 | INFO     | Murray.main:evaluate_sensitivity:1500 | Period 30 completed for size 7. MDE found: 0.060000000000000005 with p-value: 0.0218, power: 0.9600
+2025-08-26 09:32:27 | INFO     | Murray.main:evaluate_sensitivity:1500 | Period 35 completed for size 7. MDE found: 0.08 with p-value: 0.0360, power: 0.8400
+2025-08-26 09:33:29 | INFO     | Murray.main:evaluate_sensitivity:1500 | Period 40 completed for size 7. MDE found: 0.06999999999999999 with p-value: 0.0346, power: 0.8000
+2025-08-26 09:34:30 | INFO     | Murray.main:evaluate_sensitivity:1500 | Period 45 completed for size 7. MDE found: 0.08 with p-value: 0.0326, power: 0.8200
+2025-08-26 09:35:33 | INFO     | Murray.main:evaluate_sensitivity:1500 | Period 50 completed for size 7. MDE found: 0.09 with p-value: 0.0267, power: 0.9400
+2025-08-26 09:36:36 | INFO     | Murray.main:evaluate_sensitivity:1500 | Period 55 completed for size 7. MDE found: 0.09999999999999999 with p-value: 0.0200, power: 0.9800
+2025-08-26 09:37:38 | INFO     | Murray.main:evaluate_sensitivity:1500 | Period 60 completed for size 7. MDE found: 0.09 with p-value: 0.0154, power: 1.0000
+2025-08-26 09:38:41 | INFO     | Murray.main:evaluate_sensitivity:1500 | Period 30 completed for size 8. MDE found: 0.09 with p-value: 0.0164, power: 1.0000
+2025-08-26 09:39:45 | INFO     | Murray.main:evaluate_sensitivity:1500 | Period 35 completed for size 8. MDE found: 0.08 with p-value: 0.0310, power: 0.9000
+2025-08-26 09:40:49 | INFO     | Murray.main:evaluate_sensitivity:1500 | Period 40 completed for size 8. MDE found: 0.08 with p-value: 0.0203, power: 0.9600
+2025-08-26 09:41:51 | INFO     | Murray.main:evaluate_sensitivity:1500 | Period 45 completed for size 8. MDE found: 0.08 with p-value: 0.0249, power: 0.9200
+2025-08-26 09:42:52 | INFO     | Murray.main:evaluate_sensitivity:1500 | Period 50 completed for size 8. MDE found: 0.09 with p-value: 0.0169, power: 1.0000
+2025-08-26 09:43:53 | INFO     | Murray.main:evaluate_sensitivity:1500 | Period 55 completed for size 8. MDE found: 0.09999999999999999 with p-value: 0.0234, power: 0.9400
+2025-08-26 09:44:54 | INFO     | Murray.main:evaluate_sensitivity:1500 | Period 60 completed for size 8. MDE found: 0.09 with p-value: 0.0371, power: 0.8200
+2025-08-26 09:45:55 | INFO     | Murray.main:evaluate_sensitivity:1500 | Period 30 completed for size 9. MDE found: 0.01 with p-value: 0.0149, power: 0.9800
+2025-08-26 09:46:54 | INFO     | Murray.main:evaluate_sensitivity:1500 | Period 35 completed for size 9. MDE found: 0.01 with p-value: 0.0216, power: 0.9400
+2025-08-26 09:47:55 | INFO     | Murray.main:evaluate_sensitivity:1500 | Period 40 completed for size 9. MDE found: 0.01 with p-value: 0.0199, power: 0.9600
+2025-08-26 09:48:55 | INFO     | Murray.main:evaluate_sensitivity:1500 | Period 45 completed for size 9. MDE found: 0.01 with p-value: 0.0346, power: 0.8400
+2025-08-26 09:49:56 | INFO     | Murray.main:evaluate_sensitivity:1500 | Period 50 completed for size 9. MDE found: 0.01 with p-value: 0.0114, power: 1.0000
+2025-08-26 09:50:57 | INFO     | Murray.main:evaluate_sensitivity:1500 | Period 55 completed for size 9. MDE found: 0.01 with p-value: 0.0103, power: 1.0000
+2025-08-26 09:51:58 | INFO     | Murray.main:evaluate_sensitivity:1500 | Period 60 completed for size 9. MDE found: 0.01 with p-value: 0.0081, power: 0.9800
+2025-08-26 09:52:57 | INFO     | Murray.main:evaluate_sensitivity:1500 | Period 30 completed for size 10. MDE found: 0.05 with p-value: 0.0281, power: 0.9600
+2025-08-26 09:53:57 | INFO     | Murray.main:evaluate_sensitivity:1500 | Period 35 completed for size 10. MDE found: 0.060000000000000005 with p-value: 0.0297, power: 0.8800
+2025-08-26 09:54:57 | INFO     | Murray.main:evaluate_sensitivity:1500 | Period 40 completed for size 10. MDE found: 0.05 with p-value: 0.0296, power: 0.8800
+2025-08-26 09:55:58 | INFO     | Murray.main:evaluate_sensitivity:1500 | Period 45 completed for size 10. MDE found: 0.05 with p-value: 0.0253, power: 0.9200
+2025-08-26 09:56:58 | INFO     | Murray.main:evaluate_sensitivity:1500 | Period 50 completed for size 10. MDE found: 0.04 with p-value: 0.0411, power: 0.8000
+2025-08-26 09:57:59 | INFO     | Murray.main:evaluate_sensitivity:1500 | Period 55 completed for size 10. MDE found: 0.05 with p-value: 0.0301, power: 0.8400
+2025-08-26 09:58:58 | INFO     | Murray.main:evaluate_sensitivity:1500 | Period 60 completed for size 10. MDE found: 0.05 with p-value: 0.0204, power: 0.9600
+2025-08-26 09:58:58 | INFO     | Murray.main:evaluate_sensitivity:1517 | evaluate_sensitivity completed successfully.
+2025-08-26 09:58:58 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1685 | Sensitivity evaluation completed successfully.
+2025-08-26 09:58:58 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1689 | run_geo_analysis_streamlit_app completed successfully
+2025-08-26 09:58:58 | INFO     | __main__:<module>:1082 | ✅ SIMULATION COMPLETED: Analysis finished successfully
+2025-08-26 09:58:58 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-26 09:58:58 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-26 09:59:05 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-26 09:59:05 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-26 09:59:12 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-26 09:59:12 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-26 09:59:16 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-26 09:59:16 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-26 09:59:18 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-26 09:59:18 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-26 09:59:20 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-26 09:59:20 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-26 09:59:21 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-26 09:59:21 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-26 09:59:23 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-26 09:59:23 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-26 09:59:25 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-26 09:59:25 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-26 09:59:27 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-26 09:59:27 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-26 09:59:27 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-26 09:59:27 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-26 09:59:38 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-26 09:59:38 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-26 09:59:44 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-26 09:59:44 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-26 09:59:54 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-26 09:59:55 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-26 09:59:58 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-26 09:59:58 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-26 10:00:04 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-26 10:00:04 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-26 10:00:07 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-26 10:00:07 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-26 10:00:09 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-26 10:00:09 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-26 10:00:09 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-26 10:00:09 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-26 10:00:11 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-26 10:00:11 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-26 10:00:21 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-26 10:00:21 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-26 10:06:04 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-26 10:06:04 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-26 10:06:06 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-26 10:06:06 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-26 10:06:07 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-26 10:06:08 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-26 10:06:17 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-26 10:06:17 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-26 10:06:19 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-26 10:06:20 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-26 10:06:20 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-26 10:06:21 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-26 10:06:29 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-26 10:06:29 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-26 10:06:32 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-26 10:06:32 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-26 10:13:58 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-26 10:13:58 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-26 10:14:00 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-26 10:14:01 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-26 10:14:10 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-26 10:14:10 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-26 10:14:13 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-26 10:14:13 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-26 10:14:17 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-26 10:14:17 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-26 10:14:18 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-26 10:14:18 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-26 10:14:20 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-26 10:14:20 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-26 10:14:22 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-26 10:14:22 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-26 10:14:26 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-26 10:14:26 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-26 10:14:30 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-26 10:14:30 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-26 10:14:35 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-26 10:14:35 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-26 10:14:43 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-26 10:14:44 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-26 10:14:52 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-26 10:14:52 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-26 10:14:54 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-26 10:14:54 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-26 10:14:55 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-26 10:14:55 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-26 10:14:57 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-26 10:14:57 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-26 10:14:59 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-26 10:14:59 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-26 10:15:01 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-26 10:15:01 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-26 10:17:41 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-26 10:17:41 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-26 10:17:42 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-26 10:17:42 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-26 10:23:43 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-26 10:23:43 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-26 10:23:42 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-26 10:23:42 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-26 10:23:44 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-26 10:23:44 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-26 11:03:30 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-26 11:03:34 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-26 11:03:34 | WARNING  | Murray.auxiliary:handle_duplicates:32 | Found 28158 duplicate entries in the data. Aggregating by mean.
+2025-08-26 11:03:34 | ERROR    | Murray.auxiliary:cleaned_data:138 | Data Cleaning Error: agg function failed [how->mean,dtype->object]
+2025-08-26 11:03:37 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-26 11:03:37 | WARNING  | Murray.auxiliary:handle_duplicates:32 | Found 28158 duplicate entries in the data. Aggregating by mean.
+2025-08-26 11:03:38 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-26 11:03:40 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-26 11:03:40 | WARNING  | Murray.auxiliary:handle_duplicates:32 | Found 28158 duplicate entries in the data. Aggregating by mean.
+2025-08-26 11:03:40 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-26 11:03:45 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-26 11:03:50 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-26 11:03:50 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection

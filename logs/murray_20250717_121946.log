@@ -1,0 +1,48 @@
+2025-07-17 12:20:48 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-07-17 12:20:51 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-07-17 12:20:51 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-07-17 12:20:51 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-07-17 12:20:52 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-07-17 12:20:52 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-07-17 12:20:53 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-07-17 12:20:53 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-07-17 12:20:53 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-07-17 12:20:53 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-07-17 12:20:53 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-07-17 12:20:54 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-07-17 12:20:54 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-07-17 12:20:55 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-07-17 12:20:55 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1816 | Starting run_geo_analysis_streamlit_app............
+2025-07-17 12:20:55 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1825 | Step 1: Generating market correlations.....
+2025-07-17 12:20:55 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1827 | Market correlations generated successfully.
+2025-07-17 12:20:55 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1830 | Step 2: Finding best groups for control and treatment.....
+2025-07-17 12:20:55 | INFO     | Murray.main:BetterGroups:914 | Starting single-cell mode
+2025-07-17 12:20:55 | INFO     | Murray.main:BetterGroups:947 | Processed 1/20000 groups
+2025-07-17 12:21:04 | INFO     | Murray.main:BetterGroups:947 | Processed 2000/20000 groups
+2025-07-17 12:21:14 | INFO     | Murray.main:BetterGroups:947 | Processed 4000/20000 groups
+2025-07-17 12:21:26 | INFO     | Murray.main:BetterGroups:947 | Processed 6000/20000 groups
+2025-07-17 12:21:35 | INFO     | Murray.main:BetterGroups:947 | Processed 8000/20000 groups
+2025-07-17 12:21:44 | INFO     | Murray.main:BetterGroups:947 | Processed 10000/20000 groups
+2025-07-17 12:21:52 | INFO     | Murray.main:BetterGroups:947 | Processed 12000/20000 groups
+2025-07-17 12:22:02 | INFO     | Murray.main:BetterGroups:947 | Processed 14000/20000 groups
+2025-07-17 12:22:10 | INFO     | Murray.main:BetterGroups:947 | Processed 16000/20000 groups
+2025-07-17 12:22:18 | INFO     | Murray.main:BetterGroups:947 | Processed 18000/20000 groups
+2025-07-17 12:22:26 | INFO     | Murray.main:BetterGroups:947 | Processed 20000/20000 groups
+2025-07-17 12:22:26 | INFO     | Murray.main:BetterGroups:948 | All groups processed. Results count: 20000
+2025-07-17 12:22:26 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1847 | BetterGroups completed successfully. Results for 4 sizes
+2025-07-17 12:22:26 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1852 | Step 3: Evaluating sensitivity for different deltas and periods.....
+2025-07-17 12:22:55 | INFO     | Murray.main:evaluate_sensitivity:1694 | Period 20 completed for size 5. MDE found: 0.05 with p-value: 0.0104, power: 0.9600
+2025-07-17 12:23:23 | INFO     | Murray.main:evaluate_sensitivity:1694 | Period 25 completed for size 5. MDE found: 0.04 with p-value: 0.0338, power: 0.8000
+2025-07-17 12:23:52 | INFO     | Murray.main:evaluate_sensitivity:1694 | Period 30 completed for size 5. MDE found: 0.04 with p-value: 0.0129, power: 0.9600
+2025-07-17 12:24:22 | INFO     | Murray.main:evaluate_sensitivity:1694 | Period 20 completed for size 6. MDE found: 0.04 with p-value: 0.0084, power: 0.9600
+2025-07-17 12:24:50 | INFO     | Murray.main:evaluate_sensitivity:1694 | Period 25 completed for size 6. MDE found: 0.04 with p-value: 0.0367, power: 0.8600
+2025-07-17 12:25:18 | INFO     | Murray.main:evaluate_sensitivity:1694 | Period 30 completed for size 6. MDE found: 0.03 with p-value: 0.0426, power: 0.8400
+2025-07-17 12:25:46 | INFO     | Murray.main:evaluate_sensitivity:1694 | Period 20 completed for size 7. MDE found: 0.03 with p-value: 0.0136, power: 0.9200
+2025-07-17 12:26:15 | INFO     | Murray.main:evaluate_sensitivity:1694 | Period 25 completed for size 7. MDE found: 0.04 with p-value: 0.0031, power: 1.0000
+2025-07-17 12:26:44 | INFO     | Murray.main:evaluate_sensitivity:1694 | Period 30 completed for size 7. MDE found: 0.03 with p-value: 0.0166, power: 0.9600
+2025-07-17 12:27:13 | INFO     | Murray.main:evaluate_sensitivity:1694 | Period 20 completed for size 8. MDE found: 0.03 with p-value: 0.0067, power: 1.0000
+2025-07-17 12:27:42 | INFO     | Murray.main:evaluate_sensitivity:1694 | Period 25 completed for size 8. MDE found: 0.02 with p-value: 0.0245, power: 0.8400
+2025-07-17 12:28:10 | INFO     | Murray.main:evaluate_sensitivity:1694 | Period 30 completed for size 8. MDE found: 0.02 with p-value: 0.0092, power: 0.9400
+2025-07-17 12:28:10 | INFO     | Murray.main:evaluate_sensitivity:1711 | evaluate_sensitivity completed successfully.
+2025-07-17 12:28:10 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1908 | Sensitivity evaluation completed successfully.
+2025-07-17 12:28:10 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1912 | run_geo_analysis_streamlit_app completed successfully

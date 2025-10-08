@@ -1,0 +1,46 @@
+2025-07-07 23:21:10 | INFO     | Murray.metrics:update_metrics:57 | New record added: {'timestamp': '2025-07-07 23:21:10', 'section': 'experimental_design', 'date': '2025-07-07', 'day_of_week': 'Monday', 'hour': 23}
+2025-07-07 23:21:10 | INFO     | Murray.main:run_geo_analysis_streamlit_app:978 | Starting run_geo_analysis_streamlit_app............
+2025-07-07 23:21:10 | INFO     | Murray.main:run_geo_analysis_streamlit_app:989 | Step 1: Generating market correlations.....
+2025-07-07 23:21:10 | INFO     | Murray.main:run_geo_analysis_streamlit_app:991 | Market correlations generated successfully.
+2025-07-07 23:21:10 | INFO     | Murray.main:run_geo_analysis_streamlit_app:997 | Step 2: Finding best groups for control and treatment.....
+2025-07-07 23:21:10 | INFO     | Murray.main:BetterGroups:408 | Number of locations: 32
+2025-07-07 23:21:10 | INFO     | Murray.main:BetterGroups:410 | Maximum treatment group size: 14
+2025-07-07 23:21:10 | INFO     | Murray.main:BetterGroups:412 | Minimum treatment group size: 5
+2025-07-07 23:21:10 | INFO     | Murray.main:BetterGroups:429 | Generating possible treatment groups...
+2025-07-07 23:21:10 | INFO     | Murray.main:BetterGroups:433 | Generated 5000 groups for size 5
+2025-07-07 23:21:10 | INFO     | Murray.main:BetterGroups:433 | Generated 5000 groups for size 6
+2025-07-07 23:21:10 | INFO     | Murray.main:BetterGroups:433 | Generated 5000 groups for size 7
+2025-07-07 23:21:10 | INFO     | Murray.main:BetterGroups:433 | Generated 5000 groups for size 8
+2025-07-07 23:21:10 | INFO     | Murray.main:BetterGroups:433 | Generated 5000 groups for size 9
+2025-07-07 23:21:10 | INFO     | Murray.main:BetterGroups:433 | Generated 5000 groups for size 10
+2025-07-07 23:21:10 | INFO     | Murray.main:BetterGroups:433 | Generated 5000 groups for size 11
+2025-07-07 23:21:10 | INFO     | Murray.main:BetterGroups:433 | Generated 5000 groups for size 12
+2025-07-07 23:21:10 | INFO     | Murray.main:BetterGroups:433 | Generated 5000 groups for size 13
+2025-07-07 23:21:10 | INFO     | Murray.main:BetterGroups:433 | Generated 5000 groups for size 14
+2025-07-07 23:21:10 | INFO     | Murray.main:BetterGroups:435 | Total possible groups generated: 50000
+2025-07-07 23:21:11 | INFO     | Murray.main:BetterGroups:455 | Tasks submitted, starting to collect results...
+2025-07-07 23:21:11 | INFO     | Murray.main:BetterGroups:477 | Processed 1/50000 groups
+2025-07-07 23:21:32 | INFO     | Murray.main:BetterGroups:477 | Processed 5000/50000 groups
+2025-07-07 23:21:53 | INFO     | Murray.main:BetterGroups:477 | Processed 10000/50000 groups
+2025-07-07 23:22:12 | INFO     | Murray.main:BetterGroups:477 | Processed 15000/50000 groups
+2025-07-07 23:22:29 | INFO     | Murray.main:BetterGroups:477 | Processed 20000/50000 groups
+2025-07-07 23:22:44 | INFO     | Murray.main:BetterGroups:477 | Processed 25000/50000 groups
+2025-07-07 23:22:56 | INFO     | Murray.main:BetterGroups:477 | Processed 30000/50000 groups
+2025-07-07 23:23:07 | INFO     | Murray.main:BetterGroups:477 | Processed 35000/50000 groups
+2025-07-07 23:23:17 | INFO     | Murray.main:BetterGroups:477 | Processed 40000/50000 groups
+2025-07-07 23:23:25 | INFO     | Murray.main:BetterGroups:477 | Processed 45000/50000 groups
+2025-07-07 23:23:30 | INFO     | Murray.main:BetterGroups:477 | Processed 50000/50000 groups
+2025-07-07 23:23:30 | INFO     | Murray.main:BetterGroups:479 | All groups processed. Results count: 50000
+2025-07-07 23:23:30 | INFO     | Murray.main:BetterGroups:482 | Organizing results by size...
+2025-07-07 23:23:30 | INFO     | Murray.main:BetterGroups:509 | Best result for size 5: MAPE=18.8628, SMAPE=22.6871, Holdout=84.26%
+2025-07-07 23:23:30 | INFO     | Murray.main:BetterGroups:509 | Best result for size 6: MAPE=18.1003, SMAPE=17.7622, Holdout=75.34%
+2025-07-07 23:23:30 | INFO     | Murray.main:BetterGroups:509 | Best result for size 7: MAPE=16.2992, SMAPE=15.9464, Holdout=86.38%
+2025-07-07 23:23:30 | INFO     | Murray.main:BetterGroups:509 | Best result for size 8: MAPE=18.6002, SMAPE=20.1407, Holdout=77.68%
+2025-07-07 23:23:30 | INFO     | Murray.main:BetterGroups:509 | Best result for size 9: MAPE=16.5257, SMAPE=16.4222, Holdout=73.18%
+2025-07-07 23:23:30 | INFO     | Murray.main:BetterGroups:509 | Best result for size 10: MAPE=15.2399, SMAPE=13.8306, Holdout=84.09%
+2025-07-07 23:23:30 | INFO     | Murray.main:BetterGroups:509 | Best result for size 11: MAPE=14.1041, SMAPE=14.2410, Holdout=81.25%
+2025-07-07 23:23:30 | INFO     | Murray.main:BetterGroups:509 | Best result for size 12: MAPE=15.5059, SMAPE=14.8669, Holdout=81.35%
+2025-07-07 23:23:30 | INFO     | Murray.main:BetterGroups:509 | Best result for size 13: MAPE=12.0052, SMAPE=12.7892, Holdout=76.30%
+2025-07-07 23:23:30 | INFO     | Murray.main:BetterGroups:509 | Best result for size 14: MAPE=15.5243, SMAPE=15.6865, Holdout=73.47%
+2025-07-07 23:23:30 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1012 | BetterGroups completed successfully. Results for 10 sizes
+2025-07-07 23:23:30 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1015 | Step 3: Evaluating sensitivity for different deltas and periods.....

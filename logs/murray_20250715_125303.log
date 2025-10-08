@@ -1,0 +1,19 @@
+2025-07-15 12:53:22 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1527 | Starting run_geo_analysis_streamlit_app............
+2025-07-15 12:53:22 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1536 | Step 1: Generating market correlations.....
+2025-07-15 12:53:22 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1538 | Market correlations generated successfully.
+2025-07-15 12:53:22 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1541 | Step 2: Finding best groups for control and treatment.....
+2025-07-15 12:53:22 | INFO     | Murray.main:BetterGroups:894 | Starting single-cell mode
+2025-07-15 12:53:25 | INFO     | Murray.main:BetterGroups:926 | Processed 1/50000 groups
+2025-07-15 12:54:15 | INFO     | Murray.main:BetterGroups:926 | Processed 5000/50000 groups
+2025-07-15 12:55:00 | INFO     | Murray.main:BetterGroups:926 | Processed 10000/50000 groups
+2025-07-15 12:55:43 | INFO     | Murray.main:BetterGroups:926 | Processed 15000/50000 groups
+2025-07-15 12:56:24 | INFO     | Murray.main:BetterGroups:926 | Processed 20000/50000 groups
+2025-07-15 12:56:58 | INFO     | Murray.main:BetterGroups:926 | Processed 25000/50000 groups
+2025-07-15 12:57:12 | INFO     | Murray.main:BetterGroups:926 | Processed 30000/50000 groups
+2025-07-15 12:57:26 | INFO     | Murray.main:BetterGroups:926 | Processed 35000/50000 groups
+2025-07-15 12:57:37 | INFO     | Murray.main:BetterGroups:926 | Processed 40000/50000 groups
+2025-07-15 12:57:45 | INFO     | Murray.main:BetterGroups:926 | Processed 45000/50000 groups
+2025-07-15 12:57:50 | INFO     | Murray.main:BetterGroups:926 | Processed 50000/50000 groups
+2025-07-15 12:57:50 | INFO     | Murray.main:BetterGroups:927 | All groups processed. Results count: 50000
+2025-07-15 12:57:51 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1557 | BetterGroups completed successfully. Results for 10 sizes
+2025-07-15 12:57:51 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1562 | Step 3: Evaluating sensitivity for different deltas and periods.....

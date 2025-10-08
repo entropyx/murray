@@ -1,0 +1,9 @@
+2025-10-01 13:59:33 | INFO     | Murray.main:run_geo_analysis_streamlit_app:2074 | Starting run_geo_analysis_streamlit_app............
+2025-10-01 13:59:33 | INFO     | Murray.main:run_geo_analysis_streamlit_app:2083 | Step 1: Generating market correlations.....
+2025-10-01 13:59:33 | INFO     | Murray.main:run_geo_analysis_streamlit_app:2087 | Market correlations generated successfully.
+2025-10-01 13:59:33 | INFO     | Murray.main:run_geo_analysis_streamlit_app:2090 | Step 2: Finding best groups for control and treatment.....
+2025-10-01 13:59:33 | INFO     | Murray.main:BetterGroups:1003 | Starting single-cell mode
+2025-10-01 13:59:35 | INFO     | Murray.main:BetterGroups:1035 | Processed 1/50000 groups
+2025-10-01 14:01:12 | INFO     | Murray.main:BetterGroups:1035 | Processed 5000/50000 groups
+2025-10-01 14:02:50 | INFO     | Murray.main:BetterGroups:1035 | Processed 10000/50000 groups
+2025-10-01 14:04:31 | INFO     | Murray.main:BetterGroups:1035 | Processed 15000/50000 groups

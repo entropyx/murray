@@ -1,0 +1,29 @@
+2025-09-02 09:47:22 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-09-02 09:47:23 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-09-02 09:47:24 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-09-02 09:47:25 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-09-02 09:47:26 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-09-02 09:47:26 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-09-02 09:47:26 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-09-02 09:47:26 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-09-02 09:47:26 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1909 | Starting run_geo_analysis_streamlit_app............
+2025-09-02 09:47:26 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1918 | Step 1: Generating market correlations.....
+2025-09-02 09:47:26 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1923 | Market correlations generated successfully.
+2025-09-02 09:47:26 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1926 | Step 2: Finding best groups for control and treatment.....
+2025-09-02 09:47:26 | INFO     | Murray.main:BetterGroups:960 | Starting single-cell mode
+2025-09-02 09:47:27 | INFO     | Murray.main:BetterGroups:998 | Processed 1/50000 groups
+2025-09-02 09:47:48 | INFO     | Murray.main:BetterGroups:998 | Processed 5000/50000 groups
+2025-09-02 09:48:10 | INFO     | Murray.main:BetterGroups:998 | Processed 10000/50000 groups
+2025-09-02 09:48:30 | INFO     | Murray.main:BetterGroups:998 | Processed 15000/50000 groups
+2025-09-02 09:48:48 | INFO     | Murray.main:BetterGroups:998 | Processed 20000/50000 groups
+2025-09-02 09:49:05 | INFO     | Murray.main:BetterGroups:998 | Processed 25000/50000 groups
+2025-09-02 09:49:20 | INFO     | Murray.main:BetterGroups:998 | Processed 30000/50000 groups
+2025-09-02 09:49:33 | INFO     | Murray.main:BetterGroups:998 | Processed 35000/50000 groups
+2025-09-02 09:49:45 | INFO     | Murray.main:BetterGroups:998 | Processed 40000/50000 groups
+2025-09-02 09:49:52 | INFO     | Murray.main:BetterGroups:998 | Processed 45000/50000 groups
+2025-09-02 09:49:59 | INFO     | Murray.main:BetterGroups:998 | Processed 50000/50000 groups
+2025-09-02 09:49:59 | INFO     | Murray.main:BetterGroups:999 | All groups processed. Results count: 50000
+2025-09-02 09:49:59 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1946 | BetterGroups completed successfully. Results for 10 sizes
+2025-09-02 09:49:59 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1951 | Step 3: Evaluating sensitivity for different deltas and periods.....
+2025-09-02 09:49:59 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-09-02 09:49:59 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection

@@ -1,0 +1,42 @@
+2025-07-17 20:25:00 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1878 | Starting run_geo_analysis_streamlit_app............
+2025-07-17 20:25:00 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1887 | Step 1: Generating market correlations.....
+2025-07-17 20:25:00 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1889 | Market correlations generated successfully.
+2025-07-17 20:25:00 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1892 | Step 2: Finding best groups for control and treatment.....
+2025-07-17 20:25:00 | INFO     | Murray.main:BetterGroups:953 | Starting single-cell mode
+2025-07-17 20:25:05 | INFO     | Murray.main:BetterGroups:986 | Processed 1/50000 groups
+2025-07-17 20:26:23 | INFO     | Murray.main:BetterGroups:986 | Processed 5000/50000 groups
+2025-07-17 20:27:42 | INFO     | Murray.main:BetterGroups:986 | Processed 10000/50000 groups
+2025-07-17 20:29:01 | INFO     | Murray.main:BetterGroups:986 | Processed 15000/50000 groups
+2025-07-17 20:30:14 | INFO     | Murray.main:BetterGroups:986 | Processed 20000/50000 groups
+2025-07-17 20:31:21 | INFO     | Murray.main:BetterGroups:986 | Processed 25000/50000 groups
+2025-07-17 20:32:24 | INFO     | Murray.main:BetterGroups:986 | Processed 30000/50000 groups
+2025-07-17 20:33:18 | INFO     | Murray.main:BetterGroups:986 | Processed 35000/50000 groups
+2025-07-17 20:34:02 | INFO     | Murray.main:BetterGroups:986 | Processed 40000/50000 groups
+2025-07-17 20:34:38 | INFO     | Murray.main:BetterGroups:986 | Processed 45000/50000 groups
+2025-07-17 20:35:07 | INFO     | Murray.main:BetterGroups:986 | Processed 50000/50000 groups
+2025-07-17 20:35:07 | INFO     | Murray.main:BetterGroups:987 | All groups processed. Results count: 50000
+2025-07-17 20:35:07 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1909 | BetterGroups completed successfully. Results for 10 sizes
+2025-07-17 20:35:07 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1914 | Step 3: Evaluating sensitivity for different deltas and periods.....
+2025-07-17 20:35:39 | INFO     | Murray.main:evaluate_sensitivity:1750 | Period 5 completed for size 5. MDE found: 0.08 with p-value: 0.0760, power: 0.8400
+2025-07-17 20:36:10 | INFO     | Murray.main:evaluate_sensitivity:1750 | Period 10 completed for size 5. MDE found: 0.05 with p-value: 0.0391, power: 0.9400
+2025-07-17 20:36:41 | INFO     | Murray.main:evaluate_sensitivity:1750 | Period 5 completed for size 6. MDE found: None with p-value: None, power: None
+2025-07-17 20:37:13 | INFO     | Murray.main:evaluate_sensitivity:1750 | Period 10 completed for size 6. MDE found: None with p-value: None, power: None
+2025-07-17 20:37:44 | INFO     | Murray.main:evaluate_sensitivity:1750 | Period 5 completed for size 7. MDE found: None with p-value: None, power: None
+2025-07-17 20:38:15 | INFO     | Murray.main:evaluate_sensitivity:1750 | Period 10 completed for size 7. MDE found: None with p-value: None, power: None
+2025-07-17 20:38:47 | INFO     | Murray.main:evaluate_sensitivity:1750 | Period 5 completed for size 8. MDE found: None with p-value: None, power: None
+2025-07-17 20:39:18 | INFO     | Murray.main:evaluate_sensitivity:1750 | Period 10 completed for size 8. MDE found: None with p-value: None, power: None
+2025-07-17 20:39:49 | INFO     | Murray.main:evaluate_sensitivity:1750 | Period 5 completed for size 9. MDE found: 0.060000000000000005 with p-value: 0.0764, power: 0.8000
+2025-07-17 20:40:21 | INFO     | Murray.main:evaluate_sensitivity:1750 | Period 10 completed for size 9. MDE found: 0.08 with p-value: 0.0469, power: 0.9400
+2025-07-17 20:40:52 | INFO     | Murray.main:evaluate_sensitivity:1750 | Period 5 completed for size 10. MDE found: 0.09 with p-value: 0.0509, power: 0.8400
+2025-07-17 20:41:24 | INFO     | Murray.main:evaluate_sensitivity:1750 | Period 10 completed for size 10. MDE found: 0.06999999999999999 with p-value: 0.0615, power: 0.8800
+2025-07-17 20:41:56 | INFO     | Murray.main:evaluate_sensitivity:1750 | Period 5 completed for size 11. MDE found: None with p-value: None, power: None
+2025-07-17 20:42:29 | INFO     | Murray.main:evaluate_sensitivity:1750 | Period 10 completed for size 11. MDE found: None with p-value: None, power: None
+2025-07-17 20:43:01 | INFO     | Murray.main:evaluate_sensitivity:1750 | Period 5 completed for size 12. MDE found: None with p-value: None, power: None
+2025-07-17 20:43:34 | INFO     | Murray.main:evaluate_sensitivity:1750 | Period 10 completed for size 12. MDE found: None with p-value: None, power: None
+2025-07-17 20:44:06 | INFO     | Murray.main:evaluate_sensitivity:1750 | Period 5 completed for size 13. MDE found: None with p-value: None, power: None
+2025-07-17 20:44:35 | INFO     | Murray.main:evaluate_sensitivity:1750 | Period 10 completed for size 13. MDE found: None with p-value: None, power: None
+2025-07-17 20:45:07 | INFO     | Murray.main:evaluate_sensitivity:1750 | Period 5 completed for size 14. MDE found: None with p-value: None, power: None
+2025-07-17 20:45:38 | INFO     | Murray.main:evaluate_sensitivity:1750 | Period 10 completed for size 14. MDE found: 0.06999999999999999 with p-value: 0.0624, power: 0.8600
+2025-07-17 20:45:38 | INFO     | Murray.main:evaluate_sensitivity:1767 | evaluate_sensitivity completed successfully.
+2025-07-17 20:45:38 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1970 | Sensitivity evaluation completed successfully.
+2025-07-17 20:45:38 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1974 | run_geo_analysis_streamlit_app completed successfully

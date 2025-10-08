@@ -1,0 +1,433 @@
+2025-07-13 11:23:57 | INFO     | Murray.metrics:update_metrics:57 | New record added: {'timestamp': '2025-07-13 11:23:57', 'section': 'experimental_design', 'date': '2025-07-13', 'day_of_week': 'Sunday', 'hour': 11}
+2025-07-13 11:23:57 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1068 | Starting run_geo_analysis_streamlit_app............
+2025-07-13 11:23:57 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1079 | Step 1: Generating market correlations.....
+2025-07-13 11:23:57 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1081 | Market correlations generated successfully.
+2025-07-13 11:23:57 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1087 | Step 2: Finding best groups for control and treatment.....
+2025-07-13 11:23:57 | INFO     | Murray.main:BetterGroups:408 | Number of locations: 32
+2025-07-13 11:23:57 | INFO     | Murray.main:BetterGroups:410 | Maximum treatment group size: 10
+2025-07-13 11:23:57 | INFO     | Murray.main:BetterGroups:412 | Minimum treatment group size: 5
+2025-07-13 11:23:57 | INFO     | Murray.main:BetterGroups:429 | Generating possible treatment groups...
+2025-07-13 11:23:57 | INFO     | Murray.main:BetterGroups:433 | Generated 5000 groups for size 5
+2025-07-13 11:23:57 | INFO     | Murray.main:BetterGroups:433 | Generated 5000 groups for size 6
+2025-07-13 11:23:57 | INFO     | Murray.main:BetterGroups:433 | Generated 5000 groups for size 7
+2025-07-13 11:23:57 | INFO     | Murray.main:BetterGroups:433 | Generated 5000 groups for size 8
+2025-07-13 11:23:58 | INFO     | Murray.main:BetterGroups:433 | Generated 5000 groups for size 9
+2025-07-13 11:23:58 | INFO     | Murray.main:BetterGroups:433 | Generated 5000 groups for size 10
+2025-07-13 11:23:58 | INFO     | Murray.main:BetterGroups:435 | Total possible groups generated: 30000
+2025-07-13 11:23:58 | INFO     | Murray.main:BetterGroups:455 | Tasks submitted, starting to collect results...
+2025-07-13 11:23:58 | INFO     | Murray.main:BetterGroups:477 | Processed 1/30000 groups
+2025-07-13 11:24:25 | INFO     | Murray.main:BetterGroups:477 | Processed 3000/30000 groups
+2025-07-13 11:24:49 | INFO     | Murray.main:BetterGroups:477 | Processed 6000/30000 groups
+2025-07-13 11:25:13 | INFO     | Murray.main:BetterGroups:477 | Processed 9000/30000 groups
+2025-07-13 11:25:39 | INFO     | Murray.main:BetterGroups:477 | Processed 12000/30000 groups
+2025-07-13 11:26:01 | INFO     | Murray.main:BetterGroups:477 | Processed 15000/30000 groups
+2025-07-13 11:26:27 | INFO     | Murray.main:BetterGroups:477 | Processed 18000/30000 groups
+2025-07-13 11:26:50 | INFO     | Murray.main:BetterGroups:477 | Processed 21000/30000 groups
+2025-07-13 11:27:15 | INFO     | Murray.main:BetterGroups:477 | Processed 24000/30000 groups
+2025-07-13 11:27:38 | INFO     | Murray.main:BetterGroups:477 | Processed 27000/30000 groups
+2025-07-13 11:28:00 | INFO     | Murray.main:BetterGroups:477 | Processed 30000/30000 groups
+2025-07-13 11:28:00 | INFO     | Murray.main:BetterGroups:479 | All groups processed. Results count: 30000
+2025-07-13 11:28:00 | INFO     | Murray.main:BetterGroups:482 | Organizing results by size...
+2025-07-13 11:28:00 | INFO     | Murray.main:BetterGroups:509 | Best result for size 5: MAPE=1.7977, SMAPE=1.7919, Holdout=85.99%
+2025-07-13 11:28:00 | INFO     | Murray.main:BetterGroups:509 | Best result for size 6: MAPE=1.7547, SMAPE=1.7327, Holdout=89.72%
+2025-07-13 11:28:00 | INFO     | Murray.main:BetterGroups:509 | Best result for size 7: MAPE=1.8238, SMAPE=1.8115, Holdout=89.08%
+2025-07-13 11:28:00 | INFO     | Murray.main:BetterGroups:509 | Best result for size 8: MAPE=1.5420, SMAPE=1.5545, Holdout=85.17%
+2025-07-13 11:28:00 | INFO     | Murray.main:BetterGroups:509 | Best result for size 9: MAPE=1.6124, SMAPE=1.5964, Holdout=80.57%
+2025-07-13 11:28:00 | INFO     | Murray.main:BetterGroups:509 | Best result for size 10: MAPE=1.6813, SMAPE=1.6789, Holdout=79.42%
+2025-07-13 11:28:00 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1102 | BetterGroups completed successfully. Results for 6 sizes
+2025-07-13 11:28:00 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1105 | Step 3: Evaluating sensitivity for different deltas and periods.....
+2025-07-13 11:28:00 | INFO     | Murray.main:determine_best_statistical_test:799 | Test selection results: inference_type=block, stat_func_name=median_diff
+2025-07-13 11:28:00 | INFO     | Murray.main:determine_best_statistical_test:800 | Explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:28:00 | INFO     | Murray.main:simulate_power:821 | Test selection explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:28:00 | INFO     | Murray.main:simulate_power:825 | Selected inference type: block
+2025-07-13 11:28:00 | INFO     | Murray.main:simulate_power:838 | Selected statistical test: median_diff
+2025-07-13 11:28:20 | INFO     | Murray.main:determine_best_statistical_test:799 | Test selection results: inference_type=block, stat_func_name=median_diff
+2025-07-13 11:28:20 | INFO     | Murray.main:determine_best_statistical_test:800 | Explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:28:20 | INFO     | Murray.main:simulate_power:821 | Test selection explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:28:20 | INFO     | Murray.main:simulate_power:825 | Selected inference type: block
+2025-07-13 11:28:20 | INFO     | Murray.main:simulate_power:838 | Selected statistical test: median_diff
+2025-07-13 11:28:39 | INFO     | Murray.main:determine_best_statistical_test:799 | Test selection results: inference_type=block, stat_func_name=median_diff
+2025-07-13 11:28:39 | INFO     | Murray.main:determine_best_statistical_test:800 | Explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:28:39 | INFO     | Murray.main:simulate_power:821 | Test selection explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:28:39 | INFO     | Murray.main:simulate_power:825 | Selected inference type: block
+2025-07-13 11:28:39 | INFO     | Murray.main:simulate_power:838 | Selected statistical test: median_diff
+2025-07-13 11:29:01 | INFO     | Murray.main:determine_best_statistical_test:799 | Test selection results: inference_type=block, stat_func_name=median_diff
+2025-07-13 11:29:01 | INFO     | Murray.main:determine_best_statistical_test:800 | Explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:29:01 | INFO     | Murray.main:simulate_power:821 | Test selection explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:29:01 | INFO     | Murray.main:simulate_power:825 | Selected inference type: block
+2025-07-13 11:29:01 | INFO     | Murray.main:simulate_power:838 | Selected statistical test: median_diff
+2025-07-13 11:29:23 | INFO     | Murray.main:determine_best_statistical_test:799 | Test selection results: inference_type=block, stat_func_name=median_diff
+2025-07-13 11:29:23 | INFO     | Murray.main:determine_best_statistical_test:800 | Explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:29:23 | INFO     | Murray.main:simulate_power:821 | Test selection explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:29:23 | INFO     | Murray.main:simulate_power:825 | Selected inference type: block
+2025-07-13 11:29:23 | INFO     | Murray.main:simulate_power:838 | Selected statistical test: median_diff
+2025-07-13 11:29:40 | INFO     | Murray.main:determine_best_statistical_test:799 | Test selection results: inference_type=block, stat_func_name=median_diff
+2025-07-13 11:29:40 | INFO     | Murray.main:determine_best_statistical_test:800 | Explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:29:40 | INFO     | Murray.main:simulate_power:821 | Test selection explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:29:40 | INFO     | Murray.main:simulate_power:825 | Selected inference type: block
+2025-07-13 11:29:40 | INFO     | Murray.main:simulate_power:838 | Selected statistical test: median_diff
+2025-07-13 11:29:59 | INFO     | Murray.main:determine_best_statistical_test:799 | Test selection results: inference_type=block, stat_func_name=median_diff
+2025-07-13 11:29:59 | INFO     | Murray.main:determine_best_statistical_test:800 | Explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:29:59 | INFO     | Murray.main:simulate_power:821 | Test selection explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:29:59 | INFO     | Murray.main:simulate_power:825 | Selected inference type: block
+2025-07-13 11:29:59 | INFO     | Murray.main:simulate_power:838 | Selected statistical test: median_diff
+2025-07-13 11:30:19 | INFO     | Murray.main:determine_best_statistical_test:799 | Test selection results: inference_type=block, stat_func_name=median_diff
+2025-07-13 11:30:19 | INFO     | Murray.main:determine_best_statistical_test:800 | Explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:30:19 | INFO     | Murray.main:simulate_power:821 | Test selection explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:30:19 | INFO     | Murray.main:simulate_power:825 | Selected inference type: block
+2025-07-13 11:30:19 | INFO     | Murray.main:simulate_power:838 | Selected statistical test: median_diff
+2025-07-13 11:30:38 | INFO     | Murray.main:determine_best_statistical_test:799 | Test selection results: inference_type=block, stat_func_name=median_diff
+2025-07-13 11:30:38 | INFO     | Murray.main:determine_best_statistical_test:800 | Explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:30:38 | INFO     | Murray.main:simulate_power:821 | Test selection explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:30:38 | INFO     | Murray.main:simulate_power:825 | Selected inference type: block
+2025-07-13 11:30:38 | INFO     | Murray.main:simulate_power:838 | Selected statistical test: median_diff
+2025-07-13 11:30:56 | INFO     | Murray.main:determine_best_statistical_test:799 | Test selection results: inference_type=block, stat_func_name=median_diff
+2025-07-13 11:30:56 | INFO     | Murray.main:determine_best_statistical_test:800 | Explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:30:56 | INFO     | Murray.main:simulate_power:821 | Test selection explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:30:56 | INFO     | Murray.main:simulate_power:825 | Selected inference type: block
+2025-07-13 11:30:56 | INFO     | Murray.main:simulate_power:838 | Selected statistical test: median_diff
+2025-07-13 11:31:16 | INFO     | Murray.main:determine_best_statistical_test:799 | Test selection results: inference_type=block, stat_func_name=median_diff
+2025-07-13 11:31:16 | INFO     | Murray.main:determine_best_statistical_test:800 | Explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:31:16 | INFO     | Murray.main:simulate_power:821 | Test selection explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:31:16 | INFO     | Murray.main:simulate_power:825 | Selected inference type: block
+2025-07-13 11:31:16 | INFO     | Murray.main:simulate_power:838 | Selected statistical test: median_diff
+2025-07-13 11:31:34 | INFO     | Murray.main:determine_best_statistical_test:799 | Test selection results: inference_type=block, stat_func_name=median_diff
+2025-07-13 11:31:34 | INFO     | Murray.main:determine_best_statistical_test:800 | Explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:31:34 | INFO     | Murray.main:simulate_power:821 | Test selection explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:31:34 | INFO     | Murray.main:simulate_power:825 | Selected inference type: block
+2025-07-13 11:31:34 | INFO     | Murray.main:simulate_power:838 | Selected statistical test: median_diff
+2025-07-13 11:31:55 | INFO     | Murray.main:determine_best_statistical_test:799 | Test selection results: inference_type=block, stat_func_name=median_diff
+2025-07-13 11:31:55 | INFO     | Murray.main:determine_best_statistical_test:800 | Explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:31:55 | INFO     | Murray.main:simulate_power:821 | Test selection explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:31:55 | INFO     | Murray.main:simulate_power:825 | Selected inference type: block
+2025-07-13 11:31:55 | INFO     | Murray.main:simulate_power:838 | Selected statistical test: median_diff
+2025-07-13 11:32:13 | INFO     | Murray.main:determine_best_statistical_test:799 | Test selection results: inference_type=block, stat_func_name=median_diff
+2025-07-13 11:32:13 | INFO     | Murray.main:determine_best_statistical_test:800 | Explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:32:13 | INFO     | Murray.main:simulate_power:821 | Test selection explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:32:13 | INFO     | Murray.main:simulate_power:825 | Selected inference type: block
+2025-07-13 11:32:13 | INFO     | Murray.main:simulate_power:838 | Selected statistical test: median_diff
+2025-07-13 11:32:31 | INFO     | Murray.main:evaluate_sensitivity:1007 | Period 5 completed for size 5. MDE found: 0.09 with p-value: 0.020984000000000003, power: 0.9 and CI: (np.float64(0.816844242532462), np.float64(0.983155757467538))
+2025-07-13 11:32:31 | INFO     | Murray.main:determine_best_statistical_test:799 | Test selection results: inference_type=block, stat_func_name=median_diff
+2025-07-13 11:32:31 | INFO     | Murray.main:determine_best_statistical_test:800 | Explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:32:31 | INFO     | Murray.main:simulate_power:821 | Test selection explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:32:31 | INFO     | Murray.main:simulate_power:825 | Selected inference type: block
+2025-07-13 11:32:31 | INFO     | Murray.main:simulate_power:838 | Selected statistical test: median_diff
+2025-07-13 11:32:52 | INFO     | Murray.main:determine_best_statistical_test:799 | Test selection results: inference_type=block, stat_func_name=median_diff
+2025-07-13 11:32:52 | INFO     | Murray.main:determine_best_statistical_test:800 | Explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:32:52 | INFO     | Murray.main:simulate_power:821 | Test selection explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:32:52 | INFO     | Murray.main:simulate_power:825 | Selected inference type: block
+2025-07-13 11:32:52 | INFO     | Murray.main:simulate_power:838 | Selected statistical test: median_diff
+2025-07-13 11:33:10 | INFO     | Murray.main:determine_best_statistical_test:799 | Test selection results: inference_type=block, stat_func_name=median_diff
+2025-07-13 11:33:10 | INFO     | Murray.main:determine_best_statistical_test:800 | Explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:33:10 | INFO     | Murray.main:simulate_power:821 | Test selection explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:33:10 | INFO     | Murray.main:simulate_power:825 | Selected inference type: block
+2025-07-13 11:33:10 | INFO     | Murray.main:simulate_power:838 | Selected statistical test: median_diff
+2025-07-13 11:33:29 | INFO     | Murray.main:determine_best_statistical_test:799 | Test selection results: inference_type=block, stat_func_name=median_diff
+2025-07-13 11:33:29 | INFO     | Murray.main:determine_best_statistical_test:800 | Explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:33:29 | INFO     | Murray.main:simulate_power:821 | Test selection explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:33:29 | INFO     | Murray.main:simulate_power:825 | Selected inference type: block
+2025-07-13 11:33:29 | INFO     | Murray.main:simulate_power:838 | Selected statistical test: median_diff
+2025-07-13 11:33:50 | INFO     | Murray.main:determine_best_statistical_test:799 | Test selection results: inference_type=block, stat_func_name=median_diff
+2025-07-13 11:33:50 | INFO     | Murray.main:determine_best_statistical_test:800 | Explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:33:50 | INFO     | Murray.main:simulate_power:821 | Test selection explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:33:50 | INFO     | Murray.main:simulate_power:825 | Selected inference type: block
+2025-07-13 11:33:50 | INFO     | Murray.main:simulate_power:838 | Selected statistical test: median_diff
+2025-07-13 11:34:08 | INFO     | Murray.main:determine_best_statistical_test:799 | Test selection results: inference_type=block, stat_func_name=median_diff
+2025-07-13 11:34:08 | INFO     | Murray.main:determine_best_statistical_test:800 | Explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:34:08 | INFO     | Murray.main:simulate_power:821 | Test selection explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:34:08 | INFO     | Murray.main:simulate_power:825 | Selected inference type: block
+2025-07-13 11:34:08 | INFO     | Murray.main:simulate_power:838 | Selected statistical test: median_diff
+2025-07-13 11:34:29 | INFO     | Murray.main:determine_best_statistical_test:799 | Test selection results: inference_type=block, stat_func_name=median_diff
+2025-07-13 11:34:29 | INFO     | Murray.main:determine_best_statistical_test:800 | Explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:34:29 | INFO     | Murray.main:simulate_power:821 | Test selection explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:34:29 | INFO     | Murray.main:simulate_power:825 | Selected inference type: block
+2025-07-13 11:34:29 | INFO     | Murray.main:simulate_power:838 | Selected statistical test: median_diff
+2025-07-13 11:34:46 | INFO     | Murray.main:determine_best_statistical_test:799 | Test selection results: inference_type=block, stat_func_name=median_diff
+2025-07-13 11:34:46 | INFO     | Murray.main:determine_best_statistical_test:800 | Explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:34:46 | INFO     | Murray.main:simulate_power:821 | Test selection explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:34:46 | INFO     | Murray.main:simulate_power:825 | Selected inference type: block
+2025-07-13 11:34:46 | INFO     | Murray.main:simulate_power:838 | Selected statistical test: median_diff
+2025-07-13 11:35:07 | INFO     | Murray.main:determine_best_statistical_test:799 | Test selection results: inference_type=block, stat_func_name=median_diff
+2025-07-13 11:35:07 | INFO     | Murray.main:determine_best_statistical_test:800 | Explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:35:07 | INFO     | Murray.main:simulate_power:821 | Test selection explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:35:07 | INFO     | Murray.main:simulate_power:825 | Selected inference type: block
+2025-07-13 11:35:07 | INFO     | Murray.main:simulate_power:838 | Selected statistical test: median_diff
+2025-07-13 11:35:25 | INFO     | Murray.main:determine_best_statistical_test:799 | Test selection results: inference_type=block, stat_func_name=median_diff
+2025-07-13 11:35:25 | INFO     | Murray.main:determine_best_statistical_test:800 | Explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:35:25 | INFO     | Murray.main:simulate_power:821 | Test selection explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:35:25 | INFO     | Murray.main:simulate_power:825 | Selected inference type: block
+2025-07-13 11:35:25 | INFO     | Murray.main:simulate_power:838 | Selected statistical test: median_diff
+2025-07-13 11:35:44 | INFO     | Murray.main:determine_best_statistical_test:799 | Test selection results: inference_type=block, stat_func_name=median_diff
+2025-07-13 11:35:44 | INFO     | Murray.main:determine_best_statistical_test:800 | Explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:35:44 | INFO     | Murray.main:simulate_power:821 | Test selection explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:35:44 | INFO     | Murray.main:simulate_power:825 | Selected inference type: block
+2025-07-13 11:35:44 | INFO     | Murray.main:simulate_power:838 | Selected statistical test: median_diff
+2025-07-13 11:36:05 | INFO     | Murray.main:determine_best_statistical_test:799 | Test selection results: inference_type=block, stat_func_name=median_diff
+2025-07-13 11:36:05 | INFO     | Murray.main:determine_best_statistical_test:800 | Explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:36:05 | INFO     | Murray.main:simulate_power:821 | Test selection explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:36:05 | INFO     | Murray.main:simulate_power:825 | Selected inference type: block
+2025-07-13 11:36:05 | INFO     | Murray.main:simulate_power:838 | Selected statistical test: median_diff
+2025-07-13 11:36:23 | INFO     | Murray.main:determine_best_statistical_test:799 | Test selection results: inference_type=block, stat_func_name=median_diff
+2025-07-13 11:36:23 | INFO     | Murray.main:determine_best_statistical_test:800 | Explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:36:23 | INFO     | Murray.main:simulate_power:821 | Test selection explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:36:23 | INFO     | Murray.main:simulate_power:825 | Selected inference type: block
+2025-07-13 11:36:23 | INFO     | Murray.main:simulate_power:838 | Selected statistical test: median_diff
+2025-07-13 11:36:41 | INFO     | Murray.main:determine_best_statistical_test:799 | Test selection results: inference_type=block, stat_func_name=median_diff
+2025-07-13 11:36:41 | INFO     | Murray.main:determine_best_statistical_test:800 | Explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:36:41 | INFO     | Murray.main:simulate_power:821 | Test selection explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:36:41 | INFO     | Murray.main:simulate_power:825 | Selected inference type: block
+2025-07-13 11:36:41 | INFO     | Murray.main:simulate_power:838 | Selected statistical test: median_diff
+2025-07-13 11:37:02 | INFO     | Murray.main:evaluate_sensitivity:1007 | Period 10 completed for size 5. MDE found: 0.060000000000000005 with p-value: 0.016655999999999997, power: 0.94 and CI: (np.float64(0.874172005954913), 1)
+2025-07-13 11:37:02 | INFO     | Murray.main:determine_best_statistical_test:799 | Test selection results: inference_type=block, stat_func_name=median_diff
+2025-07-13 11:37:02 | INFO     | Murray.main:determine_best_statistical_test:800 | Explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:37:02 | INFO     | Murray.main:simulate_power:821 | Test selection explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:37:02 | INFO     | Murray.main:simulate_power:825 | Selected inference type: block
+2025-07-13 11:37:02 | INFO     | Murray.main:simulate_power:838 | Selected statistical test: median_diff
+2025-07-13 11:37:21 | INFO     | Murray.main:determine_best_statistical_test:799 | Test selection results: inference_type=block, stat_func_name=median_diff
+2025-07-13 11:37:21 | INFO     | Murray.main:determine_best_statistical_test:800 | Explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:37:21 | INFO     | Murray.main:simulate_power:821 | Test selection explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:37:21 | INFO     | Murray.main:simulate_power:825 | Selected inference type: block
+2025-07-13 11:37:21 | INFO     | Murray.main:simulate_power:838 | Selected statistical test: median_diff
+2025-07-13 11:37:39 | INFO     | Murray.main:determine_best_statistical_test:799 | Test selection results: inference_type=block, stat_func_name=median_diff
+2025-07-13 11:37:39 | INFO     | Murray.main:determine_best_statistical_test:800 | Explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:37:39 | INFO     | Murray.main:simulate_power:821 | Test selection explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:37:39 | INFO     | Murray.main:simulate_power:825 | Selected inference type: block
+2025-07-13 11:37:39 | INFO     | Murray.main:simulate_power:838 | Selected statistical test: median_diff
+2025-07-13 11:38:00 | INFO     | Murray.main:determine_best_statistical_test:799 | Test selection results: inference_type=block, stat_func_name=median_diff
+2025-07-13 11:38:00 | INFO     | Murray.main:determine_best_statistical_test:800 | Explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:38:00 | INFO     | Murray.main:simulate_power:821 | Test selection explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:38:00 | INFO     | Murray.main:simulate_power:825 | Selected inference type: block
+2025-07-13 11:38:00 | INFO     | Murray.main:simulate_power:838 | Selected statistical test: median_diff
+2025-07-13 11:38:19 | INFO     | Murray.main:determine_best_statistical_test:799 | Test selection results: inference_type=block, stat_func_name=median_diff
+2025-07-13 11:38:19 | INFO     | Murray.main:determine_best_statistical_test:800 | Explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:38:19 | INFO     | Murray.main:simulate_power:821 | Test selection explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:38:19 | INFO     | Murray.main:simulate_power:825 | Selected inference type: block
+2025-07-13 11:38:19 | INFO     | Murray.main:simulate_power:838 | Selected statistical test: median_diff
+2025-07-13 11:38:37 | INFO     | Murray.main:determine_best_statistical_test:799 | Test selection results: inference_type=block, stat_func_name=median_diff
+2025-07-13 11:38:37 | INFO     | Murray.main:determine_best_statistical_test:800 | Explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:38:37 | INFO     | Murray.main:simulate_power:821 | Test selection explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:38:37 | INFO     | Murray.main:simulate_power:825 | Selected inference type: block
+2025-07-13 11:38:37 | INFO     | Murray.main:simulate_power:838 | Selected statistical test: median_diff
+2025-07-13 11:38:58 | INFO     | Murray.main:determine_best_statistical_test:799 | Test selection results: inference_type=block, stat_func_name=median_diff
+2025-07-13 11:38:58 | INFO     | Murray.main:determine_best_statistical_test:800 | Explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:38:58 | INFO     | Murray.main:simulate_power:821 | Test selection explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:38:58 | INFO     | Murray.main:simulate_power:825 | Selected inference type: block
+2025-07-13 11:38:58 | INFO     | Murray.main:simulate_power:838 | Selected statistical test: median_diff
+2025-07-13 11:39:16 | INFO     | Murray.main:determine_best_statistical_test:799 | Test selection results: inference_type=block, stat_func_name=median_diff
+2025-07-13 11:39:16 | INFO     | Murray.main:determine_best_statistical_test:800 | Explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:39:16 | INFO     | Murray.main:simulate_power:821 | Test selection explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:39:16 | INFO     | Murray.main:simulate_power:825 | Selected inference type: block
+2025-07-13 11:39:16 | INFO     | Murray.main:simulate_power:838 | Selected statistical test: median_diff
+2025-07-13 11:39:36 | INFO     | Murray.main:determine_best_statistical_test:799 | Test selection results: inference_type=block, stat_func_name=median_diff
+2025-07-13 11:39:36 | INFO     | Murray.main:determine_best_statistical_test:800 | Explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:39:36 | INFO     | Murray.main:simulate_power:821 | Test selection explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:39:36 | INFO     | Murray.main:simulate_power:825 | Selected inference type: block
+2025-07-13 11:39:36 | INFO     | Murray.main:simulate_power:838 | Selected statistical test: median_diff
+2025-07-13 11:39:54 | INFO     | Murray.main:determine_best_statistical_test:799 | Test selection results: inference_type=block, stat_func_name=median_diff
+2025-07-13 11:39:54 | INFO     | Murray.main:determine_best_statistical_test:800 | Explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:39:54 | INFO     | Murray.main:simulate_power:821 | Test selection explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:39:54 | INFO     | Murray.main:simulate_power:825 | Selected inference type: block
+2025-07-13 11:39:54 | INFO     | Murray.main:simulate_power:838 | Selected statistical test: median_diff
+2025-07-13 11:40:13 | INFO     | Murray.main:determine_best_statistical_test:799 | Test selection results: inference_type=block, stat_func_name=median_diff
+2025-07-13 11:40:13 | INFO     | Murray.main:determine_best_statistical_test:800 | Explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:40:13 | INFO     | Murray.main:simulate_power:821 | Test selection explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:40:13 | INFO     | Murray.main:simulate_power:825 | Selected inference type: block
+2025-07-13 11:40:13 | INFO     | Murray.main:simulate_power:838 | Selected statistical test: median_diff
+2025-07-13 11:40:34 | INFO     | Murray.main:determine_best_statistical_test:799 | Test selection results: inference_type=block, stat_func_name=median_diff
+2025-07-13 11:40:34 | INFO     | Murray.main:determine_best_statistical_test:800 | Explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:40:34 | INFO     | Murray.main:simulate_power:821 | Test selection explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:40:34 | INFO     | Murray.main:simulate_power:825 | Selected inference type: block
+2025-07-13 11:40:34 | INFO     | Murray.main:simulate_power:838 | Selected statistical test: median_diff
+2025-07-13 11:40:52 | INFO     | Murray.main:determine_best_statistical_test:799 | Test selection results: inference_type=block, stat_func_name=median_diff
+2025-07-13 11:40:52 | INFO     | Murray.main:determine_best_statistical_test:800 | Explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:40:52 | INFO     | Murray.main:simulate_power:821 | Test selection explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:40:52 | INFO     | Murray.main:simulate_power:825 | Selected inference type: block
+2025-07-13 11:40:52 | INFO     | Murray.main:simulate_power:838 | Selected statistical test: median_diff
+2025-07-13 11:41:10 | INFO     | Murray.main:determine_best_statistical_test:799 | Test selection results: inference_type=block, stat_func_name=median_diff
+2025-07-13 11:41:10 | INFO     | Murray.main:determine_best_statistical_test:800 | Explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:41:10 | INFO     | Murray.main:simulate_power:821 | Test selection explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:41:10 | INFO     | Murray.main:simulate_power:825 | Selected inference type: block
+2025-07-13 11:41:10 | INFO     | Murray.main:simulate_power:838 | Selected statistical test: median_diff
+2025-07-13 11:41:30 | INFO     | Murray.main:evaluate_sensitivity:1007 | Period 15 completed for size 5. MDE found: 0.05 with p-value: 0.027678, power: 0.82 and CI: (np.float64(0.713508670775504), np.float64(0.926491329224496))
+2025-07-13 11:41:30 | INFO     | Murray.main:determine_best_statistical_test:799 | Test selection results: inference_type=block, stat_func_name=median_diff
+2025-07-13 11:41:30 | INFO     | Murray.main:determine_best_statistical_test:800 | Explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:41:30 | INFO     | Murray.main:simulate_power:821 | Test selection explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:41:30 | INFO     | Murray.main:simulate_power:825 | Selected inference type: block
+2025-07-13 11:41:30 | INFO     | Murray.main:simulate_power:838 | Selected statistical test: median_diff
+2025-07-13 11:41:49 | INFO     | Murray.main:determine_best_statistical_test:799 | Test selection results: inference_type=block, stat_func_name=median_diff
+2025-07-13 11:41:49 | INFO     | Murray.main:determine_best_statistical_test:800 | Explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:41:49 | INFO     | Murray.main:simulate_power:821 | Test selection explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:41:49 | INFO     | Murray.main:simulate_power:825 | Selected inference type: block
+2025-07-13 11:41:49 | INFO     | Murray.main:simulate_power:838 | Selected statistical test: median_diff
+2025-07-13 11:42:10 | INFO     | Murray.main:determine_best_statistical_test:799 | Test selection results: inference_type=block, stat_func_name=median_diff
+2025-07-13 11:42:10 | INFO     | Murray.main:determine_best_statistical_test:800 | Explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:42:10 | INFO     | Murray.main:simulate_power:821 | Test selection explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:42:10 | INFO     | Murray.main:simulate_power:825 | Selected inference type: block
+2025-07-13 11:42:10 | INFO     | Murray.main:simulate_power:838 | Selected statistical test: median_diff
+2025-07-13 11:42:27 | INFO     | Murray.main:determine_best_statistical_test:799 | Test selection results: inference_type=block, stat_func_name=median_diff
+2025-07-13 11:42:27 | INFO     | Murray.main:determine_best_statistical_test:800 | Explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:42:27 | INFO     | Murray.main:simulate_power:821 | Test selection explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:42:27 | INFO     | Murray.main:simulate_power:825 | Selected inference type: block
+2025-07-13 11:42:27 | INFO     | Murray.main:simulate_power:838 | Selected statistical test: median_diff
+2025-07-13 11:42:50 | INFO     | Murray.main:determine_best_statistical_test:799 | Test selection results: inference_type=block, stat_func_name=median_diff
+2025-07-13 11:42:50 | INFO     | Murray.main:determine_best_statistical_test:800 | Explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:42:50 | INFO     | Murray.main:simulate_power:821 | Test selection explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:42:50 | INFO     | Murray.main:simulate_power:825 | Selected inference type: block
+2025-07-13 11:42:50 | INFO     | Murray.main:simulate_power:838 | Selected statistical test: median_diff
+2025-07-13 11:43:11 | INFO     | Murray.main:determine_best_statistical_test:799 | Test selection results: inference_type=block, stat_func_name=median_diff
+2025-07-13 11:43:11 | INFO     | Murray.main:determine_best_statistical_test:800 | Explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:43:11 | INFO     | Murray.main:simulate_power:821 | Test selection explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:43:11 | INFO     | Murray.main:simulate_power:825 | Selected inference type: block
+2025-07-13 11:43:11 | INFO     | Murray.main:simulate_power:838 | Selected statistical test: median_diff
+2025-07-13 11:43:29 | INFO     | Murray.main:determine_best_statistical_test:799 | Test selection results: inference_type=block, stat_func_name=median_diff
+2025-07-13 11:43:29 | INFO     | Murray.main:determine_best_statistical_test:800 | Explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:43:29 | INFO     | Murray.main:simulate_power:821 | Test selection explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:43:29 | INFO     | Murray.main:simulate_power:825 | Selected inference type: block
+2025-07-13 11:43:29 | INFO     | Murray.main:simulate_power:838 | Selected statistical test: median_diff
+2025-07-13 11:43:50 | INFO     | Murray.main:determine_best_statistical_test:799 | Test selection results: inference_type=block, stat_func_name=median_diff
+2025-07-13 11:43:50 | INFO     | Murray.main:determine_best_statistical_test:800 | Explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:43:50 | INFO     | Murray.main:simulate_power:821 | Test selection explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:43:50 | INFO     | Murray.main:simulate_power:825 | Selected inference type: block
+2025-07-13 11:43:50 | INFO     | Murray.main:simulate_power:838 | Selected statistical test: median_diff
+2025-07-13 11:44:08 | INFO     | Murray.main:determine_best_statistical_test:799 | Test selection results: inference_type=block, stat_func_name=median_diff
+2025-07-13 11:44:08 | INFO     | Murray.main:determine_best_statistical_test:800 | Explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:44:08 | INFO     | Murray.main:simulate_power:821 | Test selection explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:44:08 | INFO     | Murray.main:simulate_power:825 | Selected inference type: block
+2025-07-13 11:44:08 | INFO     | Murray.main:simulate_power:838 | Selected statistical test: median_diff
+2025-07-13 11:44:26 | INFO     | Murray.main:determine_best_statistical_test:799 | Test selection results: inference_type=block, stat_func_name=median_diff
+2025-07-13 11:44:26 | INFO     | Murray.main:determine_best_statistical_test:800 | Explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:44:26 | INFO     | Murray.main:simulate_power:821 | Test selection explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:44:26 | INFO     | Murray.main:simulate_power:825 | Selected inference type: block
+2025-07-13 11:44:26 | INFO     | Murray.main:simulate_power:838 | Selected statistical test: median_diff
+2025-07-13 11:44:48 | INFO     | Murray.main:determine_best_statistical_test:799 | Test selection results: inference_type=block, stat_func_name=median_diff
+2025-07-13 11:44:48 | INFO     | Murray.main:determine_best_statistical_test:800 | Explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:44:48 | INFO     | Murray.main:simulate_power:821 | Test selection explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:44:48 | INFO     | Murray.main:simulate_power:825 | Selected inference type: block
+2025-07-13 11:44:48 | INFO     | Murray.main:simulate_power:838 | Selected statistical test: median_diff
+2025-07-13 11:45:08 | INFO     | Murray.main:determine_best_statistical_test:799 | Test selection results: inference_type=block, stat_func_name=median_diff
+2025-07-13 11:45:08 | INFO     | Murray.main:determine_best_statistical_test:800 | Explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:45:08 | INFO     | Murray.main:simulate_power:821 | Test selection explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:45:08 | INFO     | Murray.main:simulate_power:825 | Selected inference type: block
+2025-07-13 11:45:08 | INFO     | Murray.main:simulate_power:838 | Selected statistical test: median_diff
+2025-07-13 11:45:27 | INFO     | Murray.main:determine_best_statistical_test:799 | Test selection results: inference_type=block, stat_func_name=median_diff
+2025-07-13 11:45:27 | INFO     | Murray.main:determine_best_statistical_test:800 | Explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:45:27 | INFO     | Murray.main:simulate_power:821 | Test selection explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:45:27 | INFO     | Murray.main:simulate_power:825 | Selected inference type: block
+2025-07-13 11:45:27 | INFO     | Murray.main:simulate_power:838 | Selected statistical test: median_diff
+2025-07-13 11:45:49 | INFO     | Murray.main:determine_best_statistical_test:799 | Test selection results: inference_type=block, stat_func_name=median_diff
+2025-07-13 11:45:49 | INFO     | Murray.main:determine_best_statistical_test:800 | Explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:45:49 | INFO     | Murray.main:simulate_power:821 | Test selection explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:45:49 | INFO     | Murray.main:simulate_power:825 | Selected inference type: block
+2025-07-13 11:45:49 | INFO     | Murray.main:simulate_power:838 | Selected statistical test: median_diff
+2025-07-13 11:46:07 | INFO     | Murray.main:evaluate_sensitivity:1007 | Period 20 completed for size 5. MDE found: 0.05 with p-value: 0.011012, power: 0.98 and CI: (np.float64(0.9411939798484823), 1)
+2025-07-13 11:46:07 | INFO     | Murray.main:determine_best_statistical_test:799 | Test selection results: inference_type=block, stat_func_name=median_diff
+2025-07-13 11:46:07 | INFO     | Murray.main:determine_best_statistical_test:800 | Explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:46:07 | INFO     | Murray.main:simulate_power:821 | Test selection explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:46:07 | INFO     | Murray.main:simulate_power:825 | Selected inference type: block
+2025-07-13 11:46:07 | INFO     | Murray.main:simulate_power:838 | Selected statistical test: median_diff
+2025-07-13 11:46:29 | INFO     | Murray.main:determine_best_statistical_test:799 | Test selection results: inference_type=block, stat_func_name=median_diff
+2025-07-13 11:46:29 | INFO     | Murray.main:determine_best_statistical_test:800 | Explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:46:29 | INFO     | Murray.main:simulate_power:821 | Test selection explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:46:29 | INFO     | Murray.main:simulate_power:825 | Selected inference type: block
+2025-07-13 11:46:29 | INFO     | Murray.main:simulate_power:838 | Selected statistical test: median_diff
+2025-07-13 11:46:49 | INFO     | Murray.main:determine_best_statistical_test:799 | Test selection results: inference_type=block, stat_func_name=median_diff
+2025-07-13 11:46:49 | INFO     | Murray.main:determine_best_statistical_test:800 | Explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:46:49 | INFO     | Murray.main:simulate_power:821 | Test selection explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:46:49 | INFO     | Murray.main:simulate_power:825 | Selected inference type: block
+2025-07-13 11:46:49 | INFO     | Murray.main:simulate_power:838 | Selected statistical test: median_diff
+2025-07-13 11:47:08 | INFO     | Murray.main:determine_best_statistical_test:799 | Test selection results: inference_type=block, stat_func_name=median_diff
+2025-07-13 11:47:08 | INFO     | Murray.main:determine_best_statistical_test:800 | Explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:47:08 | INFO     | Murray.main:simulate_power:821 | Test selection explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:47:08 | INFO     | Murray.main:simulate_power:825 | Selected inference type: block
+2025-07-13 11:47:08 | INFO     | Murray.main:simulate_power:838 | Selected statistical test: median_diff
+2025-07-13 11:47:30 | INFO     | Murray.main:determine_best_statistical_test:799 | Test selection results: inference_type=block, stat_func_name=median_diff
+2025-07-13 11:47:30 | INFO     | Murray.main:determine_best_statistical_test:800 | Explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:47:30 | INFO     | Murray.main:simulate_power:821 | Test selection explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:47:30 | INFO     | Murray.main:simulate_power:825 | Selected inference type: block
+2025-07-13 11:47:30 | INFO     | Murray.main:simulate_power:838 | Selected statistical test: median_diff
+2025-07-13 11:47:50 | INFO     | Murray.main:determine_best_statistical_test:799 | Test selection results: inference_type=block, stat_func_name=median_diff
+2025-07-13 11:47:50 | INFO     | Murray.main:determine_best_statistical_test:800 | Explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:47:50 | INFO     | Murray.main:simulate_power:821 | Test selection explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:47:50 | INFO     | Murray.main:simulate_power:825 | Selected inference type: block
+2025-07-13 11:47:50 | INFO     | Murray.main:simulate_power:838 | Selected statistical test: median_diff
+2025-07-13 11:48:10 | INFO     | Murray.main:determine_best_statistical_test:799 | Test selection results: inference_type=block, stat_func_name=median_diff
+2025-07-13 11:48:10 | INFO     | Murray.main:determine_best_statistical_test:800 | Explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:48:10 | INFO     | Murray.main:simulate_power:821 | Test selection explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:48:10 | INFO     | Murray.main:simulate_power:825 | Selected inference type: block
+2025-07-13 11:48:10 | INFO     | Murray.main:simulate_power:838 | Selected statistical test: median_diff
+2025-07-13 11:48:34 | INFO     | Murray.main:determine_best_statistical_test:799 | Test selection results: inference_type=block, stat_func_name=median_diff
+2025-07-13 11:48:34 | INFO     | Murray.main:determine_best_statistical_test:800 | Explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:48:34 | INFO     | Murray.main:simulate_power:821 | Test selection explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:48:34 | INFO     | Murray.main:simulate_power:825 | Selected inference type: block
+2025-07-13 11:48:34 | INFO     | Murray.main:simulate_power:838 | Selected statistical test: median_diff
+2025-07-13 11:48:53 | INFO     | Murray.main:determine_best_statistical_test:799 | Test selection results: inference_type=block, stat_func_name=median_diff
+2025-07-13 11:48:53 | INFO     | Murray.main:determine_best_statistical_test:800 | Explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:48:53 | INFO     | Murray.main:simulate_power:821 | Test selection explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:48:53 | INFO     | Murray.main:simulate_power:825 | Selected inference type: block
+2025-07-13 11:48:53 | INFO     | Murray.main:simulate_power:838 | Selected statistical test: median_diff
+2025-07-13 11:49:13 | INFO     | Murray.main:determine_best_statistical_test:799 | Test selection results: inference_type=block, stat_func_name=median_diff
+2025-07-13 11:49:13 | INFO     | Murray.main:determine_best_statistical_test:800 | Explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:49:13 | INFO     | Murray.main:simulate_power:821 | Test selection explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:49:13 | INFO     | Murray.main:simulate_power:825 | Selected inference type: block
+2025-07-13 11:49:13 | INFO     | Murray.main:simulate_power:838 | Selected statistical test: median_diff
+2025-07-13 11:49:34 | INFO     | Murray.main:determine_best_statistical_test:799 | Test selection results: inference_type=block, stat_func_name=median_diff
+2025-07-13 11:49:34 | INFO     | Murray.main:determine_best_statistical_test:800 | Explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:49:34 | INFO     | Murray.main:simulate_power:821 | Test selection explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:49:34 | INFO     | Murray.main:simulate_power:825 | Selected inference type: block
+2025-07-13 11:49:34 | INFO     | Murray.main:simulate_power:838 | Selected statistical test: median_diff
+2025-07-13 11:49:58 | INFO     | Murray.main:determine_best_statistical_test:799 | Test selection results: inference_type=block, stat_func_name=median_diff
+2025-07-13 11:49:58 | INFO     | Murray.main:determine_best_statistical_test:800 | Explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:49:58 | INFO     | Murray.main:simulate_power:821 | Test selection explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:49:58 | INFO     | Murray.main:simulate_power:825 | Selected inference type: block
+2025-07-13 11:49:58 | INFO     | Murray.main:simulate_power:838 | Selected statistical test: median_diff
+2025-07-13 11:50:27 | INFO     | Murray.main:determine_best_statistical_test:799 | Test selection results: inference_type=block, stat_func_name=median_diff
+2025-07-13 11:50:27 | INFO     | Murray.main:determine_best_statistical_test:800 | Explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:50:27 | INFO     | Murray.main:simulate_power:821 | Test selection explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:50:27 | INFO     | Murray.main:simulate_power:825 | Selected inference type: block
+2025-07-13 11:50:27 | INFO     | Murray.main:simulate_power:838 | Selected statistical test: median_diff
+2025-07-13 11:51:46 | INFO     | Murray.main:determine_best_statistical_test:799 | Test selection results: inference_type=block, stat_func_name=median_diff
+2025-07-13 11:51:46 | INFO     | Murray.main:determine_best_statistical_test:800 | Explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:51:46 | INFO     | Murray.main:simulate_power:821 | Test selection explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:51:46 | INFO     | Murray.main:simulate_power:825 | Selected inference type: block
+2025-07-13 11:51:46 | INFO     | Murray.main:simulate_power:838 | Selected statistical test: median_diff
+2025-07-13 11:53:05 | INFO     | Murray.main:evaluate_sensitivity:1007 | Period 25 completed for size 5. MDE found: 0.05 with p-value: 0.014398000000000001, power: 0.92 and CI: (np.float64(0.8448013617144566), np.float64(0.9951986382855434))
+2025-07-13 11:53:05 | INFO     | Murray.main:determine_best_statistical_test:799 | Test selection results: inference_type=block, stat_func_name=median_diff
+2025-07-13 11:53:05 | INFO     | Murray.main:determine_best_statistical_test:800 | Explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:53:05 | INFO     | Murray.main:simulate_power:821 | Test selection explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:53:05 | INFO     | Murray.main:simulate_power:825 | Selected inference type: block
+2025-07-13 11:53:05 | INFO     | Murray.main:simulate_power:838 | Selected statistical test: median_diff
+2025-07-13 11:54:27 | INFO     | Murray.main:determine_best_statistical_test:799 | Test selection results: inference_type=block, stat_func_name=median_diff
+2025-07-13 11:54:27 | INFO     | Murray.main:determine_best_statistical_test:800 | Explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:54:27 | INFO     | Murray.main:simulate_power:821 | Test selection explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:54:27 | INFO     | Murray.main:simulate_power:825 | Selected inference type: block
+2025-07-13 11:54:27 | INFO     | Murray.main:simulate_power:838 | Selected statistical test: median_diff
+2025-07-13 11:55:48 | INFO     | Murray.main:determine_best_statistical_test:799 | Test selection results: inference_type=block, stat_func_name=median_diff
+2025-07-13 11:55:48 | INFO     | Murray.main:determine_best_statistical_test:800 | Explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:55:48 | INFO     | Murray.main:simulate_power:821 | Test selection explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:55:48 | INFO     | Murray.main:simulate_power:825 | Selected inference type: block
+2025-07-13 11:55:48 | INFO     | Murray.main:simulate_power:838 | Selected statistical test: median_diff
+2025-07-13 11:56:15 | INFO     | Murray.main:determine_best_statistical_test:799 | Test selection results: inference_type=block, stat_func_name=median_diff
+2025-07-13 11:56:15 | INFO     | Murray.main:determine_best_statistical_test:800 | Explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:56:15 | INFO     | Murray.main:simulate_power:821 | Test selection explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:56:15 | INFO     | Murray.main:simulate_power:825 | Selected inference type: block
+2025-07-13 11:56:15 | INFO     | Murray.main:simulate_power:838 | Selected statistical test: median_diff
+2025-07-13 11:56:36 | INFO     | Murray.main:determine_best_statistical_test:799 | Test selection results: inference_type=block, stat_func_name=median_diff
+2025-07-13 11:56:36 | INFO     | Murray.main:determine_best_statistical_test:800 | Explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:56:36 | INFO     | Murray.main:simulate_power:821 | Test selection explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:56:36 | INFO     | Murray.main:simulate_power:825 | Selected inference type: block
+2025-07-13 11:56:36 | INFO     | Murray.main:simulate_power:838 | Selected statistical test: median_diff
+2025-07-13 11:56:57 | INFO     | Murray.main:determine_best_statistical_test:799 | Test selection results: inference_type=block, stat_func_name=median_diff
+2025-07-13 11:56:57 | INFO     | Murray.main:determine_best_statistical_test:800 | Explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:56:57 | INFO     | Murray.main:simulate_power:821 | Test selection explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:56:57 | INFO     | Murray.main:simulate_power:825 | Selected inference type: block
+2025-07-13 11:56:57 | INFO     | Murray.main:simulate_power:838 | Selected statistical test: median_diff
+2025-07-13 11:57:18 | INFO     | Murray.main:determine_best_statistical_test:799 | Test selection results: inference_type=block, stat_func_name=median_diff
+2025-07-13 11:57:18 | INFO     | Murray.main:determine_best_statistical_test:800 | Explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:57:18 | INFO     | Murray.main:simulate_power:821 | Test selection explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:57:18 | INFO     | Murray.main:simulate_power:825 | Selected inference type: block
+2025-07-13 11:57:18 | INFO     | Murray.main:simulate_power:838 | Selected statistical test: median_diff
+2025-07-13 11:57:41 | INFO     | Murray.main:determine_best_statistical_test:799 | Test selection results: inference_type=block, stat_func_name=median_diff
+2025-07-13 11:57:41 | INFO     | Murray.main:determine_best_statistical_test:800 | Explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:57:41 | INFO     | Murray.main:simulate_power:821 | Test selection explanation: Se detectó autocorrelación significativa en los datos temporales. Se eligió la prueba de diferencia de medianas debido a la presencia de valores atípicos o asimetría.
+2025-07-13 11:57:41 | INFO     | Murray.main:simulate_power:825 | Selected inference type: block
+2025-07-13 11:57:41 | INFO     | Murray.main:simulate_power:838 | Selected statistical test: median_diff

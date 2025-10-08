@@ -1,0 +1,96 @@
+2025-08-12 15:59:30 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-12 15:59:41 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-12 15:59:41 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-12 15:59:43 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-12 15:59:43 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-12 15:59:44 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-12 15:59:44 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-12 15:59:44 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-12 15:59:44 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-12 15:59:45 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-12 15:59:45 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-12 15:59:45 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-12 15:59:45 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-12 15:59:45 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-12 15:59:45 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-12 15:59:47 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-12 15:59:47 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-12 15:59:47 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-12 15:59:47 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-12 15:59:48 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-12 15:59:48 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-12 15:59:50 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-12 15:59:50 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-12 15:59:50 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-12 15:59:50 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-12 15:59:50 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1623 | Starting run_geo_analysis_streamlit_app............
+2025-08-12 15:59:50 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1632 | Step 1: Generating market correlations.....
+2025-08-12 15:59:50 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1637 | Market correlations generated successfully.
+2025-08-12 15:59:50 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1640 | Step 2: Finding best groups for control and treatment.....
+2025-08-12 15:59:50 | INFO     | Murray.main:BetterGroups:740 | Starting multi-cell flexible with location exclusivity
+2025-08-12 15:59:50 | INFO     | Murray.main:BetterGroups:810 | Processed 1/10456 total groups
+2025-08-12 15:59:54 | INFO     | Murray.main:BetterGroups:810 | Processed 4/9495 total groups
+2025-08-12 16:00:00 | INFO     | Murray.main:BetterGroups:810 | Processed 949/9495 total groups
+2025-08-12 16:00:08 | INFO     | Murray.main:BetterGroups:810 | Processed 1898/9495 total groups
+2025-08-12 16:00:14 | INFO     | Murray.main:BetterGroups:810 | Processed 2847/9495 total groups
+2025-08-12 16:00:20 | INFO     | Murray.main:BetterGroups:810 | Processed 3796/9495 total groups
+2025-08-12 16:00:23 | INFO     | Murray.main:BetterGroups:810 | Processed 7/8275 total groups
+2025-08-12 16:00:27 | INFO     | Murray.main:BetterGroups:810 | Processed 827/8275 total groups
+2025-08-12 16:00:32 | INFO     | Murray.main:BetterGroups:810 | Processed 1654/8275 total groups
+2025-08-12 16:00:37 | INFO     | Murray.main:BetterGroups:810 | Processed 2481/8275 total groups
+2025-08-12 16:00:43 | INFO     | Murray.main:BetterGroups:810 | Processed 3308/8275 total groups
+2025-08-12 16:00:47 | INFO     | Murray.main:BetterGroups:810 | Processed 4135/8275 total groups
+2025-08-12 16:00:51 | INFO     | Murray.main:BetterGroups:810 | Processed 4962/8275 total groups
+2025-08-12 16:00:52 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1660 | BetterGroups completed successfully. Results for 3 sizes
+2025-08-12 16:00:52 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1665 | Step 3: Evaluating sensitivity for different deltas and periods.....
+2025-08-12 16:01:05 | INFO     | Murray.main:evaluate_sensitivity:1500 | Period 20 completed for size 2. MDE found: 0.03 with p-value: 0.0035, power: 0.9500
+2025-08-12 16:01:21 | INFO     | Murray.main:evaluate_sensitivity:1500 | Period 25 completed for size 2. MDE found: 0.03 with p-value: 0.0019, power: 1.0000
+2025-08-12 16:01:35 | INFO     | Murray.main:evaluate_sensitivity:1500 | Period 30 completed for size 2. MDE found: 0.03 with p-value: 0.0026, power: 1.0000
+2025-08-12 16:01:50 | INFO     | Murray.main:evaluate_sensitivity:1500 | Period 20 completed for size 3. MDE found: 0.01 with p-value: 0.0000, power: 1.0000
+2025-08-12 16:02:04 | INFO     | Murray.main:evaluate_sensitivity:1500 | Period 25 completed for size 3. MDE found: 0.01 with p-value: 0.0000, power: 1.0000
+2025-08-12 16:02:17 | INFO     | Murray.main:evaluate_sensitivity:1500 | Period 30 completed for size 3. MDE found: 0.01 with p-value: 0.0001, power: 1.0000
+2025-08-12 16:02:31 | INFO     | Murray.main:evaluate_sensitivity:1500 | Period 20 completed for size 4. MDE found: 0.02 with p-value: 0.0012, power: 1.0000
+2025-08-12 16:02:45 | INFO     | Murray.main:evaluate_sensitivity:1500 | Period 25 completed for size 4. MDE found: 0.02 with p-value: 0.0033, power: 0.9750
+2025-08-12 16:03:00 | INFO     | Murray.main:evaluate_sensitivity:1500 | Period 30 completed for size 4. MDE found: 0.01 with p-value: 0.0310, power: 0.8000
+2025-08-12 16:03:00 | INFO     | Murray.main:evaluate_sensitivity:1517 | evaluate_sensitivity completed successfully.
+2025-08-12 16:03:00 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1685 | Sensitivity evaluation completed successfully.
+2025-08-12 16:03:00 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1689 | run_geo_analysis_streamlit_app completed successfully
+2025-08-12 16:03:00 | INFO     | __main__:<module>:1082 | ✅ SIMULATION COMPLETED: Analysis finished successfully
+2025-08-12 16:03:00 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-12 16:03:00 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-12 16:05:54 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-12 16:05:54 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-12 16:05:57 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-12 16:05:57 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-12 16:05:57 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-12 16:05:57 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-12 16:05:58 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-12 16:05:58 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-12 16:05:58 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1623 | Starting run_geo_analysis_streamlit_app............
+2025-08-12 16:05:58 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1632 | Step 1: Generating market correlations.....
+2025-08-12 16:05:58 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1637 | Market correlations generated successfully.
+2025-08-12 16:05:58 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1640 | Step 2: Finding best groups for control and treatment.....
+2025-08-12 16:05:58 | INFO     | Murray.main:BetterGroups:740 | Starting multi-cell flexible with location exclusivity
+2025-08-12 16:05:58 | INFO     | Murray.main:BetterGroups:810 | Processed 1/4959 total groups
+2025-08-12 16:06:01 | INFO     | Murray.main:BetterGroups:810 | Processed 495/4959 total groups
+2025-08-12 16:06:04 | INFO     | Murray.main:BetterGroups:810 | Processed 990/4959 total groups
+2025-08-12 16:06:08 | INFO     | Murray.main:BetterGroups:810 | Processed 1485/4959 total groups
+2025-08-12 16:06:11 | INFO     | Murray.main:BetterGroups:810 | Processed 1980/4959 total groups
+2025-08-12 16:06:14 | INFO     | Murray.main:BetterGroups:810 | Processed 2475/4959 total groups
+2025-08-12 16:06:17 | INFO     | Murray.main:BetterGroups:810 | Processed 2970/4959 total groups
+2025-08-12 16:06:22 | INFO     | Murray.main:BetterGroups:810 | Processed 3465/4959 total groups
+2025-08-12 16:06:25 | INFO     | Murray.main:BetterGroups:810 | Processed 3960/4959 total groups
+2025-08-12 16:06:28 | INFO     | Murray.main:BetterGroups:810 | Processed 4455/4959 total groups
+2025-08-12 16:06:31 | INFO     | Murray.main:BetterGroups:810 | Processed 4950/4959 total groups
+2025-08-12 16:06:31 | INFO     | Murray.main:BetterGroups:810 | Processed 4959/4959 total groups
+2025-08-12 16:06:31 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1660 | BetterGroups completed successfully. Results for 1 sizes
+2025-08-12 16:06:31 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1665 | Step 3: Evaluating sensitivity for different deltas and periods.....
+2025-08-12 16:06:44 | INFO     | Murray.main:evaluate_sensitivity:1500 | Period 20 completed for size 3. MDE found: 0.01 with p-value: 0.0132, power: 0.9250
+2025-08-12 16:06:59 | INFO     | Murray.main:evaluate_sensitivity:1500 | Period 25 completed for size 3. MDE found: 0.01 with p-value: 0.0026, power: 1.0000
+2025-08-12 16:07:12 | INFO     | Murray.main:evaluate_sensitivity:1500 | Period 30 completed for size 3. MDE found: 0.01 with p-value: 0.0026, power: 1.0000
+2025-08-12 16:07:12 | INFO     | Murray.main:evaluate_sensitivity:1517 | evaluate_sensitivity completed successfully.
+2025-08-12 16:07:12 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1685 | Sensitivity evaluation completed successfully.
+2025-08-12 16:07:12 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1689 | run_geo_analysis_streamlit_app completed successfully
+2025-08-12 16:07:12 | INFO     | __main__:<module>:1082 | ✅ SIMULATION COMPLETED: Analysis finished successfully
+2025-08-12 16:07:12 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-12 16:07:13 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection

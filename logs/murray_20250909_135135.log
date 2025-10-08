@@ -1,0 +1,75 @@
+2025-09-09 13:51:35 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-09-09 13:51:41 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-09-09 13:51:42 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-09-09 13:51:42 | INFO     | Murray.metrics:update_metrics:59 | New record added: {'timestamp': '2025-09-09 13:51:42', 'section': 'experimental_evaluation', 'date': '2025-09-09', 'day_of_week': 'Tuesday', 'hour': 13}
+2025-09-09 13:51:42 | INFO     | Murray.post_analysis:run_geo_evaluation:21 | Starting run_geo_evaluation
+2025-09-09 13:51:42 | INFO     | Murray.post_analysis:run_geo_evaluation:22 | Input data shape: (7968, 6)
+2025-09-09 13:51:42 | INFO     | Murray.post_analysis:run_geo_evaluation:23 | Treatment group: ['aguascalientes', 'campeche', 'guanajuato', 'jalisco', 'chihuahua', 'oaxaca', 'quintana roo', 'tabasco', 'yucatan']
+2025-09-09 13:51:42 | INFO     | Murray.post_analysis:run_geo_evaluation:24 | Start treatment: 2025-07-16 00:00:00, End treatment: 2025-09-05 00:00:00
+2025-09-09 13:51:42 | INFO     | Murray.post_analysis:run_geo_evaluation:25 | n_permutations: 50000, significance_level: 0.1
+2025-09-09 13:51:42 | INFO     | Murray.post_analysis:run_geo_evaluation:40 | Treatment period positions: 196 to 248
+2025-09-09 13:51:42 | INFO     | Murray.post_analysis:run_geo_evaluation:49 | Generating correlation matrix...
+2025-09-09 13:51:42 | INFO     | Murray.post_analysis:run_geo_evaluation:52 | Selecting control group...
+2025-09-09 13:51:42 | INFO     | Murray.post_analysis:run_geo_evaluation:58 | Control group selected: ['mexico city', 'state of mexico', 'tamaulipas', 'michoacan', 'baja california', 'nuevo leon']
+2025-09-09 13:51:42 | INFO     | Murray.post_analysis:run_geo_evaluation:68 | Pivot table shape: (249, 32)
+2025-09-09 13:51:42 | INFO     | Murray.post_analysis:run_geo_evaluation:81 | Scaling data...
+2025-09-09 13:51:42 | INFO     | Murray.post_analysis:run_geo_evaluation:101 | Fitting synthetic control model...
+2025-09-09 13:51:42 | INFO     | Murray.post_analysis:run_geo_evaluation:104 | Model fitted successfully
+2025-09-09 13:51:42 | INFO     | Murray.post_analysis:run_geo_evaluation:106 | Making predictions...
+2025-09-09 13:51:42 | INFO     | Murray.post_analysis:run_geo_evaluation:137 | Calculating metrics...
+2025-09-09 13:51:42 | INFO     | Murray.post_analysis:run_geo_evaluation:138 | Data shapes - treatment: (248,), counterfactual: (248,)
+2025-09-09 13:51:42 | INFO     | Murray.post_analysis:run_geo_evaluation:148 | Treatment period sum: 256798363.20320997
+2025-09-09 13:51:42 | INFO     | Murray.post_analysis:run_geo_evaluation:149 | Counterfactual period sum: 317773446.9041222
+2025-09-09 13:51:42 | INFO     | Murray.post_analysis:run_geo_evaluation:150 | Lift difference (treatment - counterfactual): -60975083.70091221
+2025-09-09 13:51:42 | INFO     | Murray.post_analysis:run_geo_evaluation:164 | Observed statistic (sum of residuals): -60975083.70091215
+2025-09-09 13:51:42 | INFO     | Murray.post_analysis:run_geo_evaluation:165 | Manual verification - observed_stat should equal lift_difference: -60975083.70091221
+2025-09-09 13:51:42 | INFO     | Murray.post_analysis:run_geo_evaluation:167 | Starting permutation test with 50000 permutations...
+2025-09-09 13:51:42 | INFO     | Murray.post_analysis:run_geo_evaluation:172 | Completed 10000/50000 permutations
+2025-09-09 13:51:42 | INFO     | Murray.post_analysis:run_geo_evaluation:172 | Completed 20000/50000 permutations
+2025-09-09 13:51:42 | INFO     | Murray.post_analysis:run_geo_evaluation:172 | Completed 30000/50000 permutations
+2025-09-09 13:51:42 | INFO     | Murray.post_analysis:run_geo_evaluation:172 | Completed 40000/50000 permutations
+2025-09-09 13:51:42 | INFO     | Murray.post_analysis:run_geo_evaluation:178 | Permutation test completed, calculating p-value and power...
+2025-09-09 13:51:42 | INFO     | Murray.post_analysis:run_geo_evaluation:184 | Final results:
+2025-09-09 13:51:42 | INFO     | Murray.post_analysis:run_geo_evaluation:185 |   MAPE: 116.8885
+2025-09-09 13:51:42 | INFO     | Murray.post_analysis:run_geo_evaluation:186 |   SMAPE: 56.4894
+2025-09-09 13:51:42 | INFO     | Murray.post_analysis:run_geo_evaluation:187 |   Percentage lift: -19.1882%
+2025-09-09 13:51:42 | INFO     | Murray.post_analysis:run_geo_evaluation:188 |   P-value: 0.004140
+2025-09-09 13:51:42 | INFO     | Murray.post_analysis:run_geo_evaluation:189 |   Power: 1.0000
+2025-09-09 13:51:42 | INFO     | Murray.post_analysis:run_geo_evaluation:216 | run_geo_evaluation completed successfully
+2025-09-09 13:51:54 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-09-09 13:51:55 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-09-09 13:51:55 | INFO     | Murray.metrics:update_metrics:59 | New record added: {'timestamp': '2025-09-09 13:51:55', 'section': 'experimental_evaluation', 'date': '2025-09-09', 'day_of_week': 'Tuesday', 'hour': 13}
+2025-09-09 13:51:55 | INFO     | Murray.post_analysis:run_geo_evaluation:21 | Starting run_geo_evaluation
+2025-09-09 13:51:55 | INFO     | Murray.post_analysis:run_geo_evaluation:22 | Input data shape: (7968, 6)
+2025-09-09 13:51:55 | INFO     | Murray.post_analysis:run_geo_evaluation:23 | Treatment group: ['aguascalientes', 'campeche', 'guanajuato', 'jalisco', 'chihuahua', 'oaxaca', 'quintana roo', 'tabasco', 'yucatan']
+2025-09-09 13:51:55 | INFO     | Murray.post_analysis:run_geo_evaluation:24 | Start treatment: 2025-07-16 00:00:00, End treatment: 2025-08-01 00:00:00
+2025-09-09 13:51:55 | INFO     | Murray.post_analysis:run_geo_evaluation:25 | n_permutations: 50000, significance_level: 0.1
+2025-09-09 13:51:55 | INFO     | Murray.post_analysis:run_geo_evaluation:40 | Treatment period positions: 196 to 213
+2025-09-09 13:51:55 | INFO     | Murray.post_analysis:run_geo_evaluation:49 | Generating correlation matrix...
+2025-09-09 13:51:55 | INFO     | Murray.post_analysis:run_geo_evaluation:52 | Selecting control group...
+2025-09-09 13:51:55 | INFO     | Murray.post_analysis:run_geo_evaluation:58 | Control group selected: ['mexico city', 'state of mexico', 'tamaulipas', 'michoacan', 'baja california', 'nuevo leon']
+2025-09-09 13:51:55 | INFO     | Murray.post_analysis:run_geo_evaluation:68 | Pivot table shape: (249, 32)
+2025-09-09 13:51:55 | INFO     | Murray.post_analysis:run_geo_evaluation:81 | Scaling data...
+2025-09-09 13:51:55 | INFO     | Murray.post_analysis:run_geo_evaluation:101 | Fitting synthetic control model...
+2025-09-09 13:51:55 | INFO     | Murray.post_analysis:run_geo_evaluation:104 | Model fitted successfully
+2025-09-09 13:51:55 | INFO     | Murray.post_analysis:run_geo_evaluation:106 | Making predictions...
+2025-09-09 13:51:55 | INFO     | Murray.post_analysis:run_geo_evaluation:137 | Calculating metrics...
+2025-09-09 13:51:55 | INFO     | Murray.post_analysis:run_geo_evaluation:138 | Data shapes - treatment: (213,), counterfactual: (213,)
+2025-09-09 13:51:55 | INFO     | Murray.post_analysis:run_geo_evaluation:148 | Treatment period sum: 74073365.41445
+2025-09-09 13:51:55 | INFO     | Murray.post_analysis:run_geo_evaluation:149 | Counterfactual period sum: 90963483.01701598
+2025-09-09 13:51:55 | INFO     | Murray.post_analysis:run_geo_evaluation:150 | Lift difference (treatment - counterfactual): -16890117.602565974
+2025-09-09 13:51:55 | INFO     | Murray.post_analysis:run_geo_evaluation:164 | Observed statistic (sum of residuals): -16890117.60256598
+2025-09-09 13:51:55 | INFO     | Murray.post_analysis:run_geo_evaluation:165 | Manual verification - observed_stat should equal lift_difference: -16890117.602565974
+2025-09-09 13:51:55 | INFO     | Murray.post_analysis:run_geo_evaluation:167 | Starting permutation test with 50000 permutations...
+2025-09-09 13:51:55 | INFO     | Murray.post_analysis:run_geo_evaluation:172 | Completed 10000/50000 permutations
+2025-09-09 13:51:55 | INFO     | Murray.post_analysis:run_geo_evaluation:172 | Completed 20000/50000 permutations
+2025-09-09 13:51:55 | INFO     | Murray.post_analysis:run_geo_evaluation:172 | Completed 30000/50000 permutations
+2025-09-09 13:51:55 | INFO     | Murray.post_analysis:run_geo_evaluation:172 | Completed 40000/50000 permutations
+2025-09-09 13:51:55 | INFO     | Murray.post_analysis:run_geo_evaluation:178 | Permutation test completed, calculating p-value and power...
+2025-09-09 13:51:55 | INFO     | Murray.post_analysis:run_geo_evaluation:184 | Final results:
+2025-09-09 13:51:55 | INFO     | Murray.post_analysis:run_geo_evaluation:185 |   MAPE: 110.0386
+2025-09-09 13:51:55 | INFO     | Murray.post_analysis:run_geo_evaluation:186 |   SMAPE: 55.3887
+2025-09-09 13:51:55 | INFO     | Murray.post_analysis:run_geo_evaluation:187 |   Percentage lift: -18.5680%
+2025-09-09 13:51:55 | INFO     | Murray.post_analysis:run_geo_evaluation:188 |   P-value: 0.130160
+2025-09-09 13:51:55 | INFO     | Murray.post_analysis:run_geo_evaluation:189 |   Power: 0.0000
+2025-09-09 13:51:55 | INFO     | Murray.post_analysis:run_geo_evaluation:216 | run_geo_evaluation completed successfully

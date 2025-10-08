@@ -1,0 +1,35 @@
+2025-07-31 19:32:09 | INFO     | Murray.metrics:update_metrics:59 | New record added: {'timestamp': '2025-07-31 19:32:09', 'section': 'experimental_evaluation', 'date': '2025-07-31', 'day_of_week': 'Thursday', 'hour': 19}
+2025-07-31 19:32:09 | INFO     | Murray.post_analysis:run_geo_evaluation:21 | Starting run_geo_evaluation
+2025-07-31 19:32:09 | INFO     | Murray.post_analysis:run_geo_evaluation:22 | Input data shape: (3904, 5)
+2025-07-31 19:32:09 | INFO     | Murray.post_analysis:run_geo_evaluation:23 | Treatment group: ['aguascalientes', 'campeche', 'jalisco', 'morelos', 'nayarit', 'puebla', 'oaxaca', 'querétaro', 'sonora']
+2025-07-31 19:32:09 | INFO     | Murray.post_analysis:run_geo_evaluation:24 | Start treatment: 2025-06-28 00:00:00, End treatment: 2025-07-29 00:00:00
+2025-07-31 19:32:09 | INFO     | Murray.post_analysis:run_geo_evaluation:25 | n_permutations: 50000, significance_level: 0.1
+2025-07-31 19:32:09 | INFO     | Murray.post_analysis:run_geo_evaluation:40 | Treatment period positions: 90 to 122
+2025-07-31 19:32:09 | INFO     | Murray.post_analysis:run_geo_evaluation:49 | Generating correlation matrix...
+2025-07-31 19:32:09 | INFO     | Murray.post_analysis:run_geo_evaluation:52 | Selecting control group...
+2025-07-31 19:32:09 | INFO     | Murray.post_analysis:run_geo_evaluation:58 | Control group selected: ['ciudad de méxico', 'méxico', 'guanajuato', 'nuevo león']
+2025-07-31 19:32:09 | INFO     | Murray.post_analysis:run_geo_evaluation:68 | Pivot table shape: (122, 32)
+2025-07-31 19:32:09 | INFO     | Murray.post_analysis:run_geo_evaluation:75 | Scaling data...
+2025-07-31 19:32:09 | INFO     | Murray.post_analysis:run_geo_evaluation:94 | Fitting synthetic control model...
+2025-07-31 19:32:09 | INFO     | Murray.post_analysis:run_geo_evaluation:97 | Model fitted successfully
+2025-07-31 19:32:09 | INFO     | Murray.post_analysis:run_geo_evaluation:99 | Making predictions...
+2025-07-31 19:32:09 | INFO     | Murray.post_analysis:run_geo_evaluation:117 | Calculating metrics...
+2025-07-31 19:32:09 | INFO     | Murray.post_analysis:run_geo_evaluation:118 | Data shapes - treatment: (122,), counterfactual: (122,)
+2025-07-31 19:32:09 | INFO     | Murray.post_analysis:run_geo_evaluation:128 | Treatment period sum: 1460.0
+2025-07-31 19:32:09 | INFO     | Murray.post_analysis:run_geo_evaluation:129 | Counterfactual period sum: 1327.7974658617186
+2025-07-31 19:32:09 | INFO     | Murray.post_analysis:run_geo_evaluation:130 | Lift difference (treatment - counterfactual): 132.2025341382814
+2025-07-31 19:32:09 | INFO     | Murray.post_analysis:run_geo_evaluation:144 | Observed statistic (sum of residuals): 132.20253413828138
+2025-07-31 19:32:09 | INFO     | Murray.post_analysis:run_geo_evaluation:145 | Manual verification - observed_stat should equal lift_difference: 132.2025341382814
+2025-07-31 19:32:09 | INFO     | Murray.post_analysis:run_geo_evaluation:147 | Starting permutation test with 50000 permutations...
+2025-07-31 19:32:09 | INFO     | Murray.post_analysis:run_geo_evaluation:152 | Completed 10000/50000 permutations
+2025-07-31 19:32:09 | INFO     | Murray.post_analysis:run_geo_evaluation:152 | Completed 20000/50000 permutations
+2025-07-31 19:32:09 | INFO     | Murray.post_analysis:run_geo_evaluation:152 | Completed 30000/50000 permutations
+2025-07-31 19:32:09 | INFO     | Murray.post_analysis:run_geo_evaluation:152 | Completed 40000/50000 permutations
+2025-07-31 19:32:09 | INFO     | Murray.post_analysis:run_geo_evaluation:158 | Permutation test completed, calculating p-value and power...
+2025-07-31 19:32:09 | INFO     | Murray.post_analysis:run_geo_evaluation:164 | Final results:
+2025-07-31 19:32:09 | INFO     | Murray.post_analysis:run_geo_evaluation:165 |   MAPE: 14.9376
+2025-07-31 19:32:09 | INFO     | Murray.post_analysis:run_geo_evaluation:166 |   SMAPE: 14.9954
+2025-07-31 19:32:09 | INFO     | Murray.post_analysis:run_geo_evaluation:167 |   Percentage lift: 9.9565%
+2025-07-31 19:32:09 | INFO     | Murray.post_analysis:run_geo_evaluation:168 |   P-value: 0.016440
+2025-07-31 19:32:09 | INFO     | Murray.post_analysis:run_geo_evaluation:169 |   Power: 1.0000
+2025-07-31 19:32:09 | INFO     | Murray.post_analysis:run_geo_evaluation:188 | run_geo_evaluation completed successfully

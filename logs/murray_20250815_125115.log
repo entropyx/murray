@@ -1,0 +1,35 @@
+2025-08-15 12:51:15 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-15 12:51:20 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-15 12:51:20 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-08-15 12:51:20 | INFO     | Murray.metrics:update_metrics:59 | New record added: {'timestamp': '2025-08-15 12:51:20', 'section': 'experimental_evaluation', 'date': '2025-08-15', 'day_of_week': 'Friday', 'hour': 12}
+2025-08-15 12:51:20 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-08-15 12:51:20 | WARNING  | Murray.auxiliary:analyze_data_characteristics:182 | Target column 'Ventas totales' not found in data. Available columns: ['time', 'location', 'Y', 'Pedidos']
+2025-08-15 12:51:20 | INFO     | Murray.post_analysis:run_geo_evaluation:23 | Starting run_geo_evaluation
+2025-08-15 12:51:20 | INFO     | Murray.post_analysis:run_geo_evaluation:24 | Input data shape: (2880, 4)
+2025-08-15 12:51:20 | INFO     | Murray.post_analysis:run_geo_evaluation:25 | Treatment group: ['aguascalientes', 'campeche', 'jalisco', 'morelos', 'nayarit', 'oaxaca', 'puebla', 'querétaro', 'sonora']
+2025-08-15 12:51:20 | INFO     | Murray.post_analysis:run_geo_evaluation:26 | Start treatment: 2025-06-29 00:00:00, End treatment: 2025-07-07 00:00:00
+2025-08-15 12:51:20 | INFO     | Murray.post_analysis:run_geo_evaluation:27 | n_permutations: 10000, significance_level: 0.1
+2025-08-15 12:51:20 | INFO     | Murray.post_analysis:run_geo_evaluation:42 | Treatment period positions: 81 to 90
+2025-08-15 12:51:20 | INFO     | Murray.post_analysis:run_geo_evaluation:51 | Generating correlation matrix...
+2025-08-15 12:51:20 | INFO     | Murray.post_analysis:run_geo_evaluation:54 | Selecting control group...
+2025-08-15 12:51:20 | INFO     | Murray.post_analysis:run_geo_evaluation:60 | Control group selected: ['nuevo león', 'tlaxcala', 'ciudad de méxico', 'méxico', 'guanajuato']
+2025-08-15 12:51:20 | INFO     | Murray.post_analysis:run_geo_evaluation:70 | Pivot table shape: (90, 32)
+2025-08-15 12:51:20 | INFO     | Murray.post_analysis:run_geo_evaluation:77 | Scaling data...
+2025-08-15 12:51:20 | INFO     | Murray.post_analysis:run_geo_evaluation:96 | Fitting synthetic control model...
+2025-08-15 12:51:20 | INFO     | Murray.post_analysis:run_geo_evaluation:99 | Model fitted successfully
+2025-08-15 12:51:20 | INFO     | Murray.post_analysis:run_geo_evaluation:101 | Making predictions...
+2025-08-15 12:51:20 | INFO     | Murray.post_analysis:run_geo_evaluation:119 | Calculating metrics...
+2025-08-15 12:51:20 | INFO     | Murray.post_analysis:run_geo_evaluation:120 | Data shapes - treatment: (90,), counterfactual: (90,)
+2025-08-15 12:51:20 | INFO     | Murray.post_analysis:run_geo_evaluation:130 | Treatment period sum: 568039.0399999999
+2025-08-15 12:51:20 | INFO     | Murray.post_analysis:run_geo_evaluation:131 | Counterfactual period sum: 753150.0930350261
+2025-08-15 12:51:20 | INFO     | Murray.post_analysis:run_geo_evaluation:132 | Lift difference (treatment - counterfactual): -185111.05303502618
+2025-08-15 12:51:20 | INFO     | Murray.post_analysis:run_geo_evaluation:157 | Observed statistic (sum of residuals): -185111.053035026
+2025-08-15 12:51:20 | INFO     | Murray.post_analysis:run_geo_evaluation:158 | Manual verification - observed_stat should equal lift_difference: -185111.05303502618
+2025-08-15 12:51:21 | INFO     | Murray.post_analysis:run_geo_evaluation:160 | Starting permutation test with 10000 permutations...
+2025-08-15 12:51:21 | INFO     | Murray.post_analysis:run_geo_evaluation:171 | Permutation test completed, calculating p-value and power...
+2025-08-15 12:51:21 | INFO     | Murray.post_analysis:run_geo_evaluation:175 | Starting power analysis with 1000 simulations...
+2025-08-15 12:51:31 | INFO     | Murray.post_analysis:run_geo_evaluation:193 | Final results:
+2025-08-15 12:51:31 | INFO     | Murray.post_analysis:run_geo_evaluation:194 |   MAPE: 32.5527
+2025-08-15 12:51:31 | INFO     | Murray.post_analysis:run_geo_evaluation:195 |   SMAPE: 28.2717
+2025-08-15 12:51:31 | INFO     | Murray.post_analysis:run_geo_evaluation:196 |   Percentage lift: -24.5782%
+2025-08-15 12:51:31 | INFO     | Murray.post_analysis:run_geo_evaluation:197 |   P-value: 0.073100

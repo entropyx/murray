@@ -1,0 +1,94 @@
+2025-09-02 10:38:27 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-09-02 10:38:27 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-09-02 10:38:31 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-09-02 10:38:39 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-09-02 10:38:39 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-09-02 10:38:52 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-09-02 10:38:52 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-09-02 10:38:53 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-09-02 10:38:53 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-09-02 10:38:53 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-09-02 10:38:54 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
+2025-09-02 10:38:54 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1900 | Starting run_geo_analysis_streamlit_app............
+2025-09-02 10:38:54 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1909 | Step 1: Generating market correlations.....
+2025-09-02 10:38:54 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1911 | Market correlations generated successfully.
+2025-09-02 10:38:54 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1914 | Step 2: Finding best groups for control and treatment.....
+2025-09-02 10:38:54 | INFO     | Murray.main:BetterGroups:953 | Starting single-cell mode
+2025-09-02 10:38:55 | INFO     | Murray.main:BetterGroups:986 | Processed 1/50000 groups
+2025-09-02 10:39:18 | INFO     | Murray.main:BetterGroups:986 | Processed 5000/50000 groups
+2025-09-02 10:39:40 | INFO     | Murray.main:BetterGroups:986 | Processed 10000/50000 groups
+2025-09-02 10:40:01 | INFO     | Murray.main:BetterGroups:986 | Processed 15000/50000 groups
+2025-09-02 10:40:22 | INFO     | Murray.main:BetterGroups:986 | Processed 20000/50000 groups
+2025-09-02 10:40:40 | INFO     | Murray.main:BetterGroups:986 | Processed 25000/50000 groups
+2025-09-02 10:40:57 | INFO     | Murray.main:BetterGroups:986 | Processed 30000/50000 groups
+2025-09-02 10:41:11 | INFO     | Murray.main:BetterGroups:986 | Processed 35000/50000 groups
+2025-09-02 10:41:23 | INFO     | Murray.main:BetterGroups:986 | Processed 40000/50000 groups
+2025-09-02 10:41:31 | INFO     | Murray.main:BetterGroups:986 | Processed 45000/50000 groups
+2025-09-02 10:41:38 | INFO     | Murray.main:BetterGroups:986 | Processed 50000/50000 groups
+2025-09-02 10:41:38 | INFO     | Murray.main:BetterGroups:987 | All groups processed. Results count: 50000
+2025-09-02 10:41:38 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1931 | BetterGroups completed successfully. Results for 10 sizes
+2025-09-02 10:41:38 | INFO     | Murray.main:run_geo_analysis_streamlit_app:1936 | Step 3: Evaluating sensitivity for different deltas and periods.....
+2025-09-02 10:41:38 | ERROR    | Murray.main:run_geo_analysis_streamlit_app:1998 | 🚨 ERROR in Step 3 (evaluate_sensitivity): name 'n_permutations' is not defined
+2025-09-02 10:41:38 | ERROR    | Murray.main:run_geo_analysis_streamlit_app:1999 | name 'n_permutations' is not defined
+Traceback (most recent call last):
+
+  File "/usr/lib/python3.12/threading.py", line 1030, in _bootstrap
+    self._bootstrap_inner()
+    │    └ <function Thread._bootstrap_inner at 0x7f4bf1962c00>
+    └ <Thread(ScriptRunner.scriptThread, started 139962313864896)>
+  File "/usr/lib/python3.12/threading.py", line 1073, in _bootstrap_inner
+    self.run()
+    │    └ <function Thread.run at 0x7f4bf19628e0>
+    └ <Thread(ScriptRunner.scriptThread, started 139962313864896)>
+  File "/usr/lib/python3.12/threading.py", line 1010, in run
+    self._target(*self._args, **self._kwargs)
+    │    │        │    │        │    └ {}
+    │    │        │    │        └ <Thread(ScriptRunner.scriptThread, started 139962313864896)>
+    │    │        │    └ ()
+    │    │        └ <Thread(ScriptRunner.scriptThread, started 139962313864896)>
+    │    └ <bound method ScriptRunner._run_script_thread of ScriptRunner(_session_id='bf03abd8-c096-4dc8-8f51-5ba01c350c80', _main_scrip...
+    └ <Thread(ScriptRunner.scriptThread, started 139962313864896)>
+  File "/home/isaac/entropy/murray/env/lib/python3.12/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 368, in _run_script_thread
+    self._run_script(request.rerun_data)
+    │    │           │       └ <property object at 0x7f4bf06d6660>
+    │    │           └ ScriptRequest(type=<ScriptRequestType.RERUN: 'RERUN'>, _rerun_data=RerunData(widget_states=widgets {
+    │    │               id: "$$ID-0ed75aa52e1d...
+    │    └ <function ScriptRunner._run_script at 0x7f4bf079ec00>
+    └ ScriptRunner(_session_id='bf03abd8-c096-4dc8-8f51-5ba01c350c80', _main_script_path='app.py', _session_state={$$ID-11d831716e9...
+  File "/home/isaac/entropy/murray/env/lib/python3.12/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 656, in _run_script
+    ) = exec_func_with_error_handling(code_to_exec, ctx)
+        │                             │             └ ScriptRunContext(session_id='bf03abd8-c096-4dc8-8f51-5ba01c350c80', _enqueue=<bound method ScriptRunner._enqueue_forward_msg ...
+        │                             └ <function ScriptRunner._run_script.<locals>.code_to_exec at 0x7f4b887c7d80>
+        └ <function exec_func_with_error_handling at 0x7f4bf071fe20>
+  File "/home/isaac/entropy/murray/env/lib/python3.12/site-packages/streamlit/runtime/scriptrunner/exec_code.py", line 121, in exec_func_with_error_handling
+    result = func()
+             └ <function ScriptRunner._run_script.<locals>.code_to_exec at 0x7f4b887c7d80>
+  File "/home/isaac/entropy/murray/env/lib/python3.12/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 640, in code_to_exec
+    exec(code, module.__dict__)
+         │     │      └ <member '__dict__' of 'module' objects>
+         │     └ <module '__main__' from 'app.py'>
+         └ <code object <module> at 0x7f4b780c5b90, file "/home/isaac/entropy/murray/app.py", line 1>
+
+  File "/home/isaac/entropy/murray/app.py", line 175, in <module>
+    pg.run()
+    │  └ <function StreamlitPage.run at 0x7f4bf00051c0>
+    └ <streamlit.navigation.page.StreamlitPage object at 0x7f4bac6d4e00>
+
+  File "/home/isaac/entropy/murray/env/lib/python3.12/site-packages/streamlit/navigation/page.py", line 297, in run
+    exec(code, module.__dict__)
+         │     │      └ <member '__dict__' of 'module' objects>
+         │     └ <module '__main__' from '/home/isaac/entropy/murray/experimental_design.py'>
+         └ <code object <module> at 0x7f4b780f0ed0, file "/home/isaac/entropy/murray/experimental_design.py", line 1>
+
+  File "/home/isaac/entropy/murray/experimental_design.py", line 1010, in <module>
+    results = run_geo_analysis_streamlit_app(
+              └ <function run_geo_analysis_streamlit_app at 0x7f4b888aa3e0>
+
+> File "/home/isaac/entropy/murray/Murray/main.py", line 1984, in run_geo_analysis_streamlit_app
+    inference_type=inference_type,
+                   └ 'iid'
+
+NameError: name 'n_permutations' is not defined
+2025-09-02 10:41:39 | INFO     | Murray.main:run_geo_analysis_streamlit_app:2003 | run_geo_analysis_streamlit_app completed successfully
+2025-09-02 10:41:39 | INFO     | __main__:<module>:153 | user isaac@entropy.tech logged in
+2025-09-02 10:41:39 | INFO     | Murray.auxiliary:analyze_data_characteristics:178 | Analyzing data characteristics for statistical test selection
