@@ -94,7 +94,7 @@ export default function Home() {
               <Feature
                 icon="🔍"
                 title="Full visibility"
-                description="See the impact of differents scenarios in your business."
+                description="See the impact of different scenarios in your business."
                 link="/docs/Murray%20Python%20Package/Getting%20Started"
               />
             </div>
