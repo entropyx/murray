@@ -88,8 +88,8 @@ def select_treatments(similarity_matrix, treatment_size, excluded_locations):
     n_combinations = max_combinations
     # if n_combinations > 5000:
     #     n_combinations = 5000
-    if n_combinations > 2000:
-        n_combinations = 2000
+    if n_combinations > 1000:
+        n_combinations = 1000
 
     logger.debug(f"Generating {n_combinations} combinations")
 
@@ -428,15 +428,17 @@ def evaluate_group(
     )
 
     logger.debug("Calculating metrics")
-    MAPE = (
-        np.mean(
-            np.abs(
-                (y_original[split_index:] - counterfactual_full_original[split_index:])
-                / (y_original[split_index:] + 1e-10)
-            )
+    # Calculate the standard deviation of the pre-treatment period
+    sigma_pre = np.std(y_original[:split_index], ddof=1)
+
+    # Avoid division by zero
+    if sigma_pre == 0:
+        AvgScaledL2Imbalance = np.nan
+    else:
+        AvgScaledL2Imbalance = np.mean(
+            ((y_original[:split_index] - counterfactual_full_original[:split_index]) / sigma_pre) ** 2
         )
-        * 100
-    )
+
     SMAPE_value = smape(
         y_original[split_index:], counterfactual_full_original[split_index:]
     )
@@ -445,7 +447,7 @@ def evaluate_group(
     return (
         treatment_group,
         filtered_control_group,
-        MAPE,
+        AvgScaledL2Imbalance,
         SMAPE_value,
         y_original,
         counterfactual_full_original,
@@ -669,7 +671,7 @@ def evaluate_group_exclusive(
         treatment_period (int): Number of periods for treatment (if None, uses 80/20 split)
     
     Returns:
-        tuple: (treatment_group, control_group, MAPE, SMAPE, y_original, 
+        tuple: (treatment_group, control_group, AvgScaledL2Imbalance, SMAPE, y_original, 
                 counterfactual_full_original, filtered_weights, observed_conformity)
         None: If holdout percentage is below minimum or no valid control group found
     """
@@ -750,15 +752,17 @@ def evaluate_group_exclusive(
     )
 
     logger.debug("Calculating metrics")
-    MAPE = (
-        np.mean(
-            np.abs(
-                (y_original[split_index:] - counterfactual_full_original[split_index:])
-                / (y_original[split_index:] + 1e-10)
-            )
+    # Calculate the standard deviation of the pre-treatment period
+    sigma_pre = np.std(y_original[:split_index], ddof=1)
+
+    # Avoid division by zero
+    if sigma_pre == 0:
+        AvgScaledL2Imbalance = np.nan
+    else:
+        AvgScaledL2Imbalance = np.mean(
+            ((y_original[:split_index] - counterfactual_full_original[:split_index]) / sigma_pre) ** 2
         )
-        * 100
-    )
+
     SMAPE_value = smape(
         y_original[split_index:], counterfactual_full_original[split_index:]
     )
@@ -768,7 +772,7 @@ def evaluate_group_exclusive(
     return (
         treatment_group,
         filtered_control_group,
-        MAPE,
+        AvgScaledL2Imbalance,
         SMAPE_value,
         y_original,
         counterfactual_full_original,
@@ -974,10 +978,17 @@ def BetterGroups(
 
             results_by_size[size] = []
             for idx, r in enumerate(final_results_sorted):
+                # Filter out experiments with SMAPE > 30%
+                if r[3] > 30:
+                    logger.info(
+                        f"Skipping group with size {size}: SMAPE={r[3]:.2f}% exceeds 30% threshold"
+                    )
+                    continue
+
                 result_dict = {
                     "Best Treatment Group": r[0],
                     "Control Group": r[1],
-                    "MAPE": r[2],
+                    "AvgScaledL2Imbalance": r[2],
                     "SMAPE": r[3],
                     "Actual Target Metric (y)": r[4],
                     "Predictions": r[5],
@@ -1051,13 +1062,20 @@ def BetterGroups(
             (
                 best_treatment_group,
                 best_control_group,
-                best_MAPE,
+                best_AvgScaledL2Imbalance,
                 best_SMAPE,
                 y,
                 predictions,
                 weights,
                 observed_conformity,
             ) = best_result
+
+            # Filter out experiments with SMAPE > 50%
+            if best_SMAPE > 30:
+                logger.warning(
+                    f"Skipping size {size}: SMAPE={best_SMAPE:.2f}% exceeds 30% threshold"
+                )
+                continue
 
             treatment_Y = data[data["location"].isin(best_treatment_group)]["Y"].sum()
 
@@ -1069,7 +1087,7 @@ def BetterGroups(
             results_by_size[size] = {
                 "Best Treatment Group": best_treatment_group,
                 "Control Group": best_control_group,
-                "MAPE": best_MAPE,
+                "AvgScaledL2Imbalance": best_AvgScaledL2Imbalance,
                 "SMAPE": best_SMAPE,
                 "Actual Target Metric (y)": y,
                 "Predictions": predictions,
@@ -1309,6 +1327,13 @@ def optimize_global_multicell(
 
             for result in futures:
                 if result is not None:
+                    # Filter out experiments with SMAPE > 50%
+                    smape_val = result[3]
+                    if smape_val > 30:
+                        logger.warning(
+                            f"Skipping candidate with size {size}: SMAPE={smape_val:.2f}% exceeds 30% threshold"
+                        )
+                        continue
                     # Add size information to result
                     result_with_size = result + (size,)  # Append size as last element
                     size_results.append(result_with_size)
@@ -1364,7 +1389,7 @@ def optimize_global_multicell(
         (
             treatment_group,
             original_control_group,
-            mape,
+            AvgScaledL2Imbalance,
             smape,
             y,
             predictions,
@@ -1404,7 +1429,7 @@ def optimize_global_multicell(
             "Size": size,
             "Best Treatment Group": treatment_group,
             "Control Group": corrected_control_group,  # Use corrected control group
-            "MAPE": mape,
+            "AvgScaledL2Imbalance": AvgScaledL2Imbalance,
             "SMAPE": smape,
             "Actual Target Metric (y)": y,
             "Predictions": predictions,
@@ -1512,7 +1537,7 @@ def calculate_minimum_sample_size(
     inference_type="iid",
     max_iterations=20,
     tolerance=0.05,
-    n_permutations_sample_size=500,
+    n_permutations_sample_size=100,
     n_power_simulations_sample_size=30,
 ):
     """
@@ -1643,7 +1668,7 @@ def simulate_power(
     y_control,
     delta,
     period,
-    n_permutations_per_test=3000,
+    n_permutations_per_test=1000,
     significance_level=0.05,
     test_type="sum",
     inference_type="iid",
@@ -1876,6 +1901,10 @@ def evaluate_sensitivity(
         y_real = np.array(actual_result["Actual Target Metric (y)"]).flatten()
         y_control = np.array(actual_result["Predictions"]).flatten()
 
+        # Extract SMAPE and AvgScaledL2Imbalance that were already calculated in earlier process
+        size_SMAPE = actual_result.get("SMAPE")
+        size_AvgScaledL2Imbalance = actual_result.get("AvgScaledL2Imbalance")
+
         results_by_period = {}
 
         for period in periods:
@@ -1916,6 +1945,7 @@ def evaluate_sensitivity(
             statistical_power = [
                 (res[0], res[1], res[2], res[4]) for res in results
             ]  # (delta, power, power_ci, p_value)
+
             mde = next(
                 (
                     delta
@@ -1928,12 +1958,14 @@ def evaluate_sensitivity(
             p_value = None
             power_ci = None
             power = None
+            SMAPE = size_SMAPE
+            AvgScaledL2Imbalance = size_AvgScaledL2Imbalance
             if mde is not None:
-                for delta, power, ci, p_value in statistical_power:
+                for delta, pwr, ci, pval in statistical_power:
                     if delta == mde:
-                        p_value = p_value
+                        p_value = pval
                         power_ci = ci
-                        power = power
+                        power = pwr
                         break
 
             # Format values safely for logging
@@ -1944,9 +1976,11 @@ def evaluate_sensitivity(
                 if power_ci is not None
                 else "None"
             )
+            SMAPE_str = f"{SMAPE:.4f}" if SMAPE is not None else "None"
+            AvgScaledL2Imbalance_str = f"{AvgScaledL2Imbalance:.4f}" if AvgScaledL2Imbalance is not None else "None"
 
             logger.info(
-                f"Period {period} completed for size {size}. MDE found: {mde} with p-value: {p_value_str}, power: {power_str}"
+                f"Period {period} completed for size {size}. MDE found: {mde} with p-value: {p_value_str}, power: {power_str}, SMAPE: {SMAPE_str}, AvgScaledL2Imbalance: {AvgScaledL2Imbalance_str}"
             )
 
             for delta, _, ci, adjusted_series, p_value in results:
@@ -1982,7 +2016,7 @@ def transform_results_data(results_by_size):
                         group_data["Best Treatment Group"]
                     ),
                     "Control Group": ", ".join(group_data["Control Group"]),
-                    "MAPE": float(group_data["MAPE"]),
+                    "AvgScaledL2Imbalance": float(group_data["AvgScaledL2Imbalance"]),
                     "SMAPE": float(group_data["SMAPE"]),
                     "Actual Target Metric (y)": (
                         group_data["Actual Target Metric (y)"].tolist()
@@ -2005,7 +2039,7 @@ def transform_results_data(results_by_size):
             transformed_data[size] = {
                 "Best Treatment Group": ", ".join(data["Best Treatment Group"]),
                 "Control Group": ", ".join(data["Control Group"]),
-                "MAPE": float(data["MAPE"]),
+                "AvgScaledL2Imbalance": float(data["AvgScaledL2Imbalance"]),
                 "SMAPE": float(data["SMAPE"]),
                 "Actual Target Metric (y)": (
                     data["Actual Target Metric (y)"].tolist()
@@ -2039,7 +2073,7 @@ def run_geo_analysis_streamlit_app(
     status_text_1=None,
     progress_bar_2=None,
     status_text_2=None,
-    n_permutations_per_test=3000,
+    n_permutations_per_test=1000,
     n_power_simulations=40,
     multicell_config=None,
     test_type="sum",
@@ -2155,7 +2189,7 @@ def run_geo_analysis_streamlit_app(
                 result_dict = {
                     "Best Treatment Group": cell["Best Treatment Group"],
                     "Control Group": cell["Control Group"],
-                    "MAPE": cell["MAPE"],
+                    "AvgScaledL2Imbalance": cell["AvgScaledL2Imbalance"],
                     "SMAPE": cell["SMAPE"],
                     "Actual Target Metric (y)": cell["Actual Target Metric (y)"],
                     "Predictions": cell["Predictions"],
@@ -2223,7 +2257,7 @@ def run_geo_analysis(
     status_text_1=None,
     progress_bar_2=None,
     status_text_2=None,
-    n_permutations_per_test=3000,
+    n_permutations_per_test=1000,
     n_power_simulations=40,
     test_type="sum",
     inference_type="iid",
@@ -2292,7 +2326,7 @@ def run_geo_analysis(
             result_dict = {
                 "Best Treatment Group": cell["Best Treatment Group"],
                 "Control Group": cell["Control Group"],
-                "MAPE": cell["MAPE"],
+                "AvgScaledL2Imbalance": cell["AvgScaledL2Imbalance"],
                 "SMAPE": cell["SMAPE"],
                 "Actual Target Metric (y)": cell["Actual Target Metric (y)"],
                 "Predictions": cell["Predictions"],

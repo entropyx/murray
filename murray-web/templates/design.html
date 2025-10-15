@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Murray - Experimental Design</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'murray-primary': '#4f46e5',
+                        'murray-purple': '#675582',
+                        'entropy-dark': '#1B0043',
+                        'entropy-gray': '#211F24',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col md:flex-row">
+    <!-- Sidebar -->
+    <div class="w-full md:w-1/3 lg:w-1/4 bg-gray-900 text-white p-8 flex flex-col h-auto md:h-screen md:fixed md:left-0 md:top-0">
+        <img src="/static/images/Entropy.png" alt="Entropy Logo" class="w-32 mb-8 mx-auto">
+        <div class="flex-1 flex flex-col justify-center">
+            <div class="text-center">
+                <h1 class="text-4xl font-bold mb-4">Murray</h1>
+                <p class="text-lg leading-relaxed mb-10">
+                    It's a tool for experimental design and evaluation using geo experiments.
+                </p>
+            </div>
+        </div>
+        <footer class="text-sm text-gray-500 mt-10">&copy; 2025 Entropy Tech</footer>
+    </div>
+
+    <!-- Main Content -->
+    <div class="flex-1 py-4 md:py-6 px-4 md:px-16 lg:px-32 overflow-y-auto md:ml-[33.333333%] lg:ml-[25%]">
+        <div class="flex justify-between items-center mb-6">
+            <div class="flex space-x-4">
+                <a href="/design" class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">Design</a>
+                <a href="/evaluation" class="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400">Evaluation</a>
+            </div>
+            <div class="flex items-center space-x-4">
+                <span class="text-sm text-gray-600" id="username-display"></span>
+                <button onclick="logout()" class="text-sm text-red-600 hover:text-red-800">Logout</button>
+            </div>
+        </div>
+        <!-- Step 1: Upload Data -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">1. Upload Data</h2>
+            <div class="space-y-4">
+                <!-- Upload Area -->
+                <div id="upload-area" class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-murray-primary transition">
+                    <input type="file" id="csv-file" accept=".csv" class="hidden" onchange="handleFileSelect(event)">
+                    <label for="csv-file" class="cursor-pointer">
+                        <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                            <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                        <p class="mt-2 text-sm text-gray-600">
+                            <span class="font-semibold text-murray-primary">Click to upload</span> or drag and drop
+                        </p>
+                        <p class="text-xs text-gray-500">CSV file (MAX. 16MB)</p>
+                    </label>
+                </div>
+
+                <!-- File Display (shown after upload) -->
+                <div id="file-display" class="hidden border-2 border-green-300 bg-green-50 rounded-lg p-4 flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <span class="text-3xl">✓</span>
+                        <div>
+                            <p class="font-semibold text-gray-800" id="file-name"></p>
+                            <p class="text-sm text-gray-600" id="file-size"></p>
+                        </div>
+                    </div>
+                    <button onclick="removeFile()" class="text-red-600 hover:text-red-800 font-semibold px-3 py-1 rounded hover:bg-red-100">
+                        Remove
+                    </button>
+                </div>
+
+                <!-- Column Mapping -->
+                <div id="column-mapping" class="hidden">
+                    <h3 class="font-semibold text-gray-700 mb-3">Column Mapping</h3>
+                    <div class="grid grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Date Column</label>
+                            <input type="text" id="col-dates" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-murray-primary">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Location Column</label>
+                            <input type="text" id="col-locations" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-murray-primary">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Target Column</label>
+                            <input type="text" id="col-target" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-murray-primary">
+                        </div>
+                    </div>
+                    <button onclick="cleanData()" class="mt-4 bg-murray-primary text-white px-6 py-2 rounded-lg hover:bg-indigo-700 transition">
+                        Process Data
+                    </button>
+                </div>
+
+                <!-- Data Preview -->
+                <div id="data-preview" class="hidden mt-4">
+                    <!-- Data Plot Preview -->
+                    <div class="mt-4">
+                        <!-- <h4 class="font-semibold text-gray-700 mb-2">Data visualization by Location</h4> -->
+                        <div id="data-plot" style="width:100%; height:400px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 2: Configuration -->
+        <div id="configuration-section" class="bg-white rounded-lg shadow-md p-6 mb-6 hidden">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">2. Configuration</h2>
+
+            <div class="grid grid-cols-2 gap-6">
+                <!-- Left Column -->
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Maximum Treatment Percentage: <span id="max-treatment-value" class="text-murray-primary font-bold">30%</span>
+                        </label>
+                        <input type="range" id="max-treatment" min="5" max="50" value="30"
+                               oninput="document.getElementById('max-treatment-value').textContent = this.value + '%'"
+                               class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-murray-primary">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Significance Level (%)</label>
+                        <input type="number" id="significance-level" value="5" min="1" max="20" step="1"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-murray-primary">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Excluded Locations</label>
+
+                        <!-- Selected locations display -->
+                        <div id="selected-locations" class="mb-2 flex flex-wrap gap-2 min-h-[40px] p-2 bg-gray-50 border border-gray-300 rounded-lg">
+                            <span class="text-xs text-gray-400 italic" id="no-selection-msg">No locations excluded</span>
+                        </div>
+
+                        <!-- Dropdown to add locations -->
+                        <select id="excluded-locations-select"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-murray-primary">
+                            <option value="">Select location to exclude...</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Right Column -->
+                <div class="space-y-4">
+                    <div>
+                        <h3 class="font-semibold text-gray-700 mb-2">Lift Range</h3>
+                        <div class="grid grid-cols-3 gap-2">
+                            <div>
+                                <label class="block text-xs text-gray-600 mb-1">Min</label>
+                                <input type="number" id="delta-min" value="0.01" step="0.01" min="0" max="0.9"
+                                       class="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-murray-primary">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-gray-600 mb-1">Max</label>
+                                <input type="number" id="delta-max" value="0.15" step="0.01" min="0.02" max="1"
+                                       class="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-murray-primary">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-gray-600 mb-1">Step</label>
+                                <input type="number" id="delta-step" value="0.01" step="0.01" min="0.01" max="1"
+                                       class="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-murray-primary">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h3 class="font-semibold text-gray-700 mb-2">Period Range</h3>
+                        <div class="grid grid-cols-3 gap-2">
+                            <div>
+                                <label class="block text-xs text-gray-600 mb-1">Min</label>
+                                <input type="number" id="period-min" value="5" step="1" min="1" max="100"
+                                       class="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-murray-primary">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-gray-600 mb-1">Max</label>
+                                <input type="number" id="period-max" value="30" step="1" min="5" max="100"
+                                       class="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-murray-primary">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-gray-600 mb-1">Step</label>
+                                <input type="number" id="period-step" value="5" step="1" min="1" max="100"
+                                       class="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-murray-primary">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <button onclick="runAnalysis()" id="run-btn"
+                    class="mt-6 w-full bg-murray-primary text-white py-3 px-6 rounded-lg hover:bg-indigo-700 transition font-semibold text-lg">
+                Run Simulation
+            </button>
+        </div>
+
+        <!-- Step 3: Results -->
+        <div id="results-section" class="hidden">
+            <!-- Loading -->
+            <div id="loading" class="bg-white rounded-lg shadow-md p-12 text-center hidden">
+                <svg class="animate-spin h-12 w-12 mx-auto text-murray-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <p class="mt-4 text-gray-600">Running analysis... This may take a few minutes.</p>
+            </div>
+
+            <!-- Heatmap -->
+            <div id="heatmap-container" class="bg-white rounded-lg shadow-md p-6 mb-6 hidden">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">3. Results - MDE Heatmap</h2>
+
+                <!-- Visualization Mode Toggle -->
+                <!-- <div class="mb-4 flex gap-2">
+                    <button id="viz-mode-apex" onclick="switchVizMode('apex')"
+                            class="px-4 py-2 rounded-lg bg-murray-primary text-white">
+                        ApexCharts
+                    </button>
+                    <button id="viz-mode-plotly" onclick="switchVizMode('plotly')"
+                            class="px-4 py-2 rounded-lg bg-gray-200 text-gray-700">
+                        Plotly
+                    </button>
+                    <button id="viz-mode-table" onclick="switchVizMode('table')"
+                            class="px-4 py-2 rounded-lg bg-gray-200 text-gray-700">
+                        Table View
+                    </button>
+                </div> -->
+
+                <!-- ApexCharts Heatmap -->
+                <div id="heatmap-apex" style="width:100%; height:600px;"></div>
+
+                <!-- Color Scale Legend for ApexCharts -->
+                <div id="apex-color-scale" class="flex items-center justify-center mt-2 gap-2" style="display:none;">
+                    <span class="text-xs text-gray-600">Low MDE (Better)</span>
+                    <div class="flex h-6" style="width: 300px; background: linear-gradient(to right, #84DA35, #DA3835); border-radius: 3px;"></div>
+                    <span class="text-xs text-gray-600">High MDE (Worse)</span>
+                </div>
+
+                <!-- Plotly Heatmap (hidden by default) -->
+                <div id="heatmap-plotly" style="width:100%; height:600px; display:none;"></div>
+
+                <!-- Table View (hidden by default) -->
+                <div id="heatmap-table" class="hidden overflow-auto" style="max-height: 600px;"></div>
+
+                <p class="text-sm text-gray-600 mt-2">Click on a cell to see detailed information</p>
+            </div>
+
+
+            <!-- Point Details -->
+            <div id="point-details" class="bg-white rounded-lg shadow-md p-6 hidden">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">Selected Configuration Details</h3>
+                <div class="grid grid-cols-2 gap-6">
+                    <div>
+                        <p class="text-sm text-gray-600">Treatment Group</p>
+                        <p class="font-semibold" id="detail-treatment">-</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-600">Control Group</p>
+                        <p class="font-semibold" id="detail-control">-</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-600">Minimum Detectable Effect (MDE)</p>
+                        <p class="text-2xl font-bold text-murray-primary" id="detail-mde">-</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-600">Statistical Power</p>
+                        <p class="text-2xl font-bold text-murray-primary" id="detail-power">-</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-600">P-Value</p>
+                        <p class="text-2xl font-bold text-murray-primary" id="detail-pvalue">-</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-600">Holdout Percentage</p>
+                        <p class="text-2xl font-bold text-murray-primary" id="detail-holdout">-</p>
+                    </div>
+                </div>
+            </div>
+                        <!-- Download PDF Report Button -->
+                        <div id="pdf-download-section" class="bg-white rounded-lg shadow-md p-6 mb-6 hidden">
+                            <h3 class="text-xl font-bold text-gray-800 mb-4">Download Report</h3>
+                            <button onclick="downloadPDFReport()" id="pdf-download-btn"
+                                    class="w-full bg-murray-primary text-white py-3 px-6 rounded-lg hover:bg-indigo-700 transition font-semibold">
+                                <svg class="inline-block w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                </svg>
+                                Download PDF Report
+                            </button>
+                        </div>
+        </div>
+
+        <!-- Error Display -->
+        <div id="error-display" class="hidden bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg"></div>
+
+        </div> <!-- End Content Area -->
+    </div> <!-- End Main Content -->
+
+    <script src="/static/js/design.js"></script>
+    <script>
+        // Display username
+        const username = localStorage.getItem('murray_username');
+        if (username) {
+            document.getElementById('username-display').textContent = username;
+        }
+    </script>
+</body>
+</html>
