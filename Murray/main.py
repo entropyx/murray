@@ -339,12 +339,50 @@ def smape(A, F):
     return 100 / len(A) * np.sum(2 * np.abs(F - A) / denominator)
 
 
+def avg_scaled_l2_imbalance(actual, predicted):
+    """
+    Calculate Average Scaled L2 Imbalance metric (as used in GeoLift).
+
+    This metric measures the average scaled squared difference between actual and predicted values,
+    providing a robust measure of counterfactual quality. Lower values indicate better balance.
+
+    Args:
+        actual (np.ndarray): Actual observed values
+        predicted (np.ndarray): Predicted/counterfactual values
+
+    Returns:
+        float: Average Scaled L2 Imbalance value
+    """
+    residuals = actual - predicted
+    mean_actual = np.mean(actual)
+
+    # Avoid division by zero
+    if mean_actual == 0:
+        mean_actual = 1e-10
+
+    scaled_squared_residuals = (residuals / mean_actual) ** 2
+    avg_scaled_l2 = np.mean(scaled_squared_residuals)
+
+    return avg_scaled_l2
+
+
 def evaluate_group(
-    treatment_group, data, total_Y, correlation_matrix, min_holdout, df_pivot, treatment_period=None
+    treatment_group,
+    data,
+    total_Y,
+    correlation_matrix,
+    min_holdout,
+    df_pivot,
+    treatment_period=None,
+    max_avg_scaled_l2=0.1,
+    max_smape=30.0,
 ):
     """
-    Evaluates a treatment group and returns error metrics.
-    
+    Evaluates a treatment group and returns error metrics with quality thresholds.
+
+    Groups with poor counterfactual quality (high error metrics) are filtered out to ensure
+    only high-quality synthetic controls are considered for the experiment.
+
     Args:
         treatment_group: List of locations in the treatment group
         data: Input data
@@ -353,6 +391,13 @@ def evaluate_group(
         min_holdout: Minimum holdout percentage required
         df_pivot: Pivoted data with time as index
         treatment_period: Number of periods for treatment (if None, uses 80/20 split)
+        max_avg_scaled_l2: Maximum allowed AvgScaledL2Imbalance (default: 0.1)
+        max_smape: Maximum allowed SMAPE percentage (default: 15.0)
+
+    Returns:
+        tuple: (treatment_group, control_group, AvgScaledL2, SMAPE, y_original,
+                counterfactual_full_original, filtered_weights, observed_conformity)
+        None: If group doesn't meet quality thresholds or other validation criteria
     """
     logger.debug(f"Starting evaluation for treatment group: {treatment_group}")
 
@@ -428,24 +473,33 @@ def evaluate_group(
     )
 
     logger.debug("Calculating metrics")
-    MAPE = (
-        np.mean(
-            np.abs(
-                (y_original[split_index:] - counterfactual_full_original[split_index:])
-                / (y_original[split_index:] + 1e-10)
-            )
-        )
-        * 100
+    # Calculate AvgScaledL2Imbalance instead of MAPE
+    avg_scaled_l2 = avg_scaled_l2_imbalance(
+        y_original[split_index:], counterfactual_full_original[split_index:]
     )
     SMAPE_value = smape(
         y_original[split_index:], counterfactual_full_original[split_index:]
     )
     observed_conformity = np.mean(y_original - counterfactual_full_original)
 
+    # Quality threshold check: Skip groups with poor counterfactual quality
+    if avg_scaled_l2 > max_avg_scaled_l2 or SMAPE_value > max_smape:
+        logger.info(
+            f"Group SKIPPED - Treatment: {treatment_group} | "
+            f"AvgScaledL2={avg_scaled_l2:.4f} (max: {max_avg_scaled_l2}) | "
+            f"SMAPE={SMAPE_value:.2f}% (max: {max_smape}%)"
+        )
+        return None
+
+    logger.debug(
+        f"[evaluate_group] Group ACCEPTED - Treatment: {treatment_group} | "
+        f"AvgScaledL2={avg_scaled_l2:.4f} | SMAPE={SMAPE_value:.2f}%"
+    )
+
     return (
         treatment_group,
         filtered_control_group,
-        MAPE,
+        avg_scaled_l2,
         SMAPE_value,
         y_original,
         counterfactual_full_original,
@@ -650,13 +704,16 @@ def evaluate_group_exclusive(
     used_treatment_locations=None,
     excluded_locations=None,
     treatment_period=None,
+    max_avg_scaled_l2=0.1,
+    max_smape=30.0,
 ):
     """
     Evaluates a treatment group with location exclusivity for multi-cell mode.
-    
+
     Applies the same evaluation logic as evaluate_group() but with additional
-    exclusivity constraints for multi-cell experiments.
-    
+    exclusivity constraints for multi-cell experiments. Groups with poor
+    counterfactual quality are filtered out.
+
     Args:
         treatment_group (list): List of treatment locations to evaluate
         data (pd.DataFrame): Input data with 'location', 'time', and 'Y' columns
@@ -667,11 +724,13 @@ def evaluate_group_exclusive(
         used_treatment_locations (set): Set of locations already used as treatment in other cells
         excluded_locations (list): List of globally excluded locations
         treatment_period (int): Number of periods for treatment (if None, uses 80/20 split)
-    
+        max_avg_scaled_l2: Maximum allowed AvgScaledL2Imbalance (default: 0.1)
+        max_smape: Maximum allowed SMAPE percentage (default: 15.0)
+
     Returns:
-        tuple: (treatment_group, control_group, MAPE, SMAPE, y_original, 
+        tuple: (treatment_group, control_group, AvgScaledL2, SMAPE, y_original,
                 counterfactual_full_original, filtered_weights, observed_conformity)
-        None: If holdout percentage is below minimum or no valid control group found
+        None: If group doesn't meet quality thresholds or other validation criteria
     """
     logger.debug(
         f"Starting exclusive evaluation for treatment group: {treatment_group}"
@@ -750,14 +809,9 @@ def evaluate_group_exclusive(
     )
 
     logger.debug("Calculating metrics")
-    MAPE = (
-        np.mean(
-            np.abs(
-                (y_original[split_index:] - counterfactual_full_original[split_index:])
-                / (y_original[split_index:] + 1e-10)
-            )
-        )
-        * 100
+    # Calculate AvgScaledL2Imbalance instead of MAPE
+    avg_scaled_l2 = avg_scaled_l2_imbalance(
+        y_original[split_index:], counterfactual_full_original[split_index:]
     )
     SMAPE_value = smape(
         y_original[split_index:], counterfactual_full_original[split_index:]
@@ -765,10 +819,24 @@ def evaluate_group_exclusive(
 
     observed_conformity = np.mean(y_original - counterfactual_full_original)
 
+    # Quality threshold check: Skip groups with poor counterfactual quality
+    if avg_scaled_l2 > max_avg_scaled_l2 or SMAPE_value > max_smape:
+        logger.info(
+            f"[evaluate_group_exclusive] Group SKIPPED - Treatment: {treatment_group} | "
+            f"AvgScaledL2={avg_scaled_l2:.4f} (max: {max_avg_scaled_l2}) | "
+            f"SMAPE={SMAPE_value:.2f}% (max: {max_smape}%)"
+        )
+        return None
+
+    logger.debug(
+        f"[evaluate_group_exclusive] Group ACCEPTED - Treatment: {treatment_group} | "
+        f"AvgScaledL2={avg_scaled_l2:.4f} | SMAPE={SMAPE_value:.2f}%"
+    )
+
     return (
         treatment_group,
         filtered_control_group,
-        MAPE,
+        avg_scaled_l2,
         SMAPE_value,
         y_original,
         counterfactual_full_original,
@@ -787,15 +855,19 @@ def BetterGroups(
     status_updater=None,
     multicell_config=None,
     global_optimization=False,
+    max_avg_scaled_l2=0.1,
+    max_smape=30.0,
 ):
     """
     Enhanced simulates and evaluates treatment groups for geo-experiments.
-    
+
     Supports three modes:
     1. Single-cell mode: Finds optimal treatment groups for each size
     2. Multi-cell normal mode: Finds N best groups per size with location exclusivity
     3. Multi-cell global mode: Global optimization for heterogeneous cell sizes
-    
+
+    Quality thresholds ensure only high-quality counterfactuals are considered.
+
     Args:
         similarity_matrix (pd.DataFrame): Correlation matrix for treatment selection
         excluded_locations (list): List of locations to exclude from treatment selection
@@ -806,9 +878,9 @@ def BetterGroups(
         status_updater (callable): Status text updater function
         multicell_config (dict): Multi-cell configuration with 'sizes' and 'top_n' keys
         global_optimization (bool): Whether to use global optimization for multi-cell mode
-        search_strategy (str): Candidate generation strategy ("random", "similarity", "coverage", "adaptive")
-        candidate_multiplier (int): Multiple of cells_needed to generate as candidates per size
-    
+        max_avg_scaled_l2 (float): Maximum allowed AvgScaledL2Imbalance (default: 0.1)
+        max_smape (float): Maximum allowed SMAPE percentage (default: 15.0)
+
     Returns:
         dict: Results organized by mode:
             - Single-cell: {size: {group_info}}
@@ -819,7 +891,9 @@ def BetterGroups(
     unique_locations = data["location"].unique()
     no_locations = len(unique_locations)
     max_group_size = round(no_locations * 0.35)
+    print(max_group_size)
     min_elements_in_treatment = round(no_locations * 0.20)
+    print(min_elements_in_treatment)
     # max_group_size = round(no_locations * 0.45)
     # min_elements_in_treatment = round(no_locations * 0.15)
     min_holdout = 100 - (maximum_treatment_percentage * 100)
@@ -851,6 +925,8 @@ def BetterGroups(
                 maximum_treatment_percentage=maximum_treatment_percentage,
                 progress_updater=progress_updater,
                 status_updater=status_updater,
+                max_avg_scaled_l2=max_avg_scaled_l2,
+                max_smape=max_smape,
             )
 
         # Original multi-cell mode (per-size optimization)
@@ -898,6 +974,9 @@ def BetterGroups(
                     [df_pivot] * total_groups,
                     [used_treatment_locations] * total_groups,
                     [excluded_locations] * total_groups,
+                    [None] * total_groups,  # treatment_period
+                    [max_avg_scaled_l2] * total_groups,
+                    [max_smape] * total_groups,
                 )
 
                 for idx, result in enumerate(futures):
@@ -977,7 +1056,7 @@ def BetterGroups(
                 result_dict = {
                     "Best Treatment Group": r[0],
                     "Control Group": r[1],
-                    "MAPE": r[2],
+                    "AvgScaledL2Imbalance": r[2],
                     "SMAPE": r[3],
                     "Actual Target Metric (y)": r[4],
                     "Predictions": r[5],
@@ -1027,6 +1106,9 @@ def BetterGroups(
             [correlation_matrix] * total_groups,
             [min_holdout] * total_groups,
             [df_pivot] * total_groups,
+            [None] * total_groups,  # treatment_period
+            [max_avg_scaled_l2] * total_groups,
+            [max_smape] * total_groups,
         )
         for idx, result in enumerate(futures):
             results.append(result)
@@ -1051,7 +1133,7 @@ def BetterGroups(
             (
                 best_treatment_group,
                 best_control_group,
-                best_MAPE,
+                best_avg_scaled_l2,
                 best_SMAPE,
                 y,
                 predictions,
@@ -1069,7 +1151,7 @@ def BetterGroups(
             results_by_size[size] = {
                 "Best Treatment Group": best_treatment_group,
                 "Control Group": best_control_group,
-                "MAPE": best_MAPE,
+                "AvgScaledL2Imbalance": best_avg_scaled_l2,
                 "SMAPE": best_SMAPE,
                 "Actual Target Metric (y)": y,
                 "Predictions": predictions,
@@ -1223,6 +1305,8 @@ def optimize_global_multicell(
     maximum_treatment_percentage,
     progress_updater=None,
     status_updater=None,
+    max_avg_scaled_l2=0.1,
+    max_smape=30.0,
 ):
     """
     Enhanced global optimization for multi-cell experiments with heterogeneous cell sizes.
@@ -1230,6 +1314,8 @@ def optimize_global_multicell(
     Creates a single experiment with N cells of potentially different sizes,
     ensuring global mutual exclusivity across all cells. Includes improved
     validation, conflict resolution, and fallback strategies.
+
+    Quality thresholds ensure only high-quality counterfactuals are considered.
 
     Args:
         similarity_matrix: Correlation matrix for treatment selection
@@ -1241,8 +1327,8 @@ def optimize_global_multicell(
         maximum_treatment_percentage: Max treatment percentage
         progress_updater: Progress bar updater
         status_updater: Status text updater
-        search_strategy: Candidate generation strategy ("random", "similarity", "coverage", "adaptive")
-        candidate_multiplier: Multiple of cells_needed to generate as candidates per size
+        max_avg_scaled_l2: Maximum allowed AvgScaledL2Imbalance (default: 0.1)
+        max_smape: Maximum allowed SMAPE percentage (default: 15.0)
 
     Returns:
         dict: Single optimized experiment with heterogeneous cells, or None if failed
@@ -1305,6 +1391,9 @@ def optimize_global_multicell(
                 [df_pivot] * len(groups),
                 [set()] * len(groups),  # No used locations in phase 1
                 [excluded_locations] * len(groups),
+                [None] * len(groups),  # treatment_period
+                [max_avg_scaled_l2] * len(groups),
+                [max_smape] * len(groups),
             )
 
             for result in futures:
@@ -1364,18 +1453,18 @@ def optimize_global_multicell(
         (
             treatment_group,
             original_control_group,
-            mape,
-            smape,
+            avg_scaled_l2,
+            smape_value,
             y,
             predictions,
             weights,
             observed_conformity,
             size,
         ) = cell
-        
+
         # Generate NEW control group excluding ALL treatment locations
         logger.debug(f"Re-selecting control group for cell {i+1} with treatment {treatment_group}")
-        
+
         corrected_control_group = select_controls_exclusive(
             correlation_matrix=correlation_matrix,
             treatment_group=treatment_group,
@@ -1383,17 +1472,17 @@ def optimize_global_multicell(
             excluded_locations=excluded_locations,
             min_correlation=0.8,
         )
-        
+
         logger.debug(f"Cell {i+1} - Original control: {original_control_group}")
         logger.debug(f"Cell {i+1} - Corrected control: {corrected_control_group}")
-        
+
         # Verify no overlap
         treatment_set = set(treatment_group)
         control_set = set(corrected_control_group)
         overlap = treatment_set & control_set
         if overlap:
             logger.error(f"STILL HAVE OVERLAP in cell {i+1}: {overlap}")
-        
+
         treatment_Y = data[data["location"].isin(treatment_group)]["Y"].sum()
         holdout_percentage = (
             ((total_Y - treatment_Y) / total_Y) * 100 if total_Y > 0 else 0.0
@@ -1404,8 +1493,8 @@ def optimize_global_multicell(
             "Size": size,
             "Best Treatment Group": treatment_group,
             "Control Group": corrected_control_group,  # Use corrected control group
-            "MAPE": mape,
-            "SMAPE": smape,
+            "AvgScaledL2Imbalance": avg_scaled_l2,
+            "SMAPE": smape_value,
             "Actual Target Metric (y)": y,
             "Predictions": predictions,
             "Weights": weights,
@@ -1982,7 +2071,7 @@ def transform_results_data(results_by_size):
                         group_data["Best Treatment Group"]
                     ),
                     "Control Group": ", ".join(group_data["Control Group"]),
-                    "MAPE": float(group_data["MAPE"]),
+                    "AvgScaledL2Imbalance": float(group_data["AvgScaledL2Imbalance"]),
                     "SMAPE": float(group_data["SMAPE"]),
                     "Actual Target Metric (y)": (
                         group_data["Actual Target Metric (y)"].tolist()
@@ -2005,7 +2094,7 @@ def transform_results_data(results_by_size):
             transformed_data[size] = {
                 "Best Treatment Group": ", ".join(data["Best Treatment Group"]),
                 "Control Group": ", ".join(data["Control Group"]),
-                "MAPE": float(data["MAPE"]),
+                "AvgScaledL2Imbalance": float(data["AvgScaledL2Imbalance"]),
                 "SMAPE": float(data["SMAPE"]),
                 "Actual Target Metric (y)": (
                     data["Actual Target Metric (y)"].tolist()
@@ -2155,7 +2244,7 @@ def run_geo_analysis_streamlit_app(
                 result_dict = {
                     "Best Treatment Group": cell["Best Treatment Group"],
                     "Control Group": cell["Control Group"],
-                    "MAPE": cell["MAPE"],
+                    "AvgScaledL2Imbalance": cell["AvgScaledL2Imbalance"],
                     "SMAPE": cell["SMAPE"],
                     "Actual Target Metric (y)": cell["Actual Target Metric (y)"],
                     "Predictions": cell["Predictions"],
@@ -2292,7 +2381,7 @@ def run_geo_analysis(
             result_dict = {
                 "Best Treatment Group": cell["Best Treatment Group"],
                 "Control Group": cell["Control Group"],
-                "MAPE": cell["MAPE"],
+                "AvgScaledL2Imbalance": cell["AvgScaledL2Imbalance"],
                 "SMAPE": cell["SMAPE"],
                 "Actual Target Metric (y)": cell["Actual Target Metric (y)"],
                 "Predictions": cell["Predictions"],

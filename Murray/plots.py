@@ -123,18 +123,18 @@ def plot_geodata(merged_data, custom_colors=custom_colors):
 
 def plot_metrics(geo_test):
     """
-    Plots MAPE and SMAPE metrics for each group size.
+    Plots AvgScaledL2Imbalance and SMAPE metrics for each group size.
 
     Args:
         geo_test (dict): A dictionary containing the simulation results, including predictions and actual metrics.
 
     Returns:
-        None: Displays plots for MAPE and SMAPE metrics by group size.
+        None: Displays plots for AvgScaledL2Imbalance and SMAPE metrics by group size.
     """
 
     from plotly.subplots import make_subplots
 
-    metrics = {"Size": [], "MAPE": [], "SMAPE": []}
+    metrics = {"Size": [], "AvgScaledL2Imbalance": [], "SMAPE": []}
 
     results_by_size = geo_test["simulation_results"]
 
@@ -142,7 +142,14 @@ def plot_metrics(geo_test):
         treatment = result["Actual Target Metric (y)"]
         counterfactual = result["Predictions"]
 
-        mape = mean_absolute_percentage_error(treatment, counterfactual)
+        # Calculate AvgScaledL2Imbalance
+        residuals = treatment - counterfactual
+        mean_actual = np.mean(treatment)
+        if mean_actual == 0:
+            mean_actual = 1e-10
+        scaled_squared_residuals = (residuals / mean_actual) ** 2
+        avg_scaled_l2 = np.mean(scaled_squared_residuals)
+
         smape = (
             100
             / len(treatment)
@@ -154,17 +161,17 @@ def plot_metrics(geo_test):
         )
 
         metrics["Size"].append(size)
-        metrics["MAPE"].append(mape)
+        metrics["AvgScaledL2Imbalance"].append(avg_scaled_l2)
         metrics["SMAPE"].append(smape)
 
     fig = make_subplots(
-        rows=1, cols=2, subplot_titles=["MAPE by Group Size", "SMAPE by Group Size"]
+        rows=1, cols=2, subplot_titles=["AvgScaledL2Imbalance by Group Size", "SMAPE by Group Size"]
     )
 
     fig.add_trace(
         go.Scatter(
             x=metrics["Size"],
-            y=metrics["MAPE"],
+            y=metrics["AvgScaledL2Imbalance"],
             mode="lines+markers",
             name="Value",
             marker=dict(color=blue),
@@ -269,7 +276,7 @@ def plot_mde_results(results_by_size, sensitivity_results, periods):
 
     def calculate_penalty_score(mde, period_idx, total_periods, size, results_by_size):
         """
-        Calculates a score based on MDE, counterfactual quality (MAPE, SMAPE), p-value, statistical power, and time period.
+        Calculates a score based on MDE, counterfactual quality (AvgScaledL2Imbalance, SMAPE), p-value, statistical power, and time period.
         Longer periods are considered better as they provide more statistical confidence.
         Returns both the score and its components for hover information.
         """
@@ -277,21 +284,22 @@ def plot_mde_results(results_by_size, sensitivity_results, periods):
             return None, None, None, None, None, None, None
 
         # Quality metrics
-        mape = results_by_size[size].get("MAPE", 0)
+        avg_scaled_l2 = results_by_size[size].get("AvgScaledL2Imbalance", 0)
         smape = results_by_size[size].get("SMAPE", 0)
 
         # Statistical metrics
-        p_value = results_by_size[size].get("p_value", 1.0)  
-        power = results_by_size[size].get("power", 0.0)      
+        p_value = results_by_size[size].get("p_value", 1.0)
+        power = results_by_size[size].get("power", 0.0)
 
         # Normalize metrics
-        mape_factor = min(mape / 100, 1)
+        # AvgScaledL2 is typically small (0-0.1 for good quality), normalize to 0-1
+        avg_scaled_l2_factor = min(avg_scaled_l2 / 0.1, 1)
         smape_factor = min(smape / 100, 1)
-        quality_score = (mape_factor + smape_factor) / 2
+        quality_score = (avg_scaled_l2_factor + smape_factor) / 2
 
         # Normalize p-value (lower is better)
-        p_value_score = 1 - min(p_value, 1)  
-        
+        p_value_score = 1 - min(p_value, 1)
+
         # Normalize power (higher is better)
         power_score = min(power, 1)
 
@@ -299,7 +307,7 @@ def plot_mde_results(results_by_size, sensitivity_results, periods):
         mde_factor = min(mde, 1)
 
         # Time factor - longer periods are better
-        time_score = (period_idx + 1) / total_periods  
+        time_score = (period_idx + 1) / total_periods
 
         # Calculate final score
         quality_weight = 0.20
@@ -312,11 +320,11 @@ def plot_mde_results(results_by_size, sensitivity_results, periods):
             quality_weight * quality_score
             + p_value_weight * p_value_score
             + power_weight * power_score
-            + mde_weight * (1 - mde_factor)  
-            + time_weight * (1 - time_score)  
+            + mde_weight * (1 - mde_factor)
+            + time_weight * (1 - time_score)
         )
 
-        return final_score, mde, mape, smape, p_value, power, time_score
+        return final_score, mde, avg_scaled_l2, smape, p_value, power, time_score
 
     heatmap_data = pd.DataFrame()
     hover_data = []
@@ -328,14 +336,14 @@ def plot_mde_results(results_by_size, sensitivity_results, periods):
 
         for period_idx, period in enumerate(periods):
             mde = period_results.get(period, {}).get("MDE", None)
-            score, original_mde, mape, smape, p_value, power, time_score = calculate_penalty_score(
+            score, original_mde, avg_scaled_l2, smape, p_value, power, time_score = calculate_penalty_score(
                 mde, period_idx, len(periods), size, results_by_size
             )
             row.append(score)
             hover_row.append(
                 {
                     "MDE": f"{original_mde:.2%}" if original_mde is not None else "N/A",
-                    "MAPE": f"{mape:.2f}%" if mape is not None else "N/A",
+                    "AvgScaledL2Imbalance": f"{avg_scaled_l2:.6f}" if avg_scaled_l2 is not None else "N/A",
                     "SMAPE": f"{smape:.2f}%" if smape is not None else "N/A",
                     "P-Value": f"{p_value:.4f}" if p_value is not None else "N/A",
                     "Statistical Power": f"{power:.2%}" if power is not None else "N/A",
@@ -399,7 +407,7 @@ def plot_mde_results(results_by_size, sensitivity_results, periods):
                 "Treatment size: %{customdata}<br>"
                 + "Combined Score: %{text}<br>"
                 + "MDE: %{customdata:MDE}<br>"
-                + "MAPE: %{customdata:MAPE}<br>"
+                + "AvgScaledL2Imbalance: %{customdata:AvgScaledL2Imbalance}<br>"
                 + "SMAPE: %{customdata:SMAPE}<br>"
                 + "P-Value: %{customdata:P-Value}<br>"
                 + "Statistical Power: %{customdata:Statistical Power}<br>"
@@ -1643,23 +1651,30 @@ def plot_geodata_report(merged_data, custom_colors=custom_colors):
 
 def plot_metrics_report(geo_test):
     """
-    Plots MAPE and SMAPE metrics for each group size.
+    Plots AvgScaledL2Imbalance and SMAPE metrics for each group size.
 
     Args:
         geo_test (dict): A dictionary containing the simulation results, including predictions and actual metrics.
 
     Returns:
-        None: Displays plots for MAPE and SMAPE metrics by group size.
+        None: Displays plots for AvgScaledL2Imbalance and SMAPE metrics by group size.
     """
 
-    metrics = {"Size": [], "MAPE": [], "SMAPE": []}
+    metrics = {"Size": [], "AvgScaledL2Imbalance": [], "SMAPE": []}
     results_by_size = geo_test["simulation_results"]
 
     for size, result in results_by_size.items():
         y = result["Actual Target Metric (y)"]
         predictions = result["Predictions"]
 
-        mape = mean_absolute_percentage_error(y, predictions)
+        # Calculate AvgScaledL2Imbalance
+        residuals = y - predictions
+        mean_actual = np.mean(y)
+        if mean_actual == 0:
+            mean_actual = 1e-10
+        scaled_squared_residuals = (residuals / mean_actual) ** 2
+        avg_scaled_l2 = np.mean(scaled_squared_residuals)
+
         smape = (
             100
             / len(y)
@@ -1667,15 +1682,15 @@ def plot_metrics_report(geo_test):
         )
 
         metrics["Size"].append(size)
-        metrics["MAPE"].append(mape)
+        metrics["AvgScaledL2Imbalance"].append(avg_scaled_l2)
         metrics["SMAPE"].append(smape)
 
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(25, 6))
 
-    ax1.plot(metrics["Size"], metrics["MAPE"], marker="o", color=blue)
-    ax1.set_title("MAPE by Group Size")
+    ax1.plot(metrics["Size"], metrics["AvgScaledL2Imbalance"], marker="o", color=blue)
+    ax1.set_title("AvgScaledL2Imbalance by Group Size")
     ax1.set_xlabel("Group Size")
-    ax1.set_ylabel("MAPE")
+    ax1.set_ylabel("AvgScaledL2Imbalance")
 
     ax2.plot(metrics["Size"], metrics["SMAPE"], marker="o", color=black_secondary)
     ax2.set_title("SMAPE by Group Size")
