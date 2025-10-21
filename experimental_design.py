@@ -765,7 +765,15 @@ if file is not None:
             )
             # Location exclusion and test type selection
             excluded_locations = st.multiselect(
-                "Select excluded locations", cleaned["location"].unique()
+                "Select excluded locations from treatment",
+                cleaned["location"].unique(),
+                help="These locations will not be considered for treatment groups"
+            )
+
+            excluded_from_control = st.multiselect(
+                "Select excluded locations from control",
+                cleaned["location"].unique(),
+                help="These locations will not be considered for control groups"
             )
 
             # Analyze data and recommend statistical test
@@ -955,6 +963,7 @@ if file is not None:
             # Track parameter changes to reset simulation state
             current_params = {
                 "excluded_locations": excluded_locations,
+                "excluded_from_control": excluded_from_control,
                 "maximum_treatment_percentage_pre": maximum_treatment_percentage_pre,
                 "significance_level_pre": significance_level_pre,
                 "deltas_range": (delta_min, delta_max, delta_step),
@@ -1017,6 +1026,7 @@ if file is not None:
                         results = run_geo_analysis_streamlit_app(
                             data=cleaned,
                             excluded_locations=excluded_locations,
+                            excluded_from_control=excluded_from_control,
                             maximum_treatment_percentage=maximum_treatment_percentage,
                             significance_level=significance_level,
                             deltas_range=deltas_range,
@@ -1055,7 +1065,8 @@ if file is not None:
                         # Show current settings for debugging
                         with st.expander("🔧 Current Analysis Settings", expanded=False):
                             st.write(f"**Maximum Treatment Percentage:** {maximum_treatment_percentage*100:.1f}%")
-                            st.write(f"**Excluded Locations:** {len(excluded_locations)} locations")
+                            st.write(f"**Excluded from Treatment:** {len(excluded_locations)} locations")
+                            st.write(f"**Excluded from Control:** {len(excluded_from_control)} locations")
                             st.write(f"**Total Locations Available:** {len(cleaned['location'].unique())} locations")
                             st.write(f"**Time Periods:** {len(cleaned['time'].unique())} periods")
                             st.write(f"**Total Y Sum:** {cleaned['Y'].sum():,.2f}")

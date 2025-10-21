@@ -4,6 +4,7 @@ let cleanedFilename = null;
 let resultsData = null;
 let availableLocations = [];
 let excludedLocations = [];
+let excludedFromControl = [];
 let previewData = null;
 let currentVizMode = 'apex';
 let apexChart = null;
@@ -149,6 +150,19 @@ async function cleanData() {
             // Add change handler for excluded locations
             excludedSelect.onchange = handleLocationSelection;
 
+            // Populate excluded from control dropdown
+            const excludedControlSelect = document.getElementById('excluded-from-control-select');
+            excludedControlSelect.innerHTML = '<option value="">Select location to exclude...</option>';
+            data.locations.forEach(loc => {
+                const option = document.createElement('option');
+                option.value = loc;
+                option.textContent = loc;
+                excludedControlSelect.appendChild(option);
+            });
+
+            // Add change handler for excluded from control
+            excludedControlSelect.onchange = handleControlLocationSelection;
+
             // Render data preview plot
             renderDataPlot(data.preview);
 
@@ -175,10 +189,28 @@ function handleLocationSelection(event) {
     }
 }
 
+// Handle control location selection for exclusion
+function handleControlLocationSelection(event) {
+    const select = event.target;
+    const location = select.value;
+
+    if (location && !excludedFromControl.includes(location)) {
+        excludedFromControl.push(location);
+        updateSelectedControlLocationsDisplay();
+        select.value = ''; // Reset dropdown
+    }
+}
+
 // Remove location from exclusion list
 function removeLocation(location) {
     excludedLocations = excludedLocations.filter(loc => loc !== location);
     updateSelectedLocationsDisplay();
+}
+
+// Remove location from control exclusion list
+function removeControlLocation(location) {
+    excludedFromControl = excludedFromControl.filter(loc => loc !== location);
+    updateSelectedControlLocationsDisplay();
 }
 
 // Update the visual display of selected locations
@@ -196,6 +228,31 @@ function updateSelectedLocationsDisplay() {
             badge.innerHTML = `
                 ${loc}
                 <button onclick="removeLocation('${loc}')" class="ml-2 hover:text-gray-200 focus:outline-none">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                    </svg>
+                </button>
+            `;
+            container.appendChild(badge);
+        });
+    }
+}
+
+// Update the visual display of selected control locations
+function updateSelectedControlLocationsDisplay() {
+    const container = document.getElementById('selected-control-locations');
+    const noSelectionMsg = document.getElementById('no-control-selection-msg');
+
+    if (excludedFromControl.length === 0) {
+        container.innerHTML = '<span class="text-xs text-gray-400 italic" id="no-control-selection-msg">No locations excluded</span>';
+    } else {
+        container.innerHTML = '';
+        excludedFromControl.forEach(loc => {
+            const badge = document.createElement('span');
+            badge.className = 'inline-flex items-center px-3 py-1 rounded-full text-sm bg-red-600 text-white';
+            badge.innerHTML = `
+                ${loc}
+                <button onclick="removeControlLocation('${loc}')" class="ml-2 hover:text-gray-200 focus:outline-none">
                     <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
                     </svg>
@@ -299,6 +356,7 @@ async function runAnalysis() {
     const config = {
         filename: cleanedFilename,
         excluded_locations: excludedLocations,
+        excluded_from_control: excludedFromControl,
         maximum_treatment_percentage: parseInt(document.getElementById('max-treatment').value) / 100,
         significance_level: parseInt(document.getElementById('significance-level').value) / 100,
         delta_min: parseFloat(document.getElementById('delta-min').value),

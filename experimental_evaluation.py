@@ -764,8 +764,17 @@ if file is not None:
                 value=last_day,
             )
             treatment_group = st.multiselect(
-                "Select treatment group", data1["location"].unique()
+                "Select treatment group",
+                data1["location"].unique(),
+                help="Select locations to include in treatment group"
             )
+
+            excluded_from_control = st.multiselect(
+                "Select excluded locations from control",
+                data1["location"].unique(),
+                help="These locations will not be considered for control group"
+            )
+
             spend = st.number_input("Select spend")
             mmm_option = st.selectbox(
                 "Select the option to calculate the iROAS or iCPA", ["iROAS", "iCPA"]
@@ -795,6 +804,7 @@ if file is not None:
                 "start_treatment": start_treatment,
                 "end_treatment": end_treatment,
                 "treatment_group": treatment_group,
+                "excluded_from_control": excluded_from_control,
                 "spend": spend,
                 "mmm_option": mmm_option,
                 "col_target": col_target,
@@ -821,6 +831,7 @@ if file is not None:
                             end_treatment,
                             treatment_group,
                             spend,
+                            excluded_from_control=excluded_from_control,
                         )
                         treatment = results["treatment"]
                         st.session_state.treatment = treatment

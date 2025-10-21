@@ -214,6 +214,7 @@ def run_design(current_user):
 
         # Get parameters from request
         excluded_locations = data.get('excluded_locations', [])
+        excluded_from_control = data.get('excluded_from_control', [])
         maximum_treatment_percentage = data.get('maximum_treatment_percentage', 0.3)
         significance_level = data.get('significance_level', 0.05)
 
@@ -235,6 +236,7 @@ def run_design(current_user):
         results = run_geo_analysis_streamlit_app(
             data=cleaned,
             excluded_locations=excluded_locations,
+            excluded_from_control=excluded_from_control,
             maximum_treatment_percentage=maximum_treatment_percentage,
             significance_level=significance_level,
             deltas_range=deltas_range,

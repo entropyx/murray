@@ -86,10 +86,10 @@ def select_treatments(similarity_matrix, treatment_size, excluded_locations):
     max_combinations = comb(n, r)
 
     n_combinations = max_combinations
-    # if n_combinations > 5000:
-    #     n_combinations = 5000
-    if n_combinations > 1000:
-        n_combinations = 1000
+    if n_combinations > 5000:
+        n_combinations = 5000
+    # if n_combinations > 1000:
+    #     n_combinations = 1000
 
     logger.debug(f"Generating {n_combinations} combinations")
 
@@ -107,7 +107,7 @@ def select_treatments(similarity_matrix, treatment_size, excluded_locations):
 
 
 def select_controls(
-    correlation_matrix, treatment_group, min_correlation=0.8, fallback_n=1
+    correlation_matrix, treatment_group, excluded_from_control=None, min_correlation=0.8, fallback_n=1
 ):
     """
     Dynamically selects control group states based on correlation values.
@@ -116,17 +116,32 @@ def select_controls(
     Args:
         correlation_matrix (pd.DataFrame): Correlation matrix between states.
         treatment_group (list): List of states in the treatment group.
+        excluded_from_control (list): List of locations to exclude from control group.
         min_correlation (float): Minimum correlation threshold to consider a state as part of the control group.
         fallback_n (int): Number of top correlated states to select if no state meets the min_correlation.
 
     Returns:
         list: List of states selected as the control group.
     """
+    if excluded_from_control is None:
+        excluded_from_control = []
+
+    # Normalize location names for comparison (lowercase, strip whitespace)
+    def normalize_location(loc):
+        if isinstance(loc, str):
+            return loc.lower().strip()
+        return str(loc).lower().strip()
+
     logger.debug(
-        f"select_controls called: treatment_group={treatment_group}, min_correlation={min_correlation}"
+        f"select_controls called: treatment_group={treatment_group}, min_correlation={min_correlation}, excluded_from_control={len(excluded_from_control)}"
     )
 
     control_group = set()
+
+    # Normalize exclusions
+    normalized_treatment = {normalize_location(loc) for loc in treatment_group}
+    normalized_excluded_control = {normalize_location(loc) for loc in excluded_from_control}
+    all_excluded_normalized = normalized_treatment | normalized_excluded_control
 
     for treatment_location in treatment_group:
         if treatment_location not in correlation_matrix.index:
@@ -136,11 +151,15 @@ def select_controls(
             continue
         treatment_row = correlation_matrix.loc[treatment_location]
 
+        # Filter out excluded locations using normalized comparison
+        available_locations = [
+            loc for loc in treatment_row.index
+            if normalize_location(loc) not in all_excluded_normalized
+        ]
+        available_correlations = treatment_row[available_locations]
+
         similar_states = (
-            treatment_row[
-                (treatment_row >= min_correlation)
-                & (~treatment_row.index.isin(treatment_group))
-            ]
+            available_correlations[available_correlations >= min_correlation]
             .sort_values(ascending=False)
             .index.tolist()
         )
@@ -150,8 +169,7 @@ def select_controls(
                 f"No states meet min_correlation {min_correlation} for {treatment_location}, using fallback"
             )
             similar_states = (
-                treatment_row[~treatment_row.index.isin(treatment_group)]
-                .sort_values(ascending=False)
+                available_correlations.sort_values(ascending=False)
                 .head(fallback_n)
                 .index.tolist()
             )
@@ -161,8 +179,22 @@ def select_controls(
             f"Added {len(similar_states)} control states for {treatment_location}"
         )
 
-    logger.debug(f"Final control group: {list(control_group)}")
-    return list(control_group)
+    # Final verification: ensure no excluded locations are in control group
+    final_control = list(control_group)
+    final_control_normalized = {normalize_location(loc) for loc in final_control}
+    overlap_check = final_control_normalized & all_excluded_normalized
+
+    if overlap_check:
+        logger.error(f"CRITICAL ERROR: Control group contains excluded locations: {overlap_check}")
+        final_control = [
+            loc for loc in final_control
+            if normalize_location(loc) not in all_excluded_normalized
+        ]
+        logger.warning(f"Removed overlap, final control group: {final_control}")
+
+    logger.debug(f"Final control group: {final_control}")
+    logger.debug(f"Excluded from control (normalized): {normalized_excluded_control}")
+    return final_control
 
 
 class SyntheticControl(BaseEstimator, RegressorMixin):
@@ -340,11 +372,12 @@ def smape(A, F):
 
 
 def evaluate_group(
-    treatment_group, data, total_Y, correlation_matrix, min_holdout, df_pivot, treatment_period=None
+    treatment_group, data, total_Y, correlation_matrix, min_holdout, df_pivot,
+    excluded_from_control=None, treatment_period=None
 ):
     """
     Evaluates a treatment group and returns error metrics.
-    
+
     Args:
         treatment_group: List of locations in the treatment group
         data: Input data
@@ -352,6 +385,7 @@ def evaluate_group(
         correlation_matrix: Market correlation matrix
         min_holdout: Minimum holdout percentage required
         df_pivot: Pivoted data with time as index
+        excluded_from_control: List of locations to exclude from control group
         treatment_period: Number of periods for treatment (if None, uses 80/20 split)
     """
     logger.debug(f"Starting evaluation for treatment group: {treatment_group}")
@@ -373,6 +407,7 @@ def evaluate_group(
     control_group = select_controls(
         correlation_matrix=correlation_matrix,
         treatment_group=treatment_group,
+        excluded_from_control=excluded_from_control,
         min_correlation=0.8,
     )
     logger.debug(f"Control group selected: {control_group}")
@@ -520,7 +555,7 @@ def select_treatments_exclusive(
     # Smart candidate limit based on problem size
     available_ratio = n / len(similarity_matrix.columns)
     # base_candidates = min(5000, max_combinations)
-    base_candidates = min(2000, max_combinations)
+    base_candidates = min(5000, max_combinations)
     
     if available_ratio < 0.3:  # Many locations excluded, need more candidates
         max_candidates = min(base_candidates * 2, max_combinations)
@@ -560,6 +595,7 @@ def select_controls_exclusive(
     treatment_group,
     used_treatment_locations=None,
     excluded_locations=None,
+    excluded_from_control=None,
     min_correlation=0.8,
     fallback_n=1,
 ):
@@ -569,13 +605,15 @@ def select_controls_exclusive(
     - Excludes current treatment group locations
     - Excludes globally excluded locations
     - Excludes locations that have been used as treatment in previous cells
+    - Excludes locations explicitly excluded from control group (NEW)
     - ALLOWS reuse of control locations from previous cells
 
     Args:
         correlation_matrix (pd.DataFrame): Correlation matrix between states.
         treatment_group (list): List of states in the treatment group.
         used_treatment_locations (set): Set of treatment locations already used in previous cells.
-        excluded_locations (list): List of globally excluded locations.
+        excluded_locations (list): List of globally excluded locations (from treatment).
+        excluded_from_control (list): List of locations to exclude from control group (NEW).
         min_correlation (float): Minimum correlation threshold to consider a state as part of the control group.
         fallback_n (int): Number of top correlated states to select if no state meets the min_correlation.
 
@@ -586,14 +624,30 @@ def select_controls_exclusive(
         used_treatment_locations = set()
     if excluded_locations is None:
         excluded_locations = []
+    if excluded_from_control is None:
+        excluded_from_control = []
+
+    # Normalize location names for comparison (lowercase, strip whitespace)
+    def normalize_location(loc):
+        if isinstance(loc, str):
+            return loc.lower().strip()
+        return str(loc).lower().strip()
 
     logger.debug(
-        f"select_controls_exclusive called: treatment_group={treatment_group}, used_treatment_locations={len(used_treatment_locations)}, excluded_locations={len(excluded_locations)}"
+        f"select_controls_exclusive called: treatment_group={treatment_group}, used_treatment_locations={len(used_treatment_locations)}, excluded_locations={len(excluded_locations)}, excluded_from_control={len(excluded_from_control)}"
     )
 
     control_group = set()
-    all_excluded = (
-        set(treatment_group) | used_treatment_locations | set(excluded_locations)
+
+    # Normalize all exclusion lists for case-insensitive comparison
+    normalized_treatment = {normalize_location(loc) for loc in treatment_group}
+    normalized_used_treatment = {normalize_location(loc) for loc in used_treatment_locations}
+    normalized_excluded = {normalize_location(loc) for loc in excluded_locations}
+    normalized_excluded_control = {normalize_location(loc) for loc in excluded_from_control}
+
+    # Combine all exclusions
+    all_excluded_normalized = (
+        normalized_treatment | normalized_used_treatment | normalized_excluded | normalized_excluded_control
     )
 
     for treatment_location in treatment_group:
@@ -604,7 +658,12 @@ def select_controls_exclusive(
             continue
         treatment_row = correlation_matrix.loc[treatment_location]
 
-        available_correlations = treatment_row[~treatment_row.index.isin(all_excluded)]
+        # Filter out excluded locations using normalized comparison
+        available_locations = [
+            loc for loc in treatment_row.index
+            if normalize_location(loc) not in all_excluded_normalized
+        ]
+        available_correlations = treatment_row[available_locations]
 
         similar_states = (
             available_correlations[available_correlations >= min_correlation]
@@ -627,18 +686,24 @@ def select_controls_exclusive(
             f"Added {len(similar_states)} control states for {treatment_location}"
         )
 
-    # Final verification: ensure no treatment locations are in control group
+    # Final verification: ensure no excluded locations are in control group
     final_control = list(control_group)
-    all_treatment = set(treatment_group) | used_treatment_locations
-    overlap_check = set(final_control) & all_treatment
-    
+
+    # Check for overlaps using normalized comparison
+    final_control_normalized = {normalize_location(loc) for loc in final_control}
+    overlap_check = final_control_normalized & all_excluded_normalized
+
     if overlap_check:
-        logger.error(f"CRITICAL ERROR: Control group contains treatment locations: {overlap_check}")
+        logger.error(f"CRITICAL ERROR: Control group contains excluded locations: {overlap_check}")
         # Remove overlapping locations from control group
-        final_control = [loc for loc in final_control if loc not in all_treatment]
+        final_control = [
+            loc for loc in final_control
+            if normalize_location(loc) not in all_excluded_normalized
+        ]
         logger.warning(f"Removed overlap, final control group: {final_control}")
-    
+
     logger.debug(f"Final control group: {final_control}")
+    logger.debug(f"Excluded from control (normalized): {normalized_excluded_control}")
     return final_control
 
 
@@ -651,14 +716,15 @@ def evaluate_group_exclusive(
     df_pivot,
     used_treatment_locations=None,
     excluded_locations=None,
+    excluded_from_control=None,
     treatment_period=None,
 ):
     """
     Evaluates a treatment group with location exclusivity for multi-cell mode.
-    
+
     Applies the same evaluation logic as evaluate_group() but with additional
     exclusivity constraints for multi-cell experiments.
-    
+
     Args:
         treatment_group (list): List of treatment locations to evaluate
         data (pd.DataFrame): Input data with 'location', 'time', and 'Y' columns
@@ -667,11 +733,12 @@ def evaluate_group_exclusive(
         min_holdout (float): Minimum required holdout percentage
         df_pivot (pd.DataFrame): Pivoted data with time as index and locations as columns
         used_treatment_locations (set): Set of locations already used as treatment in other cells
-        excluded_locations (list): List of globally excluded locations
+        excluded_locations (list): List of globally excluded locations (from treatment)
+        excluded_from_control (list): List of locations to exclude from control group (NEW)
         treatment_period (int): Number of periods for treatment (if None, uses 80/20 split)
-    
+
     Returns:
-        tuple: (treatment_group, control_group, AvgScaledL2Imbalance, SMAPE, y_original, 
+        tuple: (treatment_group, control_group, AvgScaledL2Imbalance, SMAPE, y_original,
                 counterfactual_full_original, filtered_weights, observed_conformity)
         None: If holdout percentage is below minimum or no valid control group found
     """
@@ -698,6 +765,7 @@ def evaluate_group_exclusive(
         treatment_group=treatment_group,
         used_treatment_locations=used_treatment_locations,
         excluded_locations=excluded_locations,
+        excluded_from_control=excluded_from_control,
         min_correlation=0.8,
     )
     logger.debug(f"Control group selected: {control_group}")
@@ -787,6 +855,7 @@ def BetterGroups(
     data,
     correlation_matrix,
     maximum_treatment_percentage=0.50,
+    excluded_from_control=None,
     progress_updater=None,
     status_updater=None,
     multicell_config=None,
@@ -794,25 +863,26 @@ def BetterGroups(
 ):
     """
     Enhanced simulates and evaluates treatment groups for geo-experiments.
-    
+
     Supports three modes:
     1. Single-cell mode: Finds optimal treatment groups for each size
     2. Multi-cell normal mode: Finds N best groups per size with location exclusivity
     3. Multi-cell global mode: Global optimization for heterogeneous cell sizes
-    
+
     Args:
         similarity_matrix (pd.DataFrame): Correlation matrix for treatment selection
         excluded_locations (list): List of locations to exclude from treatment selection
         data (pd.DataFrame): Input data with 'location', 'time', and 'Y' columns
         correlation_matrix (pd.DataFrame): Market correlation matrix for control selection
         maximum_treatment_percentage (float): Maximum treatment percentage (default: 0.50)
+        excluded_from_control (list): List of locations to exclude from control group (NEW)
         progress_updater (callable): Progress bar updater function
         status_updater (callable): Status text updater function
         multicell_config (dict): Multi-cell configuration with 'sizes' and 'top_n' keys
         global_optimization (bool): Whether to use global optimization for multi-cell mode
         search_strategy (str): Candidate generation strategy ("random", "similarity", "coverage", "adaptive")
         candidate_multiplier (int): Multiple of cells_needed to generate as candidates per size
-    
+
     Returns:
         dict: Results organized by mode:
             - Single-cell: {size: {group_info}}
@@ -822,10 +892,10 @@ def BetterGroups(
     """
     unique_locations = data["location"].unique()
     no_locations = len(unique_locations)
-    max_group_size = round(no_locations * 0.35)
-    min_elements_in_treatment = round(no_locations * 0.20)
-    # max_group_size = round(no_locations * 0.45)
-    # min_elements_in_treatment = round(no_locations * 0.15)
+    # max_group_size = round(no_locations * 0.35)
+    # min_elements_in_treatment = round(no_locations * 0.20)
+    max_group_size = round(no_locations * 0.45)
+    min_elements_in_treatment = round(no_locations * 0.15)
     min_holdout = 100 - (maximum_treatment_percentage * 100)
     total_Y = data["Y"].sum()
 
@@ -850,6 +920,7 @@ def BetterGroups(
                 allowed_sizes=sizes,
                 total_cells_needed=top_n,
                 excluded_locations=excluded_locations,
+                excluded_from_control=excluded_from_control,
                 data=data,
                 correlation_matrix=correlation_matrix,
                 maximum_treatment_percentage=maximum_treatment_percentage,
@@ -970,6 +1041,7 @@ def BetterGroups(
                     df_pivot=df_pivot,
                     used_treatment_locations=current_used_treatments,
                     excluded_locations=excluded_locations,
+                    excluded_from_control=excluded_from_control,
                 )
                 if result is not None:
                     final_results.append(result)
@@ -1038,6 +1110,7 @@ def BetterGroups(
             [correlation_matrix] * total_groups,
             [min_holdout] * total_groups,
             [df_pivot] * total_groups,
+            [excluded_from_control] * total_groups,
         )
         for idx, result in enumerate(futures):
             results.append(result)
@@ -1071,9 +1144,9 @@ def BetterGroups(
             ) = best_result
 
             # Filter out experiments with SMAPE > 50%
-            if best_SMAPE > 30:
+            if best_SMAPE > 200:
                 logger.warning(
-                    f"Skipping size {size}: SMAPE={best_SMAPE:.2f}% exceeds 30% threshold"
+                    f"Skipping size {size}: SMAPE={best_SMAPE:.2f}% exceeds 200% threshold"
                 )
                 continue
 
@@ -1236,6 +1309,7 @@ def optimize_global_multicell(
     allowed_sizes,
     total_cells_needed,
     excluded_locations,
+    excluded_from_control,
     data,
     correlation_matrix,
     maximum_treatment_percentage,
@@ -1253,7 +1327,8 @@ def optimize_global_multicell(
         similarity_matrix: Correlation matrix for treatment selection
         allowed_sizes: List of allowed cell sizes to choose from
         total_cells_needed: Total number of cells in final experiment
-        excluded_locations: Globally excluded locations
+        excluded_locations: Globally excluded locations (from treatment)
+        excluded_from_control: Locations to exclude from control group (NEW)
         data: Input data
         correlation_matrix: Market correlation matrix
         maximum_treatment_percentage: Max treatment percentage
@@ -1406,6 +1481,7 @@ def optimize_global_multicell(
             treatment_group=treatment_group,
             used_treatment_locations=all_treatment_locations,  # Exclude ALL treatments
             excluded_locations=excluded_locations,
+            excluded_from_control=excluded_from_control,
             min_correlation=0.8,
         )
         
@@ -1537,7 +1613,7 @@ def calculate_minimum_sample_size(
     inference_type="iid",
     max_iterations=20,
     tolerance=0.05,
-    n_permutations_sample_size=100,
+    n_permutations_sample_size=500,
     n_power_simulations_sample_size=30,
 ):
     """
@@ -1668,7 +1744,7 @@ def simulate_power(
     y_control,
     delta,
     period,
-    n_permutations_per_test=1000,
+    n_permutations_per_test=3000,
     significance_level=0.05,
     test_type="sum",
     inference_type="iid",
@@ -2069,11 +2145,12 @@ def run_geo_analysis_streamlit_app(
     deltas_range,
     periods_range,
     excluded_locations,
+    excluded_from_control=None,
     progress_bar_1=None,
     status_text_1=None,
     progress_bar_2=None,
     status_text_2=None,
-    n_permutations_per_test=1000,
+    n_permutations_per_test=3000,
     n_power_simulations=40,
     multicell_config=None,
     test_type="sum",
@@ -2091,7 +2168,8 @@ def run_geo_analysis_streamlit_app(
         significance_level (float): Significance level for statistical testing.
         deltas_range (tuple): Range of delta values to evaluate as (start, stop, step).
         periods_range (tuple): Range of treatment periods to evaluate as (start, stop, step).
-        excluded_locations (list): List of states to exclude from the analysis.
+        excluded_locations (list): List of states to exclude from treatment selection.
+        excluded_from_control (list): List of locations to exclude from control group (NEW).
         progress_bar_1 (callable): Progress bar updater for group optimization phase.
         status_text_1 (callable): Status text updater for group optimization phase.
         progress_bar_2 (callable): Progress bar updater for sensitivity evaluation phase.
@@ -2133,6 +2211,7 @@ def run_geo_analysis_streamlit_app(
         similarity_matrix=correlation_matrix,
         maximum_treatment_percentage=maximum_treatment_percentage,
         excluded_locations=excluded_locations,
+        excluded_from_control=excluded_from_control,
         data=data,
         correlation_matrix=correlation_matrix,
         progress_updater=progress_bar_1,
@@ -2253,11 +2332,12 @@ def run_geo_analysis(
     deltas_range,
     periods_range,
     excluded_locations,
+    excluded_from_control=None,
     progress_bar_1=None,
     status_text_1=None,
     progress_bar_2=None,
     status_text_2=None,
-    n_permutations_per_test=1000,
+    n_permutations_per_test=3000,
     n_power_simulations=40,
     test_type="sum",
     inference_type="iid",
@@ -2273,7 +2353,8 @@ def run_geo_analysis(
         significance_level (float): Significance level for statistical testing.
         deltas_range (tuple): Range of delta values to evaluate as (start, stop, step).
         periods_range (tuple): Range of treatment periods to evaluate as (start, stop, step).
-        excluded_locations (list): List of states to exclude from the analysis.
+        excluded_locations (list): List of states to exclude from treatment selection.
+        excluded_from_control (list): List of locations to exclude from control group (NEW).
         progress_bar_1 (optional): First progress bar for UI updates.
         status_text_1 (optional): First status text for UI updates.
         progress_bar_2 (optional): Second progress bar for UI updates.

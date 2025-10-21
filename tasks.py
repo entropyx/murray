@@ -107,10 +107,11 @@ def analyze_design_task(
     location_column: str,
     target_column: str,
     excluded_locations: tuple,
-    maximum_treatment_percentage: float,
-    significance_level: float,
-    deltas_range: tuple,
-    periods_range: tuple,
+    excluded_from_control: tuple = None,
+    maximum_treatment_percentage: float = 0.3,
+    significance_level: float = 0.1,
+    deltas_range: tuple = (0.01, 0.1, 0.01),
+    periods_range: tuple = (5, 15, 5),
     multicell_config: dict = None,
     global_optimization: bool = False,
     webhook: dict = None
@@ -258,6 +259,7 @@ def analyze_design_task(
         results = run_geo_analysis_streamlit_app(
             data=data,
             excluded_locations=excluded_locations,
+            excluded_from_control=excluded_from_control if excluded_from_control else [],
             maximum_treatment_percentage=maximum_treatment_percentage,
             significance_level=significance_level,
             deltas_range=deltas_range,
