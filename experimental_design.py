@@ -80,6 +80,8 @@ def generate_pdf(
     confidence_level,
     p_value=None,
     power_value=None,
+    avg_scaled_l2=None,
+    smape_value=None,
 ):
     temp_image_path = "temp_impact_graph.png"
     impact_graph.savefig(temp_image_path, bbox_inches="tight", dpi=100)
@@ -240,6 +242,52 @@ def generate_pdf(
             )
 
         pdf.multi_cell(0, 5, power_explanation)
+        pdf.ln(5)
+
+    # Counterfactual Quality Metrics Section
+    if avg_scaled_l2 is not None or smape_value is not None:
+        pdf.set_font("Poppins", style="B", size=12)
+        pdf.set_text_color(27, 0, 67)
+        pdf.cell(200, 8, "Counterfactual Quality", ln=True)
+        pdf.set_font("Poppins", size=10)
+        pdf.set_text_color(33, 31, 36)
+
+        metrics_text = ""
+        if avg_scaled_l2 is not None:
+            metrics_text += f"Average Scaled L2 Imbalance: {avg_scaled_l2:.6f}. "
+        if smape_value is not None:
+            smape_percentage = smape_value if smape_value >= 1 else smape_value * 100
+            metrics_text += f"SMAPE: {smape_percentage:.2f}%. "
+
+        pdf.multi_cell(0, 5, metrics_text)
+        pdf.ln(2)
+
+        # Quality interpretation based on metrics
+        if smape_value is not None:
+            smape_percentage = smape_value if smape_value >= 1 else smape_value * 100
+            if smape_percentage <= 10:
+                quality_level = "excellent"
+                quality_explanation = (
+                    "These metrics indicate excellent counterfactual quality. The synthetic control model demonstrates "
+                    "very high accuracy in replicating the pre-treatment behavior, providing strong confidence "
+                    "in the treatment effect estimates."
+                )
+            elif smape_percentage <= 20:
+                quality_level = "good"
+                quality_explanation = (
+                    "These metrics indicate good counterfactual quality. The synthetic control model shows satisfactory "
+                    "accuracy in creating the counterfactual, suggesting reliable experimental design with "
+                    "acceptable precision for treatment effect estimation."
+                )
+            else:
+                quality_level = "moderate"
+                quality_explanation = (
+                    "These metrics indicate moderate counterfactual quality. While the synthetic control provides a "
+                    "reasonable approximation, there is some uncertainty in the precision of treatment effect estimates. "
+                    "Consider additional model validation."
+                )
+
+            pdf.multi_cell(0, 5, quality_explanation)
         pdf.ln(5)
 
     pdf.set_font("Poppins", style="B", size=12)
@@ -1576,6 +1624,17 @@ if file is not None:
                                     st.write(
                                         f"- **Statistical Power:** {round(power*100)}%"
                                     )
+
+                                # Display error metrics
+                                if matching_size is not None:
+                                    avg_scaled_l2 = st.session_state.simulation_results[matching_size].get("AvgScaledL2Imbalance", None)
+                                    smape_val = st.session_state.simulation_results[matching_size].get("SMAPE", None)
+
+                                    if avg_scaled_l2 is not None:
+                                        st.write(f"- **AvgScaledL2Imbalance:** {avg_scaled_l2:.6f}")
+                                    if smape_val is not None:
+                                        st.write(f"- **SMAPE:** {round(smape_val, 2)}%")
+
                                 random_sate = cleaned["location"].unique()[0]
                                 filtered_data = cleaned[
                                     cleaned["location"] == random_sate
@@ -1759,6 +1818,13 @@ if file is not None:
                                                                 "Power", None
                                                             )
 
+                                                # Get error metrics
+                                                avg_scaled_l2_val = None
+                                                smape_val = None
+                                                if matching_size is not None and st.session_state.simulation_results is not None:
+                                                    avg_scaled_l2_val = st.session_state.simulation_results[matching_size].get("AvgScaledL2Imbalance", None)
+                                                    smape_val = st.session_state.simulation_results[matching_size].get("SMAPE", None)
+
                                                 df = pd.DataFrame(
                                                     {
                                                         "Group": [
@@ -1816,6 +1882,8 @@ if file is not None:
                                                     confidence_level,
                                                     p_value=p_value,
                                                     power_value=power_value,
+                                                    avg_scaled_l2=avg_scaled_l2_val,
+                                                    smape_value=smape_val,
                                                 )
 
                                                 with open(pdf_file, "rb") as file:

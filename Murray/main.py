@@ -392,7 +392,7 @@ def evaluate_group(
         df_pivot: Pivoted data with time as index
         treatment_period: Number of periods for treatment (if None, uses 80/20 split)
         max_avg_scaled_l2: Maximum allowed AvgScaledL2Imbalance (default: 0.1)
-        max_smape: Maximum allowed SMAPE percentage (default: 15.0)
+        max_smape: Maximum allowed SMAPE percentage (default: 30.0)
 
     Returns:
         tuple: (treatment_group, control_group, AvgScaledL2, SMAPE, y_original,
@@ -485,7 +485,7 @@ def evaluate_group(
     # Quality threshold check: Skip groups with poor counterfactual quality
     if avg_scaled_l2 > max_avg_scaled_l2 or SMAPE_value > max_smape:
         logger.info(
-            f"Group SKIPPED - Treatment: {treatment_group} | "
+            f"[evaluate_group] Group SKIPPED - Treatment: {treatment_group} | "
             f"AvgScaledL2={avg_scaled_l2:.4f} (max: {max_avg_scaled_l2}) | "
             f"SMAPE={SMAPE_value:.2f}% (max: {max_smape}%)"
         )
@@ -725,7 +725,7 @@ def evaluate_group_exclusive(
         excluded_locations (list): List of globally excluded locations
         treatment_period (int): Number of periods for treatment (if None, uses 80/20 split)
         max_avg_scaled_l2: Maximum allowed AvgScaledL2Imbalance (default: 0.1)
-        max_smape: Maximum allowed SMAPE percentage (default: 15.0)
+        max_smape: Maximum allowed SMAPE percentage (default: 30.0)
 
     Returns:
         tuple: (treatment_group, control_group, AvgScaledL2, SMAPE, y_original,
@@ -879,7 +879,7 @@ def BetterGroups(
         multicell_config (dict): Multi-cell configuration with 'sizes' and 'top_n' keys
         global_optimization (bool): Whether to use global optimization for multi-cell mode
         max_avg_scaled_l2 (float): Maximum allowed AvgScaledL2Imbalance (default: 0.1)
-        max_smape (float): Maximum allowed SMAPE percentage (default: 15.0)
+        max_smape (float): Maximum allowed SMAPE percentage (default: 30.0)
 
     Returns:
         dict: Results organized by mode:
@@ -902,6 +902,10 @@ def BetterGroups(
     if total_Y == 0:
         logger.error("BetterGroups failed: Total Y sum is 0. Check that your data contains non-zero values in the 'Y' column.")
         return None
+
+    logger.info(
+        f"BetterGroups quality thresholds - AvgScaledL2Imbalance: {max_avg_scaled_l2} | SMAPE: {max_smape}%"
+    )
 
     df_pivot = data.pivot(index="time", columns="location", values="Y")
 
@@ -1074,6 +1078,16 @@ def BetterGroups(
                 }
                 results_by_size[size].append(result_dict)
 
+            # Log only the best (first) group selected for this size
+            if results_by_size[size]:
+                best = results_by_size[size][0]
+                logger.info(
+                    f"[SELECTED] Size {size} - Treatment: {best['Best Treatment Group']} | "
+                    f"AvgScaledL2={best['AvgScaledL2Imbalance']:.6f} | "
+                    f"SMAPE={best['SMAPE']:.2f}% | "
+                    f"Holdout={best['Holdout Percentage']:.1f}%"
+                )
+
             if final_results:
                 best_result = final_results_sorted[0]
                 used_treatment_locations.update(best_result[0])
@@ -1159,6 +1173,12 @@ def BetterGroups(
                 "Holdout Percentage": holdout_percentage,
                 "observed_conformity": observed_conformity,
             }
+
+            logger.info(
+                f"[SELECTED] Size {size} - Treatment: {best_treatment_group} | "
+                f"AvgScaledL2={best_avg_scaled_l2:.6f} | SMAPE={best_SMAPE:.2f}% | "
+                f"Holdout={holdout_percentage:.1f}%"
+            )
 
     if not results or all(result is None for result in results):
         logger.error("BetterGroups failed: No valid results found for single-cell mode. Check data quality and configuration.")
@@ -1328,7 +1348,7 @@ def optimize_global_multicell(
         progress_updater: Progress bar updater
         status_updater: Status text updater
         max_avg_scaled_l2: Maximum allowed AvgScaledL2Imbalance (default: 0.1)
-        max_smape: Maximum allowed SMAPE percentage (default: 15.0)
+        max_smape: Maximum allowed SMAPE percentage (default: 30.0)
 
     Returns:
         dict: Single optimized experiment with heterogeneous cells, or None if failed
@@ -1502,6 +1522,14 @@ def optimize_global_multicell(
             "observed_conformity": observed_conformity,
         }
         unified_results.append(result_dict)
+
+        logger.info(
+            f"[SELECTED] Global Cell {i+1}/{len(selected_cells)} Size {size} - "
+            f"Treatment: {treatment_group} | "
+            f"AvgScaledL2={avg_scaled_l2:.6f} | "
+            f"SMAPE={smape_value:.2f}% | "
+            f"Holdout={holdout_percentage:.1f}%"
+        )
 
     logger.info(f"Global optimization completed: {len(selected_cells)} cells selected with corrected control groups")
 
