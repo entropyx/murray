@@ -949,19 +949,13 @@ if file is not None:
                 # st.write(f"Prediction value: {st.session_state.prediction_value}")
 
                 last_day = pd.to_datetime(last_day)
-                treatment_day = last_day - pd.Timedelta(
-                    days=end_position_treatment - start_position_treatment
-                )
-                second_report_day = last_day - pd.Timedelta(
-                    days=st.session_state.period
-                )
-                firt_report_day = last_day - pd.Timedelta(
-                    days=(st.session_state.period * 2) - 1
-                )
-                treatment_day = last_day - pd.Timedelta(
-                    days=st.session_state.period - 1
-                )
+                treatment_day = start_treatment
+                end_treatment_day = end_treatment
+                second_report_day = start_treatment - pd.Timedelta(days=1)
+                firt_report_day = start_treatment - pd.Timedelta(days=st.session_state.period)
+
                 treatment_day = treatment_day.strftime("%Y-%m-%d")
+                end_treatment_day = end_treatment_day.strftime("%Y-%m-%d")
                 last_day = last_day.strftime("%Y-%m-%d")
                 firt_day = firt_day.strftime("%Y-%m-%d")
                 firt_report_day = firt_report_day.strftime("%Y-%m-%d")
@@ -1018,7 +1012,7 @@ if file is not None:
                             st.session_state.permutation_test_report,
                             treatment_day,
                             firt_day,
-                            last_day,
+                            end_treatment_day,
                             col_target,
                             st.session_state.metric_mmm,
                             st.session_state.mmm_option,
