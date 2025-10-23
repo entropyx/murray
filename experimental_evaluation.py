@@ -861,9 +861,12 @@ if file is not None:
                             plot_permutation_test_report(results)
                         )
                         st.session_state.period = period
-                        second_report_day = last_day - pd.Timedelta(days=period)
-                        firt_report_day = last_day - pd.Timedelta(days=(period * 2) - 1)
-                        treatment_day = last_day - pd.Timedelta(days=period - 1)
+                        st.session_state.second_report_day = start_treatment - pd.Timedelta(days=1)
+                        st.session_state.firt_report_day = start_treatment - pd.Timedelta(days=period)
+                        st.session_state.treatment_day = start_treatment
+                        st.session_state.end_treatment_day = end_treatment
+                        st.session_state.firt_day = firt_day
+                        st.session_state.last_day = last_day
 
                         length_treatment = len(treatment_group)
                         (
@@ -937,24 +940,13 @@ if file is not None:
                 # st.write(f"Upper bound value: {st.session_state.upper_bound_value}")
                 # st.write(f"Prediction value: {st.session_state.prediction_value}")
 
-                last_day = pd.to_datetime(last_day)
-                treatment_day = last_day - pd.Timedelta(
-                    days=end_position_treatment - start_position_treatment
-                )
-                second_report_day = last_day - pd.Timedelta(
-                    days=st.session_state.period
-                )
-                firt_report_day = last_day - pd.Timedelta(
-                    days=(st.session_state.period * 2) - 1
-                )
-                treatment_day = last_day - pd.Timedelta(
-                    days=st.session_state.period - 1
-                )
-                treatment_day = treatment_day.strftime("%Y-%m-%d")
-                last_day = last_day.strftime("%Y-%m-%d")
-                firt_day = firt_day.strftime("%Y-%m-%d")
-                firt_report_day = firt_report_day.strftime("%Y-%m-%d")
-                second_report_day = second_report_day.strftime("%Y-%m-%d")
+                # Format dates for PDF report
+                treatment_day_formatted = st.session_state.treatment_day.strftime("%Y-%m-%d")
+                end_treatment_formatted = st.session_state.end_treatment_day.strftime("%Y-%m-%d")
+                last_day_formatted = st.session_state.last_day.strftime("%Y-%m-%d")
+                firt_day_formatted = st.session_state.firt_day.strftime("%Y-%m-%d")
+                firt_report_day_formatted = st.session_state.firt_report_day.strftime("%Y-%m-%d")
+                second_report_day_formatted = st.session_state.second_report_day.strftime("%Y-%m-%d")
 
                 # Absolute values (comoarison)
                 pre_treatment = st.session_state.pre_treatment
@@ -1005,15 +997,15 @@ if file is not None:
                             st.session_state.power,
                             st.session_state.period,
                             st.session_state.permutation_test_report,
-                            treatment_day,
-                            firt_day,
-                            last_day,
+                            treatment_day_formatted,
+                            firt_day_formatted,
+                            end_treatment_formatted,
                             col_target,
                             st.session_state.metric_mmm,
                             st.session_state.mmm_option,
                             st.session_state.lift_total,
-                            firt_report_day,
-                            second_report_day,
+                            firt_report_day_formatted,
+                            second_report_day_formatted,
                             st.session_state.pre_treatment,
                             st.session_state.pre_counterfactual,
                             st.session_state.post_treatment,
