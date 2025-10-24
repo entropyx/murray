@@ -2077,12 +2077,24 @@ def run_geo_analysis_streamlit_app(
         None: If analysis fails due to insufficient data or invalid configuration.
     """
     logger.info("Starting run_geo_analysis_streamlit_app............")
+    logger.info("=" * 80)
+    logger.info("PARAMETERS:")
+    logger.info(f"  - data shape: {data.shape}")
+    logger.info(f"  - maximum_treatment_percentage: {maximum_treatment_percentage}")
+    logger.info(f"  - significance_level: {significance_level}")
+    logger.info(f"  - deltas_range: {deltas_range}")
+    logger.info(f"  - periods_range: {periods_range}")
+    logger.info(f"  - excluded_locations: {excluded_locations}")
+    logger.info(f"  - multicell_config: {multicell_config}")
+    logger.info("=" * 80)
 
     if progress_bar_1 or progress_bar_2 or status_text_1 or status_text_2 is None:
         print("Simulation in progress........")
 
     periods = list(np.arange(*periods_range))
     deltas = np.arange(*deltas_range)
+    logger.info(f"Computed periods: {periods}")
+    logger.info(f"Computed deltas: {deltas.tolist()}")
 
     # Step 1: Generate market correlations
     logger.info("Step 1: Generating market correlations.....")
@@ -2255,11 +2267,24 @@ def run_geo_analysis(
             - "sensitivity_results": Sensitivity results for evaluated deltas and periods.
             - "series_lifts": Adjusted series for each delta and period.
     """
+    logger.info("Starting run_geo_analysis............")
+    logger.info("=" * 80)
+    logger.info("PARAMETERS:")
+    logger.info(f"  - data shape: {data.shape}")
+    logger.info(f"  - maximum_treatment_percentage: {maximum_treatment_percentage}")
+    logger.info(f"  - significance_level: {significance_level}")
+    logger.info(f"  - deltas_range: {deltas_range}")
+    logger.info(f"  - periods_range: {periods_range}")
+    logger.info(f"  - excluded_locations: {excluded_locations}")
+    logger.info("=" * 80)
+
     if progress_bar_1 or progress_bar_2 or status_text_1 or status_text_2 is None:
         logger.info("Simulation in progress........")
 
     periods = list(np.arange(*periods_range))
     deltas = np.arange(*deltas_range)
+    logger.info(f"Computed periods: {periods}")
+    logger.info(f"Computed deltas: {deltas.tolist()}")
 
     # Step 1: Generate market correlations
     correlation_matrix = market_correlations(data)
