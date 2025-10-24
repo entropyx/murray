@@ -769,11 +769,27 @@ if file is not None:
                 help="Select locations to include in treatment group"
             )
 
-            excluded_from_control = st.multiselect(
-                "Select excluded locations from control",
-                data1["location"].unique(),
-                help="These locations will not be considered for control group"
+            # Control group selection mode
+            control_mode = st.radio(
+                "Control group selection mode",
+                ["Automatic", "Manual"],
+                help="Choose automatic selection or manually select control locations"
             )
+
+            if control_mode == "Manual":
+                manual_control_group = st.multiselect(
+                    "Select control group (Manual)",
+                    [loc for loc in data1["location"].unique() if loc not in treatment_group],
+                    help="Manually select locations for control group"
+                )
+                excluded_from_control = None
+            else:
+                manual_control_group = None
+                excluded_from_control = st.multiselect(
+                    "Select excluded locations from control",
+                    data1["location"].unique(),
+                    help="These locations will not be considered for control group"
+                )
 
             spend = st.number_input("Select spend")
             mmm_option = st.selectbox(
@@ -805,6 +821,8 @@ if file is not None:
                 "end_treatment": end_treatment,
                 "treatment_group": treatment_group,
                 "excluded_from_control": excluded_from_control,
+                "manual_control_group": manual_control_group,
+                "control_mode": control_mode,
                 "spend": spend,
                 "mmm_option": mmm_option,
                 "col_target": col_target,
@@ -832,6 +850,7 @@ if file is not None:
                             treatment_group,
                             spend,
                             excluded_from_control=excluded_from_control,
+                            manual_control_group=manual_control_group,
                         )
                         treatment = results["treatment"]
                         st.session_state.treatment = treatment

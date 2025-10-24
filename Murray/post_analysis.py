@@ -16,6 +16,7 @@ def run_geo_evaluation(
     treatment_group,
     spend,
     excluded_from_control=None,
+    manual_control_group=None,
     n_permutations=50000,
     inference_type="iid",
     significance_level=0.1,
@@ -54,13 +55,17 @@ def run_geo_evaluation(
     correlation_matrix = market_correlations(data_input)
 
     logger.info("Selecting control group...")
-    control_group = select_controls(
-        correlation_matrix=correlation_matrix,
-        treatment_group=treatment_group,
-        excluded_from_control=excluded_from_control,
-        min_correlation=0.8,
-    )
-    logger.info(f"Control group selected: {control_group}")
+    if manual_control_group:
+        control_group = manual_control_group
+        logger.info(f"Using manual control group: {control_group}")
+    else:
+        control_group = select_controls(
+            correlation_matrix=correlation_matrix,
+            treatment_group=treatment_group,
+            excluded_from_control=excluded_from_control,
+            min_correlation=0.8,
+        )
+        logger.info(f"Control group automatically selected: {control_group}")
 
     period = end_position_treatment - start_position_treatment
 
@@ -71,6 +76,21 @@ def run_geo_evaluation(
 
     df_pivot = data_input.pivot(index="time", columns="location", values="Y")
     logger.info(f"Pivot table shape: {df_pivot.shape}")
+    logger.info(f"Available locations in pivot table: {df_pivot.columns.tolist()}")
+
+    # Validate that all control group locations exist in the data
+    missing_control = [loc for loc in control_group if loc not in df_pivot.columns]
+    if missing_control:
+        logger.warning(f"Control group locations not found in data: {missing_control}")
+        control_group = [loc for loc in control_group if loc in df_pivot.columns]
+        logger.info(f"Adjusted control group to available locations: {control_group}")
+
+    # Validate that all treatment group locations exist in the data
+    missing_treatment = [loc for loc in treatment_group if loc not in df_pivot.columns]
+    if missing_treatment:
+        logger.warning(f"Treatment group locations not found in data: {missing_treatment}")
+        treatment_group = [loc for loc in treatment_group if loc in df_pivot.columns]
+        logger.info(f"Adjusted treatment group to available locations: {treatment_group}")
 
     # For model training, truncate data until end_treatment to avoid using future data
     X_train_data = df_pivot[control_group].iloc[:end_position_treatment].values
@@ -116,10 +136,18 @@ def run_geo_evaluation(
     X_full_scaled = scaler_x.transform(X_full)
     predictions_full_complete, _ = model.predict(X_full_scaled, time_index=time_index_full)
 
-    # Filter control group based on weights
-    filtered_control_group, filtered_weights = model.filter_controls_by_weights(
-        control_group, min_weight_threshold=0.001
-    )
+    # Filter control group based on weights (skip filtering for manual control group)
+    if manual_control_group:
+        # Keep all manually selected control locations regardless of weights
+        filtered_control_group = control_group
+        filtered_weights = model.w_
+        logger.info(f"Manual control group: keeping all selected locations regardless of weights")
+    else:
+        # For automatic selection, filter out locations with very low weights
+        filtered_control_group, filtered_weights = model.filter_controls_by_weights(
+            control_group, min_weight_threshold=0.001
+        )
+        logger.info(f"Automatic control group: filtered based on weights (threshold=0.001)")
 
     # Process truncated data (for analysis metrics)
     counterfactual_truncated = predictions_truncated.reshape(-1, 1)

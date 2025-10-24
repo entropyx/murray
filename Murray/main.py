@@ -2022,14 +2022,13 @@ def evaluate_sensitivity(
                 (res[0], res[1], res[2], res[4]) for res in results
             ]  # (delta, power, power_ci, p_value)
 
-            mde = next(
-                (
-                    delta
-                    for delta, power, ci, p_value in statistical_power
-                    if power >= 0.8
-                ),
-                None,
-            )
+            # Find MDE: smallest absolute value where power >= 0.8
+            valid_mdes = [
+                delta
+                for delta, power, ci, p_value in statistical_power
+                if power >= 0.8
+            ]
+            mde = min(valid_mdes, key=abs) if valid_mdes else None
 
             p_value = None
             power_ci = None
@@ -2044,12 +2043,17 @@ def evaluate_sensitivity(
                         power = pwr
                         break
 
+            # Save MDE-specific p_value before it gets overwritten
+            mde_p_value = p_value
+            mde_power = power
+            mde_power_ci = power_ci
+
             # Format values safely for logging
-            p_value_str = f"{p_value:.4f}" if p_value is not None else "None"
-            power_str = f"{power:.4f}" if power is not None else "None"
+            p_value_str = f"{mde_p_value:.4f}" if mde_p_value is not None else "None"
+            power_str = f"{mde_power:.4f}" if mde_power is not None else "None"
             power_ci_str = (
-                f"({power_ci[0]:.4f} - {power_ci[1]:.4f})"
-                if power_ci is not None
+                f"({mde_power_ci[0]:.4f} - {mde_power_ci[1]:.4f})"
+                if mde_power_ci is not None
                 else "None"
             )
             SMAPE_str = f"{SMAPE:.4f}" if SMAPE is not None else "None"
@@ -2065,9 +2069,9 @@ def evaluate_sensitivity(
             results_by_period[period] = {
                 "Statistical Power": statistical_power,
                 "MDE": mde,
-                "P-Value": p_value,
-                "MDE_CI": power_ci,
-                "Power": power,
+                "P-Value": mde_p_value,
+                "MDE_CI": mde_power_ci,
+                "Power": mde_power,
             }
 
         sensitivity_results[size] = results_by_period

@@ -165,6 +165,9 @@ def generate_pdf(
         pdf.set_font("Poppins", size=10)
         pdf.set_text_color(33, 31, 36)
 
+        # Convert confidence_level to significance_level
+        significance_threshold = 1 - confidence_level
+
         if p_value < 0.001:
             p_value_str = f"{p_value:.6f} (p < 0.001)"
             significance = "Highly Significant"
@@ -189,21 +192,21 @@ def generate_pdf(
                 "This means there is less than a 5% chance that these results occurred by chance. "
                 "We have good evidence that the treatment is having a positive effect."
             )
-        elif p_value < 0.1:
-            p_value_str = f"{p_value:.4f} (p < 0.1)"
-            significance = "Marginally Significant"
+        elif p_value < significance_threshold:
+            p_value_str = f"{p_value:.4f} (p < {significance_threshold:.2f})"
+            significance = "Significant"
             explanation = (
-                f"The obtained p-value is {p_value_str}, indicating that the result is {significance.lower()}. "
-                "This means there is less than a 10% chance that these results occurred by chance. "
-                "While there is evidence of a treatment effect, the results should be interpreted with some caution."
+                f"The obtained p-value is {p_value_str}, indicating that the result is {significance.lower()} at your chosen significance level of {significance_threshold*100:.0f}%. "
+                f"This means there is less than a {significance_threshold*100:.0f}% chance that these results occurred by chance. "
+                "We have evidence that the treatment is having an effect based on your confidence threshold."
             )
         else:
-            p_value_str = f"{p_value:.4f} (p ≥ 0.1)"
+            p_value_str = f"{p_value:.4f} (p ≥ {significance_threshold:.2f})"
             significance = "Not Significant"
             explanation = (
-                f"The obtained p-value is {p_value_str}, indicating that the result is {significance.lower()}. "
-                "This means there is more than a 10% chance that these results occurred by chance. "
-                "We don't have sufficient evidence to conclude that the treatment is having a real effect."
+                f"The obtained p-value is {p_value_str}, indicating that the result is {significance.lower()} at your chosen significance level of {significance_threshold*100:.0f}%. "
+                f"This means there is more than a {significance_threshold*100:.0f}% chance that these results occurred by chance. "
+                "We don't have sufficient evidence to conclude that the treatment is having a real effect based on your confidence threshold."
             )
 
         pdf.multi_cell(0, 5, explanation)
@@ -841,11 +844,11 @@ if file is not None:
             col1, col2, col3 = st.columns(3)
             with col1:
                 delta_min = st.number_input(
-                    "Lift Min:", min_value=0.00, max_value=0.9, value=0.01, step=0.01
+                    "Lift Min:", min_value=-1.00, max_value=0.9, value=0.01, step=0.01
                 )
             with col2:
                 delta_max = st.number_input(
-                    "Lift Max:", min_value=0.02, max_value=1.0, value=0.15, step=0.01
+                    "Lift Max:", min_value=-1.00, max_value=1.0, value=0.15, step=0.01
                 )
             with col3:
                 delta_step = st.number_input(
@@ -1571,6 +1574,7 @@ if file is not None:
 
                                     mde = None
                                     power = None
+                                    p_value = None
                                     if matching_size is not None and st.session_state.sensitivity_results is not None:
                                         mde = st.session_state.sensitivity_results[
                                             matching_size
@@ -1578,6 +1582,9 @@ if file is not None:
                                         power = st.session_state.sensitivity_results[
                                             matching_size
                                         ][period_idx].get("Power", None)
+                                        p_value = st.session_state.sensitivity_results[
+                                            matching_size
+                                        ][period_idx].get("P-Value", None)
 
                                 if mde is not None:
                                     st.write(
@@ -1586,6 +1593,10 @@ if file is not None:
                                 if power is not None:
                                     st.write(
                                         f"- **Statistical Power:** {round(power*100)}%"
+                                    )
+                                if p_value is not None:
+                                    st.write(
+                                        f"- **P-value:** {round(p_value, 4)}"
                                     )
                                 random_sate = cleaned["location"].unique()[0]
                                 filtered_data = cleaned[
