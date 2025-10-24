@@ -2093,8 +2093,6 @@ def run_geo_analysis_streamlit_app(
 
     periods = list(np.arange(*periods_range))
     deltas = np.arange(*deltas_range)
-    logger.info(f"Computed periods: {periods}")
-    logger.info(f"Computed deltas: {deltas.tolist()}")
 
     # Step 1: Generate market correlations
     logger.info("Step 1: Generating market correlations.....")
@@ -2283,8 +2281,6 @@ def run_geo_analysis(
 
     periods = list(np.arange(*periods_range))
     deltas = np.arange(*deltas_range)
-    logger.info(f"Computed periods: {periods}")
-    logger.info(f"Computed deltas: {deltas.tolist()}")
 
     # Step 1: Generate market correlations
     correlation_matrix = market_correlations(data)
