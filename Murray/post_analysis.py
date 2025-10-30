@@ -67,6 +67,7 @@ def run_geo_evaluation(
 
     df_pivot = data_input.pivot(index="time", columns="location", values="Y")
     logger.info(f"Pivot table shape: {df_pivot.shape}")
+    logger.info(f"Available locations: {sorted(df_pivot.columns.tolist())}")
 
     # For model training, truncate data until end_treatment to avoid using future data
     X_train_data = df_pivot[control_group].iloc[:end_position_treatment].values
