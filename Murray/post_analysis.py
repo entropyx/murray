@@ -29,8 +29,8 @@ def run_geo_evaluation(
 
     random_sate = data_input["location"].unique()[0]
     filtered_data = data_input[data_input["location"] == random_sate].copy()
-    start_treatment = pd.to_datetime(start_treatment, dayfirst=True)
-    end_treatment = pd.to_datetime(end_treatment, dayfirst=True)
+    start_treatment = pd.to_datetime(start_treatment, format='%m/%d/%Y')
+    end_treatment = pd.to_datetime(end_treatment, format='%m/%d/%Y')
     filtered_data["time"] = pd.to_datetime(filtered_data["time"])
     start_idx = (filtered_data["time"].dt.date == start_treatment.date()).idxmax()
     end_idx = (filtered_data["time"].dt.date == end_treatment.date()).idxmax()
@@ -259,7 +259,7 @@ def get_evaluation_chart_data(
     dates = filtered_data["time"].dt.date.astype(str).tolist()
 
     # Calculate treatment start position
-    start_treatment = pd.to_datetime(start_treatment, dayfirst=True)
+    start_treatment = pd.to_datetime(start_treatment, format='%m/%d/%Y')
     start_idx = (filtered_data["time"].dt.date == start_treatment.date()).idxmax()
     start_position_treatment = filtered_data.index.get_loc(start_idx)
 
