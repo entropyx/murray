@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 from scipy import stats
 from logger_config import get_logger
+import unicodedata
 
 logger = get_logger("auxiliary")
 
@@ -76,7 +77,13 @@ def cleaned_data(data, col_target, col_locations, col_dates, fill_value=0):
         data = data[~data[col_locations].isin(invalid_values)]
         data = data.dropna(subset=[col_locations])
 
-        data[col_locations] = data[col_locations].str.strip().str.lower()
+        # Normalize location names: strip, lowercase, and remove accents
+        data[col_locations] = (
+            data[col_locations]
+            .str.strip()
+            .str.lower()
+            .apply(lambda x: unicodedata.normalize('NFKD', x).encode('ASCII', 'ignore').decode('ASCII'))
+        )
 
         data_input = data.rename(
             columns={col_locations: "location", col_target: "Y", col_dates: "time"}
