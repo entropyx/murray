@@ -402,10 +402,10 @@ def analyze_evaluation_task(
 
         # Stage 2: Date Processing & Validation
         progress_updater.update_stage_progress(0.3, "Converting treatment start date...")
-        treatment_start_date = pd.to_datetime(treatment_start_date, format='%m/%d/%Y')
+        treatment_start_date = pd.to_datetime(treatment_start_date)
 
         progress_updater.update_stage_progress(0.7, "Converting treatment end date...")
-        treatment_end_date = pd.to_datetime(treatment_end_date, format='%m/%d/%Y')
+        treatment_end_date = pd.to_datetime(treatment_end_date)
         
         progress_updater.update_stage_progress(1.0, f"Date processing completed: {treatment_start_date} to {treatment_end_date}")
         progress_updater.advance_stage("Starting geo evaluation analysis")
