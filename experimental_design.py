@@ -823,6 +823,22 @@ if file is not None:
                 "Select excluded locations", cleaned["location"].unique()
             )
 
+            # Excluded controls with enable checkbox
+            enable_excluded_controls = st.checkbox(
+                "Enable excluded controls",
+                value=False,
+                help="Enable to exclude specific locations from being used as controls",
+                key="enable_excluded_controls"
+            )
+
+            excluded_controls = []
+            if enable_excluded_controls:
+                excluded_controls = st.multiselect(
+                    "Select excluded controls",
+                    cleaned["location"].unique(),
+                    help="Locations that cannot be used as controls (they can still be treatments)"
+                )
+
             # Analyze data and recommend statistical test
             data_analysis = analyze_data_characteristics(cleaned, col_target="Y")
 
@@ -1010,6 +1026,8 @@ if file is not None:
             # Track parameter changes to reset simulation state
             current_params = {
                 "excluded_locations": excluded_locations,
+                "enable_excluded_controls": enable_excluded_controls,
+                "excluded_controls": excluded_controls,
                 "maximum_treatment_percentage_pre": maximum_treatment_percentage_pre,
                 "significance_level_pre": significance_level_pre,
                 "deltas_range": (delta_min, delta_max, delta_step),
@@ -1085,6 +1103,7 @@ if file is not None:
                             inference_type="iid",
                             global_optimization=enable_multicell,
                             cancellation_callback=is_cancelled,
+                            excluded_controls=excluded_controls,
                         )
 
                     if results is None:

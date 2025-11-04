@@ -17,6 +17,7 @@ def run_geo_evaluation(
     n_permutations=50000,
     inference_type="iid",
     significance_level=0.1,
+    excluded_controls=None,
 ):
     logger.info("Starting run_geo_evaluation")
     logger.info(f"Input data shape: {data_input.shape}")
@@ -25,6 +26,8 @@ def run_geo_evaluation(
     logger.info(
         f"n_permutations: {n_permutations}, significance_level: {significance_level}"
     )
+    if excluded_controls:
+        logger.info(f"Excluded controls: {excluded_controls}")
 
     random_sate = data_input["location"].unique()[0]
     filtered_data = data_input[data_input["location"] == random_sate].copy()
@@ -54,6 +57,7 @@ def run_geo_evaluation(
         correlation_matrix=correlation_matrix,
         treatment_group=treatment_group,
         min_correlation=0.8,
+        excluded_controls=excluded_controls,
     )
     logger.info(f"Control group selected: {control_group}")
 

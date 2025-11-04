@@ -70,6 +70,7 @@ def generate_pdf(
     lower_value,
     upper_value,
     prediction_value,
+    SMAPE=None,
 ):
     """
     Generates a PDF report with explanations for each aspect.
@@ -178,6 +179,61 @@ def generate_pdf(
     )
 
     pdf.ln(5)
+
+    # SMAPE Section
+    if pdf.get_y() > 250:
+        pdf.add_page()
+
+    pdf.set_font("Poppins", style="B", size=12)
+    pdf.set_text_color(27, 0, 67)
+    pdf.cell(200, 10, "Counterfactual Error", ln=True)
+    pdf.set_font("Poppins", size=10)
+    pdf.set_text_color(33, 31, 36)
+
+    if SMAPE is not None:
+        smape_percentage = SMAPE * 100 if SMAPE < 1 else SMAPE
+        pdf.multi_cell(
+            0,
+            5,
+            f"The Symmetric Mean Absolute Percentage Error (SMAPE) for this analysis is {smape_percentage:.2f}%. ",
+        )
+
+        # Excellent Counterfactual
+        if smape_percentage <= 10:
+            explanation = (
+                "This SMAPE value indicates excellent model fit. The synthetic control model demonstrates "
+                "very high accuracy in replicating the counterfactual scenario, providing strong confidence "
+                "in the treatment effect estimates."
+            )
+        # Good Counterfactual
+        elif smape_percentage <= 20:
+            explanation = (
+                "This SMAPE value indicates good model fit. The synthetic control model shows satisfactory "
+                "accuracy in creating the counterfactual, suggesting reliable analysis with "
+                "acceptable precision for treatment effect estimation."
+            )
+        # Moderate Counterfactual
+        elif smape_percentage <= 35:
+            explanation = (
+                "This SMAPE value indicates moderate model fit. While the synthetic control provides a "
+                "reasonable approximation of the counterfactual, there is some uncertainty in the precision "
+                "of treatment effect estimates. Consider additional model validation."
+            )
+        # Bad Counterfactual
+        else:
+            explanation = (
+                "This SMAPE value indicates bad model fit. The synthetic control model shows significant "
+                "deviation from the ideal counterfactual scenario. Exercise caution when interpreting "
+                "treatment effects and consider improving the model or using alternative approaches."
+            )
+
+        pdf.multi_cell(0, 5, explanation)
+        pdf.ln(3)
+
+    pdf.ln(5)
+
+    if pdf.get_y() > 250:
+        pdf.add_page()
 
     pdf.set_font("Poppins", style="B", size=12)
     pdf.set_text_color(27, 0, 67)
@@ -766,6 +822,22 @@ if file is not None:
             treatment_group = st.multiselect(
                 "Select treatment group", data1["location"].unique()
             )
+
+            # Excluded controls with enable checkbox
+            enable_excluded_controls = st.checkbox(
+                "Enable excluded controls",
+                value=False,
+                help="Enable to exclude specific locations from being used as controls",
+                key="enable_excluded_controls_eval"
+            )
+
+            excluded_controls = []
+            if enable_excluded_controls:
+                excluded_controls = st.multiselect(
+                    "Select excluded controls",
+                    data1["location"].unique(),
+                    help="Locations that cannot be used as controls (they can still be treatments)"
+                )
             spend = st.number_input("Select spend")
             mmm_option = st.selectbox(
                 "Select the option to calculate the iROAS or iCPA", ["iROAS", "iCPA"]
@@ -795,6 +867,8 @@ if file is not None:
                 "start_treatment": start_treatment,
                 "end_treatment": end_treatment,
                 "treatment_group": treatment_group,
+                "enable_excluded_controls": enable_excluded_controls,
+                "excluded_controls": excluded_controls,
                 "spend": spend,
                 "mmm_option": mmm_option,
                 "col_target": col_target,
@@ -821,6 +895,7 @@ if file is not None:
                             end_treatment,
                             treatment_group,
                             spend,
+                            excluded_controls=excluded_controls,
                         )
                         treatment = results["treatment"]
                         st.session_state.treatment = treatment
@@ -838,6 +913,8 @@ if file is not None:
                         st.session_state.observed_stat = observed_stat
                         null_stats = results["null_stats"]
                         st.session_state.null_stats = null_stats
+                        SMAPE = results["SMAPE"]
+                        st.session_state.SMAPE = SMAPE
 
                         total_Y = data1["Y"].sum()
                         treatment_Y = data1[data1["location"].isin(treatment_group)][
@@ -933,6 +1010,7 @@ if file is not None:
                 st.write(f"Power: {st.session_state.power}")
                 st.write(f"Percentage Lift: {st.session_state.percenge_lift} %")
                 st.write(f"Lift total: {st.session_state.lift_total}")
+                st.write(f"SMAPE: {round(results['SMAPE'], 2)}%")
                 st.write(f"Holdout percentage: {st.session_state.holdout_percentage} %")
                 st.write(f"Treatment group: {st.session_state.treatment_group}")
                 st.write(f"Control group: {st.session_state.control_group}")
@@ -1017,6 +1095,7 @@ if file is not None:
                             st.session_state.lower_bound_value,
                             st.session_state.upper_bound_value,
                             st.session_state.prediction_value,
+                            st.session_state.SMAPE,
                         )
 
                         with open(st.session_state.pdf_output, "rb") as file:
