@@ -1010,7 +1010,7 @@ if file is not None:
                 st.write(f"Power: {st.session_state.power}")
                 st.write(f"Percentage Lift: {st.session_state.percenge_lift} %")
                 st.write(f"Lift total: {st.session_state.lift_total}")
-                st.write(f"SMAPE: {round(results['SMAPE'], 2)}%")
+                st.write(f"SMAPE: {round(st.session_state.SMAPE, 2)}%")
                 st.write(f"Holdout percentage: {st.session_state.holdout_percentage} %")
                 st.write(f"Treatment group: {st.session_state.treatment_group}")
                 st.write(f"Control group: {st.session_state.control_group}")
