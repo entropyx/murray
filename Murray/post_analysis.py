@@ -139,8 +139,8 @@ def run_geo_evaluation(
     logger.info("Calculating metrics...")
     logger.info(f"Data shapes - treatment: {treatment.shape}, counterfactual: {counterfactual.shape}")
     
-    MAPE = np.mean(np.abs((y_original - counterfactual) / (y_original + 1e-10))) * 100
-    SMAPE = smape(y_original, counterfactual)
+    MAPE = round(np.mean(np.abs((y_original - counterfactual) / (y_original + 1e-10))) * 100, 2)
+    SMAPE = round(smape(y_original, counterfactual), 2)
 
     # Calculate percentage lift (only during treatment period)
     treatment_period_sum = np.sum(treatment[start_position_treatment:end_position_treatment])
@@ -151,7 +151,7 @@ def run_geo_evaluation(
     logger.info(f"Counterfactual period sum: {counterfactual_period_sum}")
     logger.info(f"Lift difference (treatment - counterfactual): {lift_difference}")
     
-    percenge_lift = (lift_difference / np.abs(counterfactual_period_sum)) * 100
+    percenge_lift = round((lift_difference / np.abs(counterfactual_period_sum)) * 100, 2)
 
     def compute_residuals(y_treatment, y_control):
         return y_treatment - y_control
@@ -178,8 +178,8 @@ def run_geo_evaluation(
     null_stats = np.array(null_stats)
 
     logger.info("Permutation test completed, calculating p-value and power...")
-    p_value = np.mean(abs(null_stats) >= abs(observed_stat))
-    power = np.mean(p_value < significance_level)
+    p_value = round(float(np.mean(abs(null_stats) >= abs(observed_stat))), 2)
+    power = round(float(np.mean(p_value < significance_level)), 2)
 
     length_treatment = len(treatment_group)
 
@@ -193,21 +193,21 @@ def run_geo_evaluation(
     results_evaluation = {
         "MAPE": MAPE,
         "SMAPE": SMAPE,
-        "counterfactual": counterfactual,
-        "treatment": treatment,
+        "counterfactual": np.round(counterfactual, 2),
+        "treatment": np.round(treatment, 2),
         "p_value": p_value,
         "power": power,
         "percenge_lift": percenge_lift,
         "control_group": filtered_control_group,
-        "observed_stat": observed_stat,
-        "null_stats": null_stats,
-        "weights": filtered_weights,
+        "observed_stat": round(float(observed_stat), 2),
+        "null_stats": np.round(null_stats, 2),
+        "weights": np.round(filtered_weights, 2),
         "period": period,
-        "spend": spend,
+        "spend": round(float(spend), 2),
         "length_treatment": length_treatment,
         # Complete data for plotting (including post-treatment)
-        "counterfactual_complete": counterfactual_complete,
-        "treatment_complete": treatment_complete,
+        "counterfactual_complete": np.round(counterfactual_complete, 2),
+        "treatment_complete": np.round(treatment_complete, 2),
         "time_index_full": time_index_full,
         # Period information for plotting zones
         "start_position_treatment": start_position_treatment,
@@ -307,37 +307,37 @@ def get_evaluation_chart_data(
     chart_data = {
         # Base series
         "dates": dates,
-        "treatment": treatment.tolist(),
-        "counterfactual": counterfactual.tolist(),
-        "point_difference": point_difference.tolist(),
-        "cumulative_effect": cumulative_effect,
+        "treatment": np.round(treatment, 2).tolist(),
+        "counterfactual": np.round(counterfactual, 2).tolist(),
+        "point_difference": np.round(point_difference, 2).tolist(),
+        "cumulative_effect": np.round(cumulative_effect, 2).tolist(),
 
         # Treatment period data
         "treatment_dates": dates[start_position_treatment:],
-        "y_treatment": y_treatment.tolist(),
-        "point_difference_treatment": point_difference_treatment.tolist(),
-        "cumulative_effect_treatment": cumulative_effect_treatment,
+        "y_treatment": np.round(y_treatment, 2).tolist(),
+        "point_difference_treatment": np.round(point_difference_treatment, 2).tolist(),
+        "cumulative_effect_treatment": np.round(cumulative_effect_treatment, 2).tolist(),
 
         # Confidence bands
-        "lower_bound": lower_bound.tolist(),
-        "upper_bound": upper_bound.tolist(),
-        "lower_bound_pd": lower_bound_pd.tolist(),
-        "upper_bound_pd": upper_bound_pd.tolist(),
-        "lower_bound_ce": lower_bound_ce.tolist(),
-        "upper_bound_ce": upper_bound_ce.tolist(),
+        "lower_bound": np.round(lower_bound, 2).tolist(),
+        "upper_bound": np.round(upper_bound, 2).tolist(),
+        "lower_bound_pd": np.round(lower_bound_pd, 2).tolist(),
+        "upper_bound_pd": np.round(upper_bound_pd, 2).tolist(),
+        "lower_bound_ce": np.round(lower_bound_ce, 2).tolist(),
+        "upper_bound_ce": np.round(upper_bound_ce, 2).tolist(),
 
         # Aggregate values
-        "lower_bound_value": float(lower_bound_value),
-        "upper_bound_value": float(upper_bound_value),
-        "prediction_value": float(prediction_value),
-        "att": float(att),
-        "incremental": float(incremental),
+        "lower_bound_value": round(float(lower_bound_value), 2),
+        "upper_bound_value": round(float(upper_bound_value), 2),
+        "prediction_value": round(float(prediction_value), 2),
+        "att": round(float(att), 2),
+        "incremental": round(float(incremental), 2),
 
         # Pre/post treatment periods
-        "pre_treatment": pre_treatment.tolist(),
-        "pre_counterfactual": pre_counterfactual.tolist(),
-        "post_treatment": post_treatment.tolist(),
-        "post_counterfactual": post_counterfactual.tolist(),
+        "pre_treatment": np.round(pre_treatment, 2).tolist(),
+        "pre_counterfactual": np.round(pre_counterfactual, 2).tolist(),
+        "post_treatment": np.round(post_treatment, 2).tolist(),
+        "post_counterfactual": np.round(post_counterfactual, 2).tolist(),
 
         # Metadata
         "start_position_treatment": start_position_treatment,

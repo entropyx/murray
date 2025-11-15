@@ -2146,7 +2146,7 @@ def calculate_confidence_bands(
     lower = predicted - band_width / 2
     upper = predicted + band_width / 2
 
-    return lower, upper
+    return np.round(lower, 2), np.round(upper, 2)
 
 
 def calculate_optimal_noise_scale(predictions, actual_values, min_relative_scale=0.005):
@@ -2167,4 +2167,4 @@ def calculate_optimal_noise_scale(predictions, actual_values, min_relative_scale
     relative_scale = max(np.median(relative_errors), min_relative_scale)
 
     final_scale = max(scale_mad, relative_scale * np.median(np.abs(actual_values)))
-    return final_scale
+    return round(float(final_scale), 2)

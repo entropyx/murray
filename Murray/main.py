@@ -330,6 +330,9 @@ class SyntheticControl(BaseEstimator, RegressorMixin):
         if np.sum(filtered_weights) > 0:
             filtered_weights = filtered_weights / np.sum(filtered_weights)
 
+        # Round weights to 2 decimal places
+        filtered_weights = np.round(filtered_weights, 2)
+
         return filtered_control_group, filtered_weights
 
 
@@ -357,7 +360,7 @@ def evaluate_group(
     logger.debug(f"Starting evaluation for treatment group: {treatment_group}")
 
     treatment_Y = data[data["location"].isin(treatment_group)]["Y"].sum()
-    holdout_percentage = (1 - (treatment_Y / total_Y)) * 100
+    holdout_percentage = round((1 - (treatment_Y / total_Y)) * 100, 2)
 
     logger.debug(
         f"Treatment Y: {treatment_Y}, Holdout percentage: {holdout_percentage:.2f}%"
@@ -428,27 +431,31 @@ def evaluate_group(
     )
 
     logger.debug("Calculating metrics")
-    MAPE = (
+    MAPE = round(
         np.mean(
             np.abs(
                 (y_original[split_index:] - counterfactual_full_original[split_index:])
                 / (y_original[split_index:] + 1e-10)
             )
         )
-        * 100
+        * 100,
+        2
     )
-    SMAPE_value = smape(
-        y_original[split_index:], counterfactual_full_original[split_index:]
+    SMAPE_value = round(
+        smape(
+            y_original[split_index:], counterfactual_full_original[split_index:]
+        ),
+        2
     )
-    observed_conformity = np.mean(y_original - counterfactual_full_original)
+    observed_conformity = round(float(np.mean(y_original - counterfactual_full_original)), 2)
 
     return (
         treatment_group,
         filtered_control_group,
         MAPE,
         SMAPE_value,
-        y_original,
-        counterfactual_full_original,
+        np.round(y_original, 2),
+        np.round(counterfactual_full_original, 2),
         filtered_weights,
         observed_conformity,
     )
@@ -678,7 +685,7 @@ def evaluate_group_exclusive(
     )
 
     treatment_Y = data[data["location"].isin(treatment_group)]["Y"].sum()
-    holdout_percentage = (1 - (treatment_Y / total_Y)) * 100
+    holdout_percentage = round((1 - (treatment_Y / total_Y)) * 100, 2)
 
     logger.debug(
         f"Treatment Y: {treatment_Y}, Holdout percentage: {holdout_percentage:.2f}%"
@@ -750,28 +757,32 @@ def evaluate_group_exclusive(
     )
 
     logger.debug("Calculating metrics")
-    MAPE = (
+    MAPE = round(
         np.mean(
             np.abs(
                 (y_original[split_index:] - counterfactual_full_original[split_index:])
                 / (y_original[split_index:] + 1e-10)
             )
         )
-        * 100
+        * 100,
+        2
     )
-    SMAPE_value = smape(
-        y_original[split_index:], counterfactual_full_original[split_index:]
+    SMAPE_value = round(
+        smape(
+            y_original[split_index:], counterfactual_full_original[split_index:]
+        ),
+        2
     )
 
-    observed_conformity = np.mean(y_original - counterfactual_full_original)
+    observed_conformity = round(float(np.mean(y_original - counterfactual_full_original)), 2)
 
     return (
         treatment_group,
         filtered_control_group,
         MAPE,
         SMAPE_value,
-        y_original,
-        counterfactual_full_original,
+        np.round(y_original, 2),
+        np.round(counterfactual_full_original, 2),
         filtered_weights,
         observed_conformity,
     )
@@ -818,10 +829,10 @@ def BetterGroups(
     """
     unique_locations = data["location"].unique()
     no_locations = len(unique_locations)
-    # max_group_size = round(no_locations * 0.35)
-    # min_elements_in_treatment = round(no_locations * 0.20)
-    max_group_size = round(no_locations * 0.45)
-    min_elements_in_treatment = round(no_locations * 0.15)
+    max_group_size = round(no_locations * 0.35)
+    min_elements_in_treatment = round(no_locations * 0.20)
+    # max_group_size = round(no_locations * 0.45)
+    # min_elements_in_treatment = round(no_locations * 0.15)
     min_holdout = 100 - (maximum_treatment_percentage * 100)
     total_Y = data["Y"].sum()
 
@@ -1062,7 +1073,7 @@ def BetterGroups(
             treatment_Y = data[data["location"].isin(best_treatment_group)]["Y"].sum()
 
             if total_Y > 0:
-                holdout_percentage = ((total_Y - treatment_Y) / total_Y) * 100
+                holdout_percentage = round(((total_Y - treatment_Y) / total_Y) * 100, 2)
             else:
                 holdout_percentage = 0.0
 
@@ -1395,8 +1406,8 @@ def optimize_global_multicell(
             logger.error(f"STILL HAVE OVERLAP in cell {i+1}: {overlap}")
         
         treatment_Y = data[data["location"].isin(treatment_group)]["Y"].sum()
-        holdout_percentage = (
-            ((total_Y - treatment_Y) / total_Y) * 100 if total_Y > 0 else 0.0
+        holdout_percentage = round(
+            ((total_Y - treatment_Y) / total_Y) * 100 if total_Y > 0 else 0.0, 2
         )
 
         result_dict = {
@@ -1735,17 +1746,17 @@ def simulate_power(
         null_stats = np.array(null_stats)
 
         # Two-sided test
-        p_value = np.mean(np.abs(null_stats) >= np.abs(observed_stat))
+        p_value = round(float(np.mean(np.abs(null_stats) >= np.abs(observed_stat))), 2)
         p_values.append(p_value)
 
         if p_value < significance_level:
             rejected_tests += 1
 
-    power = rejected_tests / n_power_simulations
+    power = round(rejected_tests / n_power_simulations, 2)
 
     # Calculate confidence interval for power estimate
     power_se = np.sqrt(power * (1 - power) / n_power_simulations)
-    power_ci = (max(0, power - 1.95 * power_se), min(1, power + 1.95 * power_se))
+    power_ci = (round(max(0, power - 1.95 * power_se), 2), round(min(1, power + 1.95 * power_se), 2))
 
     y_with_lift_sample = apply_lift(y_real, delta, start_treatment, end_treatment)
 
@@ -1753,7 +1764,7 @@ def simulate_power(
         f"Power simulation completed: power={power:.4f}, CI=({power_ci[0]:.4f}, {power_ci[1]:.4f}), mean p-value={np.mean(p_values):.4f}"
     )
 
-    return delta, power, power_ci, y_with_lift_sample, np.mean(p_values)
+    return delta, power, power_ci, y_with_lift_sample, round(float(np.mean(p_values)), 2)
 
 
 def run_simulation(
@@ -1914,7 +1925,7 @@ def evaluate_sensitivity(
                         logger.debug(f"Status update failed: {e}")
 
             statistical_power = [
-                (res[0], res[1], res[2], res[4]) for res in results
+                (round(res[0], 2), res[1], res[2], res[4]) for res in results
             ]  # (delta, power, power_ci, p_value)
             mde = next(
                 (
@@ -1925,20 +1936,20 @@ def evaluate_sensitivity(
                 None,
             )
 
-            p_value = None
+            mde_p_value = None
             power_ci = None
-            power = None
+            mde_power = None
             if mde is not None:
                 for delta, power, ci, p_value in statistical_power:
                     if delta == mde:
-                        p_value = p_value
+                        mde_p_value = p_value
                         power_ci = ci
-                        power = power
+                        mde_power = power
                         break
 
             # Format values safely for logging
-            p_value_str = f"{p_value:.4f}" if p_value is not None else "None"
-            power_str = f"{power:.4f}" if power is not None else "None"
+            p_value_str = f"{mde_p_value:.4f}" if mde_p_value is not None else "None"
+            power_str = f"{mde_power:.4f}" if mde_power is not None else "None"
             power_ci_str = (
                 f"({power_ci[0]:.4f} - {power_ci[1]:.4f})"
                 if power_ci is not None
@@ -1955,9 +1966,9 @@ def evaluate_sensitivity(
             results_by_period[period] = {
                 "Statistical Power": statistical_power,
                 "MDE": mde,
-                "P-Value": p_value,
+                "P-Value": mde_p_value,
                 "MDE_CI": power_ci,
-                "Power": power,
+                "Power": mde_power,
             }
 
         sensitivity_results[size] = results_by_period
@@ -2093,6 +2104,8 @@ def run_geo_analysis_streamlit_app(
 
     periods = list(np.arange(*periods_range))
     deltas = np.arange(*deltas_range)
+    # logger.info(f'Deltas: {deltas}')
+    # logger.info(f'Periods: {periods}')
 
     # Step 1: Generate market correlations
     logger.info("Step 1: Generating market correlations.....")
