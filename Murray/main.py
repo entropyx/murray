@@ -1795,7 +1795,7 @@ def evaluate_sensitivity(
                         logger.debug(f"Status update failed: {e}")
 
             statistical_power = [
-                (res[0], res[1], res[2], res[4]) for res in results
+                (round(res[0], 2), res[1], res[2], res[4]) for res in results
             ]  # (delta, power, power_ci, p_value)
             mde = next(
                 (
@@ -1806,20 +1806,20 @@ def evaluate_sensitivity(
                 None,
             )
 
-            p_value = None
+            mde_p_value = None
             power_ci = None
-            power = None
+            mde_power = None
             if mde is not None:
                 for delta, power, ci, p_value in statistical_power:
                     if delta == mde:
-                        p_value = p_value
+                        mde_p_value = p_value
                         power_ci = ci
-                        power = power
+                        mde_power = power
                         break
 
             # Format values safely for logging
-            p_value_str = f"{p_value:.4f}" if p_value is not None else "None"
-            power_str = f"{power:.4f}" if power is not None else "None"
+            p_value_str = f"{mde_p_value:.4f}" if mde_p_value is not None else "None"
+            power_str = f"{mde_power:.4f}" if mde_power is not None else "None"
             power_ci_str = (
                 f"({power_ci[0]:.4f} - {power_ci[1]:.4f})"
                 if power_ci is not None
@@ -1836,9 +1836,9 @@ def evaluate_sensitivity(
             results_by_period[period] = {
                 "Statistical Power": statistical_power,
                 "MDE": mde,
-                "P-Value": p_value,
+                "P-Value": mde_p_value,
                 "MDE_CI": power_ci,
-                "Power": power,
+                "Power": mde_power,
             }
 
         sensitivity_results[size] = results_by_period
