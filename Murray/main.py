@@ -86,10 +86,10 @@ def select_treatments(similarity_matrix, treatment_size, excluded_locations):
     max_combinations = comb(n, r)
 
     n_combinations = max_combinations
-    if n_combinations > 5000:
-        n_combinations = 5000
-    # if n_combinations > 2000:
-    #     n_combinations = 2000
+    # if n_combinations > 5000:
+    #     n_combinations = 5000
+    if n_combinations > 2000:
+        n_combinations = 2000
 
     logger.debug(f"Generating {n_combinations} combinations")
 
@@ -829,10 +829,10 @@ def BetterGroups(
     """
     unique_locations = data["location"].unique()
     no_locations = len(unique_locations)
-    # max_group_size = round(no_locations * 0.35)
-    # min_elements_in_treatment = round(no_locations * 0.20)
-    max_group_size = round(no_locations * 0.45)
-    min_elements_in_treatment = round(no_locations * 0.15)
+    max_group_size = round(no_locations * 0.35)
+    min_elements_in_treatment = round(no_locations * 0.20)
+    # max_group_size = round(no_locations * 0.45)
+    # min_elements_in_treatment = round(no_locations * 0.15)
     min_holdout = 100 - (maximum_treatment_percentage * 100)
     total_Y = data["Y"].sum()
 
@@ -1946,6 +1946,10 @@ def evaluate_sensitivity(
                         power_ci = ci
                         mde_power = power
                         break
+
+            # Standardize p-value: if < 0.001, set to 0.001
+            if mde_p_value is not None and mde_p_value < 0.001:
+                mde_p_value = 0.001
 
             # Format values safely for logging
             p_value_str = f"{mde_p_value:.4f}" if mde_p_value is not None else "None"
