@@ -89,7 +89,7 @@ def select_treatments(similarity_matrix, treatment_size, excluded_locations):
     if n_combinations > 5000:
         n_combinations = 5000
     # if n_combinations > 2000:
-    #     n_combinations = 2000
+        # n_combinations = 2000
 
     logger.debug(f"Generating {n_combinations} combinations")
 
@@ -1946,6 +1946,10 @@ def evaluate_sensitivity(
                         power_ci = ci
                         mde_power = power
                         break
+
+            # Standardize p-value: if < 0.001, set to 0.001
+            if mde_p_value is not None and mde_p_value < 0.001:
+                mde_p_value = 0.001
 
             # Format values safely for logging
             p_value_str = f"{mde_p_value:.4f}" if mde_p_value is not None else "None"
