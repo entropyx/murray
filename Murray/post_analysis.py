@@ -183,12 +183,18 @@ def run_geo_evaluation(
 
     length_treatment = len(treatment_group)
 
+    # Calculate holdout percentage - percentage of metric that treatment states represent
+    total_metric_sum = df_pivot.sum(axis=1).sum()  # Sum of all locations across all time periods
+    treatment_metric_sum = df_pivot[treatment_group].sum(axis=1).sum()  # Sum of treatment locations across all time periods
+    holdout_percentage = 100 - round((treatment_metric_sum / total_metric_sum) * 100, 2) 
+
     logger.info(f"Final results:")
     logger.info(f"  MAPE: {MAPE:.4f}")
     logger.info(f"  SMAPE: {SMAPE:.4f}")
     logger.info(f"  Percentage lift: {percenge_lift:.4f}%")
     logger.info(f"  P-value: {p_value:.6f}")
     logger.info(f"  Power: {power:.4f}")
+    logger.info(f"  Holdout percentage: {holdout_percentage:.2f}%")
 
     results_evaluation = {
         "MAPE": MAPE,
@@ -205,6 +211,7 @@ def run_geo_evaluation(
         "period": period,
         "spend": round(float(spend), 2),
         "length_treatment": length_treatment,
+        "holdout_percentage": holdout_percentage,
         # Complete data for plotting (including post-treatment)
         "counterfactual_complete": np.round(counterfactual_complete, 2),
         "treatment_complete": np.round(treatment_complete, 2),
@@ -354,6 +361,7 @@ def get_evaluation_chart_data(
         "null_stats": results["null_stats"].tolist(),
         "control_group": results["control_group"],
         "weights": results["weights"],
+        "holdout_percentage": results["holdout_percentage"],
     }
 
     logger.info("get_evaluation_chart_data completed successfully")
