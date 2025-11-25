@@ -447,8 +447,7 @@ def generate_pdf(
     os.remove(temp_image_path_permutation)
 
     pdf.ln(5)
-    if pdf.get_y() > 250:
-        pdf.add_page()
+    pdf.add_page()
 
     pdf.set_font("Poppins", size=10)
     pdf.set_text_color(33, 31, 36)
@@ -460,7 +459,7 @@ def generate_pdf(
     )
 
     pdf.ln(5)
-    if pdf.get_y() > 250:
+    if pdf.get_y() > 180:  
         pdf.add_page()
 
     pdf.image(temp_image_path_impact, x=10, y=pdf.get_y(), w=180, h=100)
