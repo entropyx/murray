@@ -23,8 +23,8 @@ def test_run_geo_evaluation(sample_data):
     """Checks that the geographic evaluation function runs correctly"""
     results = run_geo_evaluation(
         data_input=sample_data,
-        start_treatment="01-03-2023",  # dayfirst=True format: DD-MM-YYYY (March 1st)
-        end_treatment="10-03-2023",    # March 10th
+        start_treatment="2023-03-01",  # March 1st, 2023 (day 60 in the dataset)
+        end_treatment="2023-03-10",    # March 10th, 2023 (day 69 in the dataset)
         treatment_group=["Location_0", "Location_1"],
         spend=50000,
         n_permutations=100,
