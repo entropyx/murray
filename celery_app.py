@@ -32,8 +32,8 @@ celery_app.conf.update(
     task_send_sent_event=True,
     task_ignore_result=False,
     result_expires=86400,  # Keep results for 24 hours
-    task_soft_time_limit=3600,  # 1 hour soft limit
-    task_time_limit=7200,  # 2 hours hard limit
+    task_soft_time_limit=7200,  # 2 hours soft limit
+    task_time_limit=10800,  # 3 hours hard limit
     worker_prefetch_multiplier=1,  # Process one task at a time for better progress tracking
 )
 
