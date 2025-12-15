@@ -25,7 +25,13 @@ API_KEY = os.environ.get("MY_API_KEY", "default_key")
 api_key_header = APIKeyHeader(name="X-API-Key")
 
 REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
-redis_client = redis.Redis.from_url(REDIS_URL)
+redis_client = redis.Redis.from_url(
+    REDIS_URL,
+    socket_connect_timeout=5,
+    socket_timeout=5,
+    socket_keepalive=True,
+    retry_on_timeout=True
+)
 
 def check_api_key(api_key: str = Depends(api_key_header)):
     if api_key != API_KEY:

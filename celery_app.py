@@ -13,7 +13,13 @@ REDIS_PORT = os.getenv("REDIS_PORT", "6379")
 CELERY_BROKER_URL = f"redis://{REDIS_HOST}:{REDIS_PORT}/{REDIS_DB}"
 CELERY_RESULT_BACKEND = f"redis://{REDIS_HOST}:{REDIS_PORT}/{REDIS_DB}"
 
-redis_client = redis.Redis.from_url(CELERY_BROKER_URL)
+redis_client = redis.Redis.from_url(
+    CELERY_BROKER_URL,
+    socket_connect_timeout=5,
+    socket_timeout=5,
+    socket_keepalive=True,
+    retry_on_timeout=True
+)
 celery_app = Celery(
     "murray_tasks",
     broker=CELERY_BROKER_URL,
