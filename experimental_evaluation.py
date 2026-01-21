@@ -1000,7 +1000,7 @@ if file is not None:
                         st.session_state.incremental_report = incremental_report
 
                 if mmm_option == "iROAS":
-                    st.session_state.metric_mmm = spend / st.session_state.incremental
+                    st.session_state.metric_mmm = st.session_state.incremental / spend
                 else:
                     st.session_state.metric_mmm = spend / st.session_state.incremental
 
