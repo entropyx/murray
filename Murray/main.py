@@ -107,7 +107,7 @@ def select_treatments(similarity_matrix, treatment_size, excluded_locations):
 
 
 def select_controls(
-    correlation_matrix, treatment_group, min_correlation=0.8, fallback_n=1
+    correlation_matrix, treatment_group, min_correlation=0.8, fallback_n=1, excluded_controls=None
 ):
     """
     Dynamically selects control group states based on correlation values.
@@ -118,12 +118,16 @@ def select_controls(
         treatment_group (list): List of states in the treatment group.
         min_correlation (float): Minimum correlation threshold to consider a state as part of the control group.
         fallback_n (int): Number of top correlated states to select if no state meets the min_correlation.
+        excluded_controls (list): List of locations to exclude from control group selection.
 
     Returns:
         list: List of states selected as the control group.
     """
+    if excluded_controls is None:
+        excluded_controls = []
+
     logger.debug(
-        f"select_controls called: treatment_group={treatment_group}, min_correlation={min_correlation}"
+        f"select_controls called: treatment_group={treatment_group}, min_correlation={min_correlation}, excluded_controls={excluded_controls}"
     )
 
     control_group = set()
@@ -140,6 +144,7 @@ def select_controls(
             treatment_row[
                 (treatment_row >= min_correlation)
                 & (~treatment_row.index.isin(treatment_group))
+                & (~treatment_row.index.isin(excluded_controls))
             ]
             .sort_values(ascending=False)
             .index.tolist()
@@ -150,7 +155,10 @@ def select_controls(
                 f"No states meet min_correlation {min_correlation} for {treatment_location}, using fallback"
             )
             similar_states = (
-                treatment_row[~treatment_row.index.isin(treatment_group)]
+                treatment_row[
+                    (~treatment_row.index.isin(treatment_group))
+                    & (~treatment_row.index.isin(excluded_controls))
+                ]
                 .sort_values(ascending=False)
                 .head(fallback_n)
                 .index.tolist()
@@ -343,11 +351,11 @@ def smape(A, F):
 
 
 def evaluate_group(
-    treatment_group, data, total_Y, correlation_matrix, min_holdout, df_pivot, treatment_period=None
+    treatment_group, data, total_Y, correlation_matrix, min_holdout, df_pivot, treatment_period=None, excluded_controls=None
 ):
     """
     Evaluates a treatment group and returns error metrics.
-    
+
     Args:
         treatment_group: List of locations in the treatment group
         data: Input data
@@ -356,6 +364,7 @@ def evaluate_group(
         min_holdout: Minimum holdout percentage required
         df_pivot: Pivoted data with time as index
         treatment_period: Number of periods for treatment (if None, uses 80/20 split)
+        excluded_controls: List of locations to exclude from control group selection
     """
     logger.debug(f"Starting evaluation for treatment group: {treatment_group}")
 
@@ -377,6 +386,7 @@ def evaluate_group(
         correlation_matrix=correlation_matrix,
         treatment_group=treatment_group,
         min_correlation=0.8,
+        excluded_controls=excluded_controls,
     )
     logger.debug(f"Control group selected: {control_group}")
 
@@ -798,15 +808,16 @@ def BetterGroups(
     status_updater=None,
     multicell_config=None,
     global_optimization=False,
+    excluded_controls=None,
 ):
     """
     Enhanced simulates and evaluates treatment groups for geo-experiments.
-    
+
     Supports three modes:
     1. Single-cell mode: Finds optimal treatment groups for each size
     2. Multi-cell normal mode: Finds N best groups per size with location exclusivity
     3. Multi-cell global mode: Global optimization for heterogeneous cell sizes
-    
+
     Args:
         similarity_matrix (pd.DataFrame): Correlation matrix for treatment selection
         excluded_locations (list): List of locations to exclude from treatment selection
@@ -817,9 +828,8 @@ def BetterGroups(
         status_updater (callable): Status text updater function
         multicell_config (dict): Multi-cell configuration with 'sizes' and 'top_n' keys
         global_optimization (bool): Whether to use global optimization for multi-cell mode
-        search_strategy (str): Candidate generation strategy ("random", "similarity", "coverage", "adaptive")
-        candidate_multiplier (int): Multiple of cells_needed to generate as candidates per size
-    
+        excluded_controls (list): List of locations to exclude from control group selection
+
     Returns:
         dict: Results organized by mode:
             - Single-cell: {size: {group_info}}
@@ -1038,6 +1048,8 @@ def BetterGroups(
             [correlation_matrix] * total_groups,
             [min_holdout] * total_groups,
             [df_pivot] * total_groups,
+            [None] * total_groups,  # treatment_period
+            [excluded_controls] * total_groups,
         )
         for idx, result in enumerate(futures):
             results.append(result)
@@ -2061,6 +2073,7 @@ def run_geo_analysis_streamlit_app(
     inference_type="iid",
     global_optimization=False,
     progress_updater=None,
+    excluded_controls=None,
 ):
     """
     Runs a complete geo analysis pipeline including market correlation, group optimization,
@@ -2083,6 +2096,7 @@ def run_geo_analysis_streamlit_app(
         test_type (str): Statistical test type ("sum", "mean_diff", "t_test", "median_diff").
         inference_type (str): Type of inference ("iid" or "block").
         global_optimization (bool): Whether to use global optimization for multi-cell mode.
+        excluded_controls (list): List of locations to exclude from control group selection.
 
     Returns:
         dict: Dictionary containing simulation results, sensitivity results, and adjusted series lifts.
@@ -2132,6 +2146,7 @@ def run_geo_analysis_streamlit_app(
         status_updater=status_text_1,
         multicell_config=multicell_config,
         global_optimization=global_optimization,
+        excluded_controls=excluded_controls,
     )
 
     if simulation_results is None:
