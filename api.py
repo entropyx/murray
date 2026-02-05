@@ -125,6 +125,7 @@ async def analyze_design(
     location_column: str = Form(None),
     target_column: str = Form(None),
     excluded_locations: str = Form(None),
+    excluded_control_locations: str = Form(None),
     maximum_treatment_percentage: float = Form(0.3),
     significance_level: float = Form(0.1),
     deltas_range: str = Form("0.01,0.1,0.01"),
@@ -184,7 +185,13 @@ async def analyze_design(
             excluded_locations = tuple(map(str, excluded_locations.split(',')))
         else:
             excluded_locations = tuple()
-        
+
+        # Handle empty excluded_control_locations properly
+        if excluded_control_locations and excluded_control_locations.strip():
+            excluded_control_locations = tuple(map(str, excluded_control_locations.split(',')))
+        else:
+            excluded_control_locations = tuple()
+
         # Process multicell parameters
         multicell_config = None
         if enable_multicell:
@@ -221,6 +228,7 @@ async def analyze_design(
             location_column=location_column,
             target_column=target_column,
             excluded_locations=excluded_locations,
+            excluded_control_locations=excluded_control_locations,
             maximum_treatment_percentage=maximum_treatment_percentage,
             significance_level=significance_level,
             deltas_range=deltas_range,
@@ -263,6 +271,7 @@ async def analyze_evaluation(
     treatment_group: str = Form(...),
     spend: float = Form(...),
     mmm_option: str = Form(...),
+    excluded_control_locations: str = Form(None),
     webhook: str = Form(None)
 ):
     """
@@ -270,14 +279,20 @@ async def analyze_evaluation(
     """
     request_id = datetime.now().strftime("%Y%m%d_%H%M%S")
     logger.info(f"[{request_id}] Starting evaluation analysis request")
-    
+
     try:
         contents = await file.read()
         treatment_group = list(map(str, treatment_group.split(',')))
-        
+
+        # Handle empty excluded_control_locations properly
+        if excluded_control_locations and excluded_control_locations.strip():
+            excluded_control_locations = tuple(map(str, excluded_control_locations.split(',')))
+        else:
+            excluded_control_locations = tuple()
+
         # Prepare webhook dict if URL is provided
         webhook_dict = {"url": webhook} if webhook else None
-        
+
         # Submit task to Celery
         task = analyze_evaluation_task.delay(
             file_content=contents,
@@ -289,6 +304,7 @@ async def analyze_evaluation(
             treatment_group=treatment_group,
             spend=spend,
             mmm_option=mmm_option,
+            excluded_control_locations=excluded_control_locations,
             webhook=webhook_dict
         )
         

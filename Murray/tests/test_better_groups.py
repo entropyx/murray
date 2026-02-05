@@ -255,7 +255,7 @@ def test_better_groups_no_control(
 ):
     """Test BetterGroups when no control group can be found"""
 
-    def fake_select_controls(correlation_matrix, treatment_group, min_correlation):
+    def fake_select_controls(correlation_matrix, treatment_group, min_correlation, excluded_control_locations=None):
         return []
 
     monkeypatch.setattr("Murray.main.select_controls", fake_select_controls)

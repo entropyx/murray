@@ -107,6 +107,7 @@ def analyze_design_task(
     location_column: str,
     target_column: str,
     excluded_locations: tuple,
+    excluded_control_locations: tuple,
     maximum_treatment_percentage: float,
     significance_level: float,
     deltas_range: tuple,
@@ -258,6 +259,7 @@ def analyze_design_task(
         results = run_geo_analysis_streamlit_app(
             data=data,
             excluded_locations=excluded_locations,
+            excluded_control_locations=excluded_control_locations,
             maximum_treatment_percentage=maximum_treatment_percentage,
             significance_level=significance_level,
             deltas_range=deltas_range,
@@ -349,6 +351,7 @@ def analyze_evaluation_task(
     treatment_group: list,
     spend: float,
     mmm_option: str,
+    excluded_control_locations: tuple = None,
     webhook: dict = None
 ):
     task_id = self.request.id
@@ -420,6 +423,7 @@ def analyze_evaluation_task(
             end_treatment=treatment_end_date,
             treatment_group=treatment_group,
             significance_level=0.05,
+            excluded_control_locations=excluded_control_locations,
         )
         logger.info(f"[{task_id}] Geo evaluation with chart data completed")
 

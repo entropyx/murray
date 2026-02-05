@@ -18,6 +18,7 @@ def run_geo_evaluation(
     n_permutations=50000,
     inference_type="iid",
     significance_level=0.1,
+    excluded_control_locations=None,
 ):
     logger.info("Starting run_geo_evaluation")
     logger.info(f"Input data shape: {data_input.shape}")
@@ -26,6 +27,10 @@ def run_geo_evaluation(
     logger.info(
         f"n_permutations: {n_permutations}, significance_level: {significance_level}"
     )
+    logger.info(f"excluded_control_locations: {excluded_control_locations}")
+
+    if excluded_control_locations is None:
+        excluded_control_locations = []
 
     random_sate = data_input["location"].unique()[0]
     filtered_data = data_input[data_input["location"] == random_sate].copy()
@@ -55,6 +60,7 @@ def run_geo_evaluation(
         correlation_matrix=correlation_matrix,
         treatment_group=treatment_group,
         min_correlation=0.8,
+        excluded_control_locations=excluded_control_locations,
     )
     logger.info(f"Control group selected: {control_group}")
 
@@ -232,6 +238,7 @@ def get_evaluation_chart_data(
     end_treatment,
     treatment_group,
     significance_level=0.05,
+    excluded_control_locations=None,
 ):
     """
     Extract only the data needed for plotting charts from evaluation results.
@@ -242,6 +249,7 @@ def get_evaluation_chart_data(
         end_treatment: Treatment end date
         treatment_group: List of treatment locations
         significance_level: Significance level for confidence bands
+        excluded_control_locations: List of locations to exclude from control selection
 
     Returns:
         dict: Dictionary containing all data needed for chart plotting
@@ -250,7 +258,8 @@ def get_evaluation_chart_data(
 
     # First run the evaluation to get base results
     results = run_geo_evaluation(
-        data_input, start_treatment, end_treatment, treatment_group, spend=0
+        data_input, start_treatment, end_treatment, treatment_group, spend=0,
+        excluded_control_locations=excluded_control_locations
     )
 
     # Extract base values
