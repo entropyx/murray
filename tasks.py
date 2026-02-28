@@ -107,6 +107,7 @@ def analyze_design_task(
     location_column: str,
     target_column: str,
     excluded_locations: tuple,
+    excluded_controls: tuple,
     maximum_treatment_percentage: float,
     significance_level: float,
     deltas_range: tuple,
@@ -258,6 +259,7 @@ def analyze_design_task(
         results = run_geo_analysis_streamlit_app(
             data=data,
             excluded_locations=excluded_locations,
+            excluded_controls=excluded_controls,
             maximum_treatment_percentage=maximum_treatment_percentage,
             significance_level=significance_level,
             deltas_range=deltas_range,

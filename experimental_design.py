@@ -767,6 +767,9 @@ if file is not None:
             excluded_locations = st.multiselect(
                 "Select excluded locations", cleaned["location"].unique()
             )
+            excluded_controls = st.multiselect(
+                "Select excluded controls", cleaned["location"].unique()
+            )
 
             # Analyze data and recommend statistical test
             data_analysis = analyze_data_characteristics(cleaned, col_target="Y")
@@ -955,6 +958,7 @@ if file is not None:
             # Track parameter changes to reset simulation state
             current_params = {
                 "excluded_locations": excluded_locations,
+                "excluded_controls": excluded_controls,
                 "maximum_treatment_percentage_pre": maximum_treatment_percentage_pre,
                 "significance_level_pre": significance_level_pre,
                 "deltas_range": (delta_min, delta_max, delta_step),
@@ -1017,6 +1021,7 @@ if file is not None:
                         results = run_geo_analysis_streamlit_app(
                             data=cleaned,
                             excluded_locations=excluded_locations,
+                            excluded_controls=excluded_controls,
                             maximum_treatment_percentage=maximum_treatment_percentage,
                             significance_level=significance_level,
                             deltas_range=deltas_range,
@@ -1056,6 +1061,7 @@ if file is not None:
                         with st.expander("🔧 Current Analysis Settings", expanded=False):
                             st.write(f"**Maximum Treatment Percentage:** {maximum_treatment_percentage*100:.1f}%")
                             st.write(f"**Excluded Locations:** {len(excluded_locations)} locations")
+                            st.write(f"**Excluded Controls:** {len(excluded_controls)} controls")
                             st.write(f"**Total Locations Available:** {len(cleaned['location'].unique())} locations")
                             st.write(f"**Time Periods:** {len(cleaned['time'].unique())} periods")
                             st.write(f"**Total Y Sum:** {cleaned['Y'].sum():,.2f}")
