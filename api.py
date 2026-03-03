@@ -124,8 +124,8 @@ async def analyze_design(
     date_column: str = Form(None),
     location_column: str = Form(None),
     target_column: str = Form(None),
-    excluded_locations: str = Form(None),
-    excluded_controls: str = Form(None),
+    excluded_treatment_locations: str = Form(None),
+    excluded_control_locations: str = Form(None),
     maximum_treatment_percentage: float = Form(0.3),
     significance_level: float = Form(0.1),
     deltas_range: str = Form("0.01,0.1,0.01"),
@@ -180,16 +180,16 @@ async def analyze_design(
         # Parse parameters
         deltas_range = tuple(map(float, deltas_range.split(',')))
         periods_range = tuple(map(int, periods_range.split(',')))
-        # Handle empty excluded_locations properly
-        if excluded_locations and excluded_locations.strip():
-            excluded_locations = tuple(map(str, excluded_locations.split(',')))
+        # Handle empty excluded_treatment_locations properly
+        if excluded_treatment_locations and excluded_treatment_locations.strip():
+            excluded_treatment_locations = tuple(map(str, excluded_treatment_locations.split(',')))
         else:
-            excluded_locations = tuple()
-        # Handle empty excluded_controls properly
-        if excluded_controls and excluded_controls.strip():
-            excluded_controls = tuple(map(str, excluded_controls.split(',')))
+            excluded_treatment_locations = tuple()
+        # Handle empty excluded_control_locations properly
+        if excluded_control_locations and excluded_control_locations.strip():
+            excluded_control_locations = tuple(map(str, excluded_control_locations.split(',')))
         else:
-            excluded_controls = tuple()
+            excluded_control_locations = tuple()
 
         # Process multicell parameters
         multicell_config = None
@@ -226,8 +226,8 @@ async def analyze_design(
             date_column=date_column,
             location_column=location_column,
             target_column=target_column,
-            excluded_locations=excluded_locations,
-            excluded_controls=excluded_controls,
+            excluded_treatment_locations=excluded_treatment_locations,
+            excluded_control_locations=excluded_control_locations,
             maximum_treatment_percentage=maximum_treatment_percentage,
             significance_level=significance_level,
             deltas_range=deltas_range,

@@ -18,6 +18,7 @@ def run_geo_evaluation(
     n_permutations=50000,
     inference_type="iid",
     significance_level=0.1,
+    excluded_control_locations=None,
 ):
     logger.info("Starting run_geo_evaluation")
     logger.info(f"Input data shape: {data_input.shape}")
@@ -55,6 +56,7 @@ def run_geo_evaluation(
         correlation_matrix=correlation_matrix,
         treatment_group=treatment_group,
         min_correlation=0.8,
+        excluded_control_locations=excluded_control_locations,
     )
     logger.info(f"Control group selected: {control_group}")
 
@@ -99,6 +101,13 @@ def run_geo_evaluation(
 
     time_train = time_index[:start_position_treatment]
     time_test = time_index[start_position_treatment:]
+
+    if len(X_train) == 0:
+        raise ValueError(
+            f"No pre-treatment periods available for training. "
+            f"The treatment start date ({start_treatment}) is at or before the beginning of the dataset. "
+            f"Please select a later treatment start date."
+        )
 
     logger.info("Fitting synthetic control model...")
     model = SyntheticControl(use_ridge_adjustment=True, ridge_alpha=1.0)

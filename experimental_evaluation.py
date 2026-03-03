@@ -766,6 +766,9 @@ if file is not None:
             treatment_group = st.multiselect(
                 "Select treatment group", data1["location"].unique()
             )
+            excluded_control_locations = st.multiselect(
+                "Select excluded control locations", data1["location"].unique()
+            )
             spend = st.number_input("Select spend")
             mmm_option = st.selectbox(
                 "Select the option to calculate the iROAS or iCPA", ["iROAS", "iCPA"]
@@ -795,6 +798,7 @@ if file is not None:
                 "start_treatment": start_treatment,
                 "end_treatment": end_treatment,
                 "treatment_group": treatment_group,
+                "excluded_control_locations": excluded_control_locations,
                 "spend": spend,
                 "mmm_option": mmm_option,
                 "col_target": col_target,
@@ -814,14 +818,20 @@ if file is not None:
                     update_metrics("experimental_evaluation")
 
                     with st.spinner("Running analysis..."):
+                        try:
+                            results = run_geo_evaluation(
+                                data1,
+                                start_treatment,
+                                end_treatment,
+                                treatment_group,
+                                spend,
+                                excluded_control_locations=excluded_control_locations,
+                            )
+                        except ValueError as e:
+                            st.error(f"Error: {e}")
+                            st.session_state.evaluation_button_clicked = False
+                            st.stop()
 
-                        results = run_geo_evaluation(
-                            data1,
-                            start_treatment,
-                            end_treatment,
-                            treatment_group,
-                            spend,
-                        )
                         treatment = results["treatment"]
                         st.session_state.treatment = treatment
                         counterfactual = results["counterfactual"]
