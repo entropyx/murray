@@ -161,6 +161,35 @@ def test_better_groups_valid(similarity_matrix, correlation_matrix, test_data):
         ), "Holdout must be between 0 and 100"
 
 
+def test_better_groups_single_cell_two_stage_gate_fields(
+    similarity_matrix, correlation_matrix, test_data
+):
+    """ISS-1: single-cell selection is two-stage (rank by holdout SMAPE, then falsify),
+    and each size carries the falsification/gate fields."""
+    results = BetterGroups(
+        similarity_matrix=similarity_matrix,
+        excluded_locations=[],
+        data=test_data,
+        correlation_matrix=correlation_matrix,
+        maximum_treatment_percentage=0.50,
+        n_power_simulations_falsification=10,
+        n_permutations_falsification=50,
+    )
+
+    assert isinstance(results, dict) and len(results) > 0
+    for size, result in results.items():
+        for key in (
+            "Scaled L2 Imbalance",
+            "abs_lift_in_zero",
+            "false_positive_rate",
+            "fpr_gate_passed",
+            "abs_lift_gate_passed",
+            "gate_passed",
+        ):
+            assert key in result, f"missing two-stage field {key} for size {size}"
+        assert isinstance(result["gate_passed"], bool)
+
+
 def test_better_groups_empty_data(similarity_matrix, correlation_matrix):
     """Test BetterGroups with empty data"""
     empty_data = pd.DataFrame(columns=["time", "location", "Y"])
@@ -255,7 +284,7 @@ def test_better_groups_no_control(
 ):
     """Test BetterGroups when no control group can be found"""
 
-    def fake_select_controls(correlation_matrix, treatment_group, min_correlation):
+    def fake_select_controls(correlation_matrix, treatment_group, *args, **kwargs):
         return []
 
     monkeypatch.setattr("Murray.main.select_controls", fake_select_controls)
@@ -309,3 +338,114 @@ def test_better_groups_functionality():
     if results is not None:
         assert isinstance(results, dict), "Should return a dictionary"
         assert len(results) > 0, "Should have some results"
+
+
+def test_evaluate_group_respects_excluded_control_locations(cleaned_dataframe):
+    """`evaluate_group` (single-cell worker path) must thread excluded_control_locations into
+    select_controls so excluded locations never appear in the returned Control Group.
+    Regression: the single-cell BetterGroups branch called evaluate_group without this kwarg."""
+    from Murray.main import evaluate_group
+    correlation_matrix = market_correlations(cleaned_dataframe)
+    df_pivot = cleaned_dataframe.pivot(index="time", columns="location", values="Y")
+    total_Y = cleaned_dataframe["Y"].sum()
+    all_locations = list(correlation_matrix.columns)
+    treatment_group = [all_locations[0]]
+    to_exclude = all_locations[1]
+
+    result = evaluate_group(
+        treatment_group=treatment_group,
+        data=cleaned_dataframe,
+        total_Y=total_Y,
+        correlation_matrix=correlation_matrix,
+        min_holdout=0,
+        df_pivot=df_pivot,
+        excluded_control_locations=[to_exclude],
+    )
+
+    assert result is not None, "Expected evaluate_group to return a result tuple"
+    control_group = result[1]
+    assert to_exclude not in control_group, (
+        f"excluded_control_locations leaked into Control Group: {control_group}"
+    )
+
+
+def test_evaluate_group_returns_donor_matrix_and_scaled_l2(cleaned_dataframe):
+    """ISS-1: evaluate_group returns a 10-tuple with scaled_l2 at [8] (diagnostic /
+    tie-break) and the raw donor level matrix at [9] (for sliding-window refit)."""
+    from Murray.main import evaluate_group
+
+    correlation_matrix = market_correlations(cleaned_dataframe)
+    df_pivot = cleaned_dataframe.pivot(index="time", columns="location", values="Y")
+    total_Y = cleaned_dataframe["Y"].sum()
+    treatment_group = [list(correlation_matrix.columns)[0]]
+
+    result = evaluate_group(
+        treatment_group=treatment_group,
+        data=cleaned_dataframe,
+        total_Y=total_Y,
+        correlation_matrix=correlation_matrix,
+        min_holdout=0,
+        df_pivot=df_pivot,
+    )
+
+    assert len(result) == 10, "evaluate_group must return a 10-tuple"
+    scaled_l2, donor_matrix = result[8], result[9]
+    assert isinstance(scaled_l2, float), "result[8] must be the scaled_l2 imbalance (float)"
+    assert donor_matrix.ndim == 2, "result[9] must be the 2-D donor level matrix"
+    assert donor_matrix.shape[0] == len(df_pivot), "donor matrix has one row per period"
+
+
+# ---- ISS-7: rolling-origin CV for the ranking SMAPE ----
+
+def test_rolling_origin_smapes_returns_n_folds():
+    from Murray.main import _rolling_origin_smapes
+
+    rng = np.random.default_rng(0)
+    X = rng.random((100, 3)) * 10
+    y = X.sum(axis=1) + rng.normal(0, 0.5, 100)
+    s = _rolling_origin_smapes(X, y, n_folds=2)
+    assert len(s) == 2 and all(v >= 0 for v in s)
+
+
+def test_rolling_origin_smapes_empty_for_short_series():
+    from Murray.main import _rolling_origin_smapes
+
+    # too short to place an origin past the minimum training window -> no folds
+    assert _rolling_origin_smapes(np.ones((3, 2)), np.ones(3), n_folds=2) == []
+
+
+def test_evaluate_group_cv_smape_robust_to_recent_shock():
+    """A shock confined to the recent window inflates the single 80/20 holdout SMAPE;
+    averaging earlier forward-chaining folds (cv_folds>0) yields a lower, more robust
+    ranking SMAPE."""
+    from Murray.main import evaluate_group
+
+    rng = np.random.default_rng(1)
+    n = 100
+    dates = pd.date_range("2024-01-01", periods=n, freq="D")
+    base = rng.normal(100, 3, n)
+    series = {"T": base.copy()}
+    for name in ["A", "B", "C", "D"]:
+        series[name] = base + rng.normal(0, 1, n)
+    series["T"][-8:] *= 1.5  # recent shock, inside the holdout window
+
+    rows = [
+        {"time": d, "location": name, "Y": float(v)}
+        for name, s in series.items()
+        for d, v in zip(dates, s)
+    ]
+    data = pd.DataFrame(rows)
+    df_pivot = data.pivot(index="time", columns="location", values="Y")
+    correlation_matrix = market_correlations(data)
+    total_Y = data["Y"].sum()
+
+    common = dict(
+        treatment_group=["T"], data=data, total_Y=total_Y,
+        correlation_matrix=correlation_matrix, min_holdout=0, df_pivot=df_pivot,
+        treatment_period=20,
+    )
+    r_single = evaluate_group(**common, cv_folds=0)
+    r_cv = evaluate_group(**common, cv_folds=2)
+    assert r_cv[3] < r_single[3], (
+        f"CV SMAPE ({r_cv[3]}) should be below the shock-inflated single split ({r_single[3]})"
+    )
