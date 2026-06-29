@@ -1,8 +1,13 @@
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler
-from Murray.main import select_controls, SyntheticControl
-from Murray.auxiliary import market_correlations, handle_duplicates
-from Murray.plots import calculate_confidence_bands, calculate_optimal_noise_scale
+from .main import (
+    select_controls,
+    SyntheticControl,
+    conformal_att_interval,
+    conformal_pointwise_bands,
+    select_engine_isolated,
+)
+from .auxiliary import market_correlations, handle_duplicates
 import pandas as pd
 from logger_config import get_logger
 
@@ -15,6 +20,7 @@ def run_geo_evaluation(
     end_treatment,
     treatment_group,
     spend,
+    excluded_control_locations=None,
     n_permutations=50000,
     inference_type="iid",
     significance_level=0.1,
@@ -54,9 +60,15 @@ def run_geo_evaluation(
     control_group = select_controls(
         correlation_matrix=correlation_matrix,
         treatment_group=treatment_group,
-        min_correlation=0.8,
+        excluded_control_locations=excluded_control_locations,
     )
     logger.info(f"Control group selected: {control_group}")
+
+    if not control_group:
+        raise ValueError(
+            "No control locations available after applying excluded_control_locations. "
+            "Reduce the exclusion list so at least one candidate remains."
+        )
 
     period = end_position_treatment - start_position_treatment
 
@@ -101,7 +113,29 @@ def run_geo_evaluation(
     time_test = time_index[start_position_treatment:]
 
     logger.info("Fitting synthetic control model...")
-    model = SyntheticControl(use_ridge_adjustment=True, ridge_alpha=1.0)
+    # Combined engine (ISS-11): CV the ASCM lambda and pick ridge-on-time vs ASCM(lambda*),
+    # then fit the production model with the winner.
+    #
+    # CRITICAL: score the engine ONLY on the PRE-treatment period. X_train_data spans
+    # [0:end_position_treatment] (pre + intervention), so scoring with split=start_position
+    # would judge each engine by how well its counterfactual tracks the *treated* (effect-laden)
+    # outcome — that leaks the intervention signal into model selection and biases toward the
+    # engine that best follows the effect (under-calling the lift). Instead we slice to the
+    # pre-period and hold out its last ~20% as an effect-free validation window.
+    #
+    # The selector runs in an isolated single-threaded-BLAS process: its ~20 cvxpy solves can
+    # SIGSEGV in the Modal container (uncatchable native crash → runner crash loop), so we
+    # contain that to a child and fall back to ridge-on-time if it dies (see
+    # select_engine_isolated). One evaluation → the extra fits are negligible.
+    pre_len = start_position_treatment
+    pre_val_split = max(1, int(pre_len * 0.8))
+    chosen_aug, chosen_alpha, engine_label = select_engine_isolated(
+        X_train_data[:pre_len], y_train_data[:pre_len], pre_val_split
+    )
+    logger.info(f"SCM engine selected: {engine_label} (lambda={chosen_alpha})")
+    model = SyntheticControl(
+        use_ridge_adjustment=True, ridge_alpha=chosen_alpha, augmentation=chosen_aug
+    )
     model.fit(X_train, y_train, time_train=time_train)
     logger.info("Model fitted successfully")
 
@@ -232,6 +266,7 @@ def get_evaluation_chart_data(
     end_treatment,
     treatment_group,
     significance_level=0.05,
+    excluded_control_locations=None,
 ):
     """
     Extract only the data needed for plotting charts from evaluation results.
@@ -242,6 +277,10 @@ def get_evaluation_chart_data(
         end_treatment: Treatment end date
         treatment_group: List of treatment locations
         significance_level: Significance level for confidence bands
+        excluded_control_locations: Locations the user explicitly wants out of
+            the control group. Forwarded to `run_geo_evaluation`, which passes
+            it into `select_controls` so the candidate pool is filtered before
+            correlation selection rather than after.
 
     Returns:
         dict: Dictionary containing all data needed for chart plotting
@@ -250,7 +289,12 @@ def get_evaluation_chart_data(
 
     # First run the evaluation to get base results
     results = run_geo_evaluation(
-        data_input, start_treatment, end_treatment, treatment_group, spend=0
+        data_input,
+        start_treatment,
+        end_treatment,
+        treatment_group,
+        spend=0,
+        excluded_control_locations=excluded_control_locations,
     )
 
     # Extract base values
@@ -281,23 +325,30 @@ def get_evaluation_chart_data(
     point_difference_treatment = point_difference[start_position_treatment:]
     cumulative_effect_treatment = cumulative_effect[start_position_treatment:]
 
-    # Calculate confidence bands
-    ci = 1 - significance_level
-    noise_scale = calculate_optimal_noise_scale(y_treatment, counterfactual)
+    # Conformal confidence bands (Parte B4) — block-conformal, replaces the old
+    # synthetic-noise ribbon. Per-period bands for the charts (counterfactual / daily /
+    # cumulative) + the aggregate lift CI for the headline.
+    bands = conformal_pointwise_bands(
+        treatment,
+        counterfactual,
+        split_index=start_position_treatment,
+        significance_level=significance_level,
+    )
+    lower_bound, upper_bound = bands["lower_bound"], bands["upper_bound"]
+    lower_bound_pd, upper_bound_pd = bands["lower_bound_pd"], bands["upper_bound_pd"]
+    lower_bound_ce, upper_bound_ce = bands["lower_bound_ce"], bands["upper_bound_ce"]
 
-    lower_bound, upper_bound = calculate_confidence_bands(
-        y_treatment, noise_scale=noise_scale, ci=ci
-    )
-    lower_bound_pd, upper_bound_pd = calculate_confidence_bands(
-        point_difference_treatment, ci=ci
-    )
-    lower_bound_ce, upper_bound_ce = calculate_confidence_bands(
-        cumulative_effect_treatment, ci=ci
+    conformal = conformal_att_interval(
+        treatment,
+        counterfactual,
+        split_index=start_position_treatment,
+        significance_level=significance_level,
     )
 
-    # Calculate aggregate values
-    lower_bound_value = np.sum(lower_bound)
-    upper_bound_value = np.sum(upper_bound)
+    # Aggregate incremental-effect CI = the cumulative band at the end of the window.
+    incremental_value = float(np.sum(point_difference_treatment))
+    lower_bound_value = lower_bound_ce[-1] if lower_bound_ce else incremental_value
+    upper_bound_value = upper_bound_ce[-1] if upper_bound_ce else incremental_value
     prediction_value = np.sum(treatment[start_position_treatment:])
 
     # Calculate ATT and incremental
@@ -339,6 +390,15 @@ def get_evaluation_chart_data(
         "prediction_value": round(float(prediction_value), 2),
         "att": round(float(att), 2),
         "incremental": round(float(incremental), 2),
+
+        # Conformal CI on the lift (Parte B4) — the statistically valid effect interval
+        "lift": conformal["lift"],
+        "lift_ci_lower": conformal["lift_ci_lower"],
+        "lift_ci_upper": conformal["lift_ci_upper"],
+        "att_ci": list(conformal["att_ci"]) if conformal["att_ci"] is not None else None,
+        "conformal_p_value": conformal["p_value"],
+        "conformal_significant": conformal["significant"],
+        "conformal_block_size": conformal["block_size"],
 
         # Pre/post treatment periods
         "pre_treatment": np.round(pre_treatment, 2).tolist(),
