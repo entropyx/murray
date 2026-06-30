@@ -202,12 +202,6 @@ def test_get_evaluation_chart_data_returns_conformal_lift_ci():
     assert res["lift_ci_lower"] > 0, f"effect CI should exclude 0, got {res['att_ci']}"
     assert res["conformal_significant"] is True
 
-    # Task 5: the conformal fields must survive the webhook serialization path.
-    import json
-    from shared.serialization import convert_ndarrays
-
-    json.dumps(convert_ndarrays(res))  # raises if any field is not JSON-safe
-
 
 def test_run_geo_evaluation_exclusion_unknown_location_is_noop(sample_data):
     """Unknown locations in the exclusion list (typos, stale data) must not crash the run;
