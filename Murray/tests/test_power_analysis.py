@@ -122,3 +122,21 @@ def test_evaluate_sensitivity():
     assert all(
         isinstance(v, np.ndarray) for v in lift_series.values()
     ), "Each value in lift_series must be a NumPy array"
+
+
+def test_select_significant_mde_requires_power_and_significance():
+    from Murray.main import _select_significant_mde
+
+    # rows: (delta, power, ci, p_value)
+    curve = [
+        (0.05, 0.50, [0.0, 0.2], 0.30),  # underpowered
+        (0.07, 0.82, [0.1, 0.3], 0.11),  # powered but p=0.11 > alpha(0.10) -> not significant
+        (0.09, 0.82, [0.1, 0.3], 0.08),  # powered AND significant -> this is the MDE
+    ]
+    selected = _select_significant_mde(curve, 0.10)
+    assert selected is not None
+    assert selected[0] == 0.09
+
+    # Nothing both adequately powered AND significant -> no MDE.
+    curve2 = [(0.05, 0.50, [], 0.30), (0.07, 0.82, [], 0.11)]
+    assert _select_significant_mde(curve2, 0.10) is None

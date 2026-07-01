@@ -194,6 +194,58 @@ def test_synthetic_control_time_index():
     assert not np.isnan(predictions).any()
 
 
+# ---- ASCM (Ben-Michael ridge augmentation, opt-in) ----
+
+def test_ascm_reduces_to_simplex_with_large_alpha():
+    """As ridge_alpha -> infinity the augmentation vanishes and ASCM == simplex."""
+    np.random.seed(0)
+    X = np.random.rand(60, 3)
+    y = X @ np.array([0.3, 0.5, 0.2]) + np.random.normal(0, 0.05, 60)
+
+    pred_s, _ = SyntheticControl().fit(X, y).predict(X)
+    pred_a, _ = SyntheticControl(augmentation="ascm", ridge_alpha=1e8).fit(X, y).predict(X)
+    assert np.allclose(pred_a, pred_s, atol=1e-3)
+
+
+def test_ascm_improves_pre_fit_vs_simplex():
+    """The ridge augmentation can only reduce the pre-period fit error."""
+    np.random.seed(1)
+    X = np.random.rand(60, 4)
+    y = X @ np.array([0.4, 0.3, 0.2, 0.1]) + np.random.normal(0, 0.1, 60)
+
+    ps, _ = SyntheticControl().fit(X, y).predict(X)
+    pa, _ = SyntheticControl(augmentation="ascm", ridge_alpha=0.1).fit(X, y).predict(X)
+    rmse_s = np.sqrt(np.mean((y - ps) ** 2))
+    rmse_a = np.sqrt(np.mean((y - pa) ** 2))
+    assert rmse_a <= rmse_s + 1e-9
+
+
+def test_ascm_extrapolates_outside_convex_hull():
+    """Treated above the donor hull: the simplex caps at the max donor; ASCM extrapolates."""
+    np.random.seed(2)
+    X = np.random.rand(50, 3) * 10.0           # donors in [0, 10]
+    y = X.max(axis=1) * 1.5 + 5.0              # treated above every donor
+
+    ps, _ = SyntheticControl().fit(X, y).predict(X)
+    pa, _ = SyntheticControl(augmentation="ascm", ridge_alpha=0.01).fit(X, y).predict(X)
+    rmse_s = np.sqrt(np.mean((y - ps) ** 2))
+    rmse_a = np.sqrt(np.mean((y - pa) ** 2))
+    assert rmse_a < rmse_s, f"ASCM ({rmse_a:.3f}) should beat simplex ({rmse_s:.3f}) out of hull"
+
+
+def test_ascm_predict_returns_simplex_weights_for_filtering():
+    """predict() still returns the simplex weights (sum=1, >=0) so the weight filter and
+    donor display stay interpretable; the augmentation only affects the counterfactual."""
+    np.random.seed(3)
+    X = np.random.rand(40, 3)
+    y = X @ np.array([0.3, 0.4, 0.3]) + np.random.normal(0, 0.05, 40)
+
+    _, weights = SyntheticControl(augmentation="ascm", ridge_alpha=1.0).fit(X, y).predict(X)
+    assert len(weights) == X.shape[1]
+    assert np.isclose(np.sum(weights), 1.0, atol=1e-6)
+    assert np.all(weights >= -1e-9)
+
+
 def test_synthetic_control_weights_properties(synthetic_control, synthetic_data):
     """Test properties of weights returned by synthetic control"""
     X, y = synthetic_data

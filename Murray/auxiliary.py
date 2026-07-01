@@ -89,6 +89,12 @@ def cleaned_data(data, col_target, col_locations, col_dates, fill_value=0):
             columns={col_locations: "location", col_target: "Y", col_dates: "time"}
         )
 
+        data_input["Y"] = pd.to_numeric(data_input["Y"], errors="coerce")
+        if data_input["Y"].isna().all():
+            raise ValueError(
+                f"The target column '{col_target}' contains no numeric values. Please check that you selected the correct column."
+            )
+
         if data_input.empty:
             raise ValueError(
                 f"The DataFrame is empty after processing. Please check your data in the {col_target} column."
@@ -149,16 +155,51 @@ def cleaned_data(data, col_target, col_locations, col_dates, fill_value=0):
         raise Exception(f"An unexpected error occurred: {str(e)}") from e
 
 
-def market_correlations(data):
+def _infer_seasonal_period(index):
     """
-    Determines similarity between locations using correlations.
+    Infer the seasonal lag of a time index.
+
+    Daily data carries a *weekly* cycle, so daily-spaced indices return 7. Any other
+    spacing (or a series too short to measure spacing) returns None, in which case the
+    caller falls back to lag-1 differencing.
 
     Args:
-        data (pd.DataFrame): The DataFrame containing the locations of interest.
-        excluded_states (set): A set of states to exclude from the correlation matrix.
+        index: the (datetime) index of the pivoted series.
 
     Returns:
-        correlation_matrix (pd.DataFrame): DataFrame containing correlations between locations in a standard matrix format.
+        int | None: the seasonal lag (7 for daily) or None.
+    """
+    if not isinstance(index, pd.DatetimeIndex) or len(index) < 3:
+        return None
+    deltas = index.to_series().diff().dropna()
+    if deltas.empty:
+        return None
+    median_days = deltas.dt.total_seconds().median() / 86400.0
+    if 0.9 <= median_days <= 1.1:  # daily spacing -> weekly cycle
+        return 7
+    return None
+
+
+def market_correlations(data, seasonal_period=None):
+    """
+    Determines similarity between locations using correlations of *differenced* series.
+
+    Correlating raw levels inflates similarity through shared trend/seasonality
+    (spurious correlation; Yule 1926, Granger-Newbold 1974). We therefore difference
+    before correlating. NOTE: a lag-1 ``diff()`` removes a (locally linear) trend but
+    does NOT remove weekly seasonality in daily data — ``s_t - s_{t-1}`` is still
+    periodic with period 7. So when the index is daily we difference at the seasonal
+    lag (``diff(7)``), which removes the shared weekly cycle and turns a linear trend
+    into a constant; we fall back to lag-1 only when the series is too short for two
+    full cycles (avoids over-differencing). Spearman (ranks) is robust to the
+    spikes/outliers common in retail/ecommerce series.
+
+    Args:
+        data (pd.DataFrame): must contain columns {"time", "location", "Y"}.
+        seasonal_period (int): override the inferred seasonal lag.
+
+    Returns:
+        correlation_matrix (pd.DataFrame): Spearman correlations of the differenced series.
     """
 
     required_columns = {"time", "location", "Y"}
@@ -167,7 +208,17 @@ def market_correlations(data):
 
     pivoted_data = data.pivot(index="time", columns="location", values="Y")
 
-    correlation_matrix = pivoted_data.corr(method="pearson")
+    period = (
+        seasonal_period
+        if seasonal_period is not None
+        else _infer_seasonal_period(pivoted_data.index)
+    )
+    if period and len(pivoted_data) > 2 * period:
+        differenced = pivoted_data.diff(period)
+    else:
+        differenced = pivoted_data.diff()
+
+    correlation_matrix = differenced.corr(method="spearman")
     return correlation_matrix
 
 

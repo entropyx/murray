@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 import pandas as pd
-from Murray.main import select_treatments, select_controls
+from Murray.main import select_treatments, select_controls, select_controls_exclusive
 from Murray.auxiliary import market_correlations, cleaned_data
 
 
@@ -106,12 +106,102 @@ def test_select_controls_invalid_treatments(correlation_matrix):
     ), "If the treatment does not exist, the output must be an empty list"
 
 
-def test_select_controls_fallback(correlation_matrix, cleaned_dataframe):
-    """Should select the `fallback_n` most correlated if no locations meet the min_correlation"""
-    treatment_group = np.random.choice(cleaned_dataframe["location"].unique())
-    treatment_group = [treatment_group]
+# ---- ISS-6: all eligible donors by default; top_k is an optional cap ----
+
+def test_select_controls_returns_all_eligible_by_default(correlation_matrix):
+    """top_k=None (default) -> every eligible donor is returned; the simplex selects."""
+    all_locations = list(correlation_matrix.columns)
+    treatment_group = [all_locations[0]]
+
+    controls = select_controls(correlation_matrix, treatment_group)
+
+    expected = set(all_locations) - set(treatment_group)
+    assert set(controls) == expected, "default must return ALL eligible donors"
+
+
+def test_select_controls_caps_with_top_k(correlation_matrix):
+    """An explicit top_k caps the shortlist."""
+    all_locations = list(correlation_matrix.columns)
+    treatment_group = [all_locations[0]]
+
+    controls = select_controls(correlation_matrix, treatment_group, top_k=2)
+
+    assert len(controls) == 2, "top_k must cap the number of donors"
+    assert treatment_group[0] not in controls
+
+
+def test_select_controls_drops_nan_scored_donors():
+    """Donors with a NaN correlation to the treatment are degenerate and dropped."""
+    cm = pd.DataFrame(
+        {
+            "A": [1.0, 0.9, np.nan],
+            "B": [0.9, 1.0, 0.5],
+            "C": [np.nan, 0.5, 1.0],
+        },
+        index=["A", "B", "C"],
+    )
+    controls = select_controls(cm, ["A"])
+    assert controls == ["B"], "NaN-scored donor C must be dropped"
+
+
+def test_select_controls_respects_excluded_control_locations(correlation_matrix):
+    """`select_controls` (single-cell path) must filter out excluded_control_locations."""
+    all_locations = list(correlation_matrix.columns)
+    treatment_group = [all_locations[0]]
+    to_exclude_from_control = all_locations[1]
+
     controls = select_controls(
-        correlation_matrix, treatment_group, min_correlation=0.99, fallback_n=3
+        correlation_matrix,
+        treatment_group,
+        excluded_control_locations=[to_exclude_from_control],
     )
 
-    assert len(controls) == 3, "It should select 3 fallback controls"
+    assert to_exclude_from_control not in controls
+    assert treatment_group[0] not in controls
+
+
+def test_select_controls_exclusive_returns_all_eligible_by_default(correlation_matrix):
+    """top_k=None -> all eligible donors, minus treatment/used/excluded."""
+    all_locations = list(correlation_matrix.columns)
+    treatment_group = [all_locations[0]]
+
+    controls = select_controls_exclusive(
+        correlation_matrix, treatment_group, excluded_locations=[]
+    )
+
+    assert set(controls) == set(all_locations) - set(treatment_group)
+
+
+def test_select_controls_exclusive_respects_excluded_control_locations(correlation_matrix):
+    """`excluded_control_locations` removes locations from the control group only."""
+    all_locations = list(correlation_matrix.columns)
+    treatment_group = [all_locations[0]]
+    to_exclude_from_control = all_locations[1]
+
+    controls = select_controls_exclusive(
+        correlation_matrix,
+        treatment_group,
+        excluded_locations=[],
+        excluded_control_locations=[to_exclude_from_control],
+    )
+
+    assert to_exclude_from_control not in controls
+    assert treatment_group[0] not in controls
+
+
+def test_select_controls_exclusive_defaults_to_empty_excluded_control_locations(correlation_matrix):
+    """Omitting `excluded_control_locations` == passing None (no extra exclusions)."""
+    all_locations = list(correlation_matrix.columns)
+    treatment_group = [all_locations[0]]
+
+    controls_without = select_controls_exclusive(
+        correlation_matrix, treatment_group, excluded_locations=[]
+    )
+    controls_with_none = select_controls_exclusive(
+        correlation_matrix,
+        treatment_group,
+        excluded_locations=[],
+        excluded_control_locations=None,
+    )
+
+    assert set(controls_without) == set(controls_with_none)
